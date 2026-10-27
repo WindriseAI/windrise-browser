@@ -94,4 +94,3 @@ index b7cdb8f..aea6612 100644
 +
  BEGIN_METADATA(VerticalTabStripRegionView)
  END_METADATA
-
