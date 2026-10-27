@@ -39,7 +39,7 @@ index b7cdb8f..aea6612 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1128,6 +1140,55 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1128,5 +1140,54 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

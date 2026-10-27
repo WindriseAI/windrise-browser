@@ -42,7 +42,7 @@ index 76f8e99..994c44b 100644
    raw_ptr<VerticalTabStripTopContainer> top_button_container_ = nullptr;
    raw_ptr<views::Separator> top_button_separator_ = nullptr;
    raw_ptr<VerticalTabStripBottomContainer> bottom_button_container_ = nullptr;
-@@ -288,7 +298,9 @@ class VerticalTabStripRegionView final
+@@ -288,6 +298,8 @@ class VerticalTabStripRegionView final
    int keep_expanded_lock_count_ = 0;
    std::unique_ptr<ExpandOnHoverLock> omnibox_open_lock_;
    std::unique_ptr<ExpandOnHoverLock> link_drag_lock_;
