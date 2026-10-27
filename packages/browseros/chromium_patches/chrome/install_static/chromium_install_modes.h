@@ -14,7 +14,7 @@ index a6d969df56d13d94eaa968934f909d6fd23b5f2f..56bf2a72ca207aefee13cbdf984ee7fb
  // and user data directory paths. May be empty if no such dir is to be used.
  inline constexpr wchar_t kCompanyPathName[] = L"";
  
-+// Product-specific registrations keep BrowserOS and BrowserOS neo installs
++// Product-specific registrations keep the shipped products' installs
 +// isolated. COM interface IDs below still follow the shared Chromium ABI.
 +struct ProductInstallIdentity {
 +  const wchar_t* base_app_name;
@@ -34,7 +34,7 @@ index a6d969df56d13d94eaa968934f909d6fd23b5f2f..56bf2a72ca207aefee13cbdf984ee7fb
  // The brand-specific product name to be included as a component of the install
 -// and user data directory paths.
 -inline constexpr wchar_t kProductPathName[] = L"Chromium";
-+// and user data directory paths. Per-product so BrowserOS and BrowserClaw get
++// and user data directory paths. Per-product so Windrise and BrowserClaw get
 +// disjoint user-data roots (and singletons) under %LOCALAPPDATA%.
 +#if BUILDFLAG(BROWSEROS_PRODUCT_BROWSERCLAW)
 +inline constexpr wchar_t kProductPathName[] = L"BrowserClaw";
@@ -65,32 +65,32 @@ index a6d969df56d13d94eaa968934f909d6fd23b5f2f..56bf2a72ca207aefee13cbdf984ee7fb
 +        L"924012147-",
 +};
 +#else
-+inline constexpr wchar_t kProductPathName[] = L"BrowserOS";
++inline constexpr wchar_t kProductPathName[] = L"Windrise";
 +inline constexpr ProductInstallIdentity kProductInstallIdentity = {
-+    .base_app_name = L"BrowserOS",
-+    .base_app_id = L"BrowserOS",
-+    .browser_prog_id_prefix = L"BOSHTML",
-+    .browser_prog_id_description = L"BrowserOS HTML Document",
-+    .direct_launch_url_scheme = "browseros",
-+    .pdf_prog_id_prefix = L"BOSPDF",
-+    .pdf_prog_id_description = L"BrowserOS PDF Document",
-+    .active_setup_guid = L"{0EF5669B-7FD7-4138-A91F-E466631ADE97}",
-+    .toast_activator_clsid = {0xE76CCE76,
-+                              0x27A7,
-+                              0x46D3,
-+                              {0x9E, 0xED, 0xCC, 0x8C, 0x5E, 0xD7, 0xBE, 0x72}},
-+    .elevator_clsid = {0x29ED629C,
-+                       0x1F0E,
-+                       0x47D1,
-+                       {0xA6, 0x84, 0x93, 0x97, 0xAC, 0xDB, 0x71, 0xAB}},
-+    .tracing_service_clsid = {0xC39C8575,
-+                              0x9F42,
-+                              0x4599,
-+                              {0x96, 0xF1, 0x19, 0xDB, 0x7A, 0xEB, 0x51, 0xAF}},
++    .base_app_name = L"Windrise",
++    .base_app_id = L"Windrise",
++    .browser_prog_id_prefix = L"WindriseHTML",
++    .browser_prog_id_description = L"Windrise HTML Document",
++    .direct_launch_url_scheme = "windrise",
++    .pdf_prog_id_prefix = L"WindrisePDF",
++    .pdf_prog_id_description = L"Windrise PDF Document",
++    .active_setup_guid = L"{BDEF1F53-52A8-4967-9D47-AAC086ECD8ED}",
++    .toast_activator_clsid = {0xC6572066,
++                              0x4C2B,
++                              0x4230,
++                              {0x9C, 0x40, 0xDA, 0x3D, 0xC9, 0x1F, 0x73, 0x22}},
++    .elevator_clsid = {0xA6D9F2B4,
++                       0xAE13,
++                       0x43D0,
++                       {0xB3, 0x3A, 0x51, 0xC0, 0x9D, 0x8D, 0x05, 0xD0}},
++    .tracing_service_clsid = {0x78A9FCB8,
++                              0x5D57,
++                              0x47C1,
++                              {0xAE, 0x36, 0x42, 0x0C, 0x7D, 0xFA, 0x17, 0x4B}},
 +    .sandbox_sid_prefix =
-+        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-"
-+        L"1938553385-"
-+        L"924012148-",
++        L"S-1-15-2-1395956833-1951790506-679118039-642689695-"
++        L"1897331096-"
++        L"1222726919-",
 +};
 +#endif
  

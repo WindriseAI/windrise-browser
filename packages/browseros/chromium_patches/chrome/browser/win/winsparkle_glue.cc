@@ -73,7 +73,7 @@ index 0000000000000000000000000000000000000000..f86e22cf3df9d1aa48c25b7366c8b5d7
 +// Per-product registry state (skipped version, last check time): BrowserOS
 +// and BrowserClaw install side by side, so sharing one path would
 +// cross-contaminate their updaters.
-+constexpr char kRegistryPath[] = "Software\\BrowserOS\\WinSparkle";
++constexpr char kRegistryPath[] = "Software\\Windrise\\WinSparkle";
 +constexpr char kClawRegistryPath[] = "Software\\BrowserClaw\\WinSparkle";
 +
 +// Version compared against the appcast's sparkle:version: the BrowserOS
@@ -305,13 +305,16 @@ index 0000000000000000000000000000000000000000..f86e22cf3df9d1aa48c25b7366c8b5d7
 +
 +  const bool is_claw = browseros::IsBrowserClawProduct();
 +
-+  // WinSparkle UI / User-Agent shows the BrowserOS release version;
++  // WinSparkle UI / User-Agent shows the product name and release version;
 +  // comparisons use the epoch-prefixed feed version below.
 +  const std::wstring display_version =
 +      base::UTF8ToWide(version_info::GetBrowserOSVersionNumber());
-+  win_sparkle_set_app_details(L"BrowserOS",
-+                              is_claw ? L"BrowserOS neo" : L"BrowserOS",
-+                              display_version.c_str());
++  const std::wstring product_name =
++      base::UTF8ToWide(std::string(version_info::GetProductName()));
++  win_sparkle_set_app_details(
++      product_name.c_str(),
++      is_claw ? L"BrowserOS neo" : product_name.c_str(),
++      display_version.c_str());
 +
 +  const std::wstring build_version = base::UTF8ToWide(GetUpdateFeedVersion());
 +  win_sparkle_set_app_build_version(build_version.c_str());

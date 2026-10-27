@@ -15,9 +15,11 @@ index 24f6808a21b00c50a101a1a4c0100ff80561e227..2e97ba8345c24bfd0f59672ff5d726bf
                     "max_distance_threshold",
                     20);
  
++// Off by default: the panel is an opt-in in-browser AI surface. The same
++// feature also gates its command, toolbar action and side-panel entry.
 +BASE_FEATURE(kThirdPartyLlmPanel,
 +             "ThirdPartyLlmPanel",
-+             base::FEATURE_ENABLED_BY_DEFAULT);
++             base::FEATURE_DISABLED_BY_DEFAULT);
 +
  BASE_FEATURE(kTabDuplicateMetrics, base::FEATURE_ENABLED_BY_DEFAULT);
  

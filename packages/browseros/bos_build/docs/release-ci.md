@@ -258,7 +258,8 @@ Windows signing needs the eSigner secrets and `SPARKLE_PRIVATE_KEY`. macOS uses
 repository variables `BROWSEROS_REPO_PATH` and `BROWSEROS_CHROMIUM_SRC` plus
 the signing and notarization secrets on the persistent builder. Signed macOS
 releases require separate base64-encoded Developer ID provisioning profiles:
-`PROD_MACOS_BROWSEROS_PASSKEY_PROFILE_B64` for `com.browseros.BrowserOS` and
+`PROD_MACOS_BROWSEROS_PASSKEY_PROFILE_B64` for `si.windrise.browser` (the
+Windrise app id) and
 `PROD_MACOS_BROWSERCLAW_PASSKEY_PROFILE_B64` for
 `com.browseros.BrowserClaw`. Each profile must authorize team `8YMKWU47S5`, its
 bundle-specific keychain groups, and

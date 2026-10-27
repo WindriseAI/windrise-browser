@@ -6,6 +6,9 @@ index 83b50c9d0440e75e275d5a09aca78a0af8dd850b..6762a8d686fbbd10aaf496480272ffc2
  #include "build/branding_buildflags.h"
  #include "chrome/app/chrome_command_ids.h"
  #include "chrome/app/vector_icons/vector_icons.h"
++#include "base/strings/strcat.h"
++#include "base/strings/utf_string_conversions.h"
++#include "base/version_info/version_info.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
  #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
  #include "chrome/browser/contextual_cueing/contextual_cueing_controller.h"
@@ -105,8 +108,10 @@ index 83b50c9d0440e75e275d5a09aca78a0af8dd850b..6762a8d686fbbd10aaf496480272ffc2
 +                          infobars::InfoBarDelegate::
 +                              BROWSEROS_AGENT_INSTALLING_INFOBAR_DELEGATE,
 +                          nullptr,
-+                          u"BrowserOS Agent is installing/updating. Please try "
-+                          u"again shortly.",
++                          base::UTF8ToUTF16(base::StrCat(
++                              {version_info::GetProductName(),
++                               " Agent is installing/updating. Please try "
++                               "again shortly."})),
 +                          /*auto_expire=*/true,
 +                          /*should_animate=*/true,
 +                          /*closeable=*/true);
@@ -141,7 +146,8 @@ index 83b50c9d0440e75e275d5a09aca78a0af8dd850b..6762a8d686fbbd10aaf496480272ffc2
 +                bwi))
 +            .SetActionId(kActionBrowserOSAgent)
 +            .SetText(u"Assistant")
-+            .SetTooltipText(u"Ask BrowserOS")
++            .SetTooltipText(base::UTF8ToUTF16(
++                base::StrCat({"Ask ", version_info::GetProductName()})))
 +            .SetImage(ui::ImageModel::FromResourceId(IDR_PRODUCT_LOGO_16))
 +            .SetProperty(
 +                actions::kActionItemPinnableKey,

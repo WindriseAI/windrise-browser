@@ -3,8 +3,8 @@
   <id>@@METAINFO_ID@@</id>
   <launchable type="desktop-id">@@DESKTOP_ID@@</launchable>
   <name>@@DISPLAY_NAME@@</name>
-  <developer id="com.browseros">
-    <name>BrowserOS Team</name>
+  <developer id="si.windrise">
+    <name>Windrise Team</name>
   </developer>
   <summary>@@SUMMARY@@</summary>
   <metadata_license>CC0-1.0</metadata_license>

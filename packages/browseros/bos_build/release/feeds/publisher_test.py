@@ -12,6 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+from ...core.products import get_product_descriptor
 from .publisher import FeedPublisher
 from .render import (
     ExistingAppcast,
@@ -453,8 +454,9 @@ class PublisherTestCase(unittest.TestCase):
         self.assertEqual(self.client.calls, [])
 
     def test_populated_wrong_channel_live_appcast_fails_closed(self):
+        channel_title = get_product_descriptor("browseros").display_name
         live = _mac_appcast("10000.0.46.0.0").replace(
-            "<title>BrowserOS</title>",
+            f"<title>{channel_title}</title>",
             "<title>BrowserClaw</title>",
         )
         publisher = self._publisher({"appcast.xml": live.encode()})

@@ -20,8 +20,10 @@ index 212b93095214422112afd346e36cd2838891725b..6422141bbe9154f6c0f4922a43a122cf
 +const char kDefaultServiceName[] = "BrowserClaw Safe Storage";
 +const char kDefaultAccountName[] = "BrowserClaw";
 +#else
-+const char kDefaultServiceName[] = "BrowserOS Safe Storage";
-+const char kDefaultAccountName[] = "BrowserOS";
++// Shown in Keychain Access. A distinct entry keeps Windrise and a stock
++// BrowserOS install from overwriting each other's encryption key.
++const char kDefaultServiceName[] = "Windrise Safe Storage";
++const char kDefaultAccountName[] = "Windrise";
 +#endif
  #endif
  

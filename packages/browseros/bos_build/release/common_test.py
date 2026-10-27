@@ -280,22 +280,22 @@ class ReleaseContractTest(unittest.TestCase):
         self.assertNotIn("## BrowserOS v", notes)
 
 
-# Golden copy of the pre-productization DOWNLOAD_PATH_MAPPING constant —
-# get_download_path_mapping(browseros) must stay byte-identical to it.
+# Golden copy of the browseros product's DOWNLOAD_PATH_MAPPING —
+# get_download_path_mapping(browseros) must match it exactly.
 BROWSEROS_DOWNLOAD_GOLDEN = {
     "macos": {
-        "arm64": "download/BrowserOS-arm64.dmg",
-        "x64": "download/BrowserOS-x86_64.dmg",
-        "universal": "download/BrowserOS.dmg",
+        "arm64": "download/Windrise-arm64.dmg",
+        "x64": "download/Windrise-x86_64.dmg",
+        "universal": "download/Windrise.dmg",
     },
     "win": {
-        "x64_installer": "download/BrowserOS_installer.exe",
+        "x64_installer": "download/Windrise_installer.exe",
     },
     "linux": {
-        "x64_appimage": "download/BrowserOS.AppImage",
-        "x64_deb": "download/BrowserOS.deb",
-        "arm64_appimage": "download/BrowserOS-arm64.AppImage",
-        "arm64_deb": "download/BrowserOS-arm64.deb",
+        "x64_appimage": "download/Windrise.AppImage",
+        "x64_deb": "download/Windrise.deb",
+        "arm64_appimage": "download/Windrise-arm64.AppImage",
+        "arm64_deb": "download/Windrise-arm64.deb",
     },
 }
 

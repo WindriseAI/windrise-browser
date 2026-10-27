@@ -25,15 +25,15 @@ from .render import (
 from .spec import feed_by_key, server_feed
 
 MAC_ARTIFACT = {
-    "filename": "BrowserOS_v0.47.0.2_arm64.dmg",
-    "url": "https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/BrowserOS_v0.47.0.2_arm64.dmg",
+    "filename": "Windrise_v0.47.0.2_arm64.dmg",
+    "url": "https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/Windrise_v0.47.0.2_arm64.dmg",
     "sparkle_signature": "MACSIG==",
     "sparkle_length": 265462841,
 }
 
 WIN_ARTIFACT = {
-    "filename": "BrowserOS_v0.47.0.2_x64_installer.exe",
-    "url": "https://cdn.browseros.com/releases/browseros/0.47.0.2/win/BrowserOS_v0.47.0.2_x64_installer.exe",
+    "filename": "Windrise_v0.47.0.2_x64_installer.exe",
+    "url": "https://cdn.browseros.com/releases/browseros/0.47.0.2/win/Windrise_v0.47.0.2_x64_installer.exe",
     "sparkle_signature": "WINSIG==",
     "sparkle_length": 190943800,
 }
@@ -42,13 +42,13 @@ GOLDEN_MAC_APPCAST = """\
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
-    <title>BrowserOS</title>
+    <title>Windrise</title>
     <link>https://cdn.browseros.com/appcast.xml</link>
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
 
     <item>
-      <title>BrowserOS - 0.47.0.2</title>
+      <title>Windrise - 0.47.0.2</title>
       <description sparkle:format="plain-text">
       </description>
       <sparkle:version>10000.0.47.0.2</sparkle:version>
@@ -56,7 +56,7 @@ GOLDEN_MAC_APPCAST = """\
       <pubDate>Fri, 19 Jun 2026 06:41:33 +0000</pubDate>
       <link>https://www.browseros.com/</link>
       <enclosure
-        url="https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/BrowserOS_v0.47.0.2_arm64.dmg"
+        url="https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/Windrise_v0.47.0.2_arm64.dmg"
         sparkle:edSignature="MACSIG=="
         length="265462841"
         type="application/octet-stream" />
@@ -71,13 +71,13 @@ GOLDEN_WIN_APPCAST = """\
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
-    <title>BrowserOS Windows Updates</title>
+    <title>Windrise Windows Updates</title>
     <link>https://cdn.browseros.com/appcast-win.xml</link>
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
 
     <item>
-      <title>BrowserOS - 0.47.0.2</title>
+      <title>Windrise - 0.47.0.2</title>
       <description sparkle:format="plain-text">
       </description>
       <sparkle:version>10000.0.47.0.2</sparkle:version>
@@ -85,7 +85,7 @@ GOLDEN_WIN_APPCAST = """\
       <pubDate>Fri, 19 Jun 2026 06:41:33 +0000</pubDate>
       <link>https://www.browseros.com/</link>
       <enclosure
-        url="https://cdn.browseros.com/releases/browseros/0.47.0.2/win/BrowserOS_v0.47.0.2_x64_installer.exe"
+        url="https://cdn.browseros.com/releases/browseros/0.47.0.2/win/Windrise_v0.47.0.2_x64_installer.exe"
         sparkle:os="windows"
         sparkle:edSignature="WINSIG=="
         length="190943800"
@@ -440,7 +440,7 @@ class VersionHelpersTest(unittest.TestCase):
         self.assertEqual(
             extract_enclosure_urls(GOLDEN_MAC_APPCAST),
             [
-                "https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/BrowserOS_v0.47.0.2_arm64.dmg"
+                "https://cdn.browseros.com/releases/browseros/0.47.0.2/macos/Windrise_v0.47.0.2_arm64.dmg"
             ],
         )
         self.assertEqual(
@@ -454,7 +454,7 @@ class VersionHelpersTest(unittest.TestCase):
     def test_extract_channel_metadata(self):
         self.assertEqual(
             extract_channel_metadata(GOLDEN_WIN_APPCAST),
-            ("BrowserOS Windows Updates", "https://cdn.browseros.com/appcast-win.xml"),
+            ("Windrise Windows Updates", "https://cdn.browseros.com/appcast-win.xml"),
         )
 
 

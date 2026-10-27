@@ -123,7 +123,7 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
                 r'\+if \(browseros_product_browserclaw\) \{\n'
                 r'\+  browseros_product_dir_name = "BrowserClaw"\n'
                 r'\+\} else \{\n'
-                r'\+  browseros_product_dir_name = "BrowserOS"\n'
+                r'\+  browseros_product_dir_name = "Windrise"\n'
                 r'\+\}'
             ),
         )
@@ -138,7 +138,7 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
                 r'\+  std::string data_dir_basename = "browser-claw";\n'
                 r" #else\n"
                 r'-  std::string data_dir_basename = "chromium";\n'
-                r'\+  std::string data_dir_basename = "browser-os";'
+                r'\+  std::string data_dir_basename = "windrise";'
             ),
         )
 
@@ -155,7 +155,7 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
             browserclaw,
         )
         self.assertIn(
-            'inline constexpr wchar_t kProductPathName[] = L"BrowserOS";', browseros
+            'inline constexpr wchar_t kProductPathName[] = L"Windrise";', browseros
         )
         self.assertNotIn("GetProduct", install_modes)
         self.assertNotIn("browseros_product.h", install_modes)
@@ -191,22 +191,22 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
         )
 
         expected_fields = {
-            "base_app_name": ('L"BrowserOS neo"', 'L"BrowserOS"'),
-            "base_app_id": ('L"BrowserClaw"', 'L"BrowserOS"'),
-            "browser_prog_id_prefix": ('L"BClawHTML"', 'L"BOSHTML"'),
+            "base_app_name": ('L"BrowserOS neo"', 'L"Windrise"'),
+            "base_app_id": ('L"BrowserClaw"', 'L"Windrise"'),
+            "browser_prog_id_prefix": ('L"BClawHTML"', 'L"WindriseHTML"'),
             "browser_prog_id_description": (
                 'L"BrowserOS neo HTML Document"',
-                'L"BrowserOS HTML Document"',
+                'L"Windrise HTML Document"',
             ),
-            "direct_launch_url_scheme": ('"browserclaw"', '"browseros"'),
-            "pdf_prog_id_prefix": ('L"BClawPDF"', 'L"BOSPDF"'),
+            "direct_launch_url_scheme": ('"browserclaw"', '"windrise"'),
+            "pdf_prog_id_prefix": ('L"BClawPDF"', 'L"WindrisePDF"'),
             "pdf_prog_id_description": (
                 'L"BrowserOS neo PDF Document"',
-                'L"BrowserOS PDF Document"',
+                'L"Windrise PDF Document"',
             ),
             "active_setup_guid": (
                 'L"{E9E65674-914E-4A29-83A9-A98D407446EC}"',
-                'L"{0EF5669B-7FD7-4138-A91F-E466631ADE97}"',
+                'L"{BDEF1F53-52A8-4967-9D47-AAC086ECD8ED}"',
             ),
         }
         for field, (browserclaw_value, browseros_value) in expected_fields.items():
@@ -218,7 +218,7 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
                 self.assertEqual(_field_initializer(browseros, field), browseros_value)
 
         self.assertIn('L"924012147-"', browserclaw)
-        self.assertIn('L"924012148-"', browseros)
+        self.assertIn('L"1222726919-"', browseros)
 
         for field in (
             "base_app_name",
@@ -256,15 +256,15 @@ class ProductUserDataDirPatchTest(unittest.TestCase):
         expected_clsids = {
             "toast_activator_clsid": (
                 "D0A19C03-EE25-463B-B38F-08516D2B1A79",
-                "E76CCE76-27A7-46D3-9EED-CC8C5ED7BE72",
+                "C6572066-4C2B-4230-9C40-DA3DC91F7322",
             ),
             "elevator_clsid": (
                 "0AC4EA74-A61A-4807-AFE5-03701D2B97DD",
-                "29ED629C-1F0E-47D1-A684-9397ACDB71AB",
+                "A6D9F2B4-AE13-43D0-B33A-51C09D8D05D0",
             ),
             "tracing_service_clsid": (
                 "9F3CA910-142B-4C2C-A61E-B2335E2E67FD",
-                "C39C8575-9F42-4599-96F1-19DB7AEB51AF",
+                "78A9FCB8-5D57-47C1-AE36-420C7DFA174B",
             ),
         }
         for field, (

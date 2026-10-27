@@ -45,6 +45,13 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +namespace {
 +
 +constexpr int kBackLog = 10;
++
++// Default to loopback: a wildcard bind trips host firewalls and exposes MCP
++// to the LAN. allow_remote_in_mcp opts into the wildcard bind because
++// Docker-style port forwarding arrives from a non-loopback peer; the peer
++// check below still rejects LAN traffic while the pref is off.
++constexpr char kLoopbackBindAddress[] = "127.0.0.1";
++constexpr char kWildcardBindAddress[] = "0.0.0.0";
 +constexpr int kBufferSize = 16 * 1024;
 +constexpr char kServiceUnavailableResponse[] =
 +    "HTTP/1.1 503 Service Unavailable\r\n"
@@ -371,10 +378,13 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  auto listener = std::make_unique<ListenerState>(/*is_https=*/false);
 +  listener->socket =
 +      std::make_unique<net::TCPServerSocket>(nullptr, net::NetLogSource());
++  const char* bind_address =
++      allow_remote_ ? kWildcardBindAddress : kLoopbackBindAddress;
 +  int result = listener->socket->ListenWithAddressAndPort(
-+      "0.0.0.0", static_cast<uint16_t>(http_port), kBackLog);
++      bind_address, static_cast<uint16_t>(http_port), kBackLog);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: Proxy failed to bind 0.0.0.0:" << http_port
++    LOG(ERROR) << "browseros: Proxy failed to bind " << bind_address << ":"
++               << http_port
 +               << " - " << net::ErrorToString(result);
 +    return false;
 +  }
@@ -391,7 +401,8 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  bound_http_port_ = local_address.port();
 +  StartAccept(http_listener_.get());
 +
-+  LOG(INFO) << "browseros: MCP proxy listening on 0.0.0.0:" << bound_http_port_;
++  LOG(INFO) << "browseros: MCP proxy listening on " << bind_address << ":"
++            << bound_http_port_;
 +  return true;
 +}
 +
@@ -411,10 +422,13 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  auto listener = std::make_unique<ListenerState>(/*is_https=*/true);
 +  listener->socket =
 +      std::make_unique<net::TCPServerSocket>(nullptr, net::NetLogSource());
++  const char* bind_address =
++      allow_remote_ ? kWildcardBindAddress : kLoopbackBindAddress;
 +  int result = listener->socket->ListenWithAddressAndPort(
-+      "0.0.0.0", static_cast<uint16_t>(https_port), kBackLog);
++      bind_address, static_cast<uint16_t>(https_port), kBackLog);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to bind 0.0.0.0:" << https_port
++    LOG(ERROR) << "browseros: HTTPS proxy failed to bind " << bind_address
++               << ":" << https_port
 +               << " - " << net::ErrorToString(result)
 +               << ", continuing HTTP-only";
 +    tls_context_.reset();
@@ -438,8 +452,8 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  bound_https_port_ = local_address.port();
 +  StartAccept(https_listener_.get());
 +
-+  LOG(INFO) << "browseros: HTTPS MCP proxy listening on 0.0.0.0:"
-+            << bound_https_port_;
++  LOG(INFO) << "browseros: HTTPS MCP proxy listening on " << bind_address
++            << ":" << bound_https_port_;
 +  return true;
 +}
 +

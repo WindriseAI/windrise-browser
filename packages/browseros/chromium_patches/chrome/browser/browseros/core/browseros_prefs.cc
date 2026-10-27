@@ -22,14 +22,18 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +namespace browseros {
 +
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-+  const bool show_toolbar_controls_by_default = !IsBrowserClawProduct();
++  // The Chat (third-party LLM) and Assistant (agent) entries start hidden for
++  // every product: the browser is driven by external MCP clients, so the
++  // in-browser AI surfaces are opt-in. Users can still enable them from
++  // Customize toolbar; the MCP server and its tooling are unaffected.
++  constexpr bool kShowAISurfacesByDefault = false;
 +
 +  registry->RegisterBooleanPref(prefs::kShowLLMChat,
-+                                show_toolbar_controls_by_default);
++                                kShowAISurfacesByDefault);
 +  registry->RegisterBooleanPref(prefs::kShowAssistant,
-+                                show_toolbar_controls_by_default);
++                                kShowAISurfacesByDefault);
 +  registry->RegisterBooleanPref(prefs::kShowToolbarLabels,
-+                                show_toolbar_controls_by_default);
++                                !IsBrowserClawProduct());
 +  registry->RegisterBooleanPref(prefs::kVerticalTabsEnabled, true);
 +  registry->RegisterBooleanPref(prefs::kShowTabGroupsInBookmarkBar, false);
 +

@@ -18,7 +18,7 @@ index 5575c049b222f..800d48d3c798d 100644
 +  std::string data_dir_basename = "browser-claw";
  #else
 -  std::string data_dir_basename = "chromium";
-+  std::string data_dir_basename = "browser-os";
++  std::string data_dir_basename = "windrise";
  #endif
    *result = config_dir.Append(data_dir_basename + GetChannelSuffixForDataDir());
    return true;

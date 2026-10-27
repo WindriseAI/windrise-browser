@@ -51,10 +51,12 @@ index 0000000000000..0e62a9f7995e1
 +  BrowserOSServerProxy& operator=(const BrowserOSServerProxy&) = delete;
 +
 +  // Binds the stable HTTP proxy port and starts accepting TCP connections.
++  // The listener binds loopback unless SetAllowRemote(true) ran first.
 +  bool Start(int http_port, int https_port);
 +  void Stop();
 +
 +  void SetBackendPort(int port);
++  // Allows non-loopback peers and opens the listener bind before Start().
 +  void SetAllowRemote(bool allow);
 +
 +  int GetPort() const { return bound_http_port_; }

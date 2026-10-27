@@ -128,8 +128,8 @@ index 0000000000000..dbd7e166bb02c
 +    // the actual bind behavior of net::HttpServer.
 +    auto socket =
 +        std::make_unique<net::TCPServerSocket>(nullptr, net::NetLogSource());
-+    int result =
-+        socket->ListenWithAddressAndPort("0.0.0.0", port, /*backlog=*/1);
++    int result = socket->ListenWithAddressAndPort("127.0.0.1", port,
++                                                  /*backlog=*/1);
 +    return result == net::OK;
 +  }
 +

@@ -25,16 +25,17 @@ index bedf19f6dc172877221249e53ecd736563c7fe99..5a72cce2a4724a9df8eb2d8233a2665f
 +IN_PROC_BROWSER_TEST_F(PinnedToolbarActionsModelBrowserTest,
 +                       BrowserOSAssistantVisibilityPrefControlsPinnedState) {
 +  PrefService* prefs = browser()->profile()->GetPrefs();
-+  EXPECT_TRUE(prefs->GetBoolean(browseros::prefs::kShowAssistant));
++  // Assistant starts hidden; the pref still controls pinned state both ways.
++  EXPECT_FALSE(prefs->GetBoolean(browseros::prefs::kShowAssistant));
 +
 +  model()->EnsureAlwaysPinnedActions();
-+  EXPECT_TRUE(model()->Contains(kActionBrowserOSAgent));
-+
-+  prefs->SetBoolean(browseros::prefs::kShowAssistant, false);
 +  EXPECT_FALSE(model()->Contains(kActionBrowserOSAgent));
 +
 +  prefs->SetBoolean(browseros::prefs::kShowAssistant, true);
 +  EXPECT_TRUE(model()->Contains(kActionBrowserOSAgent));
++
++  prefs->SetBoolean(browseros::prefs::kShowAssistant, false);
++  EXPECT_FALSE(model()->Contains(kActionBrowserOSAgent));
 +}
 +
  // TODO(dljames): Write tests for guest and incognito mode profile that check

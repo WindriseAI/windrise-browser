@@ -95,7 +95,7 @@ class FeedTableTest(unittest.TestCase):
         mac = by_key["appcast.xml"]
         self.assertEqual(mac.platform, "macos")
         self.assertEqual(mac.artifact_keys, ("universal", "arm64"))
-        self.assertEqual(mac.title, "BrowserOS")
+        self.assertEqual(mac.title, "Windrise")
 
         mac_x64 = by_key["appcast-x86_64.xml"]
         self.assertEqual(mac_x64.artifact_keys, ("x64", "universal"))
@@ -103,10 +103,22 @@ class FeedTableTest(unittest.TestCase):
         win = by_key["appcast-win.xml"]
         self.assertEqual(win.platform, "win")
         self.assertEqual(win.artifact_keys, ("x64_installer",))
-        self.assertEqual(win.title, "BrowserOS Windows Updates")
+        self.assertEqual(win.title, "Windrise Windows Updates")
 
         win_arm = by_key["appcast-win-arm64.xml"]
         self.assertEqual(win_arm.artifact_keys, ("arm64_installer",))
+
+    def test_browseros_feed_titles_migrate_from_the_old_brand(self):
+        feeds = browser_feeds_for_product("browseros")
+        self.assertEqual(
+            [feed.legacy_titles for feed in feeds],
+            [
+                ("BrowserOS",),
+                ("BrowserOS",),
+                ("BrowserOS Windows Updates",),
+                ("BrowserOS Windows Updates",),
+            ],
+        )
 
     def test_feed_links_point_at_their_own_key(self):
         for feed in all_feeds():

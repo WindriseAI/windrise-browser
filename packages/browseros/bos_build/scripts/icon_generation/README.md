@@ -156,6 +156,13 @@ COPY   source dest          # Copy static file as-is
 2. **Run generation**: `python generate_icons.py` or `python generate_icons.py --product browserclaw`
 3. **Build BrowserOS**: The `copy_resources.yaml` copies generated icons to chromium source tree
 
+For the `browseros` product the checked-in raster tree comes from
+`tools/windrise/make_icons.py` instead, because the Windrise art ships a
+separate small-size redraw and a flat mono mark. The source files here are kept
+in sync with that brand art, so this pipeline never emits the previous brand;
+its macOS-only `Assets.car` step compiles the `Assets.xcassets` tree that
+`make_icons.py` regenerates.
+
 ## Troubleshooting
 
 ### "Source image is too small"

@@ -692,13 +692,15 @@ index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d
 +      FROM_HERE, base::BindOnce(
 +                     [](BrowserOSServerProxy* proxy, int http_port,
 +                        int https_port, bool allow_remote) {
++                       // The bind address follows the pref, so set it before
++                       // the listeners bind: loopback by default, wildcard
++                       // only when remote MCP access was opted into.
++                       proxy->SetAllowRemote(allow_remote);
 +                       if (!proxy->Start(http_port, https_port)) {
 +                         LOG(ERROR)
 +                             << "browseros: Failed to start MCP proxy on port "
 +                             << http_port;
-+                         return;
 +                       }
-+                       proxy->SetAllowRemote(allow_remote);
 +                     },
 +                     server_proxy_.get(), ports_.proxy, proxy_https_port_,
 +                     allow_remote_in_mcp_));
@@ -1417,7 +1419,9 @@ index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d
 +  if (new_value != allow_remote_in_mcp_) {
 +    LOG(INFO) << "browseros: allow_remote_in_mcp preference changed from "
 +              << (allow_remote_in_mcp_ ? "true" : "false") << " to "
-+              << (new_value ? "true" : "false") << ", restarting server...";
++              << (new_value ? "true" : "false")
++              << ", restarting server (the proxy bind address follows the "
++                 "pref on the next launch)";
 +
 +    allow_remote_in_mcp_ = new_value;
 +

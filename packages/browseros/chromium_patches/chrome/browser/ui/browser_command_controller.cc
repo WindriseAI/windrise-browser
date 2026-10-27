@@ -16,6 +16,9 @@ index 3741ba7671d225e307800a48c23c4c4bd1fd121c..59946bd501fd49e768c055fc062ba77b
  #include "chrome/browser/actor/ui/actor_overlay_web_view.h"
  #include "chrome/browser/bookmarks/bookmark_model_factory.h"
  #include "chrome/browser/browser_process.h"
++#include "base/strings/strcat.h"
++#include "base/strings/utf_string_conversions.h"
++#include "base/version_info/version_info.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
  #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
  #include "chrome/browser/defaults.h"
@@ -111,8 +114,10 @@ index 3741ba7671d225e307800a48c23c4c4bd1fd121c..59946bd501fd49e768c055fc062ba77b
 +              infobars::InfoBarDelegate::
 +                  BROWSEROS_AGENT_INSTALLING_INFOBAR_DELEGATE,
 +              nullptr,
-+              u"BrowserOS Agent is installing/updating. Please try again "
-+              u"shortly.",
++              base::UTF8ToUTF16(base::StrCat(
++                  {version_info::GetProductName(),
++                   " Agent is installing/updating. Please try again "
++                   "shortly."})),
 +              /*auto_expire=*/true,
 +              /*should_animate=*/true,
 +              /*closeable=*/true);

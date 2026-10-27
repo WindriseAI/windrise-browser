@@ -1,24 +1,42 @@
 #!/usr/bin/env python3
-"""BrowserOS — the flagship product."""
+"""Windrise — the flagship product (BrowserOS rebrand).
+
+Product id stays "browseros" so every existing patch, GN arg and resource
+path keeps working; only the shipped identity is Windrise.
+"""
 
 from pathlib import Path
 
 from ...core.products import (
     BROWSEROS_AGENT_EXTENSION_ID,
     BROWSEROS_BUG_REPORTER_EXTENSION_ID,
+    MacProductIdentity,
     ProductDescriptor,
 )
 from ..server_binaries import ServerBundle, SignSpec
 
 BROWSEROS_PRODUCT = ProductDescriptor.define(
     id="browseros",
-    display_name="BrowserOS",
-    windows_installer_guid="{5d8d08af-2df9-4da2-86c1-eac353a0ca32}",
+    display_name="Windrise",
+    windows_installer_guid="{4ADA8188-62A6-4C43-8FFC-1A2129C174CE}",
     summary="The open source agentic browser",
-    description="BrowserOS is a privacy-focused web browser built on Chromium.",
+    description="Windrise is a privacy-focused web browser built on Chromium.",
+    company="Windrise",
     required_extensions=(
         (BROWSEROS_AGENT_EXTENSION_ID, "BrowserOS agent"),
         (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "BrowserOS bug reporter"),
+    ),
+    # Reverse-DNS identity is si.windrise.browser, not the derived
+    # si.windrise.Windrise: bundle ids are case-insensitive and read as a
+    # domain, so the label must stay lowercase.
+    mac=MacProductIdentity(
+        bundle_id="si.windrise.browser",
+        dev_bundle_id="si.windrise.browser.dev",
+        signing_identifier="si.windrise.browser",
+        dev_signing_identifier="si.windrise.browser.dev",
+        framework_name="Windrise Framework.framework",
+        dev_framework_name="Windrise Dev Framework.framework",
+        dmg_volume_name="Windrise",
     ),
 )
 

@@ -8,14 +8,14 @@ index 37ed204c78835763406703646ef0f97a381a136f..1be4f261cc21f09a0cacd5454b63c279
  
 +// BrowserOS: feature flags
 +inline constexpr char kBrowserOsAlphaFeaturesName[] =
-+    "BrowserOS Alpha Features";
++    "Windrise Alpha Features";
 +inline constexpr char kBrowserOsAlphaFeaturesDescription[] =
-+    "Enables BrowserOS alpha features.";
++    "Enables Windrise alpha features.";
 +
 +inline constexpr char kBrowserOsKeyboardShortcutsName[] =
-+    "BrowserOS Keyboard Shortcuts";
++    "Windrise Keyboard Shortcuts";
 +inline constexpr char kBrowserOsKeyboardShortcutsDescription[] =
-+    "Enables BrowserOS keyboard shortcuts (Cmd+Shift+K, Cmd+Shift+L, "
++    "Enables Windrise keyboard shortcuts (Cmd+Shift+K, Cmd+Shift+L, "
 +    "Option+A). Disable if these conflict with your keyboard layout.";
 +
  inline constexpr char kBrowsingHistoryActorIntegrationM3Name[] =
