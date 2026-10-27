@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d96acdc23
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_config.cc
-@@ -0,0 +1,178 @@
+@@ -0,0 +1,181 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -90,6 +90,9 @@ index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d
 +
 +  base::DictValue flags;
 +  flags.Set("allow_remote_in_mcp", config.allow_remote_in_mcp);
++  // The sidecar binds loopback by default. Only an explicit remote-MCP opt-in
++  // gets the wildcard bind; never widen it implicitly.
++  flags.Set("host", config.allow_remote_in_mcp ? "0.0.0.0" : "127.0.0.1");
 +  root.Set("flags", std::move(flags));
 +
 +  base::DictValue instance;

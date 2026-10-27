@@ -23,7 +23,7 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..d002c9386e1425b38e9015d3ce4d544f
        </div>
        <span id="deprecationWarning"
            ?hidden="${!this.obsoleteSystemInfo_.obsolete}">
-@@ -55,6 +50,7 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -55,6 +50,9 @@ export function getHtml(this: SettingsAboutPageElement) {
          </a>
        </span>
  </if>
@@ -33,7 +33,7 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..d002c9386e1425b38e9015d3ce4d544f
        <div class="secondary">$i18n{aboutBrowserVersion}</div>
      </div>
  <if expr="not is_chromeos">
-@@ -75,12 +71,6 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -75,12 +73,6 @@ export function getHtml(this: SettingsAboutPageElement) {
          @click="${this.onPromoteUpdaterClick_}">
        <div class="flex">
          ${this.promoteUpdaterStatus_.text}
@@ -46,7 +46,7 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..d002c9386e1425b38e9015d3ce4d544f
        </div>
        <cr-icon-button class="subpage-arrow"
            ?hidden="${!this.promoteUpdaterStatus_.actionable}"
-@@ -108,7 +98,6 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -108,7 +100,6 @@ export function getHtml(this: SettingsAboutPageElement) {
  <settings-section>
    <div class="info-sections">
      <div class="info-section">

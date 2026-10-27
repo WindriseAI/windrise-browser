@@ -11,7 +11,7 @@ index 24f6808a21b00c50a101a1a4c0100ff80561e227..2e97ba8345c24bfd0f59672ff5d726bf
  
  BASE_FEATURE(kSeparateDefaultAndPinPrompt,
  #if BUILDFLAG(IS_WIN)
-@@ -244,6 +244,10 @@ BASE_FEATURE_PARAM(int,
+@@ -244,6 +244,12 @@ BASE_FEATURE_PARAM(int,
                     "max_distance_threshold",
                     20);
  

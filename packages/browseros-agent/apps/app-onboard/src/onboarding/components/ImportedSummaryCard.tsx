@@ -28,7 +28,7 @@ export function ImportedSummaryCard({
       />
       <SummaryRow
         icon={<Lock className="size-3.5 text-ink-3" />}
-        text="Stays on this machine. Never shown to you or the agent."
+        text="Stays on this machine. Never uploaded."
       />
       <SummaryRow
         icon={<CreditCard className="size-3.5 text-ink-3" />}

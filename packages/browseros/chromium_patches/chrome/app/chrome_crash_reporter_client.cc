@@ -76,8 +76,8 @@ index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1
 -          << " so returning that";
 -  return settings_consent;
 -#endif  // BUILDFLAG(IS_ANDROID)
-+  // Enable crash reporting.
-+  return true;
++  // Crash upload is disabled by default; minidumps stay local.
++  return false;
  }
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

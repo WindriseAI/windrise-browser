@@ -13,7 +13,6 @@ from bos_build.core.products import (
 )
 from bos_build.products import DEFAULT_PRODUCT_ID, PRODUCTS
 
-BROWSEROS_AGENT_EXTENSION_ID = "bflpfmnmnokmjhmgnolecpppdbdophmk"
 BROWSEROS_BUG_REPORTER_EXTENSION_ID = "adlpneommgkgeanpaekgoaolcpncohkf"
 BROWSERCLAW_EXTENSION_ID = "pjimfkbpehlcllblajnpfamdfjhhlgkc"
 
@@ -36,7 +35,6 @@ EXPECTED_BROWSEROS = ProductDescriptor(
     description="Windrise is a privacy-focused web browser built on Chromium.",
     string_replacements=_replacements("Windrise"),
     required_extension_ids=(
-        (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
         (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
     ),
     server_bundle_ids=("browseros-server",),

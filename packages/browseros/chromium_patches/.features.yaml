@@ -38,10 +38,7 @@ features:
       # Shared command/action registrations (llm-chat + pin-ext + agent-v2)
       - chrome/app/chrome_command_ids.h
       - chrome/browser/ui/actions/chrome_action_id.h
-      - chrome/browser/ui/browser_actions.cc
       - chrome/browser/ui/browser_command_controller.cc
-      # Shared keyboard shortcut infra (llm-chat + keyboard-shortcuts)
-      - chrome/browser/global_keyboard_shortcuts_mac.mm
       # Shared toolbar pref (llm-chat + pin-chat + disable-chrome-labs)
       - chrome/browser/ui/toolbar/toolbar_pref_names.cc
       # Shared pinned button (pin-chat)
@@ -297,10 +294,6 @@ features:
       - chrome/browser/ui/ui_features.h
       - chrome/browser/ui/views/side_panel/BUILD.gn
       - chrome/browser/ui/side_panel/side_panel_entry_id.h
-      - chrome/browser/ui/side_panel/side_panel_prefs.cc
-      - chrome/browser/ui/views/side_panel/side_panel_helper.cc
-      - chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar.mojom
-      - chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler.cc
       # Chat-specific files
       - chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.cc
       - chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.h
@@ -310,12 +303,10 @@ features:
   pin-chat:
     description: "feat: pin browseros native panels"
     files:
-      - chrome/browser/sync/prefs/chrome_syncable_prefs_database.cc
       - chrome/browser/ui/toolbar/pinned_toolbar/BUILD.gn
       - chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
       - chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h
       - chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_browsertest.cc
-      - chrome/browser/ui/toolbar/toolbar_pref_names.h
       - chrome/browser/ui/views/toolbar/BUILD.gn
       - chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h
       - chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc
@@ -335,13 +326,6 @@ features:
     description: "feat: browser flags"
     files:
       - chrome/browser/flag_descriptions.h
-      - chrome/browser/ui/browser_window/internal/browser_window_features.cc
-      - chrome/browser/ui/browser_window/public/browser_window_features.h
-
-  keyboard-shortcuts:
-    description: "feat: keyboard shortcuts"
-    files:
-      - chrome/browser/ui/accelerator_table.cc
 
   vertical-tabs:
     description: "feat: vertical tab strip"
@@ -350,6 +334,8 @@ features:
       # Chromium 155 removed the kVerticalTabs feature gate; retain pref sync.
       - chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc
       - chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
+      - chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
+      - chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
 
   chromium-urls:
     description: "feat: chromium urls for browseros"

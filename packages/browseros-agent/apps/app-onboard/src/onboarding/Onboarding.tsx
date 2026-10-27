@@ -27,11 +27,10 @@ import {
 } from './onboarding-v2.schemas'
 import type { ImportPhase, Step } from './onboarding-v2.types'
 import { ImportStep } from './steps/ImportStep'
-import { SetupAgentStep } from './steps/SetupAgentStep'
 import { SetupStep } from './steps/SetupStep'
 import { WelcomeStep } from './steps/WelcomeStep'
 
-const TOTAL_STEPS = 3
+const TOTAL_STEPS = 2
 
 const initialOnboardingState: BrowserOSOnboardingState = {
   apiVersion: BROWSEROS_ONBOARDING_API_VERSION,
@@ -173,10 +172,9 @@ export function Onboarding() {
                   form={form}
                   onImport={startImport}
                   onRefresh={() => bridge.refreshSources()}
-                  onContinue={() => goTo(2)}
+                  onContinue={finishOnboarding}
                 />
               )}
-              {step === 2 && <SetupAgentStep onSetup={finishOnboarding} />}
             </motion.div>
           </>
         )}

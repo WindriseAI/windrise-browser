@@ -12,26 +12,21 @@ index a183b49e14fbd5d7a74f01132d24ce13706ead47..994b90982961a3d6ca866c41f2a0d714
     protected:
      virtual ~Observer() = default;
    };
-@@ -95,6 +98,11 @@ class PinnedToolbarActionsModel : public KeyedService {
+@@ -95,6 +98,10 @@ class PinnedToolbarActionsModel : public KeyedService {
    // TODO(crbug.com/353323253): Remove after all migrations are complete.
    void MaybeMigrateExistingPinnedStates();
  
-+  // Ensures that certain actions are always pinned to the toolbar.
-+  // This is called during initialization to ensure specific actions
-+  // (like Third Party LLM) are always visible.
++  // Removes pinned actions that older BrowserOS builds installed and the
++  // current build no longer exposes.
 +  void EnsureAlwaysPinnedActions();
 +
    // Returns the ordered list of pinned ActionIds.
    virtual const std::vector<actions::ActionId>& PinnedActionIds() const;
  
-@@ -113,6 +121,14 @@ class PinnedToolbarActionsModel : public KeyedService {
+@@ -113,6 +120,10 @@ class PinnedToolbarActionsModel : public KeyedService {
  
    void UpdatePref(const std::vector<actions::ActionId>& updated_list);
  
-+  // Called when a BrowserOS visibility pref changes.
-+  // Re-evaluates which actions should be pinned and notifies observers.
-+  void OnBrowserOSVisibilityPrefChanged();
-+
 +  // Called when the toolbar labels pref changes.
 +  // Notifies observers so buttons can refresh their labels.
 +  void OnBrowserOSLabelsPrefChanged();

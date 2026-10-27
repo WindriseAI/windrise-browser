@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a4116659ae3eb7e
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.cc
-@@ -0,0 +1,645 @@
+@@ -0,0 +1,648 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -68,8 +68,11 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +          base::FeatureList::IsEnabled(features::kBrowserOsAlphaFeatures)
 +              ? kBrowserOSAlphaConfigUrl
 +              : kBrowserOSConfigUrl),
++      // BrowserOS no longer ships an agent extension. Keep the onboarding
++      // readiness gate bound to the remaining shipped extension instead of
++      // waiting for one that cannot install.
 +      primary_id_(IsBrowserClawProduct() ? kBrowserClawExtensionId
-+                                         : kAgentExtensionId),
++                                         : kBugReporterExtensionId),
 +      installer_(std::make_unique<BrowserOSExtensionInstaller>()),
 +      maintainer_(std::make_unique<BrowserOSExtensionMaintainer>(profile)) {
 +  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

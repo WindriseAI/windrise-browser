@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402aa632f2e
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_proxy.cc
-@@ -0,0 +1,650 @@
+@@ -0,0 +1,664 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.

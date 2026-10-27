@@ -8,6 +8,7 @@ import { INLINED_ENV, REQUIRED_FOR_PRODUCTION } from './env'
 import { VERSION } from './version'
 
 const portSchema = z.number().int().min(1).max(65535)
+const hostSchema = z.enum(['127.0.0.1', '0.0.0.0'])
 
 const ServerConfigSchema = z.object({
   cdpPort: portSchema,
@@ -16,6 +17,7 @@ const ServerConfigSchema = z.object({
   extensionPort: portSchema.nullable(),
   resourcesDir: z.string().min(1),
   executionDir: z.string().min(1),
+  host: hostSchema,
   mcpAllowRemote: z.boolean(),
   instanceClientId: z.string().optional(),
   instanceInstallId: z.string().optional(),
@@ -98,6 +100,7 @@ function projectServerConfig(
     }
   }
 
+  const allowRemote = sidecar.flags.allow_remote_in_mcp ?? false
   const result = ServerConfigSchema.safeParse({
     cdpPort: sidecar.ports.cdp,
     serverPort: sidecar.ports.server,
@@ -105,7 +108,8 @@ function projectServerConfig(
     extensionPort: null,
     resourcesDir: sidecar.directories.resources,
     executionDir: sidecar.directories.execution,
-    mcpAllowRemote: sidecar.flags.allow_remote_in_mcp ?? false,
+    host: sidecar.flags.host ?? (allowRemote ? '0.0.0.0' : '127.0.0.1'),
+    mcpAllowRemote: allowRemote,
     instanceClientId: sidecar.instance.client_id,
     instanceInstallId: sidecar.instance.install_id,
     instanceBrowserosVersion: sidecar.instance.browseros_version,

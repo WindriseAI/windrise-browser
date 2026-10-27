@@ -16,8 +16,8 @@ export function WelcomeStep({ onPrimary, onSkip }: WelcomeStepProps) {
         Welcome to <Em>Windrise</Em>
       </DisplayHeading>
       <StepCopy>
-        Two quick steps to get set up: bring your browser over, then connect
-        your agent.
+        Two quick steps to get set up: bring your browser over, then finish
+        setup.
       </StepCopy>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" size="lg" onClick={onPrimary}>

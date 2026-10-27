@@ -66,10 +66,10 @@ export class Application {
     try {
       await createHttpServer({
         port: this.config.serverPort,
-        // Loopback only: the sidecar serves browser-local MCP clients. A
-        // wildcard bind trips host firewalls and exposes browser control to
-        // the LAN; remote access must go through an explicit tunnel.
-        host: '127.0.0.1',
+        // The sidecar binds loopback by default. Chromium passes 0.0.0.0 only
+        // when the user explicitly opted into remote MCP access; that keeps
+        // the default firewall/LAN exposure off.
+        host: this.config.host,
         version: VERSION,
         browser,
         browserSession,

@@ -5,17 +5,19 @@ import {
 
 export const SERVER_BUNDLE_ENTRYPOINT = 'apps/server/src/compiled-bootstrap.ts'
 
-const REQUIRED_PROD_VARS = ['POSTHOG_API_KEY', 'SENTRY_DSN']
+// Telemetry is disabled; neither key is required and CI inlines empty strings.
+const REQUIRED_PROD_VARS: string[] = []
 const INLINED_ENV_VARS = [
-  ...REQUIRED_PROD_VARS,
+  'POSTHOG_API_KEY',
+  'SENTRY_DSN',
   'NODE_ENV',
   'LOG_LEVEL',
 ] as const
 const CI_INLINE_ENV_DEFAULTS = {
   LOG_LEVEL: 'info',
   NODE_ENV: 'production',
-  POSTHOG_API_KEY: 'phc_browseros_ci',
-  SENTRY_DSN: 'https://ci@sentry.invalid/1',
+  POSTHOG_API_KEY: '',
+  SENTRY_DSN: '',
 }
 
 export const browserosServerBuildProduct: BuildProductDescriptor = {

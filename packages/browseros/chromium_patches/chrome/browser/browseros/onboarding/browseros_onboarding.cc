@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf88b3d9646
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding.cc
-@@ -0,0 +1,794 @@
+@@ -0,0 +1,801 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -29,6 +29,7 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +#include "base/task/sequenced_task_runner.h"
 +#include "base/values.h"
 +#include "chrome/browser/browser_process.h"
++#include "chrome/browser/browseros/core/browseros_product.h"
 +#include "chrome/browser/importer/external_process_importer_host.h"
 +#include "chrome/browser/importer/importer_list.h"
 +#include "chrome/browser/importer/importer_progress_observer.h"
@@ -346,6 +347,12 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +    ++setup_state_->attempt;
 +    setup_state_->status = SetupStatus::kPreparing;
 +    SendState(last_import_status_);
++    // Windrise no longer ships the agent extension, so there is nothing this
++    // step can wait for. BrowserClaw still gates on its own cockpit app.
++    if (IsBrowserOSProduct()) {
++      OnPrimaryExtensionReady(true);
++      return;
++    }
 +    WaitForPrimaryExtension();
 +  }
 +

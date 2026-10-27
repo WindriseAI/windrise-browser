@@ -91,14 +91,10 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
         assert assignment is not None
 
         manifest = "bundled_extensions.json"
-        agent = "bflpfmnmnokmjhmgnolecpppdbdophmk.crx"
         bug_reporter = "adlpneommgkgeanpaekgoaolcpncohkf.crx"
         browserclaw = "pjimfkbpehlcllblajnpfamdfjhhlgkc.crx"
+        retired_agent = "bflpfmnmnokmjhmgnolecpppdbdophmk.crx"
         base_sources = _source_literals(assignment.group("body"))
-        browseros_sources = _conditional_sources(
-            build,
-            "browseros_allow_runtime_product_override || browseros_product_browseros",
-        )
         browserclaw_sources = _conditional_sources(
             build,
             "browseros_allow_runtime_product_override || browseros_product_browserclaw",
@@ -106,19 +102,11 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
 
         self.assertIn('import("//chrome/browser/browseros/buildflags.gni")', build)
         self.assertEqual(base_sources, {manifest, bug_reporter})
-        self.assertEqual(browseros_sources, {agent})
+        self.assertNotIn(retired_agent, build)
         self.assertEqual(browserclaw_sources, {browserclaw})
-        self.assertEqual(
-            base_sources | browseros_sources,
-            {manifest, agent, bug_reporter},
-        )
         self.assertEqual(
             base_sources | browserclaw_sources,
             {manifest, browserclaw, bug_reporter},
-        )
-        self.assertEqual(
-            base_sources | browseros_sources | browserclaw_sources,
-            {manifest, agent, browserclaw, bug_reporter},
         )
 
 

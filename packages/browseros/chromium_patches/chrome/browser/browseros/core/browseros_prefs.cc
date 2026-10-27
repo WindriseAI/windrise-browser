@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8bd202b50
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.cc
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,106 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -12,7 +12,6 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +
 +#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/browseros_product.h"
-+#include "chrome/browser/ui/actions/chrome_action_id.h"
 +#include "chrome/common/pref_names.h"
 +#include "components/bookmarks/common/bookmark_pref_names.h"
 +#include "components/pref_registry/pref_registry_syncable.h"
@@ -22,24 +21,12 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +namespace browseros {
 +
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-+  // The Chat (third-party LLM) and Assistant (agent) entries start hidden for
-+  // every product: the browser is driven by external MCP clients, so the
-+  // in-browser AI surfaces are opt-in. Users can still enable them from
-+  // Customize toolbar; the MCP server and its tooling are unaffected.
-+  constexpr bool kShowAISurfacesByDefault = false;
-+
-+  registry->RegisterBooleanPref(prefs::kShowLLMChat,
-+                                kShowAISurfacesByDefault);
-+  registry->RegisterBooleanPref(prefs::kShowAssistant,
-+                                kShowAISurfacesByDefault);
 +  registry->RegisterBooleanPref(prefs::kShowToolbarLabels,
 +                                !IsBrowserClawProduct());
 +  registry->RegisterBooleanPref(prefs::kVerticalTabsEnabled, true);
++  registry->RegisterBooleanPref(prefs::kVerticalTabsStartCollapsed, true);
++  registry->RegisterStringPref(prefs::kAIWorkspaceGroupPrefix, "AI ");
 +  registry->RegisterBooleanPref(prefs::kShowTabGroupsInBookmarkBar, false);
-+
-+  registry->RegisterStringPref(prefs::kProviders, "");
-+  registry->RegisterStringPref(prefs::kCustomProviders, "[]");
-+  registry->RegisterStringPref(prefs::kDefaultProviderId, "");
 +
 +  registry->RegisterBooleanPref(prefs::kNtpFocusContent, false);
 +  registry->RegisterBooleanPref(prefs::kOnboardingCompleted, false);
@@ -50,20 +37,20 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +                                IsBrowserClawProduct());
 +}
 +
-+bool ShouldShowLLMChat(PrefService* pref_service) {
-+  return pref_service->GetBoolean(prefs::kShowLLMChat);
-+}
-+
-+bool ShouldShowAssistant(PrefService* pref_service) {
-+  return pref_service->GetBoolean(prefs::kShowAssistant);
-+}
-+
 +bool ShouldShowToolbarLabels(PrefService* pref_service) {
 +  return pref_service->GetBoolean(prefs::kShowToolbarLabels);
 +}
 +
 +bool IsVerticalTabsEnabled(PrefService* pref_service) {
 +  return pref_service->GetBoolean(prefs::kVerticalTabsEnabled);
++}
++
++bool ShouldStartVerticalTabsCollapsed(PrefService* pref_service) {
++  return pref_service->GetBoolean(prefs::kVerticalTabsStartCollapsed);
++}
++
++const std::string& GetAIWorkspaceGroupPrefix(PrefService* pref_service) {
++  return pref_service->GetString(prefs::kAIWorkspaceGroupPrefix);
 +}
 +
 +bool ShouldShowTabGroupsInBookmarkBar(PrefService* pref_service) {
@@ -115,25 +102,6 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +
 +bool AutomationNeverStealsFocus(PrefService* pref_service) {
 +  return pref_service->GetBoolean(prefs::kAutomationNeverStealsFocus);
-+}
-+
-+const char* GetVisibilityPrefForAction(actions::ActionId id) {
-+  switch (id) {
-+    case kActionSidePanelShowThirdPartyLlm:
-+      return prefs::kShowLLMChat;
-+    case kActionBrowserOSAgent:
-+      return prefs::kShowAssistant;
-+    default:
-+      return nullptr;
-+  }
-+}
-+
-+bool ShouldShowToolbarAction(actions::ActionId id, PrefService* pref_service) {
-+  const char* pref_key = GetVisibilityPrefForAction(id);
-+  if (!pref_key) {
-+    return true;
-+  }
-+  return pref_service->GetBoolean(pref_key);
 +}
 +
 +bool ShouldPinBrowserOSExtension(const std::string& extension_id,

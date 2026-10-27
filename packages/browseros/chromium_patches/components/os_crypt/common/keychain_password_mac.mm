@@ -10,7 +10,7 @@ index 212b93095214422112afd346e36cd2838891725b..6422141bbe9154f6c0f4922a43a122cf
  #include "crypto/apple/keychain_v2.h"
  #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
  
-@@ -35,8 +36,13 @@
+@@ -35,8 +36,15 @@
  const char kDefaultServiceName[] = "Chrome Safe Storage";
  const char kDefaultAccountName[] = "Chrome";
  #else

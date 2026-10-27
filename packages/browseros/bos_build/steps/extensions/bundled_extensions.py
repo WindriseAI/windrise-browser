@@ -74,18 +74,31 @@ class BundledExtensionsModule(Step):
     def _prepared_extensions(
         self, ctx: Context, manifest: PreparedResourcesManifest
     ) -> List[ExtensionInfo]:
-        files = [manifest.files[role] for role in ("product_crx", "bug_reporter_crx")]
-        required_ids = {extension_id for extension_id, _ in ctx.required_extension_ids}
-        actual_ids = {prepared.extension_id for prepared in files}
-        if actual_ids != required_ids:
-            raise ValueError("Prepared-resource extensions do not match the product")
+        # Prepared resources can carry extensions this product no longer ships
+        # (for example the retired in-browser AI agent). Bundle by the product's
+        # required IDs rather than by manifest role, so those CRXs are ignored.
+        by_id = {
+            prepared.extension_id: prepared
+            for role, prepared in manifest.files.items()
+            if role.endswith("crx")
+        }
+        missing = [
+            f"{name} ({extension_id})"
+            for extension_id, name in ctx.required_extension_ids
+            if extension_id not in by_id
+        ]
+        if missing:
+            raise ValueError(
+                "Prepared-resource extensions missing required entries: "
+                + ", ".join(missing)
+            )
         return [
             ExtensionInfo(
-                id=prepared.extension_id,
-                version=prepared.version,
-                codebase=f"prepared://{prepared.path}",
+                id=extension_id,
+                version=by_id[extension_id].version,
+                codebase=f"prepared://{by_id[extension_id].path}",
             )
-            for prepared in files
+            for extension_id, _ in ctx.required_extension_ids
         ]
 
     def _copy_prepared_extensions(

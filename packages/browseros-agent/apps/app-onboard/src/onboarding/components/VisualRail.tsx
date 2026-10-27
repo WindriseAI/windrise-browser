@@ -33,8 +33,8 @@ export function VisualRail() {
       </div>
       <div className="relative">
         <div className="mb-[22px] font-semibold text-[21px] text-ink leading-snug">
-          The Open Source <span className="text-accent">agentic browser</span>{' '}
-          to automate any web task
+          The Open Source <span className="text-accent">private browser</span>{' '}
+          for the web you use every day
         </div>
         <div className="flex flex-col gap-3">
           {FEATURES.map((feature) => {
@@ -70,8 +70,8 @@ const FEATURES = [
   },
   {
     icon: Cpu,
-    title: 'Your agent, your way',
-    description: 'Any LLM provider or coding agent.',
+    title: 'Fast, focused browsing',
+    description: 'Tabs, history, and bookmarks in one place.',
   },
   {
     icon: ShieldCheck,

@@ -2,24 +2,20 @@
  * @license
  * Copyright 2025 BrowserOS
  *
- * Build-time inlined environment variables.
+ * Telemetry configuration.
  *
- * IMPORTANT: Values here are replaced at build time by Bun's `--env inline` flag.
- * The `process.env.X` access MUST be direct (not via a variable) for inlining to work.
- *
- * These variables are:
- * - Replaced with literal strings in production builds
- * - Read from actual env vars during development
- *
- * Runtime-only feature toggles should be read at their feature boundary.
+ * Windrise ships with both collectors disabled: the values are literal empty
+ * strings, so neither a build-time environment nor a runtime environment can
+ * re-enable them. Runtime-only feature toggles should be read at their feature
+ * boundary.
  */
 
+// Telemetry is disabled in this build. Keep both values blank; do not replace
+// them with credentials for another collector.
 export const INLINED_ENV = {
-  SENTRY_DSN: process.env.SENTRY_DSN,
-  POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+  SENTRY_DSN: '',
+  POSTHOG_API_KEY: '',
 } as const
 
-export const REQUIRED_FOR_PRODUCTION = [
-  'SENTRY_DSN',
-  'POSTHOG_API_KEY',
-] as const satisfies readonly (keyof typeof INLINED_ENV)[]
+export const REQUIRED_FOR_PRODUCTION: readonly (keyof typeof INLINED_ENV)[] =
+  []

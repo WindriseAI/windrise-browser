@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d907259cd
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_manager.cc
-@@ -0,0 +1,1558 @@
+@@ -0,0 +1,1562 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.

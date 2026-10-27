@@ -11,21 +11,11 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
  #include "chrome/browser/profiles/profile.h"
  #include "chrome/browser/ui/actions/chrome_action_id.h"
  #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_factory.h"
-@@ -37,8 +39,26 @@ PinnedToolbarActionsModel::PinnedToolbarActionsModel(Profile* profile)
+@@ -37,8 +39,16 @@ PinnedToolbarActionsModel::PinnedToolbarActionsModel(Profile* profile)
        base::BindRepeating(&PinnedToolbarActionsModel::UpdatePinnedActionIds,
                            base::Unretained(this)));
  
-+  // Observe BrowserOS visibility prefs for reactive updates.
-+  pref_change_registrar_.Add(
-+      browseros::prefs::kShowLLMChat,
-+      base::BindRepeating(
-+          &PinnedToolbarActionsModel::OnBrowserOSVisibilityPrefChanged,
-+          base::Unretained(this)));
-+  pref_change_registrar_.Add(
-+      browseros::prefs::kShowAssistant,
-+      base::BindRepeating(
-+          &PinnedToolbarActionsModel::OnBrowserOSVisibilityPrefChanged,
-+          base::Unretained(this)));
++  // Observe the toolbar label pref for reactive updates.
 +  pref_change_registrar_.Add(
 +      browseros::prefs::kShowToolbarLabels,
 +      base::BindRepeating(
@@ -38,7 +28,7 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
  }
  
  PinnedToolbarActionsModel::~PinnedToolbarActionsModel() = default;
-@@ -237,8 +257,11 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
+@@ -237,8 +247,11 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
    if (!CanUpdate()) {
      return;
    }
@@ -51,7 +41,7 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
      pref_service_->SetBoolean(prefs::kPinnedChromeLabsMigrationComplete, true);
    }
    if (!pref_service_->GetBoolean(prefs::kPinnedCastMigrationComplete)) {
-@@ -257,6 +280,49 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
+@@ -257,6 +270,25 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
    }
  }
  
@@ -61,6 +51,8 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
 +    return;
 +  }
 +
++  // Older builds pinned the agent extension's side-panel action. Remove that
++  // stale entry when a profile upgrades to a build without the extension.
 +  const auto agent_extension_action_id = actions::ActionIdMap::StringToActionId(
 +      SidePanelEntryKey(SidePanelEntryId::kExtension,
 +                        browseros::kAgentExtensionId)
@@ -69,52 +61,16 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
 +    UpdatePinnedState(*agent_extension_action_id, false);
 +  }
 +
-+  const bool should_pin_agent =
-+      browseros::IsActiveBrowserOSExtension(browseros::kAgentExtensionId) &&
-+      browseros::ShouldShowToolbarAction(kActionBrowserOSAgent, pref_service_);
-+  UpdatePinnedState(kActionBrowserOSAgent, should_pin_agent);
-+
-+  // Pin native BrowserOS actions if:
-+  // 1. Their feature flag is enabled (or no feature flag exists)
-+  // 2. Their visibility pref allows it
-+  for (actions::ActionId id : browseros::kBrowserOSNativeActionIds) {
-+    const base::Feature* feature = browseros::GetFeatureForBrowserOSAction(id);
-+    bool feature_enabled = !feature || base::FeatureList::IsEnabled(*feature);
-+    bool pref_enabled = browseros::ShouldShowToolbarAction(id, pref_service_);
-+
-+    if (feature_enabled && pref_enabled) {
-+      // Should be pinned - add if not already present
-+      if (!Contains(id)) {
-+        UpdatePinnedState(id, true);
-+      }
-+    } else {
-+      // Should not be pinned - remove if currently pinned
-+      if (Contains(id)) {
-+        UpdatePinnedState(id, false);
-+      }
-+    }
-+  }
-+
 +  // Note: Extension pinning is handled by ExtensionSidePanelManager
 +}
 +
  const std::vector<actions::ActionId>&
  PinnedToolbarActionsModel::PinnedActionIds() const {
    return pinned_action_ids_;
-@@ -275,3 +341,20 @@ void PinnedToolbarActionsModel::UpdatePref(
+@@ -275,3 +307,10 @@ void PinnedToolbarActionsModel::UpdatePref(
      list_of_values.Append(id_string.value());
    }
  }
-+
-+void PinnedToolbarActionsModel::OnBrowserOSVisibilityPrefChanged() {
-+  // Re-evaluate which BrowserOS actions should be pinned.
-+  EnsureAlwaysPinnedActions();
-+
-+  // Notify observers that actions may have changed.
-+  for (Observer& observer : observers_) {
-+    observer.OnActionsChanged();
-+  }
-+}
 +
 +void PinnedToolbarActionsModel::OnBrowserOSLabelsPrefChanged() {
 +  // Notify observers so buttons can refresh their labels.

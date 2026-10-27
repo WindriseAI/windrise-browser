@@ -10,7 +10,6 @@ from unittest import mock
 from . import context as context_mod
 from .context import Context
 from .products import (
-    BROWSEROS_AGENT_EXTENSION_ID,
     BROWSEROS_BUG_REPORTER_EXTENSION_ID,
     BROWSERCLAW_EXTENSION_ID,
     ProductDescriptor,
@@ -180,7 +179,6 @@ class GetAppPathTest(unittest.TestCase):
     def test_release_required_extensions_follow_active_product(self):
         expected = {
             "browseros": (
-                (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
                 (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
             ),
             "browserclaw": (
@@ -202,7 +200,6 @@ class GetAppPathTest(unittest.TestCase):
 
     def test_debug_required_extensions_are_registered_product_union(self):
         expected = (
-            (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
             (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
             (BROWSERCLAW_EXTENSION_ID, "BrowserOS neo app"),
         )

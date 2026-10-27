@@ -19,7 +19,7 @@ index 22ece00a8c729ef5ada1d20afa2e289b8fd95d16..6b57459d409edde59b652e8af8944e3b
    pref_change_registrar_.Init(pref_service_);
  
    is_vertical_tabs_enabled_ =
-@@ -79,6 +82,16 @@ VerticalTabStripStateController::VerticalTabStripStateController(
+@@ -79,6 +82,28 @@ VerticalTabStripStateController::VerticalTabStripStateController(
              base::Unretained(this)));
    }
  
@@ -32,6 +32,18 @@ index 22ece00a8c729ef5ada1d20afa2e289b8fd95d16..6b57459d409edde59b652e8af8944e3b
 +                ps->GetBoolean(browseros::prefs::kVerticalTabsEnabled));
 +          },
 +          base::Unretained(pref_service_)));
++
++  // Windrise starts collapsed. Only apply this while the persisted state is
++  // still the upstream default: once the user expands or collapses the strip,
++  // Chromium writes that choice and it must win on later launches.
++  const PrefService::Preference* collapsed_pref =
++      pref_service_->FindPreference(prefs::kVerticalTabsCollapsedState);
++  if (restored_state_collapsed.has_value() &&
++      !restored_state_collapsed.value() && collapsed_pref &&
++      collapsed_pref->IsDefaultValue() &&
++      browseros::ShouldStartVerticalTabsCollapsed(pref_service_)) {
++    restored_state_collapsed = true;
++  }
 +
    if (restored_state_collapsed.has_value()) {
      SetCollapsed(restored_state_collapsed.value());

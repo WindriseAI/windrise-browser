@@ -8,7 +8,6 @@ path keeps working; only the shipped identity is Windrise.
 from pathlib import Path
 
 from ...core.products import (
-    BROWSEROS_AGENT_EXTENSION_ID,
     BROWSEROS_BUG_REPORTER_EXTENSION_ID,
     MacProductIdentity,
     ProductDescriptor,
@@ -22,8 +21,10 @@ BROWSEROS_PRODUCT = ProductDescriptor.define(
     summary="The open source agentic browser",
     description="Windrise is a privacy-focused web browser built on Chromium.",
     company="Windrise",
+    # Windrise ships no in-browser AI. The agent extension is intentionally
+    # absent; the local MCP server and its CDP tools are browser-side and do
+    # not depend on it.
     required_extensions=(
-        (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
         (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
     ),
     # Reverse-DNS identity is si.windrise.browser, not the derived

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..e7b9a3a608cde
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_constants.h
-@@ -0,0 +1,242 @@
+@@ -0,0 +1,255 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -68,11 +68,21 @@ index 0000000000000..e7b9a3a608cde
 +};
 +
 +inline constexpr BrowserOSExtensionInfo kBrowserOSExtensions[] = {
-+    {kAgentExtensionId, false, false, BrowserOSExtensionProduct::kBrowserOS},
 +    {kBugReporterExtensionId, true, false, BrowserOSExtensionProduct::kAll},
 +    {kBrowserClawExtensionId, false, false,
 +     BrowserOSExtensionProduct::kBrowserClaw},
 +};
++
++// Product extensions that older builds installed and current builds must
++// remove. They are not part of the active catalog, so nothing re-installs or
++// exposes them, but maintenance still finds and uninstalls them by ID.
++inline constexpr const char* kRetiredBrowserOSExtensionIds[] = {
++    kAgentExtensionId,
++};
++
++inline constexpr size_t kRetiredBrowserOSExtensionsCount =
++    sizeof(kRetiredBrowserOSExtensionIds) /
++    sizeof(kRetiredBrowserOSExtensionIds[0]);
 +
 +inline constexpr size_t kBrowserOSExtensionsCount =
 +    sizeof(kBrowserOSExtensions) / sizeof(kBrowserOSExtensions[0]);
@@ -123,12 +133,17 @@ index 0000000000000..e7b9a3a608cde
 +  return ids;
 +}
 +
-+// Returns every managed catalog ID for cleanup and migration paths.
++// Returns every managed catalog ID for cleanup and migration paths. Retired
++// IDs are included so an upgrade removes extensions this product no longer
++// ships instead of leaving them installed.
 +inline std::vector<std::string> GetAllBrowserOSExtensionIds() {
 +  std::vector<std::string> ids;
-+  ids.reserve(kBrowserOSExtensionsCount);
++  ids.reserve(kBrowserOSExtensionsCount + kRetiredBrowserOSExtensionsCount);
 +  for (const auto& info : kBrowserOSExtensions) {
 +    ids.push_back(info.id);
++  }
++  for (const char* id : kRetiredBrowserOSExtensionIds) {
++    ids.push_back(id);
 +  }
 +  return ids;
 +}
@@ -237,11 +252,9 @@ index 0000000000000..e7b9a3a608cde
 +         info->is_labelled;
 +}
 +
-+// Sentry crash reporting
-+// https://9a76046fcfbcfe69a3580f4d204579f1@o4510545525932032.ingest.us.sentry.io/4510938172620800
-+inline constexpr char kSentryMinidumpUrl[] =
-+    "https://o4510545525932032.ingest.us.sentry.io/api/4510938172620800/"
-+    "minidump/?sentry_key=9a76046fcfbcfe69a3580f4d204579f1";
++// Crash upload is disabled. An empty URL plus consent=false keeps minidumps
++// local; do not replace this with another collector.
++inline constexpr char kSentryMinidumpUrl[] = "";
 +
 +}  // namespace browseros
 +

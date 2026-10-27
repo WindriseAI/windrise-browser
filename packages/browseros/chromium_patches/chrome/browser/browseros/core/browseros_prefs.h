@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df283d81a7
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,117 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -14,7 +14,6 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +#include <string>
 +
 +#include "components/prefs/pref_service.h"
-+#include "ui/actions/action_id.h"
 +
 +namespace user_prefs {
 +class PrefRegistrySyncable;
@@ -24,13 +23,6 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +
 +namespace prefs {
 +
-+// Toolbar visibility prefs
-+// Boolean: Show LLM Chat in toolbar (default: true)
-+inline constexpr char kShowLLMChat[] = "browseros.show_llm_chat";
-+
-+// Boolean: Show Assistant in toolbar (default: true)
-+inline constexpr char kShowAssistant[] = "browseros.show_assistant";
-+
 +// Boolean: Show labels on BrowserOS toolbar actions (default: true)
 +inline constexpr char kShowToolbarLabels[] = "browseros.show_toolbar_labels";
 +
@@ -38,20 +30,20 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +inline constexpr char kVerticalTabsEnabled[] =
 +    "browseros.vertical_tabs_enabled";
 +
++// Boolean: Start the vertical tab strip collapsed (default: true). Once the
++// user expands or collapses it, the upstream persisted state wins.
++inline constexpr char kVerticalTabsStartCollapsed[] =
++    "browseros.vertical_tabs_start_collapsed";
++
++// String: Prefix of tab group titles that belong to an AI workspace. While the
++// active tab is in such a group, the vertical tab strip stays expanded.
++inline constexpr char kAIWorkspaceGroupPrefix[] =
++    "browseros.ai_workspace_group_prefix";
++
 +// Boolean: Show saved tab groups in the bookmark bar (default: true, false for
 +// BrowserClaw).
 +inline constexpr char kShowTabGroupsInBookmarkBar[] =
 +    "browseros.show_tab_groups_in_bookmark_bar";
-+
-+// AI Provider prefs
-+// JSON string containing the list of AI providers and configuration
-+inline constexpr char kProviders[] = "browseros.providers";
-+
-+// JSON string containing custom AI providers for BrowserOS
-+inline constexpr char kCustomProviders[] = "browseros.custom_providers";
-+
-+// String containing the default provider ID for BrowserOS
-+inline constexpr char kDefaultProviderId[] = "browseros.default_provider_id";
 +
 +// Boolean: Focus NTP content instead of omnibox on new tab (default: true)
 +inline constexpr char kNtpFocusContent[] = "browseros.ntp_focus_content";
@@ -82,17 +74,18 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +// Registers BrowserOS profile preferences.
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 +
-+// Check if LLM Chat should be shown in toolbar.
-+bool ShouldShowLLMChat(PrefService* pref_service);
-+
-+// Check if Assistant should be shown in toolbar.
-+bool ShouldShowAssistant(PrefService* pref_service);
-+
 +// Check if toolbar labels should be shown for BrowserOS actions.
 +bool ShouldShowToolbarLabels(PrefService* pref_service);
 +
 +// Check if vertical tabs should be enabled.
 +bool IsVerticalTabsEnabled(PrefService* pref_service);
++
++// Check whether a fresh profile should start with the vertical tab strip
++// collapsed.
++bool ShouldStartVerticalTabsCollapsed(PrefService* pref_service);
++
++// Returns the configured AI workspace tab-group title prefix.
++const std::string& GetAIWorkspaceGroupPrefix(PrefService* pref_service);
 +
 +// Check if saved tab groups should be shown in the bookmark bar.
 +bool ShouldShowTabGroupsInBookmarkBar(PrefService* pref_service);
@@ -114,13 +107,6 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +// when the user hasn't customized the theme yet.
 +void SyncDefaultTheme(PrefService* pref_service);
 +
-+// Check if a toolbar action should be shown based on its visibility pref.
-+// Returns true if:
-+//   - Action has no visibility pref
-+//   - Action's visibility pref is true
-+// Returns false if action's visibility pref is false.
-+bool ShouldShowToolbarAction(actions::ActionId id, PrefService* pref_service);
-+
 +// Check if a BrowserOS extension should be pinned from its catalog metadata.
 +bool ShouldPinBrowserOSExtension(const std::string& extension_id,
 +                                 PrefService* pref_service);
@@ -131,9 +117,6 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +// Check if automation-driven tabs must never steal focus. Callers decide per
 +// tab by combining this with content::DevToolsAgentHost::IsDebuggerAttached().
 +bool AutomationNeverStealsFocus(PrefService* pref_service);
-+
-+// Get the visibility pref key for an action, or nullptr if none exists.
-+const char* GetVisibilityPrefForAction(actions::ActionId id);
 +
 +}  // namespace browseros
 +

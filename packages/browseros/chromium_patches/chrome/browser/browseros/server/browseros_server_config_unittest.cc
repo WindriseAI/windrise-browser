@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba93482b95080
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_config_unittest.cc
-@@ -0,0 +1,228 @@
+@@ -0,0 +1,230 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -198,6 +198,8 @@ index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba934
 +  ASSERT_NE(nullptr, flags);
 +  ASSERT_TRUE(flags->FindBool("allow_remote_in_mcp").has_value());
 +  EXPECT_TRUE(flags->FindBool("allow_remote_in_mcp").value());
++  ASSERT_NE(nullptr, flags->FindString("host"));
++  EXPECT_EQ("0.0.0.0", *flags->FindString("host"));
 +
 +  const base::DictValue* instance = root.FindDict("instance");
 +  ASSERT_NE(nullptr, instance);

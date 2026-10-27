@@ -62,7 +62,6 @@ class BundledExtensionsTest(unittest.TestCase):
     def test_published_selection_is_product_exact(self) -> None:
         expected = {
             "browseros": {
-                BROWSEROS_AGENT_EXTENSION_ID,
                 BROWSEROS_BUG_REPORTER_EXTENSION_ID,
             },
             "browserclaw": {
@@ -78,12 +77,6 @@ class BundledExtensionsTest(unittest.TestCase):
 
     def test_published_selection_pins_product_extension_version(self) -> None:
         cases = (
-            (
-                "browseros",
-                BROWSEROS_AGENT_EXTENSION_ID,
-                "0.0.125.0",
-                "https://cdn.browseros.com/extensions/agent-0.0.125.0.crx",
-            ),
             (
                 "browserclaw",
                 BROWSERCLAW_EXTENSION_ID,
@@ -167,7 +160,7 @@ class BundledExtensionsTest(unittest.TestCase):
             )
             self.assertEqual(
                 {path.stem for path in output.glob("*.crx")},
-                {BROWSEROS_AGENT_EXTENSION_ID, BROWSEROS_BUG_REPORTER_EXTENSION_ID},
+                {BROWSEROS_BUG_REPORTER_EXTENSION_ID},
             )
 
     def test_source_mode_copies_only_validated_common_crxs(self) -> None:
@@ -203,18 +196,26 @@ class BundledExtensionsTest(unittest.TestCase):
                 download.assert_not_called()
                 output = module._get_output_dir(ctx)
                 self.assertEqual(
-                    (output / f"{product_id}.crx").read_bytes(), b"product-crx"
-                )
-                self.assertEqual(
                     (
                         output / f"{BROWSEROS_BUG_REPORTER_EXTENSION_ID}.crx"
                     ).read_bytes(),
                     b"bug-crx",
                 )
                 generated = json.loads((output / "bundled_extensions.json").read_text())
-                self.assertEqual(
-                    generated[product_id]["external_version"], product_version
-                )
+                if product == "browseros":
+                    # The retired agent CRX may still exist in prepared
+                    # resources, but it must not reach the browser bundle.
+                    self.assertFalse((output / f"{product_id}.crx").exists())
+                    self.assertEqual(
+                        set(generated), {BROWSEROS_BUG_REPORTER_EXTENSION_ID}
+                    )
+                else:
+                    self.assertEqual(
+                        (output / f"{product_id}.crx").read_bytes(), b"product-crx"
+                    )
+                    self.assertEqual(
+                        generated[product_id]["external_version"], product_version
+                    )
                 self.assertEqual(
                     ctx.artifact_registry.get("common_manifest_digest"),
                     manifest.digest(),
