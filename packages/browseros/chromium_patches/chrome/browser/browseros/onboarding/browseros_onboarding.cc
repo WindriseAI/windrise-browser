@@ -349,7 +349,7 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +    SendState(last_import_status_);
 +    // Windrise no longer ships the agent extension, so there is nothing this
 +    // step can wait for. BrowserClaw still gates on its own cockpit app.
-+    if (IsBrowserOSProduct()) {
++    if (browseros::IsBrowserOSProduct()) {
 +      OnPrimaryExtensionReady(true);
 +      return;
 +    }
