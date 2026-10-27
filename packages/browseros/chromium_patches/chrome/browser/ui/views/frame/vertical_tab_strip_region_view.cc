@@ -2,7 +2,7 @@ diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/c
 index b7cdb8f..aea6612 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-@@ -14,7 +14,10 @@
+@@ -14,7 +14,11 @@
  #include "base/metrics/histogram_functions.h"
  #include "base/metrics/user_metrics.h"
  #include "base/metrics/user_metrics_action.h"
@@ -10,10 +10,11 @@ index b7cdb8f..aea6612 100644
 +#include "base/strings/utf_string_conversions.h"
  #include "base/time/time.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
++#include "chrome/browser/profiles/profile.h"
  #include "chrome/browser/ui/actions/chrome_action_id.h"
  #include "chrome/browser/ui/animation/browser_animation_controller.h"
  #include "chrome/browser/ui/animation/browser_animation_types.h"
-@@ -196,9 +199,17 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -196,9 +200,17 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
  
    SetNotifyEnterExitOnChild(true);
    UpdateColors();
@@ -31,7 +32,7 @@ index b7cdb8f..aea6612 100644
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -1117,6 +1128,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
+@@ -1117,6 +1129,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
  void VerticalTabStripRegionView::OnActiveTabChanged(
      const tabs::TabInterface* active_tab) {
    BaseTabStripRegionView::OnActiveTabChanged(active_tab);
@@ -39,7 +40,7 @@ index b7cdb8f..aea6612 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1128,5 +1140,54 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1128,5 +1141,54 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  
@@ -52,7 +53,7 @@ index b7cdb8f..aea6612 100644
 +
 +void VerticalTabStripRegionView::UpdateAIWorkspaceExpansion(
 +    const tabs::TabInterface* active_tab) {
-+  ai_workspace_group_subscription_.reset();
++  ai_workspace_group_subscription_ = base::CallbackListSubscription();
 +
 +  bool keep_expanded = false;
 +  if (active_tab && tab_strip_model() && tab_strip_model()->group_model()) {
