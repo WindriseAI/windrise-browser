@@ -51,4 +51,3 @@ index 76f8e99..994c44b 100644
    base::flat_set<raw_ptr<VerticalTabStripExpandOnHoverLock>> hover_locks_;
  
    std::unique_ptr<TabHoverCardController::ScopedHideHoverCardLock>
-
