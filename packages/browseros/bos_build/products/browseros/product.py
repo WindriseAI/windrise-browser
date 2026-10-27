@@ -23,8 +23,8 @@ BROWSEROS_PRODUCT = ProductDescriptor.define(
     description="Windrise is a privacy-focused web browser built on Chromium.",
     company="Windrise",
     required_extensions=(
-        (BROWSEROS_AGENT_EXTENSION_ID, "BrowserOS agent"),
-        (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "BrowserOS bug reporter"),
+        (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
+        (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
     ),
     # Reverse-DNS identity is si.windrise.browser, not the derived
     # si.windrise.Windrise: bundle ids are case-insensitive and read as a
@@ -42,7 +42,7 @@ BROWSEROS_PRODUCT = ProductDescriptor.define(
 
 BROWSEROS_SERVER_BUNDLE = ServerBundle(
     id="browseros-server",
-    name="BrowserOS Server",
+    name="Windrise Server",
     product_ids=("browseros",),
     chromium_output_root="BrowserOSServer",
     local_resources_root=Path("resources/binaries/browseros_server"),

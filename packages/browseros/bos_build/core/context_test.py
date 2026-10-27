@@ -180,8 +180,8 @@ class GetAppPathTest(unittest.TestCase):
     def test_release_required_extensions_follow_active_product(self):
         expected = {
             "browseros": (
-                (BROWSEROS_AGENT_EXTENSION_ID, "BrowserOS agent"),
-                (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "BrowserOS bug reporter"),
+                (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
+                (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
             ),
             "browserclaw": (
                 (BROWSERCLAW_EXTENSION_ID, "BrowserOS neo app"),
@@ -202,8 +202,8 @@ class GetAppPathTest(unittest.TestCase):
 
     def test_debug_required_extensions_are_registered_product_union(self):
         expected = (
-            (BROWSEROS_AGENT_EXTENSION_ID, "BrowserOS agent"),
-            (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "BrowserOS bug reporter"),
+            (BROWSEROS_AGENT_EXTENSION_ID, "Windrise agent"),
+            (BROWSEROS_BUG_REPORTER_EXTENSION_ID, "Windrise bug reporter"),
             (BROWSERCLAW_EXTENSION_ID, "BrowserOS neo app"),
         )
 

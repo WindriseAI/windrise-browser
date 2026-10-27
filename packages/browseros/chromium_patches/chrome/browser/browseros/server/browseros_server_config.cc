@@ -18,7 +18,7 @@ index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d
 +
 +constexpr ManagedServerDescriptor kBrowserOSServerDescriptor = {
 +    Product::kBrowserOS,
-+    "BrowserOS server",
++    "Windrise server",
 +    FILE_PATH_LITERAL("BrowserOSServer"),
 +    FILE_PATH_LITERAL("browseros_server"),
 +    FILE_PATH_LITERAL("config.json"),

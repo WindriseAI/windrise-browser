@@ -128,13 +128,19 @@ class FeedTableTest(unittest.TestCase):
     def test_server_feed_lookup_and_titles(self):
         prod = server_feed("browseros-server", "prod")
         self.assertEqual(prod.key, "appcast-server.xml")
-        self.assertEqual(prod.title, "BrowserOS Server")
+        self.assertEqual(prod.title, "Windrise Server")
+        self.assertEqual(prod.legacy_titles, ("BrowserOS Server",))
         self.assertEqual(prod.product, "browseros")
 
-        alpha = server_feed("browserclaw-server", "alpha")
-        self.assertEqual(alpha.key, "appcast-claw-server.alpha.xml")
-        self.assertEqual(alpha.title, "BrowserOS Claw Server (Alpha)")
-        self.assertEqual(alpha.bundle_id, "browserclaw-server")
+        alpha = server_feed("browseros-server", "alpha")
+        self.assertEqual(alpha.title, "Windrise Server (Alpha)")
+        self.assertEqual(alpha.legacy_titles, ("BrowserOS Server (Alpha)",))
+
+        claw_alpha = server_feed("browserclaw-server", "alpha")
+        self.assertEqual(claw_alpha.key, "appcast-claw-server.alpha.xml")
+        self.assertEqual(claw_alpha.title, "BrowserOS Claw Server (Alpha)")
+        self.assertEqual(claw_alpha.legacy_titles, ())
+        self.assertEqual(claw_alpha.bundle_id, "browserclaw-server")
 
     def test_extension_feed_lookups(self):
         self.assertEqual(

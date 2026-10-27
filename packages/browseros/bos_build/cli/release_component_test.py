@@ -71,7 +71,7 @@ class ComponentReleaseCliTest(unittest.TestCase):
             self.assertEqual(values["version"], "0.0.128")
             self.assertEqual(values["tag"], "agent-server/v0.0.128")
             self.assertEqual(values["names"], "server")
-            self.assertIn("BrowserOS server release", summary.read_text())
+            self.assertIn("Windrise server release", summary.read_text())
 
     def test_resolve_can_include_immutable_r2_allocations(self) -> None:
         record = StandaloneReleaseRecord(

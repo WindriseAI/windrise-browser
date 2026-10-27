@@ -44,14 +44,14 @@ const defaults: Record<ChatMode, StarterPrompt[]> = {
   ],
   agent: [
     {
-      display: 'Read about our vision and upvote',
+      display: "Summarize today's top news",
       prompt:
-        'Go to https://dub.sh/browseros-launch in current tab. Find and click the upvote button',
+        "Open a news site in a background tab, read the top stories, and summarize them in bullet points",
     },
     {
-      display: 'Support BrowserOS on Github',
+      display: 'Compare prices for a product',
       prompt:
-        'Go to http://git.new/browseros in current tab and star the repository',
+        'Open three shopping sites and compare prices for a 1TB portable SSD in a table',
     },
     {
       display: 'Open amazon.com and order Sensodyne toothpaste',

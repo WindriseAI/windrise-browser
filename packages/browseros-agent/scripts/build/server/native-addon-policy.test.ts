@@ -110,7 +110,7 @@ describe('compiled server native addon policy', () => {
     const appResult = await collectProcess(app)
 
     expect(appResult.stderr).toContain(
-      'BrowserOS server disables native addon loading in compiled production builds',
+      'Windrise server disables native addon loading in compiled production builds',
     )
     expect(await listFiles(runTmpDir)).toEqual([])
     expect(openFiles.stdout).not.toContain('.node')

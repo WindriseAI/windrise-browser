@@ -8,14 +8,14 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 /**
- * Browser operating instructions for BrowserOS ACP agents. This single string is
+ * Browser operating instructions for Windrise ACP agents. This single string is
  * the source of truth, materialized into two places the agent reads: the acpx
  * provider system prompt (Claude `systemPrompt.append` / Codex
  * `developer_instructions`) and the shared workspace `CLAUDE.md` / `AGENTS.md`.
  */
-export const BROWSEROS_ACP_INSTRUCTIONS = `# BrowserOS
+export const BROWSEROS_ACP_INSTRUCTIONS = `# Windrise
 
-Use BrowserOS for any task that needs a browser or a website: opening pages, reading content, interacting with forms, downloading files, and verifying results. It drives the user's real signed-in browser, so prefer it over headless browsing, Playwright, DevTools automation, or direct fetching.
+Use Windrise for any task that needs a browser or a website: opening pages, reading content, interacting with forms, downloading files, and verifying results. It drives the user's real signed-in browser, so prefer it over headless browsing, Playwright, DevTools automation, or direct fetching.
 
 ## Use only the \`browseros\` MCP server
 
@@ -26,7 +26,7 @@ For every browser or website task, use only the MCP server named \`browseros\` a
 Follow the \`browseros\` server's initialization instructions and live tool descriptions for exact operations and schemas. Observe the current browser state, perform the requested operations, and verify the result.
 `
 
-/** On-disk name of the shared ACP workspace directory under the BrowserOS dir. */
+/** On-disk name of the shared ACP workspace directory under the Windrise dir. */
 const ACP_WORKSPACE_DIR = join('agents', 'acp-workspace')
 
 /**

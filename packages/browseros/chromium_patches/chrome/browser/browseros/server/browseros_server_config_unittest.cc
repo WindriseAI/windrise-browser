@@ -104,7 +104,7 @@ index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba934
 +  const ManagedServerDescriptor& descriptor = GetBrowserOSServerDescriptor();
 +
 +  EXPECT_EQ(Product::kBrowserOS, descriptor.product);
-+  EXPECT_EQ(std::string_view("BrowserOS server"), descriptor.log_name);
++  EXPECT_EQ(std::string_view("Windrise server"), descriptor.log_name);
 +  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("BrowserOSServer")),
 +            ToPathString(descriptor.bundle_dir));
 +  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("browseros_server")),

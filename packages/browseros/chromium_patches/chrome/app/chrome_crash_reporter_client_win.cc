@@ -15,14 +15,15 @@ index f7ce95d3977ce5d0dc3193a11083209f151f2a14..eeb01977a7d97de52fd7d59570b52a99
  ChromeCrashReporterClient::ChromeCrashReporterClient() = default;
  
  ChromeCrashReporterClient::~ChromeCrashReporterClient() = default;
-@@ -95,9 +101,8 @@ void ChromeCrashReporterClient::GetProductInfo(ProductInfo* product_info) {
+@@ -95,9 +101,9 @@ void ChromeCrashReporterClient::GetProductInfo(ProductInfo* product_info) {
    GetProductNameAndVersion(exe_file, &product_name, &version, &special_build,
                             &channel_name);
  
 -  *product_info =
 -      ProductInfo(base::WideToUTF8(product_name), base::WideToUTF8(version),
 -                  base::WideToUTF8(channel_name));
-+  *product_info = ProductInfo("BrowserOS", base::WideToUTF8(version),
++  *product_info = ProductInfo(base::WideToUTF8(product_name),
++                             base::WideToUTF8(version),
 +                             base::WideToUTF8(channel_name));
  }
  

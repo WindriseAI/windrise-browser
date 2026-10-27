@@ -197,7 +197,7 @@ describe('browser tool framework post-actions', () => {
 
       expect(result.isError).toBeFalsy()
       expect(text).toContain('[Page 8 snapshot]')
-      expect(text).toContain('could not be saved to a BrowserOS output file')
+      expect(text).toContain('could not be saved to a Windrise output file')
       expect(text).toContain('Showing the first')
       expect(text).toContain('[UNTRUSTED_PAGE_CONTENT')
       expect(text).toContain(firstMarker)
@@ -331,7 +331,7 @@ describe('browser tool framework post-actions', () => {
 
       expect(result.isError).toBeFalsy()
       expect(text).toContain('[Page 4 diff]')
-      expect(text).toContain('saving it to a BrowserOS output file failed')
+      expect(text).toContain('saving it to a Windrise output file failed')
       expect(text).toContain('Showing the first')
       expect(text).toContain('[UNTRUSTED_PAGE_CONTENT')
       expect(text).toContain(firstMarker)

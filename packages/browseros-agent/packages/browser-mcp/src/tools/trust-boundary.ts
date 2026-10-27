@@ -5,7 +5,7 @@ const NOTICE =
 
 /**
  * Fences page-derived text in markers carrying a per-call random nonce, so a hostile page cannot
- * forge the closing marker to break out of the boundary. BrowserOS drives real logged-in sessions,
+ * forge the closing marker to break out of the boundary. Windrise drives real logged-in sessions,
  * so any scraped content is an indirect-prompt-injection vector.
  */
 export function wrapUntrusted(text: string, origin: string): string {

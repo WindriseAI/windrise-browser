@@ -40,7 +40,7 @@ describe('createBrowserMcpServer', () => {
     const server = inspect(
       createBrowserMcpServer({
         name: 'browseros_mcp',
-        title: 'BrowserOS MCP server',
+        title: 'Windrise MCP server',
         version: '1.2.3',
         browserSession: { pages: {} } as unknown as BrowserSession,
       }),
@@ -59,7 +59,7 @@ describe('createBrowserMcpServer', () => {
   it('exposes a real JSON input schema for tools/list', () => {
     const server = createBrowserMcpServer({
       name: 'browseros_mcp',
-      title: 'BrowserOS MCP server',
+      title: 'Windrise MCP server',
       version: '1.2.3',
       browserSession: { pages: {} } as unknown as BrowserSession,
     }) as unknown as {
@@ -93,7 +93,7 @@ describe('createBrowserMcpServer', () => {
     const server = inspect(
       createBrowserMcpServer({
         name: 'browseros_mcp',
-        title: 'BrowserOS MCP server',
+        title: 'Windrise MCP server',
         version: '1.2.3',
         browserSession: {
           pages: {
@@ -163,7 +163,7 @@ describe('createBrowserMcpServer', () => {
     const server = inspect(
       createBrowserMcpServer({
         name: 'browseros_mcp',
-        title: 'BrowserOS MCP server',
+        title: 'Windrise MCP server',
         version: '1.2.3',
         browserSession: {
           pages: {
@@ -194,7 +194,7 @@ describe('createBrowserMcpServer', () => {
     const server = inspect(
       createBrowserMcpServer({
         name: 'browseros_mcp',
-        title: 'BrowserOS MCP server',
+        title: 'Windrise MCP server',
         version: '1.2.3',
         browserSession: {
           pages: {
@@ -221,7 +221,7 @@ describe('createBrowserMcpServer', () => {
     const debugLogs: Array<{ msg: string; meta?: Record<string, unknown> }> = []
     const raw = createBrowserMcpServer({
       name: 'browseros_mcp',
-      title: 'BrowserOS MCP server',
+      title: 'Windrise MCP server',
       version: '1.2.3',
       browserSession: {
         pages: {
@@ -286,7 +286,7 @@ describe('createBrowserMcpServer', () => {
     const server = inspect(
       createBrowserMcpServer({
         name: 'browseros_mcp',
-        title: 'BrowserOS MCP server',
+        title: 'Windrise MCP server',
         version: '1.2.3',
         browserSession: { pages: {} } as unknown as BrowserSession,
       }),

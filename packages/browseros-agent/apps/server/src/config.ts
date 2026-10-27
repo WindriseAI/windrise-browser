@@ -59,7 +59,7 @@ function parseCliArgs(argv: string[]): ConfigResult<ParsedCliArgs> {
   try {
     program
       .name('browseros-server')
-      .description('BrowserOS Unified Server - MCP + Agent')
+      .description('Windrise Unified Server - MCP + Agent')
       .version(VERSION)
       .option('--config <path>', 'Path to sidecar JSON configuration file')
       .configureOutput({ writeErr: () => {} })

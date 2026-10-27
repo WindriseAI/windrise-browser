@@ -74,7 +74,7 @@ describe('getBrowserosDir', () => {
       logDevelopmentBrowserosDir()
 
       expect(info).toHaveBeenCalledWith(
-        `Using development BrowserOS directory: ${join(homedir(), '.browseros-dev')}`,
+        `Using development Windrise directory: ${join(homedir(), '.browseros-dev')}`,
       )
     } finally {
       logger.info = originalInfo

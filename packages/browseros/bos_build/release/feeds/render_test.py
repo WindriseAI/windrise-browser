@@ -258,7 +258,7 @@ class ServerAppcastRenderTest(unittest.TestCase):
         self.assertIn("Thu, 16 Apr 2026 18:58:59 +0000", content)
         self.assertIn("OLDSIG==", content)
         self.assertIn("NEWSIG==", content)
-        self.assertIn("BrowserOS Server (Alpha)", content)
+        self.assertIn("Windrise Server (Alpha)", content)
 
     def test_parse_server_appcast_content_round_trips(self):
         parsed = parse_server_appcast_content(GOLDEN_CLAW_SERVER_APPCAST)

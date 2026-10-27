@@ -94,6 +94,9 @@ _SERVER_FEED_SLUGS = {
     "browseros-server": "server",
     "browserclaw-server": "claw-server",
 }
+# Bundles renamed after their feeds shipped need the old channel title
+# registered as a migration source, same guard as browser feeds.
+_SERVER_FEED_LEGACY_DISPLAY_NAMES = {"browseros-server": "BrowserOS Server"}
 
 
 def _browser_feeds(product_id: str) -> Tuple[FeedSpec, ...]:
@@ -155,8 +158,11 @@ def _server_feeds(bundle: ServerBundle) -> Tuple[FeedSpec, ...]:
             "_SERVER_FEED_SLUGS in release/feeds/spec.py"
         )
     product_id = bundle.product_ids[0]
+    legacy_display = _SERVER_FEED_LEGACY_DISPLAY_NAMES.get(bundle.id)
 
-    def feed(channel: str, suffix: str, title: str) -> FeedSpec:
+    def feed(
+        channel: str, suffix: str, title: str, legacy_title: str = ""
+    ) -> FeedSpec:
         key = f"appcast-{slug}{suffix}.xml"
         return FeedSpec(
             key=key,
@@ -165,12 +171,18 @@ def _server_feeds(bundle: ServerBundle) -> Tuple[FeedSpec, ...]:
             channel=channel,
             title=title,
             link=f"{CDN_BASE_URL}/{key}",
+            legacy_titles=(legacy_title,) if legacy_title else (),
             bundle_id=bundle.id,
         )
 
     return (
-        feed("prod", "", bundle.name),
-        feed("alpha", ".alpha", f"{bundle.name} (Alpha)"),
+        feed("prod", "", bundle.name, legacy_display or ""),
+        feed(
+            "alpha",
+            ".alpha",
+            f"{bundle.name} (Alpha)",
+            f"{legacy_display} (Alpha)" if legacy_display else "",
+        ),
     )
 
 

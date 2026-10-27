@@ -25,7 +25,7 @@ export interface BrowserMcpServerOptions extends BrowserToolDefaults {
   registration?: BrowserToolRegistrationOptions
 }
 
-/** Creates a BrowserOS MCP server with only the shared browser tool surface. */
+/** Creates a Windrise MCP server with only the shared browser tool surface. */
 export function createBrowserMcpServer(
   options: BrowserMcpServerOptions,
 ): McpServer {

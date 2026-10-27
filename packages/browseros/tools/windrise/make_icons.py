@@ -5,6 +5,10 @@ Replaces every raster icon under ``resources/browseros/icons`` with a Windrise
 version at the same path and the same pixel size, so the Chromium overlay copy
 step (``bos_build/config/copy_resources.yaml``) needs no changes.
 
+It also regenerates the in-repo copies the Chromium build cannot reach: the
+agent extension and onboarding WebUI favicons, the extension's product logo
+SVG, and ``resources/logo.png``.
+
 Source art lives next to this script in ``brand-src/`` — the checked-in copy of
 the brand export, so the build never reads a directory outside the repo:
 
@@ -45,7 +49,16 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = PACKAGE_ROOT.parents[1]
 ICONS_ROOT = PACKAGE_ROOT / "resources" / "browseros" / "icons"
+APP_ICONS_ROOT = REPO_ROOT / "packages/browseros-agent/apps/app/public/icon"
+ONBOARD_ICONS_ROOT = (
+    REPO_ROOT / "packages/browseros-agent/apps/app-onboard/public/icon"
+)
+APP_LOGO_SVG = (
+    REPO_ROOT / "packages/browseros-agent/apps/app/assets/product_logo.svg"
+)
+REPO_LOGO_PNG = PACKAGE_ROOT / "resources" / "logo.png"
 
 DEFAULT_BRAND_DIR = Path(__file__).resolve().parent / "brand-src"
 
@@ -156,6 +169,18 @@ ICNS_TARGETS: tuple[str, ...] = (
     "mac/document.icns",
     "mac/AppIcon.icns",
 )
+
+# The agent extension and its onboarding WebUI ship their own icon copies.
+# Generate those from the same masters so they cannot drift from the browser.
+UI_ICON_SIZES: tuple[int, ...] = (16, 32, 48, 96, 128)
+UI_PNG_TARGETS: tuple[tuple[str, int], ...] = tuple(
+    (root.relative_to(REPO_ROOT).as_posix() + f"/{size}.png", size)
+    for root in (APP_ICONS_ROOT, ONBOARD_ICONS_ROOT)
+    for size in UI_ICON_SIZES
+)
+APP_LOGO_SVG_RELATIVE = APP_LOGO_SVG.relative_to(REPO_ROOT).as_posix()
+REPO_LOGO_RELATIVE = REPO_LOGO_PNG.relative_to(REPO_ROOT).as_posix()
+REPO_LOGO_SIZE = 512
 
 
 def _load_masters(brand_dir: Path) -> dict[str, Image.Image]:
@@ -407,6 +432,45 @@ def generate(brand_dir: Path, destination: Path) -> list[Path]:
     return written
 
 
+def generate_ui(brand_dir: Path, destination: Path) -> list[Path]:
+    """Generate the extension/onboarding icons and the repo logo.
+
+    ``destination`` is the repository root (or a staging tree with the same
+    relative layout), so callers can dry-run the whole set.
+    """
+    masters = _load_masters(brand_dir)
+    written: list[Path] = []
+
+    for relative, size in UI_PNG_TARGETS:
+        target = destination / relative
+        _write_png(_resize(masters["small" if size <= SMALL_ART_MAX else "big"],
+                           size), target)
+        written.append(target)
+
+    logo_svg = destination / APP_LOGO_SVG_RELATIVE
+    logo_svg.parent.mkdir(parents=True, exist_ok=True)
+    logo_svg.write_bytes((brand_dir / VECTOR_MASTER).read_bytes())
+    written.append(logo_svg)
+
+    repo_logo = destination / REPO_LOGO_RELATIVE
+    _write_png(_resize(masters["big"], REPO_LOGO_SIZE), repo_logo)
+    written.append(repo_logo)
+
+    return written
+
+
+def _stale_paths(
+    committed_root: Path, staging_root: Path, written: list[Path]
+) -> list[str]:
+    return [
+        relative
+        for relative in _relative(written, staging_root)
+        if not (committed_root / relative).is_file()
+        or _content_signature(committed_root / relative)
+        != _content_signature(staging_root / relative)
+    ]
+
+
 def _relative(paths: list[Path], root: Path) -> list[str]:
     return sorted(path.relative_to(root).as_posix() for path in paths)
 
@@ -443,18 +507,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {len(written)} icon files under {args.out}")
         for relative in _relative(written, args.out):
             print(f"  {relative}")
+        written_ui = generate_ui(brand_dir, REPO_ROOT)
+        print(f"wrote {len(written_ui)} app icons under {REPO_ROOT}")
+        for relative in _relative(written_ui, REPO_ROOT):
+            print(f"  {relative}")
         return 0
 
     with tempfile.TemporaryDirectory() as temporary:
         staging = Path(temporary) / "icons"
         written = generate(brand_dir, staging)
-        stale = [
-            relative
-            for relative in _relative(written, staging)
-            if not (args.out / relative).is_file()
-            or _content_signature(args.out / relative)
-            != _content_signature(staging / relative)
-        ]
+        stale = _stale_paths(args.out, staging, written)
+
+        ui_staging = Path(temporary) / "repo"
+        written_ui = generate_ui(brand_dir, ui_staging)
+        stale += _stale_paths(REPO_ROOT, ui_staging, written_ui)
     if stale:
         print("icons differ from the brand art:", file=sys.stderr)
         for relative in stale:

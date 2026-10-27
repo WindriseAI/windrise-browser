@@ -161,7 +161,8 @@ For the `browseros` product the checked-in raster tree comes from
 separate small-size redraw and a flat mono mark. The source files here are kept
 in sync with that brand art, so this pipeline never emits the previous brand;
 its macOS-only `Assets.car` step compiles the `Assets.xcassets` tree that
-`make_icons.py` regenerates.
+`make_icons.py` regenerates. `make_icons.py` also writes the agent extension and
+onboarding favicons, so those UI surfaces cannot drift from the browser icon.
 
 ## Troubleshooting
 

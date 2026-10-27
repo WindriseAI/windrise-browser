@@ -1,18 +1,10 @@
-import {
-  Bot,
-  ChevronDown,
-  Github,
-  History,
-  Plus,
-  SettingsIcon,
-} from 'lucide-react'
+import { Bot, ChevronDown, History, Plus, SettingsIcon } from 'lucide-react'
 import type { FC } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { BRAND_MARKS } from '@/components/agents/agent-brand-marks'
 import { ChatProviderSelector } from '@/components/chat/ChatProviderSelector'
 import type { Provider } from '@/components/chat/chatComponentTypes'
 import { ThemeToggle } from '@/components/elements/theme-toggle'
-import { productRepositoryUrl } from '@/lib/constants/productUrls'
 import { ProviderIcon } from '@/lib/llm-providers/providerIcons'
 import type { ProviderType } from '@/lib/llm-providers/types'
 import { cn } from '@/lib/utils'
@@ -111,16 +103,6 @@ export const ChatHeader: FC<ChatHeaderProps> = ({
               <History className="h-4 w-4" />
             </Link>
           ))}
-
-        <a
-          href={productRepositoryUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-          title="Star on Github"
-        >
-          <Github className="h-4 w-4" />
-        </a>
 
         <a
           href="/app.html#/settings"

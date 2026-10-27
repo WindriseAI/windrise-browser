@@ -181,7 +181,7 @@ class PromoteContentTest(unittest.TestCase):
 
         promoted = promote_appcast_content(_alpha_content(), prod_spec)
 
-        self.assertIn("<title>BrowserOS Server</title>", promoted)
+        self.assertIn("<title>Windrise Server</title>", promoted)
         self.assertIn(
             "<link>https://cdn.browseros.com/appcast-server.xml</link>", promoted
         )

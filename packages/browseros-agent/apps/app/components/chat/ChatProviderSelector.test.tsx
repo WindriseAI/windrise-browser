@@ -39,7 +39,7 @@ describe('groupProviderOptions', () => {
     expect(groupProviderOptions(options)).toEqual([
       {
         key: 'llm',
-        label: 'BrowserOS agent + your LLM',
+        label: 'Windrise agent + your LLM',
         options: [options[0], options[1]],
       },
       {

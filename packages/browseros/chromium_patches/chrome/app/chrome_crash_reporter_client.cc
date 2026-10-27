@@ -15,24 +15,24 @@ index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1
    const char* product_name = "";
  #if BUILDFLAG(IS_ANDROID)
 -  product_name = "Chrome_Android";
-+  product_name = "BrowserOS_Android";
++  product_name = "Windrise_Android";
  #elif BUILDFLAG(IS_CHROMEOS)
 -  product_name = "Chrome_ChromeOS";
-+  product_name = "BrowserOS_ChromeOS";
++  product_name = "Windrise_ChromeOS";
  #elif BUILDFLAG(IS_LINUX)
  #if defined(ADDRESS_SANITIZER)
 -  product_name = "Chrome_Linux_ASan";
-+  product_name = "BrowserOS_Linux_ASan";
++  product_name = "Windrise_Linux_ASan";
  #else
 -  product_name = "Chrome_Linux";
-+  product_name = "BrowserOS_Linux";
++  product_name = "Windrise_Linux";
  #endif  // defined(ADDRESS_SANITIZER)
  #elif BUILDFLAG(IS_MAC)
 -  product_name = "Chrome_Mac";
-+  product_name = "BrowserOS_Mac";
++  product_name = "Windrise_Mac";
  #elif BUILDFLAG(IS_WIN)
 -  product_name = "Chrome";
-+  product_name = "BrowserOS";
++  product_name = "Windrise";
  #else
    NOTREACHED();
  #endif

@@ -57,7 +57,7 @@ class AllocationRecord:
 COMPONENTS: Mapping[str, ComponentSpec] = {
     "server": ComponentSpec(
         id="server",
-        display_name="BrowserOS server",
+        display_name="Windrise server",
         version_scheme="semver",
         manifest_path=Path("packages/browseros-agent/apps/server/package.json"),
         lockfile_path=Path("packages/browseros-agent/bun.lock"),
@@ -68,7 +68,7 @@ COMPONENTS: Mapping[str, ComponentSpec] = {
     ),
     "agent": ComponentSpec(
         id="agent",
-        display_name="BrowserOS agent extension",
+        display_name="Windrise agent extension",
         version_scheme="chrome",
         manifest_path=Path("packages/browseros-agent/apps/app/package.json"),
         lockfile_path=Path("packages/browseros-agent/bun.lock"),
@@ -108,7 +108,7 @@ COMPONENTS: Mapping[str, ComponentSpec] = {
     ),
     "app-onboard": ComponentSpec(
         id="app-onboard",
-        display_name="BrowserOS onboarding",
+        display_name="Windrise onboarding",
         version_scheme="semver",
         manifest_path=Path("packages/browseros-agent/apps/app-onboard/package.json"),
         lockfile_path=Path("packages/browseros-agent/bun.lock"),

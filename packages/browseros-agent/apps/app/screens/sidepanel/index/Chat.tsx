@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NoProviderNotice } from '@/components/chat/NoProviderNotice'
 import { createBrowserOSAction } from '@/lib/chat-actions/types'
 import {
@@ -13,7 +13,6 @@ import {
 import { track } from '@/lib/metrics/track'
 import { useChatSessionContext } from '@/modules/chat/chat-session-context'
 import type { ChatMode } from '@/modules/chat/chat-types'
-import { useJtbdPopup } from '@/modules/jtbd-popup/jtbd-popup.hooks'
 import { buildChatErrorProps } from './Chat.helpers'
 import { ChatEmptyState } from './ChatEmptyState'
 import { ChatError } from './ChatError'
@@ -49,15 +48,6 @@ export const Chat = () => {
     sendBlocked,
   } = useChatSessionContext()
 
-  const {
-    popupVisible,
-    showDontShowAgain,
-    recordMessageSent,
-    triggerIfEligible,
-    onTakeSurvey,
-    onDismiss: onDismissJtbdPopup,
-  } = useJtbdPopup()
-
   const [input, setInput] = useState('')
   const [attachedTabs, setAttachedTabs] = useState<chrome.tabs.Tab[]>([])
   const [mounted, setMounted] = useState(false)
@@ -77,21 +67,6 @@ export const Chat = () => {
       setAttachedTabs(currentTab)
     })()
   }, [])
-
-  // Trigger JTBD popup when AI finishes responding
-  const previousChatStatus = useRef(status)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only trigger on status change
-  useEffect(() => {
-    const aiWasProcessing =
-      previousChatStatus.current === 'streaming' ||
-      previousChatStatus.current === 'submitted'
-    const aiJustFinished = aiWasProcessing && status === 'ready'
-
-    if (aiJustFinished && messages.length > 0) {
-      triggerIfEligible()
-    }
-    previousChatStatus.current = status
-  }, [status])
 
   const handleModeChange = (newMode: ChatMode) => {
     track(SIDEPANEL_MODE_CHANGED_EVENT, { from: mode, to: newMode })
@@ -124,8 +99,6 @@ export const Chat = () => {
   const executeMessage = (customMessageText?: string) => {
     const messageText = customMessageText ? customMessageText : input.trim()
     if (!messageText) return
-
-    recordMessageSent()
 
     const sent = attachedTabs.length
       ? sendMessage({
@@ -190,10 +163,6 @@ export const Chat = () => {
             onClickLike={onClickLike}
             disliked={disliked}
             onClickDislike={onClickDislike}
-            showJtbdPopup={popupVisible}
-            showDontShowAgain={showDontShowAgain}
-            onTakeSurvey={onTakeSurvey}
-            onDismissJtbdPopup={onDismissJtbdPopup}
           />
         )}
         {agentUrlError && (

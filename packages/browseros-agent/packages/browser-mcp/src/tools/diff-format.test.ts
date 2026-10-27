@@ -189,7 +189,7 @@ describe('formatDiffResult', () => {
       )
 
       expect(result.text).toContain(
-        'saving it to a BrowserOS output file failed',
+        'saving it to a Windrise output file failed',
       )
       expect(result.text).not.toContain(lastMarker)
       expect(result.structured).toMatchObject({

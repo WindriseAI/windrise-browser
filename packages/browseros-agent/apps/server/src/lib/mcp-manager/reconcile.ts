@@ -121,7 +121,7 @@ export async function reconcileUrl(
     return { action: 'noop', affectedAgents: [] }
   }
 
-  logger.info('MCP manager reconciled BrowserOS URL', {
+  logger.info('MCP manager reconciled Windrise URL', {
     newUrl: input.currentUrl,
     relinked: affected,
   })

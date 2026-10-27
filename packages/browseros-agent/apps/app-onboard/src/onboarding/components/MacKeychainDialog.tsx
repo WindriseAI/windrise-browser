@@ -56,7 +56,7 @@ export function MacKeychainDialog({
               Import your Chrome logins
             </Dialog.Title>
             <Dialog.Description className="text-[15px] text-ink-2 leading-[23px]">
-              BrowserOS needs your permission to import your logins from Chrome.
+              Windrise needs your permission to import your logins from Chrome.
               <br />
               When macOS asks, enter your Mac login password and click{' '}
               <strong className="font-semibold text-ink">Allow</strong>.

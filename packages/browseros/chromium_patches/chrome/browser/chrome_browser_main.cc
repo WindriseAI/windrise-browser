@@ -70,7 +70,7 @@ index cbf3b6c563090a64c427e1b0ce8cbf7118aa82d2..d7e0df4e0d32f03c726428f932565b98
 +  // BrowserOS: Start AFTER CreateDevToolsProtocolHandler so that BrowserOS's
 +  // CDP handler replaces Chromium's (StartRemoteDebuggingServer is a global
 +  // singleton — the last caller wins).
-+  LOG(INFO) << "browseros: Starting BrowserOS server process";
++  LOG(INFO) << "browseros: Starting Windrise server process";
 +  browseros::BrowserOSServerManager::GetInstance()->Start();
 +
    // Needs to be done before PostProfileInit, since the SODA Installer setup is
@@ -81,7 +81,7 @@ index cbf3b6c563090a64c427e1b0ce8cbf7118aa82d2..d7e0df4e0d32f03c726428f932565b98
    }
  
 +  // BrowserOS: Stop the BrowserOS server during shutdown
-+  LOG(INFO) << "browseros: Stopping BrowserOS server process";
++  LOG(INFO) << "browseros: Stopping Windrise server process";
 +  browseros::BrowserOSServerManager::GetInstance()->Shutdown();
 +
    TranslateService::Shutdown();
