@@ -71,3 +71,17 @@ Chromium 的 `browseros_server_config.cc` 会写：
 
 - 用旧预编译二进制：只能通过防火墙/系统策略限制端口，不能靠 sidecar 改绑定地址；
 - 用源码构建的二进制：默认 `127.0.0.1`，远程 MCP 开关打开时才 `0.0.0.0`。
+
+## 10-30 补充：`--ci` 产物缺 `bin/third_party/bun.exe`，数据目录
+
+- `--ci` 模式不从 R2 下载 vendor 资源，所以产物里没有 `resources/bin/third_party/bun.exe`
+  （server 跑 ACP agent 时用的 bun，见 `apps/server/src/lib/agents/host-acp/bundled-bun.ts`）。
+  替换编译机上的 server 时只换 `resources/bin/browseros_server.exe`，`third_party/` 和
+  `db/migrations/` 保留原来的（迁移 SQL 与源码一致，只差 CRLF）。
+- 10-30 在 Chromium 侧（`process_controller_impl.cc`）给 server 进程设置
+  `BROWSEROS_DIR=<User Data>\.browseros`。不设时 server 用 `~/.browseros` 存
+  SQLite / 会话 / installation.json，和本机装的 BrowserOS 共用；那份库损坏
+  （`SQLITE_CORRUPT`）时 Windrise 的 server 一启动就退出。
+- 手动排查 server 起不来：浏览器不收集 server 的 stdout/stderr，启动阶段的报错不会进
+  `browseros-server.log`。用一份改了 `execution` 和 `ports.server` 的 config，加上
+  `BROWSEROS_DIR` 指向临时目录，前台运行 `browseros_server.exe --config=<json>` 看输出。
