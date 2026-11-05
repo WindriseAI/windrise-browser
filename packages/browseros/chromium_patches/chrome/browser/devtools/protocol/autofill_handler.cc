@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/devtools/protocol/autofill_handler.cc b/chrome/browser/devtools/protocol/autofill_handler.cc
-index 81e9bff..9307751 100644
+index 81e9bfff58..31e65b2460 100644
 --- a/chrome/browser/devtools/protocol/autofill_handler.cc
 +++ b/chrome/browser/devtools/protocol/autofill_handler.cc
 @@ -4,15 +4,29 @@
@@ -439,8 +439,8 @@ index 81e9bff..9307751 100644
 +    }
 +    auto* client =
 +        ChromePasswordManagerClient::FromWebContents(contents_.get());
-+    auto authenticator = client->GetDeviceAuthenticator();
-+    if (client->IsReauthBeforeFillingRequired(authenticator.get())) {
++    auto checker = client->GetDeviceAuthAvailabilityChecker();
++    if (client->IsReauthBeforeFillingRequired(checker.get())) {
 +      Fail("reauth_required");
 +      return;
 +    }

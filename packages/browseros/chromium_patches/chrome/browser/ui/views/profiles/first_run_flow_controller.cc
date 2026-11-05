@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
-index 4fa3120..6c2a110 100644
+index 4fa3120e55..4d972e4fba 100644
 --- a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 +++ b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 @@ -25,6 +25,9 @@
@@ -35,7 +35,7 @@ index 4fa3120..6c2a110 100644
 +  void Show(StepSwitchFinishedCallback step_shown_callback,
 +            bool reset_state) override {
 +    if (reset_state) {
-+      host()->ShowScreenInPickerContents(
++      host().ShowScreenInPickerContents(
 +          GURL(chrome::kChromeUIBrowserOSOnboardingURL),
 +          base::BindOnce(&BrowserOSOnboardingStepController::OnLoaded,
 +                         weak_ptr_factory_.GetWeakPtr(),
@@ -44,14 +44,14 @@ index 4fa3120..6c2a110 100644
 +    }
 +
 +    DCHECK_EQ(GURL(chrome::kChromeUIBrowserOSOnboardingURL),
-+              host()->GetPickerContents()->GetURL());
-+    host()->ShowScreenInPickerContents(
++              host().GetPickerContents()->GetURL());
++    host().ShowScreenInPickerContents(
 +        GURL(), base::BindOnce(std::move(step_shown_callback.value()), true));
 +    ExpectCompletionCallback();
 +  }
 +
 +  void OnNavigateBackRequested() override {
-+    NavigateBackInternal(host()->GetPickerContents());
++    NavigateBackInternal(host().GetPickerContents());
 +  }
 +
 + private:
@@ -62,7 +62,7 @@ index 4fa3120..6c2a110 100644
 +
 +  void ExpectCompletionCallback() {
 +    auto* onboarding_ui = host()
-+                              ->GetPickerContents()
++                              .GetPickerContents()
 +                              ->GetWebUI()
 +                              ->GetController()
 +                              ->GetAs<BrowserOSOnboarding>();

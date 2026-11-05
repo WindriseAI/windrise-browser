@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/api/side_panel/side_panel_service.cc b/chrome/browser/extensions/api/side_panel/side_panel_service.cc
-index 5f43bf1b2af2f8abe271fac57e68654e6c0d8305..91fa00be473e46b700067bcc15940b3dc3515cab 100644
+index 61afd65943..38a5e27c00 100644
 --- a/chrome/browser/extensions/api/side_panel/side_panel_service.cc
 +++ b/chrome/browser/extensions/api/side_panel/side_panel_service.cc
 @@ -9,6 +9,7 @@
@@ -10,7 +10,7 @@ index 5f43bf1b2af2f8abe271fac57e68654e6c0d8305..91fa00be473e46b700067bcc15940b3d
  #include "base/no_destructor.h"
  #include "base/strings/stringprintf.h"
  #include "base/strings/to_string.h"
-@@ -479,6 +480,140 @@ void SidePanelService::OnExtensionUninstalled(
+@@ -491,6 +492,140 @@ void SidePanelService::OnExtensionUninstalled(
    RemoveExtensionOptions(extension->id());
  }
  
@@ -37,7 +37,7 @@ index 5f43bf1b2af2f8abe271fac57e68654e6c0d8305..91fa00be473e46b700067bcc15940b3d
 +      !window || !web_contents) {
 +    LOG(WARNING) << "browseros: Tab not found for tab_id=" << tab_id;
 +    return base::unexpected(ErrorUtils::FormatErrorMessage(
-+        ExtensionTabUtil::kTabNotFoundError, base::ToString(tab_id)));
++        kTabNotFoundError, base::ToString(tab_id)));
 +  }
 +
 +  BrowserWindowInterface* browser_window = window->GetBrowserWindowInterface();
@@ -121,7 +121,7 @@ index 5f43bf1b2af2f8abe271fac57e68654e6c0d8305..91fa00be473e46b700067bcc15940b3d
 +      !window || !web_contents) {
 +    LOG(WARNING) << "browseros: Tab not found for tab_id=" << tab_id;
 +    return base::unexpected(ErrorUtils::FormatErrorMessage(
-+        ExtensionTabUtil::kTabNotFoundError, base::ToString(tab_id)));
++        kTabNotFoundError, base::ToString(tab_id)));
 +  }
 +
 +  BrowserWindowInterface* browser_window = window->GetBrowserWindowInterface();

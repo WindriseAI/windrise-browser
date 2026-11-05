@@ -1,9 +1,9 @@
 diff --git a/chrome/utility/importer/browseros/chrome_decryptor_win.cc b/chrome/utility/importer/browseros/chrome_decryptor_win.cc
 new file mode 100644
-index 0000000000000..97d92c4309ffe
+index 0000000000..60a5ac4e9b
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_decryptor_win.cc
-@@ -0,0 +1,279 @@
+@@ -0,0 +1,278 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome decryption - Windows implementation
 +// Uses DPAPI for key retrieval, AES-256-GCM for decryption
@@ -169,8 +169,7 @@ index 0000000000000..97d92c4309ffe
 +  size_t encrypted_length = ciphertext_length - kNonceLength;
 +
 +  // Use Chromium's crypto::Aead for decryption
-+  crypto::Aead aead(crypto::Aead::AES_256_GCM);
-+  aead.Init(base::as_byte_span(key));
++  crypto::Aead aead(crypto::Aead::AES_256_GCM, base::as_byte_span(key));
 +
 +  std::optional<std::vector<uint8_t>> decrypted = aead.Open(
 +      base::span<const uint8_t>(encrypted_data, encrypted_length),

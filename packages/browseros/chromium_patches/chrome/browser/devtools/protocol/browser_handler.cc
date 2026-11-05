@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/devtools/protocol/browser_handler.cc b/chrome/browser/devtools/protocol/browser_handler.cc
-index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f697b01f6 100644
+index 6af060d287..f37c790345 100644
 --- a/chrome/browser/devtools/protocol/browser_handler.cc
 +++ b/chrome/browser/devtools/protocol/browser_handler.cc
 @@ -4,24 +4,41 @@
@@ -94,7 +94,7 @@ index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f
  BrowserWindow* GetBrowserWindow(int window_id) {
    BrowserWindow* result = nullptr;
    ForEachCurrentBrowserWindowInterfaceOrderedByActivation(
-@@ -76,6 +136,418 @@ std::unique_ptr<protocol::Browser::Bounds> GetBrowserWindowBounds(
+@@ -76,6 +136,409 @@ std::unique_ptr<protocol::Browser::Bounds> GetBrowserWindowBounds(
        .Build();
  }
  
@@ -129,10 +129,6 @@ index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f
 +    case BrowserWindowInterface::TYPE_CUSTOM_TAB:
 +      return "normal";
 +#endif
-+#if !BUILDFLAG(IS_ANDROID)
-+    case BrowserWindowInterface::TYPE_PICTURE_IN_PICTURE:
-+      return "picture_in_picture";
-+#endif
 +  }
 +  return "normal";
 +}
@@ -152,11 +148,6 @@ index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f
 +  if (type_str == "app_popup") {
 +    return BrowserWindowInterface::TYPE_APP_POPUP;
 +  }
-+#if !BUILDFLAG(IS_ANDROID)
-+  if (type_str == "picture_in_picture") {
-+    return BrowserWindowInterface::TYPE_PICTURE_IN_PICTURE;
-+  }
-+#endif
 +  return BrowserWindowInterface::TYPE_NORMAL;
 +}
 +
@@ -513,7 +504,7 @@ index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f
  }  // namespace
  
  BrowserHandler::BrowserHandler(protocol::UberDispatcher* dispatcher,
-@@ -126,6 +598,67 @@ Response BrowserHandler::GetWindowForTarget(
+@@ -126,6 +589,67 @@ Response BrowserHandler::GetWindowForTarget(
    return Response::Success();
  }
  
@@ -581,7 +572,7 @@ index 6af060d287872bf2ae881ff013c124eb7508c839..eefd161c2d5a1a8aacda1ee2c687c60f
  Response BrowserHandler::GetWindowBounds(
      int window_id,
      std::unique_ptr<protocol::Browser::Bounds>* out_bounds) {
-@@ -305,3 +838,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
+@@ -305,3 +829,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
        net::SchemefulSite(url_to_add));
    return Response::Success();
  }

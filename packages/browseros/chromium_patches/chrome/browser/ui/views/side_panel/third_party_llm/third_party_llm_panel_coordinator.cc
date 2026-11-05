@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc b/chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..cf3c654ac43ad44eafa600b6fbe6d30be682a19a
+index 0000000000..dbe7099f94
 --- /dev/null
 +++ b/chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc
 @@ -0,0 +1,1177 @@
@@ -369,7 +369,7 @@ index 0000000000000000000000000000000000000000..cf3c654ac43ad44eafa600b6fbe6d30b
 +  web_view_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +
 +  // Allow accelerators (keyboard shortcuts) to be processed
-+  web_view_->set_allow_accelerators(true);
++  web_view_->set_allow_accelerators_deprecated(true);
 +
 +  // Add separator before footer
 +  container->AddChildView(std::make_unique<views::Separator>());
@@ -913,11 +913,11 @@ index 0000000000000000000000000000000000000000..cf3c654ac43ad44eafa600b6fbe6d30b
 +  }
 +
 +  // For popup windows and new tabs, add to the tab strip
-+  if (disposition == WindowOpenDisposition::NEW_POPUP ||
-+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-+      disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-+      disposition == WindowOpenDisposition::NEW_WINDOW) {
-+    int add_types = (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
++  if (disposition == WindowOpenDisposition::kNewPopup ||
++      disposition == WindowOpenDisposition::kNewForegroundTab ||
++      disposition == WindowOpenDisposition::kNewBackgroundTab ||
++      disposition == WindowOpenDisposition::kNewWindow) {
++    int add_types = (disposition == WindowOpenDisposition::kNewForegroundTab)
 +                        ? AddTabTypes::ADD_ACTIVE
 +                        : AddTabTypes::ADD_NONE;
 +    GetTabStripModel()->AddWebContents(
