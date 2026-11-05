@@ -1,7 +1,8 @@
 diff --git a/chrome/browser/background/extensions/background_mode_manager.cc b/chrome/browser/background/extensions/background_mode_manager.cc
+index 16e28b4..b68bca4 100644
 --- a/chrome/browser/background/extensions/background_mode_manager.cc
 +++ b/chrome/browser/background/extensions/background_mode_manager.cc
-@@ -348,9 +348,9 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
+@@ -351,7 +351,7 @@ BackgroundModeManager::~BackgroundModeManager() {
  
  // static
  void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -10,5 +11,3 @@ diff --git a/chrome/browser/background/extensions/background_mode_manager.cc b/c
  }
  
  void BackgroundModeManager::RegisterProfile(Profile* profile) {
-   // We don't want to register multiple times for one profile.
-   DCHECK(!background_mode_data_.contains(profile));

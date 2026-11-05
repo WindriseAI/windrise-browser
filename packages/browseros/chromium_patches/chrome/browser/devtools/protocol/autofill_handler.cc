@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/devtools/protocol/autofill_handler.cc b/chrome/browser/devtools/protocol/autofill_handler.cc
-index bd7972bc4a5a4d52782724e1b9794e31deca0525..c8832d087c05c5e1267ff0c05de52d5ae991c7ab 100644
+index 81e9bff..9307751 100644
 --- a/chrome/browser/devtools/protocol/autofill_handler.cc
 +++ b/chrome/browser/devtools/protocol/autofill_handler.cc
-@@ -4,14 +4,28 @@
+@@ -4,15 +4,29 @@
  
  #include "chrome/browser/devtools/protocol/autofill_handler.h"
  
@@ -15,6 +15,7 @@ index bd7972bc4a5a4d52782724e1b9794e31deca0525..c8832d087c05c5e1267ff0c05de52d5a
  
  #include "base/check_deref.h"
  #include "base/containers/to_vector.h"
+ #include "base/functional/bind.h"
 +#include "base/hash/sha1.h"
 +#include "base/i18n/case_conversion.h"
  #include "base/memory/scoped_refptr.h"
@@ -31,7 +32,7 @@ index bd7972bc4a5a4d52782724e1b9794e31deca0525..c8832d087c05c5e1267ff0c05de52d5a
  #include "components/autofill/content/browser/content_autofill_client.h"
  #include "components/autofill/content/browser/content_autofill_driver.h"
  #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-@@ -31,9 +45,18 @@
+@@ -32,9 +46,18 @@
  #include "components/autofill/core/common/form_field_data.h"
  #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
  #include "components/autofill/core/common/unique_ids.h"
@@ -50,7 +51,7 @@ index bd7972bc4a5a4d52782724e1b9794e31deca0525..c8832d087c05c5e1267ff0c05de52d5a
  
  namespace {
  
-@@ -71,6 +94,809 @@ std::optional<std::string> GetRenderFrameDevtoolsToken(
+@@ -72,6 +95,809 @@ std::optional<std::string> GetRenderFrameDevtoolsToken(
  
  }  // namespace
  
@@ -860,7 +861,7 @@ index bd7972bc4a5a4d52782724e1b9794e31deca0525..c8832d087c05c5e1267ff0c05de52d5a
  AutofillHandler::AutofillHandler(protocol::UberDispatcher* dispatcher,
                                   const std::string& target_id)
      : target_id_(target_id) {
-@@ -90,8 +916,8 @@ void AutofillHandler::Trigger(
+@@ -91,8 +917,8 @@ void AutofillHandler::Trigger(
      std::unique_ptr<protocol::Autofill::Address> address,
      std::unique_ptr<TriggerCallback> callback) {
    auto host = content::DevToolsAgentHost::GetForId(target_id_);

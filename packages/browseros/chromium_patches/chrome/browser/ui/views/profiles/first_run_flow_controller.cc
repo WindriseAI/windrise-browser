@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
-index e6a815e2c00d48131a0b3b24c51c1830dc67afe4..975a05f938d2d05d34411e99e31759f615c97397 100644
+index 4fa3120..6c2a110 100644
 --- a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 +++ b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 @@ -25,6 +25,9 @@
@@ -12,7 +12,7 @@ index e6a815e2c00d48131a0b3b24c51c1830dc67afe4..975a05f938d2d05d34411e99e31759f6
  #include "chrome/browser/enterprise/util/managed_browser_utils.h"
  #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
  #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-@@ -268,6 +271,70 @@ class IntroStepController : public ProfileManagementStepController {
+@@ -298,6 +301,70 @@ class IntroStepController : public IntroBasedAnimatedStepController {
    base::WeakPtrFactory<IntroStepController> weak_ptr_factory_{this};
  };
  
@@ -83,43 +83,18 @@ index e6a815e2c00d48131a0b3b24c51c1830dc67afe4..975a05f938d2d05d34411e99e31759f6
  class DefaultBrowserStepController : public ProfileManagementStepController {
   public:
    explicit DefaultBrowserStepController(
-@@ -1024,46 +1091,30 @@ void FirstRunFlowController::StartBrowsing() {
- }
+@@ -1014,21 +1081,30 @@ void FirstRunFlowController::Init() {
+     }
+   }
  
- void FirstRunFlowController::Init() {
--  if (switches::IsFirstRunDesktopRevampEnabled(
--          IsProfileInSearchEngineChoiceRegion(profile_))) {
--    if (base::FeatureList::IsEnabled(switches::kFirstRunDesktopRevampSound)) {
--      sounds_manager_ = GetSoundsManagerFactory().Run(
--          content::GetAudioServiceStreamFactoryBinder());
--    }
--    if (sounds_manager_) {
--      sounds_manager_->Initialize(kLogoSoundKey, IDR_INTRO_SOUND_LOGO_FLAC,
--                                  media::AudioCodec::kFLAC, /*loop=*/false);
--      sounds_manager_->Initialize(kAmbientSoundKey,
--                                  IDR_INTRO_SOUND_AMBIENT_FLAC,
--                                  media::AudioCodec::kFLAC, /*loop=*/true);
--      sounds_manager_->Initialize(kWelcomeBackSoundKey,
--                                  IDR_INTRO_SOUND_WELCOME_BACK_FLAC,
--                                  media::AudioCodec::kFLAC, /*loop=*/false);
--      sounds_manager_->Initialize(kFeatureShowcaseAmbientSoundKey,
--                                  IDR_INTRO_SOUND_FEATURE_SHOWCASE_AMBIENT_FLAC,
--                                  media::AudioCodec::kFLAC, /*loop=*/true);
--      sounds_manager_->Initialize(
--          kFeatureShowcaseProgressSoundKey,
--          IDR_INTRO_SOUND_FEATURE_SHOWCASE_PROGRESS_FLAC,
--          media::AudioCodec::kFLAC, /*loop=*/false);
--      sounds_manager_->Initialize(kAllSetSoundKey, IDR_INTRO_SOUND_ALL_SET_FLAC,
--                                  media::AudioCodec::kFLAC, /*loop=*/false);
--    }
--  }
--
 -  if (switches::IsPreFirstRunDesktopRefreshEnabled()) {
 -    RegisterStep(
 -        Step::kWelcome,
 -        std::make_unique<WelcomeStepController>(
 -            host(), base::BindOnce(&FirstRunFlowController::OnWelcomeCompleted,
--                                   weak_ptr_factory_.GetWeakPtr())));
+-                                   // unretained ok: the callback is passed to a
+-                                   // step that `this` will own and outlive.
+-                                   base::Unretained(this))));
 -    SwitchToStep(Step::kWelcome, /*reset_state=*/true);
 -  } else {
 -    RegisterAndSwitchToIntroStep(
@@ -154,7 +129,7 @@ index e6a815e2c00d48131a0b3b24c51c1830dc67afe4..975a05f938d2d05d34411e99e31759f6
  }
  
  void FirstRunFlowController::CancelSigninFlow() {
-@@ -1130,6 +1181,13 @@ void FirstRunFlowController::HandleIntroSigninChoice(IntroChoice choice) {
+@@ -1093,6 +1169,13 @@ void FirstRunFlowController::HandleIntroSigninChoice(IntroChoice choice) {
        kAccessPoint, profile_->GetPath());
  }
  

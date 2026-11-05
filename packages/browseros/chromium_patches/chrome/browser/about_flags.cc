@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index ba175a0e376a962cf6bd09c8ae1b82819788ee9d..6b2719bcaf6efc3c57b19c7cc0c8fe3588ba0bce 100644
+index 05bbf0b..ecf48da 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -11438,6 +11438,17 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -11429,6 +11429,17 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(display::features::kFastDrmMasterDrop)},
  #endif  // BUILDFLAG(IS_CHROMEOS)
  
@@ -17,6 +17,6 @@ index ba175a0e376a962cf6bd09c8ae1b82819788ee9d..6b2719bcaf6efc3c57b19c7cc0c8fe35
 +     flag_descriptions::kBrowserOsKeyboardShortcutsDescription, kOsDesktop,
 +     FEATURE_VALUE_TYPE(features::kBrowserOsKeyboardShortcuts)},
 +#endif
- #if BUILDFLAG(IS_ANDROID)
-     {"new-etc1-encoder", flag_descriptions::kNewEtc1EncoderName,
-      flag_descriptions::kNewEtc1EncoderDescription, kOsAndroid,
+ #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+     {"automatic-usb-detach", flag_descriptions::kAutomaticUsbDetachName,
+      flag_descriptions::kAutomaticUsbDetachDescription, kOsAndroid | kOsLinux,

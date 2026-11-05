@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/external_provider_manager.cc b/chrome/browser/extensions/external_provider_manager.cc
-index 80ac525552c03f173ae13812bce4dc57222dec53..32c79687cabc0bb685a99128549a29a6355d1d10 100644
+index ca6adb4..e30b9e4 100644
 --- a/chrome/browser/extensions/external_provider_manager.cc
 +++ b/chrome/browser/extensions/external_provider_manager.cc
 @@ -4,6 +4,7 @@
@@ -10,15 +10,15 @@ index 80ac525552c03f173ae13812bce4dc57222dec53..32c79687cabc0bb685a99128549a29a6
  #include <cstddef>
  
  #include "base/check.h"
-@@ -14,6 +15,7 @@
+@@ -15,6 +16,7 @@
  #include "base/trace_event/trace_event.h"
  #include "base/version.h"
  #include "build/build_config.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
  #include "chrome/browser/extensions/corrupted_extension_reinstaller.h"
  #include "chrome/browser/extensions/extension_error_controller.h"
- #include "chrome/browser/extensions/external_install_manager.h"
-@@ -291,6 +293,7 @@ bool ExternalProviderManager::OnExternalExtensionFileFound(
+ #include "chrome/browser/extensions/extension_management.h"
+@@ -302,6 +304,7 @@ bool ExternalProviderManager::OnExternalExtensionFileFound(
    installer->set_expected_version(info.version,
                                    true /* fail_install_if_unexpected */);
    installer->set_install_immediately(info.install_immediately);
@@ -26,7 +26,7 @@ index 80ac525552c03f173ae13812bce4dc57222dec53..32c79687cabc0bb685a99128549a29a6
    installer->set_creation_flags(info.creation_flags);
  
    CRXFileInfo file_info(
-@@ -477,8 +480,21 @@ void ExternalProviderManager::OnExternalProviderUpdateComplete(
+@@ -496,8 +499,21 @@ void ExternalProviderManager::OnExternalProviderUpdateComplete(
    Profile* profile = Profile::FromBrowserContext(context_);
    ExtensionUpdater* updater = ExtensionUpdater::Get(profile);
    if (!update_url_extensions.empty() && updater->enabled()) {

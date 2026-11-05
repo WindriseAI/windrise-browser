@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/chrome_browser_main_win.cc b/chrome/browser/chrome_browser_main_win.cc
-index 14bf87c503bb167c79f838b82fcf4810ddede740..91c94b2bc86f7264c52806de7a010ac94150d987 100644
+index 7784475..7ba445d 100644
 --- a/chrome/browser/chrome_browser_main_win.cc
 +++ b/chrome/browser/chrome_browser_main_win.cc
 @@ -58,6 +58,7 @@
@@ -7,10 +7,10 @@ index 14bf87c503bb167c79f838b82fcf4810ddede740..91c94b2bc86f7264c52806de7a010ac9
  #include "chrome/browser/browser_features.h"
  #include "chrome/browser/browser_process.h"
 +#include "chrome/browser/buildflags.h"
+ #include "chrome/browser/device_reauth/win/authenticator_win.h"
+ #include "chrome/browser/device_reauth/win/device_auth_availability_checker_win.h"
  #include "chrome/browser/first_run/first_run.h"
- #include "chrome/browser/first_run/upgrade_util.h"
- #include "chrome/browser/first_run/upgrade_util_win.h"
-@@ -137,6 +138,10 @@
+@@ -140,6 +141,10 @@
  #include "chrome/browser/platform_experience/installer/installer_win.h"
  #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
  
@@ -20,8 +20,8 @@ index 14bf87c503bb167c79f838b82fcf4810ddede740..91c94b2bc86f7264c52806de7a010ac9
 +
  namespace {
  
- typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
-@@ -660,6 +665,11 @@ int ChromeBrowserMainPartsWin::PostCreateThreads() {
+ constexpr base::TimeDelta kCacheBiometricsAvailabilityDelay = base::Seconds(30);
+@@ -738,6 +743,11 @@ int ChromeBrowserMainPartsWin::PostCreateThreads() {
  }
  
  void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
@@ -33,7 +33,7 @@ index 14bf87c503bb167c79f838b82fcf4810ddede740..91c94b2bc86f7264c52806de7a010ac9
    base::ImportantFileWriterCleaner::GetInstance().Stop();
  
    ChromeBrowserMainParts::PostMainMessageLoopRun();
-@@ -720,6 +730,12 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
+@@ -798,6 +808,12 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
  
    InitializeChromeElf();
  

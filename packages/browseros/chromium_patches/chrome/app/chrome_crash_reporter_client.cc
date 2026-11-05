@@ -1,5 +1,5 @@
 diff --git a/chrome/app/chrome_crash_reporter_client.cc b/chrome/app/chrome_crash_reporter_client.cc
-index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1b76757fd 100644
+index bfbd314..4346508 100644
 --- a/chrome/app/chrome_crash_reporter_client.cc
 +++ b/chrome/app/chrome_crash_reporter_client.cc
 @@ -17,6 +17,7 @@
@@ -10,12 +10,18 @@ index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1
  #include "chrome/common/channel_info.h"
  #include "chrome/common/chrome_paths.h"
  #include "chrome/common/chrome_paths_internal.h"
-@@ -134,19 +135,19 @@ void ChromeCrashReporterClient::GetProductInfo(ProductInfo* product_info) {
- 
-   const char* product_name = "";
+@@ -139,24 +140,24 @@ void ChromeCrashReporterClient::GetProductInfo(ProductInfo* product_info) {
  #if BUILDFLAG(IS_ANDROID)
--  product_name = "Chrome_Android";
-+  product_name = "Windrise_Android";
+   // LINT.IfChange(AndroidCrashProductName)
+   product_name = base::android::device_info::is_desktop()
+-                     ? "Chrome_Android_Desktop"
+-                     : "Chrome_Android";
++                     ? "Windrise_Android_Desktop"
++                     : "Windrise_Android";
+   // LINT.ThenChange(
+   //   //chrome/android/java/src/org/chromium/chrome/browser/crash/ChromePureJavaExceptionReporter.java:AndroidCrashProductName,
+   //   //components/minidump_uploader/rewrite_minidumps_as_mimes.cc:AndroidCrashProductName
+   // )
  #elif BUILDFLAG(IS_CHROMEOS)
 -  product_name = "Chrome_ChromeOS";
 +  product_name = "Windrise_ChromeOS";
@@ -36,7 +42,7 @@ index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1
  #else
    NOTREACHED();
  #endif
-@@ -172,42 +173,8 @@ bool ChromeCrashReporterClient::IsRunningUnattended() {
+@@ -188,42 +189,8 @@ bool ChromeCrashReporterClient::IsRunningUnattended() {
  }
  
  bool ChromeCrashReporterClient::GetCollectStatsConsent() {
@@ -81,7 +87,7 @@ index 64912e538f3b0b4acfbb21e0cd94a27b4329c7a2..fecf93d66ea720a3c4dab020e89037e1
  }
  
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-@@ -250,3 +217,7 @@ ChromeCrashReporterClient::GetUserStreamSharedMemoryRegions() {
+@@ -258,3 +225,7 @@ ChromeCrashReporterClient::GetUserStreamSharedMemoryRegions() {
  
    return streams;
  }

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/profiles/profile_window.cc b/chrome/browser/profiles/profile_window.cc
-index c2f8c2028e8f036bac6c5a1183ac26019fc8fae6..01aad58e93a1218248c3dc7d9aedd5ee21883065 100644
+index 3e4cdd5..19ff074 100644
 --- a/chrome/browser/profiles/profile_window.cc
 +++ b/chrome/browser/profiles/profile_window.cc
 @@ -6,6 +6,9 @@
@@ -19,7 +19,7 @@ index c2f8c2028e8f036bac6c5a1183ac26019fc8fae6..01aad58e93a1218248c3dc7d9aedd5ee
 -    bool open_command_line_urls) {
 +    bool open_command_line_urls,
 +    std::vector<GURL> first_run_tabs) {
-   DCHECK(profile);
+   CHECK(profile, base::NotFatalUntil::M162);
    TRACE_EVENT1("browser", "FindOrCreateNewWindowForProfile", "profile_path",
                 profile->GetPath());
 @@ -108,6 +112,9 @@ void FindOrCreateNewWindowForProfile(
@@ -48,7 +48,7 @@ index c2f8c2028e8f036bac6c5a1183ac26019fc8fae6..01aad58e93a1218248c3dc7d9aedd5ee
 +    bool open_command_line_urls,
 +    Profile* profile,
 +    std::vector<GURL> first_run_tabs) {
-   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+   CHECK_CURRENTLY_ON(BrowserThread::UI, base::NotFatalUntil::M162);
    TRACE_EVENT1("browser", "OpenBrowserWindowForProfile", "profile_path",
                 profile->GetPath().AsUTF8Unsafe());
 @@ -208,7 +227,8 @@ void OpenBrowserWindowForProfile(

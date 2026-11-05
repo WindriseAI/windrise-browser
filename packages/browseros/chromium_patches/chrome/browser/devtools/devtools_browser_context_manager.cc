@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/devtools/devtools_browser_context_manager.cc b/chrome/browser/devtools/devtools_browser_context_manager.cc
-index 8137e5f95157d4fcb045f325d6d4b0bde11b2b37..a1fecbb87fe4c425e2e1938938866ec4a61ee5ba 100644
+index b239a3c..40a1016 100644
 --- a/chrome/browser/devtools/devtools_browser_context_manager.cc
 +++ b/chrome/browser/devtools/devtools_browser_context_manager.cc
 @@ -4,28 +4,43 @@
@@ -46,13 +46,12 @@ index 8137e5f95157d4fcb045f325d6d4b0bde11b2b37..a1fecbb87fe4c425e2e1938938866ec4
  
  void DestroyOTRProfileWhenAppropriate(base::WeakPtr<Profile> weak_profile) {
    if (Profile* profile = weak_profile.get()) {
-@@ -65,10 +80,19 @@ DevToolsBrowserContextManager& DevToolsBrowserContextManager::GetInstance() {
+@@ -73,9 +88,19 @@ DevToolsBrowserContextManager& DevToolsBrowserContextManager::GetInstance() {
  
  Profile* DevToolsBrowserContextManager::GetProfileById(
      const std::string& context_id) {
--  Profile* default_profile =
--      ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
--  if (context_id == default_profile->UniqueId()) {
+-  if (Profile* default_profile = GetDefaultProfile();
+-      default_profile && context_id == default_profile->UniqueId()) {
 -    return default_profile;
 +  // Both root CDP and Chrome's Target handler use this resolver. Never load a
 +  // profile to resolve a live ID, and never confuse its directory label with
@@ -70,7 +69,7 @@ index 8137e5f95157d4fcb045f325d6d4b0bde11b2b37..a1fecbb87fe4c425e2e1938938866ec4
    }
    auto it = otr_profiles_.find(context_id);
    if (it == otr_profiles_.end())
-@@ -76,6 +100,311 @@ Profile* DevToolsBrowserContextManager::GetProfileById(
+@@ -83,6 +108,311 @@ Profile* DevToolsBrowserContextManager::GetProfileById(
    return it->second;
  }
  
@@ -380,5 +379,5 @@ index 8137e5f95157d4fcb045f325d6d4b0bde11b2b37..a1fecbb87fe4c425e2e1938938866ec4
 +}
 +
  content::BrowserContext* DevToolsBrowserContextManager::CreateBrowserContext() {
-   Profile* original_profile =
-       ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
+   Profile* original_profile = GetDefaultProfile();
+   if (!original_profile) {

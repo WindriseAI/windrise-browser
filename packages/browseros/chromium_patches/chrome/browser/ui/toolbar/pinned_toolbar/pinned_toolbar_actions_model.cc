@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc b/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
-index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d34003d940 100644
+index dcd99a8..5f7548c 100644
 --- a/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
 +++ b/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
 @@ -16,6 +16,8 @@
@@ -9,9 +9,9 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
 +#include "chrome/browser/browseros/core/browseros_action_utils.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
  #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/ttc/core/features.h"
  #include "chrome/browser/ui/actions/chrome_action_id.h"
- #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_factory.h"
-@@ -37,8 +39,16 @@ PinnedToolbarActionsModel::PinnedToolbarActionsModel(Profile* profile)
+@@ -38,8 +40,16 @@ PinnedToolbarActionsModel::PinnedToolbarActionsModel(Profile* profile)
        base::BindRepeating(&PinnedToolbarActionsModel::UpdatePinnedActionIds,
                            base::Unretained(this)));
  
@@ -28,7 +28,7 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
  }
  
  PinnedToolbarActionsModel::~PinnedToolbarActionsModel() = default;
-@@ -237,8 +247,11 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
+@@ -238,8 +248,11 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
    if (!CanUpdate()) {
      return;
    }
@@ -41,7 +41,7 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
      pref_service_->SetBoolean(prefs::kPinnedChromeLabsMigrationComplete, true);
    }
    if (!pref_service_->GetBoolean(prefs::kPinnedCastMigrationComplete)) {
-@@ -257,6 +270,25 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
+@@ -263,6 +276,25 @@ void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
    }
  }
  
@@ -67,7 +67,7 @@ index c2ac3ec9618c1e77a90bf89822ca0df6d4130982..7878a3148379247438bc1657ce9399d3
  const std::vector<actions::ActionId>&
  PinnedToolbarActionsModel::PinnedActionIds() const {
    return pinned_action_ids_;
-@@ -275,3 +307,10 @@ void PinnedToolbarActionsModel::UpdatePref(
+@@ -281,3 +313,10 @@ void PinnedToolbarActionsModel::UpdatePref(
      list_of_values.Append(id_string.value());
    }
  }
