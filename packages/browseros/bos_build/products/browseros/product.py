@@ -16,7 +16,7 @@ from ..server_binaries import ServerBundle, SignSpec
 
 BROWSEROS_PRODUCT = ProductDescriptor.define(
     id="browseros",
-    display_name="Windrise",
+    display_name="Windrise Browser",
     windows_installer_guid="{4ADA8188-62A6-4C43-8FFC-1A2129C174CE}",
     summary="The open source agentic browser",
     description="Windrise is a privacy-focused web browser built on Chromium.",

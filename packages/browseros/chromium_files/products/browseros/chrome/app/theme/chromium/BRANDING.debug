@@ -1,7 +1,7 @@
 COMPANY_FULLNAME=Windrise Development
 COMPANY_SHORTNAME=Windrise Dev
-PRODUCT_FULLNAME=Windrise Dev
-PRODUCT_SHORTNAME=Windrise Dev
+PRODUCT_FULLNAME=Windrise Browser
+PRODUCT_SHORTNAME=Windrise Browser
 PRODUCT_INSTALLER_FULLNAME=Windrise Dev Installer
 PRODUCT_INSTALLER_SHORTNAME=Windrise Dev Installer
 COPYRIGHT=Copyright @2025@ Windrise Development. Based on BrowserOS and Chromium.
