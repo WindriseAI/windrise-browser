@@ -1,0 +1,12 @@
+diff --git a/components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom b/components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom
+index e1a68cd2bb..c374a5eb81 100644
+--- a/components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom
++++ b/components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom
+@@ -518,6 +518,7 @@ enum PageActionId {
+   kActionFilledCardInformation,
+   kActionShowPaymentsBubbleOrPage,
+   kActionSidePanelShowContextualTasks,
++  kActionWindriseSlot,
+   kActionBookmarkThisTab,
+   kActionFederation,
+   kActionGlicContextualCueing,

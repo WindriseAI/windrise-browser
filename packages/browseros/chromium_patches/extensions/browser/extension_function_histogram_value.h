@@ -1,8 +1,8 @@
 diff --git a/extensions/browser/extension_function_histogram_value.h b/extensions/browser/extension_function_histogram_value.h
-index f90a2d4..e7093f5 100644
+index f90a2d4359..1cf854172f 100644
 --- a/extensions/browser/extension_function_histogram_value.h
 +++ b/extensions/browser/extension_function_histogram_value.h
-@@ -2056,6 +2056,35 @@ enum HistogramValue {
+@@ -2056,8 +2056,38 @@ enum HistogramValue {
    AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS = 1991,
    EXPERIMENTALAIDATA_GETAPCSNAPSHOT = 1992,
    EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION = 1993,
@@ -37,4 +37,7 @@ index f90a2d4..e7093f5 100644
 +  DELETED_BROWSER_OS_GETPAGESTRUCTURE = 2020,
    // Last entry: Add new entries above, then run:
    // tools/metrics/histograms/update_extension_histograms.py
++  BROWSER_OS_SETADDRESSBARSLOT = 2021,
    ENUM_BOUNDARY
+ };
+ // LINT.ThenChange(/tools/metrics/histograms/metadata/extensions/enums.xml:ExtensionFunctions)

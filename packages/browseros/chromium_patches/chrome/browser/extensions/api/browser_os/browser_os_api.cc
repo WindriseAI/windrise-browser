@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..a0f16e46359c0d930ad845e6565c5c99ca7dde94
+index 0000000000..ee37a536d7
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,347 @@
+@@ -0,0 +1,418 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -18,6 +18,7 @@ index 0000000000000000000000000000000000000000..a0f16e46359c0d930ad845e6565c5c99
 +
 +#include "base/files/file_util.h"
 +#include "base/logging.h"
++#include "base/strings/stringprintf.h"
 +#include "base/strings/utf_string_conversions.h"
 +#include "base/time/time.h"
 +#include "base/values.h"
@@ -27,9 +28,13 @@ index 0000000000000000000000000000000000000000..a0f16e46359c0d930ad845e6565c5c99
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
 +#include "chrome/browser/platform_util.h"
 +#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/actions/chrome_action_id.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
++#include "chrome/browser/ui/browser_window/public/browser_window_interface_iterator.h"
 +#include "chrome/browser/ui/browser_window/public/profile_browser_collection.h"
++#include "chrome/browser/ui/page_action/page_action_controller.h"
 +#include "chrome/browser/ui/select_file_policy/chrome_select_file_policy.h"
++#include "chrome/browser/ui/tabs/public/tab_features.h"
 +#include "chrome/browser/ui/tabs/tab_strip_model.h"
 +#include "chrome/browser/ui/toasts/api/toast_id.h"
 +#include "chrome/browser/ui/toasts/toast_controller.h"
@@ -39,7 +44,9 @@ index 0000000000000000000000000000000000000000..a0f16e46359c0d930ad845e6565c5c99
 +#include "components/infobars/core/infobar_delegate.h"
 +#include "components/infobars/core/simple_alert_infobar_delegate.h"
 +#include "components/prefs/pref_service.h"
++#include "components/tabs/public/tab_interface.h"
 +#include "content/public/browser/web_contents.h"
++#include "chrome/browser/extensions/extension_tab_util.h"
 +#include "ui/shell_dialogs/selected_file_info.h"
 +
 +namespace extensions {
@@ -347,6 +354,70 @@ index 0000000000000000000000000000000000000000..a0f16e46359c0d930ad845e6565c5c99
 +
 +  return RespondNow(
 +      ArgumentList(browser_os::ShowInfoBar::Results::Create(shown)));
++}
++
++// Bridges chrome.browserOS.setAddressBarSlot to the tab-scoped page action
++// controller. State is kept per tab, so switching tabs preserves each slot.
++ExtensionFunction::ResponseAction BrowserOSSetAddressBarSlotFunction::Run() {
++  std::optional<browser_os::SetAddressBarSlot::Params> params =
++      browser_os::SetAddressBarSlot::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  ProfileBrowserCollection* browser_collection =
++      ProfileBrowserCollection::GetForProfile(profile);
++  if (!browser_collection) {
++    return RespondNow(Error("No browser window"));
++  }
++
++  ::tabs::TabInterface* target_tab = nullptr;
++  browser_collection->ForEach(
++      [&target_tab, &params](BrowserWindowInterface* browser) {
++        TabStripModel* tab_strip_model = browser->GetTabStripModel();
++        if (!tab_strip_model) {
++          return true;
++        }
++        for (int i = 0; i < tab_strip_model->count(); ++i) {
++          content::WebContents* contents =
++              tab_strip_model->GetWebContentsAt(i);
++          if (contents &&
++              extensions::ExtensionTabUtil::GetTabId(contents) ==
++                  params->options.tab_id) {
++            target_tab = tab_strip_model->GetTabAtIndex(i);
++            return false;
++          }
++        }
++        return true;
++      },
++      BrowserCollection::Order::kActivation);
++
++  if (!target_tab || !target_tab->GetTabFeatures()) {
++    return RespondNow(
++        Error(base::StringPrintf("No tab with id: %d", params->options.tab_id)));
++  }
++
++  page_actions::PageActionController* page_action_controller =
++      target_tab->GetTabFeatures()->page_action_controller();
++  if (!page_action_controller) {
++    return RespondNow(Error("Page action controller unavailable"));
++  }
++
++  if (params->options.visible) {
++    if (params->options.text) {
++      page_action_controller->OverrideText(
++          kActionWindriseSlot, base::UTF8ToUTF16(*params->options.text));
++    } else {
++      page_action_controller->ClearOverrideText(kActionWindriseSlot);
++    }
++    page_action_controller->Show(kActionWindriseSlot);
++    page_action_controller->ShowSuggestionChip(kActionWindriseSlot);
++  } else {
++    page_action_controller->HideSuggestionChip(kActionWindriseSlot);
++    page_action_controller->ClearOverrideText(kActionWindriseSlot);
++    page_action_controller->Hide(kActionWindriseSlot);
++  }
++
++  return RespondNow(NoArguments());
 +}
 +
 +}  // namespace api
