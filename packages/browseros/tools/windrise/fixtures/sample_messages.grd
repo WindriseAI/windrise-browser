@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit latest_public_release="0" current_release="1" output_all_resource_defines="false">
+  <outputs>
+    <output filename="sample_strings_en.pak" type="data_package" lang="en" />
+    <output filename="sample_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+  </outputs>
+  <translations>
+    <file path="rebranded_sample_zh_cn.xtb" lang="zh-CN" />
+  </translations>
+  <release seq="1">
+    <messages fallback_to_english="true">
+      <message name="IDS_SAMPLE_ABOUT" desc="Menu title for the About page.">
+        About Windrise Browser
+      </message>
+      <message name="IDS_SAMPLE_RESTART" desc="Dialog text for restart.">
+        Relaunch <ph name="PRODUCT"/>, keeping <ph name="COUNT"/> windows
+      </message>
+      <message name="IDS_SAMPLE_EXISTING" desc="Existing translated string.">
+        Already translated text
+      </message>
+    </messages>
+  </release>
+</grit>

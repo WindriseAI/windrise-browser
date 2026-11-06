@@ -1,0 +1,1016 @@
+[
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_SITE_SETTINGS_CAMERA_BLOCKED_BY_OS",
+    "current_id": "5636040176527937788",
+    "candidate_legacy_ids": [
+      "522944237065073482",
+      "6465809256902331796",
+      "3061766583990765625",
+      "6699180763868873835"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "BEGIN_LINK",
+        "example": ""
+      },
+      {
+        "name": "END_LINK",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To use your camera on these sites, give Windrise Browser access in BEGIN_LINKsystem settingsEND_LINK",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED_BY_OS",
+    "current_id": "2700603318792089937",
+    "candidate_legacy_ids": [
+      "3377510641535472654",
+      "657002744788506101",
+      "8595911286089538962",
+      "7253330621859036185"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "BEGIN_LINK",
+        "example": ""
+      },
+      {
+        "name": "END_LINK",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To use your location on these sites, give Windrise Browser access in BEGIN_LINKsystem settingsEND_LINK",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_SITE_SETTINGS_MIC_BLOCKED_BY_OS",
+    "current_id": "4038396250986752436",
+    "candidate_legacy_ids": [
+      "6707953741492059299",
+      "4020824908571095637",
+      "4727910626333351707",
+      "6355886356547994899"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "BEGIN_LINK",
+        "example": ""
+      },
+      {
+        "name": "END_LINK",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To use your microphone on these sites, give Windrise Browser access in BEGIN_LINKsystem settingsEND_LINK",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_DICTATION_SETTING_SUBLABEL",
+    "current_id": "6378183843759550799",
+    "candidate_legacy_ids": [
+      "2783830132942533931",
+      "4413902894016949906",
+      "8004285091503150109",
+      "3275208223741700391"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser uses your microphone to capture your voice and fill in text fields with cleaned up content",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PRODUCT_NAME",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SHORT_PRODUCT_NAME",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_ABOUT_TERMS_OF_SERVICE",
+    "current_id": "7530803880947528507",
+    "candidate_legacy_ids": [
+      "6290315939897260265",
+      "6640196636576039115",
+      "6273355676990789720",
+      "8540771955362225035"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Not used in Windrise Browser. Placeholder to keep resource maps in sync.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_ACCNAME_APP",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PASSWORD_MANAGER_TITLE_BRAND",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_1",
+    "current_id": "403857467338701563",
+    "candidate_legacy_ids": [
+      "1891838006529847172",
+      "5494335966341688510",
+      "2356253665028826536",
+      "7553331861901958638"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Open Windrise Browser with one click. Pin it for faster access.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_2",
+    "current_id": "4299572891568718400",
+    "candidate_legacy_ids": [
+      "2840832059420958847",
+      "328136497585828194",
+      "4934394942438013907",
+      "5408136130400946774"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Launch the web faster. Pin Windrise Browser to your taskbar.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_3",
+    "current_id": "7416985662990851821",
+    "candidate_legacy_ids": [
+      "3339491370013789229",
+      "7262019406332562101",
+      "7178761116291749070",
+      "6869205458982810112"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Keep Windrise Browser within reach anytime you browse.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_BUTTON_3",
+    "current_id": "2090301965296389563",
+    "candidate_legacy_ids": [
+      "698384958873863411",
+      "6106170793774620780",
+      "3501098684141327575",
+      "777361235817235362"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Pin Windrise Browser Now",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_4",
+    "current_id": "8889011340654435340",
+    "candidate_legacy_ids": [
+      "7054143435545312302",
+      "4928899781951702131",
+      "5758975075316218504",
+      "1438710179232384012"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Optimize your workflow. Add Windrise Browser to your taskbar.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_6",
+    "current_id": "3214375793184437837",
+    "candidate_legacy_ids": [
+      "2322722151183889927",
+      "4099232820408299152",
+      "1350957553381551865",
+      "4267323008244306743"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Simplify your startup. Pin Windrise Browser to your taskbar.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_9",
+    "current_id": "6191366368912943818",
+    "candidate_legacy_ids": [
+      "4970200501216722930",
+      "5552628348832493461",
+      "7206014372841936682",
+      "4485088323641400678"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "For a better desktop experience, pin Windrise Browser to your taskbar.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PIN_INFOBAR_EXPERIMENTAL_MESSAGE_10",
+    "current_id": "217664689521448711",
+    "candidate_legacy_ids": [
+      "5595629606213169343",
+      "2467943466650028217",
+      "3258096165038633049",
+      "869160315551264526"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Start browsing instantly. Pin Windrise Browser to your taskbar.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_CHROME_SIGNIN_TITLE",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_AI_SIGNIN_PROMO_AVATAR_PILL_TEXT",
+    "current_id": "6154547100849204432",
+    "candidate_legacy_ids": [
+      "8365185203370346915",
+      "442303261692797625",
+      "8150524294010268757",
+      "8560921404596054546"
+    ],
+    "meaning": "Text shown on the expanded avatar pill when the Signin Search AI Bubble promo is shown to the user",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Sign in to Windrise Browser?",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_UPDATE_RECOMMENDED_DIALOG_TITLE_ALT",
+    "current_id": "7530803880947528507",
+    "candidate_legacy_ids": [
+      "6290315939897260265",
+      "6640196636576039115",
+      "6273355676990789720",
+      "8540771955362225035"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Not used in Windrise Browser. Placeholder to keep resource maps in sync.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_UPDATE_RECOMMENDED_ALT",
+    "current_id": "7530803880947528507",
+    "candidate_legacy_ids": [
+      "6290315939897260265",
+      "6640196636576039115",
+      "6273355676990789720",
+      "8540771955362225035"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Not used in Windrise Browser. Placeholder to keep resource maps in sync.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_UPDATE_RECOMMENDED_ALT_ISOLATED",
+    "current_id": "7530803880947528507",
+    "candidate_legacy_ids": [
+      "6290315939897260265",
+      "6640196636576039115",
+      "6273355676990789720",
+      "8540771955362225035"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Not used in Windrise Browser. Placeholder to keep resource maps in sync.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_UPDATE_RECOMMENDED_ALT_INCOGNITO_AND_ISOLATED",
+    "current_id": "7530803880947528507",
+    "candidate_legacy_ids": [
+      "6290315939897260265",
+      "6640196636576039115",
+      "6273355676990789720",
+      "8540771955362225035"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Not used in Windrise Browser. Placeholder to keep resource maps in sync.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_HATS_BUBBLE_TITLE",
+    "current_id": "5753833162668088331",
+    "candidate_legacy_ids": [
+      "3485538536538092634",
+      "8347412422802673006",
+      "787676310915489695",
+      "3809877488363827958"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Help us improve Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_FORCE_SIGN_IN_ERROR_DIALOG_NOT_SUPPORTED_BY_GLIC_FLOW_BODY",
+    "current_id": "180616973270679844",
+    "candidate_legacy_ids": [
+      "6196339736238974634",
+      "782480918904119604",
+      "6495464062520865186",
+      "4205420614396015872"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To use this profile with Glic, open Windrise Browser and sign in",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_FRIENDLY_COMPANY_NAME",
+    "current_id": "5906362466875665739",
+    "candidate_legacy_ids": [
+      "7337881442233988129",
+      "1759842336958782510",
+      "8540666473246803645",
+      "808089508890593134"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_PROMO_TITLE",
+    "current_id": "4126812026031214801",
+    "candidate_legacy_ids": [
+      "6832746847700888936",
+      "3894841891831283994",
+      "7904985524660297937",
+      "1993780844886556859"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Try Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_TAB_STRIP_BUTTON_TOOLTIP",
+    "current_id": "605566123772109272",
+    "candidate_legacy_ids": [
+      "3676267296209036251",
+      "8991530961471831170",
+      "6298209738012156269",
+      "6879746217491518975"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Open Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_TAB_STRIP_BUTTON_TOOLTIP_CLOSE",
+    "current_id": "4330056594263351207",
+    "candidate_legacy_ids": [
+      "802240251472874976",
+      "6585124893636629274",
+      "508925886091073783",
+      "5160289620522965069"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Close Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_THREE_DOT_MENU_ITEM",
+    "current_id": "605566123772109272",
+    "candidate_legacy_ids": [
+      "3676267296209036251",
+      "8991530961471831170",
+      "6298209738012156269",
+      "6879746217491518975"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Open Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_TOOLTIP",
+    "current_id": "605566123772109272",
+    "candidate_legacy_ids": [
+      "3676267296209036251",
+      "8991530961471831170",
+      "6298209738012156269",
+      "6879746217491518975"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Open Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_TOOLTIP_CLOSE",
+    "current_id": "4330056594263351207",
+    "candidate_legacy_ids": [
+      "802240251472874976",
+      "6585124893636629274",
+      "508925886091073783",
+      "5160289620522965069"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Close Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_TOOLTIP_TOGGLE",
+    "current_id": "4400857739477994308",
+    "candidate_legacy_ids": [
+      "147701957709925225",
+      "8936233353620149764",
+      "5914962137339142884",
+      "7588811205318972706"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Toggle Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_MENU_SHOW",
+    "current_id": "605566123772109272",
+    "candidate_legacy_ids": [
+      "3676267296209036251",
+      "8991530961471831170",
+      "6298209738012156269",
+      "6879746217491518975"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Open Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_MENU_CLOSE",
+    "current_id": "4330056594263351207",
+    "candidate_legacy_ids": [
+      "802240251472874976",
+      "6585124893636629274",
+      "508925886091073783",
+      "5160289620522965069"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Close Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_STATUS_ICON_MENU_TOGGLE",
+    "current_id": "4400857739477994308",
+    "candidate_legacy_ids": [
+      "147701957709925225",
+      "8936233353620149764",
+      "5914962137339142884",
+      "7588811205318972706"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Toggle Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_INELIGIBLE_PROFILE_NOTICE",
+    "current_id": "2983286263513148278",
+    "candidate_legacy_ids": [
+      "4104521601664822294",
+      "2878430611200374543",
+      "908352402852153444",
+      "6789390935806665378",
+      "5894164573378901688",
+      "3018626107573109386"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To use Gemini in Windrise Browser, sign in with a different Windrise Browser Account",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_GLIC_PAGE_TITLE",
+    "current_id": "4178538067675674553",
+    "candidate_legacy_ids": [
+      "7195217321165708458",
+      "1158134713295836892",
+      "7799117199820630053",
+      "489413726534438570"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_GLIC_SECTION_TITLE",
+    "current_id": "4178538067675674553",
+    "candidate_legacy_ids": [
+      "7195217321165708458",
+      "1158134713295836892",
+      "7799117199820630053",
+      "489413726534438570"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_SETTINGS_GLIC_ROW_LABEL",
+    "current_id": "4178538067675674553",
+    "candidate_legacy_ids": [
+      "7195217321165708458",
+      "1158134713295836892",
+      "7799117199820630053",
+      "489413726534438570"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Gemini in Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_OMNIBOX_EVERYWHERE_NAME_BETA",
+    "current_id": "3026747154900905282",
+    "candidate_legacy_ids": [
+      "5078424340567921506",
+      "8227493674161801700",
+      "3639446687468999682",
+      "4939644461241063829"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Search with Windrise Browser Beta",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_OMNIBOX_EVERYWHERE_NAME_DEV",
+    "current_id": "6711852398647066993",
+    "candidate_legacy_ids": [
+      "4822016678402157345",
+      "8196526165798579689",
+      "5856175774917197804",
+      "3107582864968796571"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Search with Windrise Browser Dev",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_OMNIBOX_EVERYWHERE_NAME_CANARY",
+    "current_id": "736953633921503784",
+    "candidate_legacy_ids": [
+      "198675022342909663",
+      "1632241302126471515",
+      "7444332695541963903",
+      "3392335895648422970"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Search with Windrise Browser Canary",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_MAIN_VIEW_TITLE_GLIC",
+    "current_id": "1453774490538825467",
+    "candidate_legacy_ids": [
+      "4320140771495419682",
+      "4443232850557096000",
+      "1142526986209178224",
+      "6487542502256791192"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "START_GLIC_STYLING",
+        "example": ""
+      },
+      {
+        "name": "END_GLIC_STYLING",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Choose a Windrise Browser profile to use with START_GLIC_STYLINGGlicEND_GLIC_STYLING",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_MAIN_VIEW_TITLE_GLIC_NO_PROFILE",
+    "current_id": "8235642475044104421",
+    "candidate_legacy_ids": [
+      "4683226294480866776",
+      "8225396820869677833",
+      "2413654334584330788",
+      "1419977218498285009",
+      "8569613005832767605",
+      "1463653403181463279"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "START_GLIC_STYLING",
+        "example": ""
+      },
+      {
+        "name": "END_GLIC_STYLING",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Sign into Windrise Browser with your Windrise Browser Account to use START_GLIC_STYLINGGlicEND_GLIC_STYLING",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE_GLIC",
+    "current_id": "7613667117602981987",
+    "candidate_legacy_ids": [
+      "1834198471117836435",
+      "2995520374976579975",
+      "8036968270038112917",
+      "7286372502649368708",
+      "3097756514171950331",
+      "86093599278025028"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Select the Windrise Browser profile linked to your Windrise Browser Account to personalize your Glic experience",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE_GLIC_NO_PROFILE",
+    "current_id": "7248791604015477824",
+    "candidate_legacy_ids": [
+      "4619170476174294498",
+      "5138969631016056178",
+      "7941332603349022327",
+      "4598684711036324626",
+      "2612096677360728348",
+      "318735512950303206"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "BEGIN_LINK",
+        "example": ""
+      },
+      {
+        "name": "END_LINK",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To add a new profile and use it with Glic, sign in to Windrise Browser with a Windrise Browser Account. BEGIN_LINKLearn how to sign in to Windrise BrowserEND_LINK",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_PROFILE_PICKER_ADD_PROFILE_HELPER_GLIC",
+    "current_id": "3625765045153185783",
+    "candidate_legacy_ids": [
+      "8142183246749975366",
+      "2666075023666287065",
+      "7813910492758411656",
+      "4913375086313644421",
+      "2678457843849204924",
+      "5874873561174413749"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "BEGIN_LINK",
+        "example": ""
+      },
+      {
+        "name": "END_LINK",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To add a new profile and use it with Glic, sign in to Windrise Browser with a different Windrise Browser Account. BEGIN_LINKLearn how to add a new Windrise Browser profileEND_LINK",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_GLIC_CONTEXTUAL_CUEING_ANNOUNCEMENT",
+    "current_id": "897862035045471262",
+    "candidate_legacy_ids": [
+      "2794629867002552688",
+      "3380249972812870825",
+      "2375733997856829221",
+      "148000667228243412"
+    ],
+    "meaning": "",
+    "placeholder_structure": [
+      {
+        "name": "GLOBAL_HOTKEY",
+        "example": ""
+      }
+    ],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "To open Gemini in Windrise Browser, press GLOBAL_HOTKEY",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_DICTATION_ONBOARDING_TITLE",
+    "current_id": "4770823643602867184",
+    "candidate_legacy_ids": [
+      "1642526749618454301",
+      "8851555839257310473",
+      "6948584699330103332",
+      "2565185124030509024"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Turn your spoken thoughts into polished text with Windrise Browser",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_DICTATION_ONBOARDING_BULLET_DATA_SHARING",
+    "current_id": "9263700124007833",
+    "candidate_legacy_ids": [
+      "6000008393830557018",
+      "6273434837294773182",
+      "408458067984291520",
+      "1168694934020330413"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "The content and URL of the page you're on and your spoken audio will be sent to Windrise Browser to generate text based on what you say and the page context",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  },
+  {
+    "resource_path": "chrome/app/resources/chromium_strings_zh-CN.xtb",
+    "language": "zh-CN",
+    "message_name": "IDS_DICTATION_ONBOARDING_BULLET_MICROPHONE",
+    "current_id": "8736563996441530086",
+    "candidate_legacy_ids": [
+      "2523635505436940539",
+      "8464759592900793250",
+      "5142647051218169869",
+      "1133230376172509277"
+    ],
+    "meaning": "",
+    "placeholder_structure": [],
+    "translation_source": null,
+    "processing_result": "missing",
+    "english_text": "Windrise Browser will use your microphone to capture your voice and fill in text fields with cleaned up text.",
+    "unrecovered_reason": "No matching candidate ID found in official language bundle"
+  }
+]

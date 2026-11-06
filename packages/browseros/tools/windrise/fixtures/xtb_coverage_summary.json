@@ -1,0 +1,2187 @@
+{
+  "upstream_commit": "6449d9f9a6a906edff724b7b220199b3fde4615c",
+  "overall_coverage_pct": 91.98,
+  "resources": {
+    "chromium_strings": {
+      "total_active_messages": 869,
+      "total_branded_messages": 630,
+      "languages": {
+        "af": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "am": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ar": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "as": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "az": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "be": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "bg": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "bn": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "bs": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ca": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "cs": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "cy": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "da": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "de": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 544,
+          "missing": 86,
+          "coverage_pct": 86.35
+        },
+        "el": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "en-GB": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "es": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "es-419": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "et": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "eu": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "fa": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "fi": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "fil": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "fr": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "fr-CA": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "gl": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "gu": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "hi": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "hr": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "hu": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "hy": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "id": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "is": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "it": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ja": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ka": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "kk": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "km": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "kn": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ko": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ky": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "lo": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "lt": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "lv": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "mk": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ml": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "mn": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "mr": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ms": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "my": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ne": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "nl": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "no": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "or": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "pa": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "pl": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "pt-BR": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "pt-PT": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ro": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ru": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "si": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sk": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 575,
+          "missing": 55,
+          "coverage_pct": 91.27
+        },
+        "sl": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sq": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sr": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sr-Latn": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sv": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "sw": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ta": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "te": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "th": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "tr": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "uk": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "ur": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "uz": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "vi": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "zh-CN": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "zh-HK": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "zh-TW": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        },
+        "zu": {
+          "total_branded": 630,
+          "already_translated": 0,
+          "recoverable": 578,
+          "missing": 52,
+          "coverage_pct": 91.75
+        }
+      }
+    },
+    "generated_resources": {
+      "total_active_messages": 7592,
+      "total_branded_messages": 7,
+      "languages": {
+        "af": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "am": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ar": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "as": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "az": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "be": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bg": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bn": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bs": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ca": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "cs": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "cy": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "da": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "de": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "el": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "en-GB": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "es": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "es-419": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "et": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "eu": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fa": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fi": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fil": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fr": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fr-CA": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "gl": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "gu": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hi": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hr": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hu": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hy": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "id": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "is": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "it": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ja": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ka": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "kk": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "km": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "kn": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ko": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ky": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lo": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lt": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lv": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mk": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ml": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mn": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mr": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ms": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "my": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ne": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "nl": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "no": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "or": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pa": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pl": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pt-BR": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pt-PT": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ro": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ru": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "si": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sk": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sl": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sq": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sr": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sr-Latn": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sv": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sw": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ta": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "te": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "th": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "tr": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "uk": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ur": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "uz": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "vi": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-CN": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-HK": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-TW": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zu": {
+          "total_branded": 7,
+          "already_translated": 7,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        }
+      }
+    },
+    "components_chromium_strings": {
+      "total_active_messages": 17,
+      "total_branded_messages": 17,
+      "languages": {
+        "af": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "am": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ar": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "as": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "az": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "be": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bg": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bn": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "bs": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ca": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "cs": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "cy": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "da": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "de": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "el": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "en-GB": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "es": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "es-419": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "et": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "eu": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fa": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fi": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fil": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fr": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "fr-CA": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "gl": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "gu": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hi": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hr": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hu": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "hy": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "id": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "is": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "it": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ja": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ka": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "kk": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "km": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "kn": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ko": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ky": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lo": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lt": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "lv": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mk": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ml": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mn": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "mr": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ms": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "my": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ne": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "nl": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "no": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "or": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pa": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pl": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pt-BR": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "pt-PT": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ro": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ru": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "si": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sk": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sl": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sq": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sr": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sr-Latn": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sv": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "sw": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ta": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "te": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "th": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "tr": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "uk": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "ur": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "uz": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "vi": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-CN": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-HK": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zh-TW": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        },
+        "zu": {
+          "total_branded": 17,
+          "already_translated": 17,
+          "recoverable": 0,
+          "missing": 0,
+          "coverage_pct": 100.0
+        }
+      }
+    }
+  },
+  "language_summary": {
+    "af": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "am": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ar": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "as": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "az": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "be": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "bg": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "bn": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "bs": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ca": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "cs": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "cy": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "da": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "de": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 544,
+      "missing": 86
+    },
+    "el": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "en-GB": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "es": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "es-419": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "et": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "eu": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "fa": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "fi": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "fil": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "fr": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "fr-CA": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "gl": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "gu": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "hi": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "hr": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "hu": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "hy": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "id": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "is": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "it": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ja": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ka": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "kk": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "km": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "kn": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ko": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ky": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "lo": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "lt": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "lv": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "mk": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ml": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "mn": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "mr": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ms": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "my": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ne": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "nl": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "no": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "or": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "pa": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "pl": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "pt-BR": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "pt-PT": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ro": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ru": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "si": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sk": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 575,
+      "missing": 55
+    },
+    "sl": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sq": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sr": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sr-Latn": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sv": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "sw": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ta": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "te": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "th": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "tr": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "uk": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "ur": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "uz": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "vi": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "zh-CN": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "zh-HK": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "zh-TW": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    },
+    "zu": {
+      "total_branded": 654,
+      "already_translated": 24,
+      "recoverable": 578,
+      "missing": 52
+    }
+  },
+  "zh_cn_missing_count": 52
+}
