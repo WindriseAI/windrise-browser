@@ -13,16 +13,42 @@ Exports:
 from __future__ import annotations
 
 import copy
+import re
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+# 原 OS 品牌保持原样：品牌名后紧跟（可带空白）OS 时不迁移。
+# 例如 ChromiumOS、ChromeOS、Chromium OS、Chrome OS 都不应变成 Windrise BrowserOS。
+_OS_SUFFIX = re.compile(r'[ \t\u00a0]*OS(?![0-9A-Za-z])')
+
 
 def _apply_replacements(text: str | None, replacements: Sequence[Tuple[str, str]]) -> str | None:
-    if not text:
+    """按完整词边界替换品牌名，并保护原 OS 品牌。
+
+    正文、占位符文本与占位符尾部都调用这里，保证同一套逻辑。
+    """
+    if not text or not replacements:
         return text
-    for old_str, new_str in replacements:
-        text = text.replace(old_str, new_str)
-    return text
+
+    # 长词优先，避免短词先吃掉长词的一部分；空字符串不参与替换
+    ordered = sorted(
+        ((old, new) for old, new in replacements if old),
+        key=lambda kv: len(kv[0]),
+        reverse=True,
+    )
+    if not ordered:
+        return text
+    pattern = re.compile(
+        r'(?<![0-9A-Za-z])(' + '|'.join(re.escape(old) for old, _ in ordered) + r')(?![0-9A-Za-z])'
+    )
+    mapping = {old: new for old, new in ordered}
+
+    def _replace(match: re.Match[str]) -> str:
+        if _OS_SUFFIX.match(text, match.end()):
+            return match.group(0)
+        return mapping[match.group(1)]
+
+    return pattern.sub(_replace, text)
 
 
 def rebrand_translations(
@@ -103,10 +129,8 @@ def rebrand_translations(
             new_node = copy.deepcopy(found_source)
             new_node.attrib['id'] = target_id
 
-            # Apply replacements to text
+            # 正文与占位符尾部走同一套边界替换逻辑；占位符本身及其属性结构不变
             new_node.text = _apply_replacements(new_node.text, sorted_replacements)
-
-            # Preserve placeholders and apply replacements to placeholder text/tail
             for child in new_node.iter():
                 if child is not new_node:
                     child.text = _apply_replacements(child.text, sorted_replacements)
