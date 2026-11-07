@@ -1,11 +1,11 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index b7cdb8f..aea6612 100644
+index 338178e..508a670 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-@@ -14,7 +14,11 @@
- #include "base/metrics/histogram_functions.h"
+@@ -16,7 +16,11 @@
  #include "base/metrics/user_metrics.h"
  #include "base/metrics/user_metrics_action.h"
+ #include "base/numerics/safe_conversions.h"
 +#include "base/strings/string_util.h"
 +#include "base/strings/utf_string_conversions.h"
  #include "base/time/time.h"
@@ -14,11 +14,12 @@ index b7cdb8f..aea6612 100644
  #include "chrome/browser/ui/actions/chrome_action_id.h"
  #include "chrome/browser/ui/animation/browser_animation_controller.h"
  #include "chrome/browser/ui/animation/browser_animation_types.h"
-@@ -196,9 +200,17 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -231,9 +235,18 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+   }
  
    SetNotifyEnterExitOnChild(true);
-   UpdateColors();
-+
++  // 158 用 top_button_separator_ 的 SetInactiveColorId() 处理非激活态
++  // 颜色（见本文件构造函数与 ours 中的写法），不再需要 UpdateColors()。
 +  if (tab_strip_model()) {
 +    tab_strip_model()->AddObserver(this);
 +    UpdateAIWorkspaceExpansion(tab_strip_model()->GetActiveTab());
@@ -32,7 +33,7 @@ index b7cdb8f..aea6612 100644
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -1117,6 +1129,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
+@@ -1231,6 +1244,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
  void VerticalTabStripRegionView::OnActiveTabChanged(
      const tabs::TabInterface* active_tab) {
    BaseTabStripRegionView::OnActiveTabChanged(active_tab);
@@ -40,7 +41,7 @@ index b7cdb8f..aea6612 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1128,5 +1141,54 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1256,54 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

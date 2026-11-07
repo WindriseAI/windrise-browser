@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc b/chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc
-index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1e045f1d2 100644
+index 02cc27d..72616f7 100644
 --- a/chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc
 +++ b/chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc
-@@ -23,6 +23,7 @@
+@@ -24,6 +24,7 @@
  #include "base/test/test_switches.h"
  #include "base/test/values_test_util.h"
  #include "base/threading/thread_restrictions.h"
@@ -10,15 +10,17 @@ index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1
  #include "base/values.h"
  #include "build/build_config.h"
  #include "chrome/browser/apps/app_service/app_service_proxy.h"
-@@ -34,6 +35,7 @@
+@@ -33,6 +34,9 @@
+ #include "chrome/browser/data_saver/data_saver.h"
+ #include "chrome/browser/devtools/devtools_window.h"
  #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
- #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
- #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
++#include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
++#include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 +#include "chrome/browser/history/history_service_factory.h"
  #include "chrome/browser/preloading/preloading_prefs.h"
  #include "chrome/browser/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations_mixin.h"
- #include "chrome/browser/profiles/profile.h"
-@@ -48,6 +50,8 @@
+ #include "chrome/browser/private_verification_tokens/private_verification_tokens_service.h"
+@@ -48,6 +52,8 @@
  #include "components/content_settings/core/browser/cookie_settings.h"
  #include "components/content_settings/core/common/pref_names.h"
  #include "components/custom_handlers/protocol_handler_registry.h"
@@ -27,7 +29,7 @@ index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1
  #include "components/infobars/content/content_infobar_manager.h"
  #include "components/infobars/core/infobar.h"
  #include "components/infobars/core/infobar_delegate.h"
-@@ -109,6 +113,7 @@
+@@ -117,6 +123,7 @@
  #include "chrome/browser/sessions/session_restore_test_helper.h"
  #include "chrome/browser/sessions/session_service_test_helper.h"
  #include "chrome/browser/ui/browser_commands.h"
@@ -35,8 +37,8 @@ index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1
  #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
  #include "chrome/browser/ui/tabs/tab_strip_model.h"
  #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-@@ -480,8 +485,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CreateTargetWithFocus) {
- }
+@@ -549,8 +556,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+ #endif  // !BUILDFLAG(IS_CHROMEOS)
  
  #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 -// On ChromeOS and MacOS, the tabs are not backgrounded and unloaded in the same way as
@@ -46,7 +48,7 @@ index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1
  #define MAYBE_AutoAttachToUnloadedTab DISABLED_AutoAttachToUnloadedTab
  #else
  #define MAYBE_AutoAttachToUnloadedTab AutoAttachToUnloadedTab
-@@ -1497,8 +1502,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
+@@ -1563,8 +1570,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
    net::SSLCipherSuiteToStrings(&page_key_exchange_str, &page_cipher, &page_mac,
                                 &is_aead, &is_tls13, page_cipher_suite);
    std::string page_key_exchange;
@@ -57,7 +59,7 @@ index fdf0973f53f6b26814596bcdcd0e2a2caa29727c..cc537f1c3900b6d30291a898c15729f1
  
    const char* page_key_exchange_group =
        SSL_get_curve_name(entry->GetSSL().key_exchange_group);
-@@ -2681,6 +2687,216 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+@@ -3103,6 +3111,216 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
    EXPECT_EQ(group_id.ToString(),
              *second_get_target_info_data.FindString("tabGroupId"));
  }

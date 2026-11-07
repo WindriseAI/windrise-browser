@@ -1,7 +1,7 @@
-diff --git a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc
-index 22ece00a8c729ef5ada1d20afa2e289b8fd95d16..6b57459d409edde59b652e8af8944e3b2c9a3e05 100644
---- a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc
-+++ b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc
+diff --git a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
+index 4eb9220..ae497de 100644
+--- a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
++++ b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
 @@ -12,6 +12,7 @@
  #include "base/strings/string_number_conversions.h"
  #include "base/strings/to_string.h"
@@ -10,18 +10,18 @@ index 22ece00a8c729ef5ada1d20afa2e289b8fd95d16..6b57459d409edde59b652e8af8944e3b
  #include "chrome/app/vector_icons/vector_icons.h"
  #include "chrome/browser/profiles/profile.h"
  #include "chrome/browser/sessions/session_service.h"
-@@ -58,6 +59,8 @@ VerticalTabStripStateController::VerticalTabStripStateController(
-       browser_window_(browser_window),
-       scoped_unowned_user_data_(browser_window->GetUnownedUserDataHost(),
-                                 *this) {
+@@ -55,6 +56,8 @@ VerticalTabStripStateControllerImpl::VerticalTabStripStateControllerImpl(
+       session_service_(session_service),
+       session_id_(session_id),
+       browser_window_(browser_window) {
 +  browseros::SyncVerticalTabsPref(pref_service_);
 +
    pref_change_registrar_.Init(pref_service_);
  
    is_vertical_tabs_enabled_ =
-@@ -79,6 +82,28 @@ VerticalTabStripStateController::VerticalTabStripStateController(
-             base::Unretained(this)));
-   }
+@@ -74,6 +77,28 @@ VerticalTabStripStateControllerImpl::VerticalTabStripStateControllerImpl(
+           &VerticalTabStripStateControllerImpl::OnExpandOnHoverEnabledChanged,
+           base::Unretained(this)));
  
 +  pref_change_registrar_.Add(
 +      browseros::prefs::kVerticalTabsEnabled,

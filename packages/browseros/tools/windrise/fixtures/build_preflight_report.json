@@ -1,0 +1,299 @@
+{
+  "status": "PASS",
+  "checks": {
+    "memory": {
+      "passed": true,
+      "available_gb": 10.38,
+      "total_gb": 30.88,
+      "required_gb": 2.0
+    },
+    "cpu_margin": {
+      "passed": true,
+      "idle_margin_pct": 75.0,
+      "required_pct": 20.0
+    },
+    "disk_space": {
+      "passed": true,
+      "free_gb": 36.46,
+      "total_gb": 565.26,
+      "required_gb": 15.0
+    },
+    "flowmap_protection": {
+      "passed": true,
+      "detail": "Flowmap service active on port 8765"
+    },
+    "chromium_source": {
+      "passed": true,
+      "path": "D:\\src\\chromium\\src"
+    },
+    "out_directory": {
+      "passed": true,
+      "path": "D:\\src\\chromium\\src\\out\\Default_browseros_x64"
+    },
+    "thin_lto_pgo": {
+      "passed": true,
+      "notes": [
+        "is_official_build: True",
+        "symbol_level=0: True"
+      ]
+    },
+    "toolchain": {
+      "passed": true,
+      "detail": "D:/src/depot_tools/autoninja.bat"
+    }
+  },
+  "hooks_catalog": [
+    {
+      "hook": 1,
+      "name": "品牌名 Windrise Browser",
+      "category": "C++固定项与品牌资源",
+      "key_files": [
+        "packages/browseros/bos_build/products/browseros/product.py",
+        "packages/browseros/chromium_files/products/browseros/chrome/app/theme/chromium/BRANDING.release",
+        "chrome/app/chromium_strings.grd",
+        "chrome/app/settings_chromium_strings.grdp"
+      ],
+      "recompile_scope": "[INFERENCE] 资源重新生成与链接，无需全量重编C++",
+      "plugin_dependency": "不依赖；页面统一英文产品名"
+    },
+    {
+      "hook": 2,
+      "name": "关窗即退出",
+      "category": "C++固定项",
+      "key_files": [
+        "chrome/browser/background/extensions/background_mode_manager.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 既有实现保留，源码变更才局部编译并链接",
+      "plugin_dependency": "不依赖；主程序统一生命周期"
+    },
+    {
+      "hook": 3,
+      "name": "kit-v5 图标",
+      "category": "C++固定项的资源",
+      "key_files": [
+        "packages/browseros/resources/browseros/icons/win/chromium.ico",
+        "packages/browseros/bos_build/config/copy_resources.yaml",
+        "packages/browseros/tools/windrise/make_icons.py"
+      ],
+      "recompile_scope": "[INFERENCE] 重生成图标资源并链接可执行文件",
+      "plugin_dependency": "依赖最终各尺寸原图；页面/工具栏用同套件"
+    },
+    {
+      "hook": 4,
+      "name": "左下角插槽",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/frame/browser_view.cc",
+        "chrome/browser/ui/views/frame/layout/browser_view_layout_impl.cc",
+        "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 局部UI与扩展API编译并链接",
+      "plugin_dependency": "容器提供通用锚点/高度，AI图标/额度/入口/弹层归插件"
+    },
+    {
+      "hook": 5,
+      "name": "设置页主题变量",
+      "category": "C++通用插槽",
+      "key_files": [
+        "content/browser/webui/web_ui_data_source_impl.cc",
+        "ui/base/webui/web_ui_util.cc",
+        "chrome/browser/browseros/core/browseros_prefs.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 共用WebUI局部编译、资源生成并链接",
+      "plugin_dependency": "读取机制在C++，变量名/值按配置，样式由插件定制"
+    },
+    {
+      "hook": 6,
+      "name": "ColorMixer 配色",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/color/chrome_color_mixers.cc",
+        "chrome/browser/browseros/core/browseros_prefs.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 原生颜色/偏好局部编译并链接",
+      "plugin_dependency": "覆盖9个亮暗偏好键，插件写配置，重算或新窗口生效"
+    },
+    {
+      "hook": 7,
+      "name": "隐藏上游AI入口、新标签页",
+      "category": "C++固定项入口，内容只改插件",
+      "key_files": [
+        "chrome/browser/browseros/extensions/browseros_extension_loader.cc",
+        "chrome/browser/extensions/component_loader.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 原生载入/路由改变需局部编译并链接",
+      "plugin_dependency": "插件页面负责搜索/网站/闪办包/省时间/额度"
+    },
+    {
+      "hook": 8,
+      "name": "关闭自身独立更新",
+      "category": "C++固定项",
+      "key_files": [
+        "chrome/browser/win/winsparkle_glue.cc",
+        "chrome/browser/ui/webui/help/version_updater_basic.cc",
+        "chrome/browser/mac/sparkle_glue.mm"
+      ],
+      "recompile_scope": "[INFERENCE] 各平台更新入口局部编译并链接",
+      "plugin_dependency": "不依赖；主程序统一更新"
+    },
+    {
+      "hook": 9,
+      "name": "默认搜索 Google",
+      "category": "C++固定项",
+      "key_files": [
+        "components/search_engines/template_url_prepopulate_data_resolver.cc",
+        "components/search_engines/default_search_manager.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 搜索组件局部编译并链接",
+      "plugin_dependency": "首次默认Google，用户后续选择正常保留"
+    },
+    {
+      "hook": 10,
+      "name": "首次打开导入入口",
+      "category": "C++固定项入口，内容只改插件",
+      "key_files": [
+        "chrome/browser/ui/startup/startup_browser_creator.cc",
+        "chrome/browser/importer/importer_list.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 启动/导入接口局部编译并链接",
+      "plugin_dependency": "插件页面询问书签和密码，不替用户同意"
+    },
+    {
+      "hook": 11,
+      "name": "折叠宽度与首字素",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/tabs/common/tab_view.cc",
+        "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 标签视图/布局局部编译并链接",
+      "plugin_dependency": "按字素测量；中文首字、英文首字母大写、空标题取域名"
+    },
+    {
+      "hook": 12,
+      "name": "内部页统一风格与字体",
+      "category": "C++插槽与字体固定项",
+      "key_files": [
+        "ui/base/webui/web_ui_util.cc",
+        "chrome/browser/ui/views/chrome_typography_provider.cc",
+        "components/neterror/resources/neterror.css"
+      ],
+      "recompile_scope": "[INFERENCE] WebUI局部编译、错误页资源生成并链接",
+      "plugin_dependency": "HarmonyOS Sans SC 原样私有加载，安全页红色与警示不动"
+    },
+    {
+      "hook": 13,
+      "name": "工具栏5个固定位与窄窗让位",
+      "category": "C++通用插槽，业务归插件",
+      "key_files": [
+        "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc",
+        "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc",
+        "chrome/browser/ui/views/toolbar/toolbar_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 工具栏与扩展API局部编译并链接",
+      "plugin_dependency": "320→最右槽进拼图→主页/格子→200让位规则，空槽不占宽"
+    },
+    {
+      "hook": 14,
+      "name": "地址栏通用插槽",
+      "category": "C++通用插槽，内容归插件",
+      "key_files": [
+        "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
+        "chrome/browser/extensions/api/browser_os/browser_os_api.h",
+        "chrome/browser/ui/browser_actions.cc",
+        "chrome/common/extensions/api/browser_os.idl"
+      ],
+      "recompile_scope": "[INFERENCE] 扩展API/UI局部编译并链接",
+      "plugin_dependency": "每标签文字/显隐/图标及定向事件，仅受限内置扩展可用"
+    },
+    {
+      "hook": 15,
+      "name": "统一办公上下分段",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/tabs/common/tab_strip_view.cc",
+        "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 标签布局与拖动局部编译并链接",
+      "plugin_dependency": "双滚动容器与可拖分隔，AI区成员由插件决定，不改TabStripModel"
+    },
+    {
+      "hook": 16,
+      "name": "组合页银边",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/frame/contents_container_outline.cc",
+        "chrome/browser/ui/views/frame/contents_container_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 静态边框接口局部编译并链接",
+      "plugin_dependency": "静态边框复用Outline，流动银边共用穿透光效层"
+    },
+    {
+      "hook": 17,
+      "name": "品牌译文迁移",
+      "category": "语言包工具与资源",
+      "key_files": [
+        "packages/browseros/tools/windrise/xtb_rebrand.py",
+        "packages/browseros/tools/windrise/xtb_coverage.py",
+        "chrome/app/resources/chromium_strings_*.xtb"
+      ],
+      "recompile_scope": "[INFERENCE] 只重生成受影响语言 .pak，不重编C++",
+      "plugin_dependency": "不依赖；老ID回填新ID，保留占位符，不静默英文回退"
+    },
+    {
+      "hook": 18,
+      "name": "新增：窗口浮层插槽",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/frame/browser_view.cc",
+        "chrome/browser/ui/views/frame/layout/browser_view_layout_impl.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 窗口UI与扩展API局部编译并链接",
+      "plugin_dependency": "透明WebView只载固定内置扩展，卡片命中可点，空白不冻网页"
+    },
+    {
+      "hook": 19,
+      "name": "新增：穿透光效层",
+      "category": "C++通用插槽",
+      "key_files": [
+        "chrome/browser/ui/views/frame/browser_view.cc",
+        "chrome/browser/ui/views/frame/contents_container_view.cc"
+      ],
+      "recompile_scope": "[INFERENCE] 与浮层共用局部编译并链接",
+      "plugin_dependency": "原生层禁输入与焦点，网页区bounds事件驱动，插件画银光"
+    },
+    {
+      "hook": 20,
+      "name": "新增：Windows任务栏闪烁",
+      "category": "只改插件",
+      "key_files": [
+        "chrome/browser/extensions/api/tabs/windows_api.cc"
+      ],
+      "recompile_scope": "无需重编；复用已有 FlashFrame",
+      "plugin_dependency": "插件调用 chrome.windows.update(drawAttention) 并适时停止"
+    },
+    {
+      "hook": 21,
+      "name": "上游项：--disable-browseros-features",
+      "category": "C++固定项",
+      "key_files": [
+        "chrome/browser/browseros/customization/command_line_prefs.cc",
+        "chrome/browser/browseros/customization/command_line_prefs.h"
+      ],
+      "recompile_scope": "无需新增重编；源码与 .features.yaml 均已登记",
+      "plugin_dependency": "命令行高于用户低于策略且不落盘"
+    },
+    {
+      "hook": 22,
+      "name": "上游项：注意力API 3b48c65d7",
+      "category": "C++固定项",
+      "key_files": [
+        "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
+        "chrome/browser/extensions/api/browser_os/browser_os_attention_mac.mm",
+        "chrome/common/extensions/api/browser_os.idl"
+      ],
+      "recompile_scope": "[INFERENCE] 扩展API及mac helper局部编译并链接",
+      "plugin_dependency": "只移植指定片段，mac走新能力，Windows继续drawAttention"
+    }
+  ]
+}

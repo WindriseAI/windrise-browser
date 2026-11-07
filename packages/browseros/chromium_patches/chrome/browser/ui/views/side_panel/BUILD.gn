@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/side_panel/BUILD.gn b/chrome/browser/ui/views/side_panel/BUILD.gn
-index f51ca03ca233cd31098de9cd2bf80cd9e129b28e..190eaa45a91253db924d82a3a6bbc5596b46f552 100644
+index 3b9d6f5..3b1cba2 100644
 --- a/chrome/browser/ui/views/side_panel/BUILD.gn
 +++ b/chrome/browser/ui/views/side_panel/BUILD.gn
 @@ -11,6 +11,8 @@ source_set("side_panel") {
@@ -11,7 +11,7 @@ index f51ca03ca233cd31098de9cd2bf80cd9e129b28e..190eaa45a91253db924d82a3a6bbc559
      "comments/comments_side_panel_coordinator.cc",
      "comments/comments_side_panel_coordinator.h",
      "extensions/extension_side_panel_action_item_util.cc",
-@@ -53,11 +55,17 @@ source_set("side_panel") {
+@@ -51,10 +53,16 @@ source_set("side_panel") {
      "tabs_from_other_devices/tabs_from_other_devices_side_panel_coordinator.h",
      "tabs_from_other_devices/tabs_from_other_devices_side_panel_metrics.cc",
      "tabs_from_other_devices/tabs_from_other_devices_side_panel_metrics.h",
@@ -22,7 +22,6 @@ index f51ca03ca233cd31098de9cd2bf80cd9e129b28e..190eaa45a91253db924d82a3a6bbc559
    ]
    public_deps = [
      "//base",
-     "//chrome/browser:browser_public_dependencies",
      "//chrome/browser:primitives",
 +    "//chrome/browser/browseros/core:prefs",
 +    "//chrome/browser/browseros/metrics",

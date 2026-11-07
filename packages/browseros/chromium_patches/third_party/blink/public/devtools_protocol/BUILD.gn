@@ -1,8 +1,8 @@
 diff --git a/third_party/blink/public/devtools_protocol/BUILD.gn b/third_party/blink/public/devtools_protocol/BUILD.gn
-index accd4d91cf3d65ccc0339848ba31f64e25c38e63..378ae7ada39f5c429f8bb7f54ea3bee905f9cfac 100644
+index 4a06169..ed665ec 100644
 --- a/third_party/blink/public/devtools_protocol/BUILD.gn
 +++ b/third_party/blink/public/devtools_protocol/BUILD.gn
-@@ -12,6 +12,7 @@ domains = [
+@@ -13,6 +13,7 @@ domains = [
    "domains/Autofill.pdl",
    "domains/BackgroundService.pdl",
    "domains/BluetoothEmulation.pdl",
@@ -10,9 +10,9 @@ index accd4d91cf3d65ccc0339848ba31f64e25c38e63..378ae7ada39f5c429f8bb7f54ea3bee9
    "domains/Browser.pdl",
    "domains/CSS.pdl",
    "domains/CacheStorage.pdl",
-@@ -31,6 +32,7 @@ domains = [
-   "domains/Fetch.pdl",
+@@ -33,6 +34,7 @@ domains = [
    "domains/FileSystem.pdl",
+   "domains/FindInPage.pdl",
    "domains/HeadlessExperimental.pdl",
 +  "domains/History.pdl",
    "domains/IO.pdl",

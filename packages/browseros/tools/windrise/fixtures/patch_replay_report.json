@@ -1,0 +1,3235 @@
+{
+  "mode": "full",
+  "upstream_commit": "6449d9f9a6a906edff724b7b220199b3fde4615c",
+  "total_patches": 420,
+  "applied_count": 420,
+  "failed_count": 0,
+  "success": true,
+  "duration_seconds": 10.185,
+  "patch_order": [
+    "base/threading/thread_restrictions.h",
+    "base/version_info/BUILD.gn",
+    "base/version_info/version_info.h",
+    "base/version_info/version_info_values.h.version",
+    "build/config/compiler/BUILD.gn",
+    "chrome/app/app-entitlements-browseros.plist",
+    "chrome/app/app-Info.plist",
+    "chrome/app/chrome_command_ids.h",
+    "chrome/app/chrome_crash_reporter_client.cc",
+    "chrome/app/chrome_crash_reporter_client.h",
+    "chrome/app/chrome_crash_reporter_client_win.cc",
+    "chrome/app/chrome_crash_reporter_client_win.h",
+    "chrome/app/generated_resources.grd",
+    "chrome/app/settings_strings.grdp",
+    "chrome/browser/about_flags.cc",
+    "chrome/browser/background/extensions/background_mode_manager.cc",
+    "chrome/browser/browser_features.cc",
+    "chrome/browser/browser_features.h",
+    "chrome/browser/browseros/BUILD.gn",
+    "chrome/browser/browseros/buildflags.gni",
+    "chrome/browser/browseros/bundled_extensions/BUILD.gn",
+    "chrome/browser/browseros/core/browseros_action_utils.h",
+    "chrome/browser/browseros/core/browseros_constants.h",
+    "chrome/browser/browseros/core/browseros_prefs.cc",
+    "chrome/browser/browseros/core/browseros_prefs.h",
+    "chrome/browser/browseros/core/browseros_prefs_unittest.cc",
+    "chrome/browser/browseros/core/browseros_product.cc",
+    "chrome/browser/browseros/core/browseros_product.h",
+    "chrome/browser/browseros/core/browseros_product_state.cc",
+    "chrome/browser/browseros/core/browseros_product_state.h",
+    "chrome/browser/browseros/core/browseros_switches.h",
+    "chrome/browser/browseros/core/BUILD.gn",
+    "chrome/browser/browseros/customization/BUILD.gn",
+    "chrome/browser/browseros/customization/command_line_prefs.cc",
+    "chrome/browser/browseros/customization/command_line_prefs.h",
+    "chrome/browser/browseros/customization/customization_pref_names.h",
+    "chrome/browser/browseros/customization/customization_prefs.cc",
+    "chrome/browser/browseros/customization/customization_prefs.h",
+    "chrome/browser/browseros/extensions/browseros_extension_installer.cc",
+    "chrome/browser/browseros/extensions/browseros_extension_installer.h",
+    "chrome/browser/browseros/extensions/browseros_extension_loader.cc",
+    "chrome/browser/browseros/extensions/browseros_extension_loader.h",
+    "chrome/browser/browseros/extensions/browseros_extension_maintainer.cc",
+    "chrome/browser/browseros/extensions/browseros_extension_maintainer.h",
+    "chrome/browser/browseros/metrics/browseros_installation_id.cc",
+    "chrome/browser/browseros/metrics/browseros_installation_id.h",
+    "chrome/browser/browseros/metrics/browseros_metrics.cc",
+    "chrome/browser/browseros/metrics/browseros_metrics.h",
+    "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.cc",
+    "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.h",
+    "chrome/browser/browseros/metrics/browseros_metrics_service.cc",
+    "chrome/browser/browseros/metrics/browseros_metrics_service.h",
+    "chrome/browser/browseros/metrics/BUILD.gn",
+    "chrome/browser/browseros/onboarding/browseros_onboarding.cc",
+    "chrome/browser/browseros/onboarding/browseros_onboarding.h",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_api.ts",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.cc",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.h",
+    "chrome/browser/browseros/onboarding/BUILD.gn",
+    "chrome/browser/browseros/server/browseros_appcast_parser.cc",
+    "chrome/browser/browseros/server/browseros_appcast_parser.h",
+    "chrome/browser/browseros/server/browseros_appcast_parser_unittest.cc",
+    "chrome/browser/browseros/server/browseros_server_config.cc",
+    "chrome/browser/browseros/server/browseros_server_config.h",
+    "chrome/browser/browseros/server/browseros_server_config_unittest.cc",
+    "chrome/browser/browseros/server/browseros_server_constants.h",
+    "chrome/browser/browseros/server/browseros_server_manager.cc",
+    "chrome/browser/browseros/server/browseros_server_manager.h",
+    "chrome/browser/browseros/server/browseros_server_manager_unittest.cc",
+    "chrome/browser/browseros/server/browseros_server_prefs.cc",
+    "chrome/browser/browseros/server/browseros_server_prefs.h",
+    "chrome/browser/browseros/server/browseros_server_proxy.cc",
+    "chrome/browser/browseros/server/browseros_server_proxy.h",
+    "chrome/browser/browseros/server/browseros_server_proxy_unittest.cc",
+    "chrome/browser/browseros/server/browseros_server_updater.cc",
+    "chrome/browser/browseros/server/browseros_server_updater.h",
+    "chrome/browser/browseros/server/browseros_server_utils.cc",
+    "chrome/browser/browseros/server/browseros_server_utils.h",
+    "chrome/browser/browseros/server/browseros_server_utils_unittest.cc",
+    "chrome/browser/browseros/server/BUILD.gn",
+    "chrome/browser/browseros/server/health_checker.h",
+    "chrome/browser/browseros/server/health_checker_impl.cc",
+    "chrome/browser/browseros/server/health_checker_impl.h",
+    "chrome/browser/browseros/server/process_controller.h",
+    "chrome/browser/browseros/server/process_controller_impl.cc",
+    "chrome/browser/browseros/server/process_controller_impl.h",
+    "chrome/browser/browseros/server/server_process_launcher.cc",
+    "chrome/browser/browseros/server/server_process_launcher.h",
+    "chrome/browser/browseros/server/server_process_launcher_unittest.cc",
+    "chrome/browser/browseros/server/server_process_launcher_win.cc",
+    "chrome/browser/browseros/server/server_state_store.h",
+    "chrome/browser/browseros/server/server_state_store_impl.cc",
+    "chrome/browser/browseros/server/server_state_store_impl.h",
+    "chrome/browser/browseros/server/server_updater.h",
+    "chrome/browser/browseros/server/server_version_store.h",
+    "chrome/browser/browseros/server/test/mock_health_checker.h",
+    "chrome/browser/browseros/server/test/mock_implementations.cc",
+    "chrome/browser/browseros/server/test/mock_process_controller.h",
+    "chrome/browser/browseros/server/test/mock_server_state_store.h",
+    "chrome/browser/browseros/server/test/mock_server_updater.h",
+    "chrome/browser/browseros/server/validate_resources.py",
+    "chrome/browser/BUILD.gn",
+    "chrome/browser/buildflags.gni",
+    "chrome/browser/chrome_browser_application_mac.mm",
+    "chrome/browser/chrome_browser_main.cc",
+    "chrome/browser/chrome_browser_main_win.cc",
+    "chrome/browser/chrome_content_browser_client.cc",
+    "chrome/browser/chrome_content_browser_client_navigation_throttles.cc",
+    "chrome/browser/devtools/BUILD.gn",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.cc",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.h",
+    "chrome/browser/devtools/chrome_devtools_session.cc",
+    "chrome/browser/devtools/chrome_devtools_session.h",
+    "chrome/browser/devtools/devtools_browser_context_manager.cc",
+    "chrome/browser/devtools/devtools_browser_context_manager.h",
+    "chrome/browser/devtools/inspector_protocol_config.json",
+    "chrome/browser/devtools/protocol/autofill_handler.cc",
+    "chrome/browser/devtools/protocol/autofill_handler.h",
+    "chrome/browser/devtools/protocol/bookmarks_handler.cc",
+    "chrome/browser/devtools/protocol/bookmarks_handler.h",
+    "chrome/browser/devtools/protocol/browser_handler.cc",
+    "chrome/browser/devtools/protocol/browser_handler.h",
+    "chrome/browser/devtools/protocol/browser_handler_android.cc",
+    "chrome/browser/devtools/protocol/browser_handler_android.h",
+    "chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc",
+    "chrome/browser/devtools/protocol/history_handler.cc",
+    "chrome/browser/devtools/protocol/history_handler.h",
+    "chrome/browser/devtools/protocol/target_handler.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.h",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.h",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_utils.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_utils.h",
+    "chrome/browser/extensions/api/browser_os/browser_os_change_detector.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_change_detector.h",
+    "chrome/browser/extensions/api/debugger/debugger_api.cc",
+    "chrome/browser/extensions/api/settings_private/prefs_util.cc",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.cc",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.h",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.cc",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.h",
+    "chrome/browser/extensions/BUILD.gn",
+    "chrome/browser/extensions/chrome_extension_registrar_delegate.cc",
+    "chrome/browser/extensions/chrome_extension_system.cc",
+    "chrome/browser/extensions/chrome_extensions_browser_api_provider.cc",
+    "chrome/browser/extensions/extension_context_menu_model.cc",
+    "chrome/browser/extensions/extension_management.cc",
+    "chrome/browser/extensions/extension_url_overrides_registrar.cc",
+    "chrome/browser/extensions/external_provider_impl.cc",
+    "chrome/browser/extensions/external_provider_impl.h",
+    "chrome/browser/extensions/external_provider_manager.cc",
+    "chrome/browser/extensions/updater/extension_updater.cc",
+    "chrome/browser/extensions/updater/extension_updater.h",
+    "chrome/browser/flag_descriptions.h",
+    "chrome/browser/importer/external_process_importer_client.cc",
+    "chrome/browser/importer/external_process_importer_client.h",
+    "chrome/browser/importer/importer_list.cc",
+    "chrome/browser/importer/importer_uma.cc",
+    "chrome/browser/importer/in_process_importer_bridge.cc",
+    "chrome/browser/importer/in_process_importer_bridge.h",
+    "chrome/browser/importer/profile_writer.cc",
+    "chrome/browser/importer/profile_writer.h",
+    "chrome/browser/lifetime/application_lifetime.cc",
+    "chrome/browser/mac/BUILD.gn",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.mm",
+    "chrome/browser/mac/sparkle_glue.h",
+    "chrome/browser/mac/sparkle_glue.mm",
+    "chrome/browser/media/extension_media_access_handler.cc",
+    "chrome/browser/metrics/chrome_metrics_service_client.cc",
+    "chrome/browser/net/profile_network_context_service.cc",
+    "chrome/browser/prefs/browser_prefs.cc",
+    "chrome/browser/prefs/browser_prefs.h",
+    "chrome/browser/prefs/BUILD.gn",
+    "chrome/browser/prefs/chrome_command_line_pref_store.cc",
+    "chrome/browser/profiles/profile.h",
+    "chrome/browser/profiles/profile_impl.cc",
+    "chrome/browser/profiles/profile_impl.h",
+    "chrome/browser/profiles/profile_manager.cc",
+    "chrome/browser/profiles/profile_manager.h",
+    "chrome/browser/profiles/profile_window.cc",
+    "chrome/browser/profiles/profile_window.h",
+    "chrome/browser/resources/settings/about_page/about_page.css",
+    "chrome/browser/resources/settings/about_page/about_page.html.ts",
+    "chrome/browser/resources/settings/about_page/about_page.ts",
+    "chrome/browser/resources/settings/people_page/import_data_browser_proxy.ts",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.html.ts",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.ts",
+    "chrome/browser/resources/settings/reset_page/reset_profile_dialog.html.ts",
+    "chrome/browser/signin/account_consistency_mode_manager.cc",
+    "chrome/browser/sparkle_buildflags.gni",
+    "chrome/browser/themes/BUILD.gn",
+    "chrome/browser/themes/theme_service.cc",
+    "chrome/browser/ui/actions/chrome_action_id.h",
+    "chrome/browser/ui/bookmarks/bookmark_bar_controller.cc",
+    "chrome/browser/ui/bookmarks/BUILD.gn",
+    "chrome/browser/ui/browser_actions.cc",
+    "chrome/browser/ui/browser_command_controller.cc",
+    "chrome/browser/ui/browser_commands.cc",
+    "chrome/browser/ui/browser_element_identifiers.cc",
+    "chrome/browser/ui/browser_element_identifiers.h",
+    "chrome/browser/ui/browser_ui_prefs.cc",
+    "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc",
+    "chrome/browser/ui/browser_web_contents_delegate/BUILD.gn",
+    "chrome/browser/ui/BUILD.gn",
+    "chrome/browser/ui/cocoa/dock_icon.h",
+    "chrome/browser/ui/cocoa/dock_icon.mm",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.cc",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.h",
+    "chrome/browser/ui/extensions/settings_overridden_params_providers.cc",
+    "chrome/browser/ui/infobars/browser_infobar_registry.cc",
+    "chrome/browser/ui/omnibox/chrome_omnibox_client.cc",
+    "chrome/browser/ui/page_action/action_ids.h",
+    "chrome/browser/ui/page_action/page_action_icon_type.h",
+    "chrome/browser/ui/page_action/page_action_properties_provider.cc",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.cc",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.h",
+    "chrome/browser/ui/profiles/profile_error_dialog.cc",
+    "chrome/browser/ui/profiles/profile_picker.cc",
+    "chrome/browser/ui/profiles/profile_picker.h",
+    "chrome/browser/ui/side_panel/side_panel_entry_id.h",
+    "chrome/browser/ui/startup/BUILD.gn",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.cc",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.h",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.cc",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.h",
+    "chrome/browser/ui/startup/infobar_utils.cc",
+    "chrome/browser/ui/startup/startup_browser_creator.cc",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.cc",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.h",
+    "chrome/browser/ui/tabs/BUILD.gn",
+    "chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc",
+    "chrome/browser/ui/toasts/api/toast_id.cc",
+    "chrome/browser/ui/toasts/api/toast_id.h",
+    "chrome/browser/ui/toasts/toast_controller.cc",
+    "chrome/browser/ui/toasts/toast_controller.h",
+    "chrome/browser/ui/toasts/toast_service.cc",
+    "chrome/browser/ui/toolbar/app_menu_icon_controller.cc",
+    "chrome/browser/ui/toolbar/BUILD.gn",
+    "chrome/browser/ui/toolbar/pinned_toolbar/BUILD.gn",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_browsertest.cc",
+    "chrome/browser/ui/toolbar/toolbar_actions_model.cc",
+    "chrome/browser/ui/toolbar/toolbar_pref_names.cc",
+    "chrome/browser/ui/ui_features.cc",
+    "chrome/browser/ui/ui_features.h",
+    "chrome/browser/ui/views/extensions/extension_view_views.cc",
+    "chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h",
+    "chrome/browser/ui/views/infobars/infobar_container_view.cc",
+    "chrome/browser/ui/views/new_tab_footer/footer_controller.cc",
+    "chrome/browser/ui/views/profiles/avatar_toolbar_button_state_manager.cc",
+    "chrome/browser/ui/views/profiles/BUILD.gn",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.cc",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.h",
+    "chrome/browser/ui/views/profiles/profile_management_flow_controller.cc",
+    "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.cc",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.cc",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.h",
+    "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.cc",
+    "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.h",
+    "chrome/browser/ui/views/side_panel/BUILD.gn",
+    "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_action_item_util.cc",
+    "chrome/browser/ui/views/side_panel/side_panel.cc",
+    "chrome/browser/ui/views/side_panel/side_panel.h",
+    "chrome/browser/ui/views/side_panel/side_panel_coordinator.cc",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.h",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.cc",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.h",
+    "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.cc",
+    "chrome/browser/ui/views/toolbar/BUILD.gn",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h",
+    "chrome/browser/ui/views/toolbar/toolbar_view.cc",
+    "chrome/browser/ui/webui/BUILD.gn",
+    "chrome/browser/ui/webui/chrome_web_ui_configs.cc",
+    "chrome/browser/ui/webui/help/BUILD.gn",
+    "chrome/browser/ui/webui/help/sparkle_version_updater_mac.h",
+    "chrome/browser/ui/webui/help/sparkle_version_updater_mac.mm",
+    "chrome/browser/ui/webui/help/version_updater_basic.cc",
+    "chrome/browser/ui/webui/help/version_updater_mac.mm",
+    "chrome/browser/ui/webui/help/winsparkle_version_updater_win.cc",
+    "chrome/browser/ui/webui/help/winsparkle_version_updater_win.h",
+    "chrome/browser/ui/webui/new_tab_footer/new_tab_footer_ui.cc",
+    "chrome/browser/ui/webui/settings/browseros_metrics_handler.cc",
+    "chrome/browser/ui/webui/settings/browseros_metrics_handler.h",
+    "chrome/browser/ui/webui/settings/BUILD.gn",
+    "chrome/browser/ui/webui/settings/import_data_handler.cc",
+    "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc",
+    "chrome/browser/ui/webui/settings/settings_ui.cc",
+    "chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler_unittest.cc",
+    "chrome/browser/ui/webui/webui_toolbar/utils/toolbar_button_utils.cc",
+    "chrome/browser/upgrade_detector/upgrade_detector_impl.cc",
+    "chrome/browser/win/winsparkle_glue.cc",
+    "chrome/browser/win/winsparkle_glue.h",
+    "chrome/BUILD.gn",
+    "chrome/chrome_paks.gni",
+    "chrome/common/BUILD.gn",
+    "chrome/common/chrome_constants.cc",
+    "chrome/common/chrome_paths.cc",
+    "chrome/common/chrome_paths.h",
+    "chrome/common/chrome_paths_linux.cc",
+    "chrome/common/extensions/api/_api_features.json",
+    "chrome/common/extensions/api/_permission_features.json",
+    "chrome/common/extensions/api/api_sources.gni",
+    "chrome/common/extensions/api/browser_os.idl",
+    "chrome/common/extensions/api/side_panel.idl",
+    "chrome/common/extensions/permissions/chrome_api_permissions.cc",
+    "chrome/common/importer/importer_bridge.h",
+    "chrome/common/importer/mock_importer_bridge.h",
+    "chrome/common/importer/profile_import.mojom",
+    "chrome/common/importer/profile_import_process_param_traits_macros.h",
+    "chrome/common/pref_names.h",
+    "chrome/common/webui_url_constants.cc",
+    "chrome/common/webui_url_constants.h",
+    "chrome/install_static/BUILD.gn",
+    "chrome/install_static/chromium_install_modes.h",
+    "chrome/installer/mini_installer/BUILD.gn",
+    "chrome/installer/mini_installer/chrome.release",
+    "chrome/installer/setup/browseros_install_ui.cc",
+    "chrome/installer/setup/browseros_install_ui.h",
+    "chrome/installer/setup/BUILD.gn",
+    "chrome/installer/setup/setup_main.cc",
+    "chrome/installer/util/util_constants.h",
+    "chrome/test/BUILD.gn",
+    "chrome/test/data/webui/settings/import_data_dialog_test.ts",
+    "chrome/utility/BUILD.gn",
+    "chrome/utility/importer/bookmarks_file_importer_unittest.cc",
+    "chrome/utility/importer/browseros/BUILD.gn",
+    "chrome/utility/importer/browseros/chrome_autofill_importer.cc",
+    "chrome/utility/importer/browseros/chrome_autofill_importer.h",
+    "chrome/utility/importer/browseros/chrome_bookmarks_importer.cc",
+    "chrome/utility/importer/browseros/chrome_bookmarks_importer.h",
+    "chrome/utility/importer/browseros/chrome_cookie_importer.cc",
+    "chrome/utility/importer/browseros/chrome_cookie_importer.h",
+    "chrome/utility/importer/browseros/chrome_decryptor.cc",
+    "chrome/utility/importer/browseros/chrome_decryptor.h",
+    "chrome/utility/importer/browseros/chrome_decryptor_mac.mm",
+    "chrome/utility/importer/browseros/chrome_decryptor_win.cc",
+    "chrome/utility/importer/browseros/chrome_extensions_importer.cc",
+    "chrome/utility/importer/browseros/chrome_extensions_importer.h",
+    "chrome/utility/importer/browseros/chrome_history_importer.cc",
+    "chrome/utility/importer/browseros/chrome_history_importer.h",
+    "chrome/utility/importer/browseros/chrome_importer.cc",
+    "chrome/utility/importer/browseros/chrome_importer.h",
+    "chrome/utility/importer/browseros/chrome_importer_utils.cc",
+    "chrome/utility/importer/browseros/chrome_importer_utils.h",
+    "chrome/utility/importer/browseros/chrome_password_importer.cc",
+    "chrome/utility/importer/browseros/chrome_password_importer.h",
+    "chrome/utility/importer/external_process_importer_bridge.cc",
+    "chrome/utility/importer/external_process_importer_bridge.h",
+    "chrome/utility/importer/importer_creator.cc",
+    "components/bookmarks/browser/bookmark_utils.cc",
+    "components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom",
+    "components/content_settings/core/browser/cookie_settings_unittest.cc",
+    "components/infobars/core/infobar_delegate.h",
+    "components/os_crypt/common/BUILD.gn",
+    "components/os_crypt/common/keychain_password_mac.mm",
+    "components/os_crypt/common/keychain_password_mac_unittest.mm",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.cc",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h",
+    "components/password_manager/core/browser/password_store/login_database.cc",
+    "components/password_manager/core/browser/password_store/login_database.h",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.cc",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.h",
+    "components/password_manager/core/browser/password_store/password_store.cc",
+    "components/password_manager/core/browser/password_store/password_store.h",
+    "components/password_manager/core/browser/password_store/password_store_backend.h",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.cc",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.h",
+    "components/password_manager/core/browser/password_store/password_store_change.h",
+    "components/password_manager/core/browser/password_store/password_store_consumer.cc",
+    "components/password_manager/core/browser/password_store/password_store_interface.h",
+    "components/payments/core/payment_prefs.cc",
+    "components/search/ntp_features.cc",
+    "components/user_data_importer/common/importer_data_types.h",
+    "components/user_data_importer/common/importer_type.h",
+    "components/vector_icons/BUILD.gn",
+    "components/vector_icons/chat_orange.icon",
+    "content/browser/devtools/protocol/target_handler.cc",
+    "content/public/browser/devtools_manager_delegate.cc",
+    "content/public/browser/devtools_manager_delegate.h",
+    "extensions/browser/BUILD.gn",
+    "extensions/browser/crx_installer.cc",
+    "extensions/browser/crx_installer.h",
+    "extensions/browser/extension_function_histogram_value.h",
+    "extensions/browser/external_install_info.cc",
+    "extensions/browser/external_install_info.h",
+    "extensions/browser/process_manager.cc",
+    "extensions/browser/process_manager.h",
+    "extensions/common/mojom/api_permission_id.mojom",
+    "third_party/blink/public/devtools_protocol/browser_protocol.pdl",
+    "third_party/blink/public/devtools_protocol/BUILD.gn",
+    "third_party/blink/public/devtools_protocol/domains/Autofill.pdl",
+    "third_party/blink/public/devtools_protocol/domains/Bookmarks.pdl",
+    "third_party/blink/public/devtools_protocol/domains/Browser.pdl",
+    "third_party/blink/public/devtools_protocol/domains/History.pdl",
+    "third_party/blink/public/devtools_protocol/domains/Target.pdl",
+    "third_party/blink/renderer/core/frame/navigator.cc",
+    "third_party/libxml/BUILD.gn",
+    "third_party/sparkle/BUILD.gn",
+    "third_party/winsparkle/BUILD.gn",
+    "third_party/winsparkle/README.browseros",
+    "tools/gritsettings/resource_ids.spec",
+    "tools/metrics/actions/actions.xml",
+    "tools/metrics/histograms/metadata/browser/enums.xml",
+    "tools/metrics/histograms/metadata/browser/histograms.xml",
+    "tools/metrics/histograms/metadata/extensions/enums.xml",
+    "tools/metrics/histograms/metadata/sql/histograms.xml",
+    "tools/metrics/histograms/metadata/sync/enums.xml",
+    "tools/metrics/histograms/metadata/toasts/enums.xml",
+    "tools/metrics/histograms/metadata/toasts/histograms.xml",
+    "ui/webui/resources/tools/generate_grd.gni",
+    "ui/webui/resources/tools/generate_grd.py"
+  ],
+  "applied_patches": [
+    {
+      "index": 1,
+      "patch": "base/threading/thread_restrictions.h",
+      "status": "applied"
+    },
+    {
+      "index": 2,
+      "patch": "base/version_info/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 3,
+      "patch": "base/version_info/version_info.h",
+      "status": "applied"
+    },
+    {
+      "index": 4,
+      "patch": "base/version_info/version_info_values.h.version",
+      "status": "applied"
+    },
+    {
+      "index": 5,
+      "patch": "build/config/compiler/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 6,
+      "patch": "chrome/app/app-entitlements-browseros.plist",
+      "status": "applied"
+    },
+    {
+      "index": 7,
+      "patch": "chrome/app/app-Info.plist",
+      "status": "applied"
+    },
+    {
+      "index": 8,
+      "patch": "chrome/app/chrome_command_ids.h",
+      "status": "applied"
+    },
+    {
+      "index": 9,
+      "patch": "chrome/app/chrome_crash_reporter_client.cc",
+      "status": "applied"
+    },
+    {
+      "index": 10,
+      "patch": "chrome/app/chrome_crash_reporter_client.h",
+      "status": "applied"
+    },
+    {
+      "index": 11,
+      "patch": "chrome/app/chrome_crash_reporter_client_win.cc",
+      "status": "applied"
+    },
+    {
+      "index": 12,
+      "patch": "chrome/app/chrome_crash_reporter_client_win.h",
+      "status": "applied"
+    },
+    {
+      "index": 13,
+      "patch": "chrome/app/generated_resources.grd",
+      "status": "applied"
+    },
+    {
+      "index": 14,
+      "patch": "chrome/app/settings_strings.grdp",
+      "status": "applied"
+    },
+    {
+      "index": 15,
+      "patch": "chrome/browser/about_flags.cc",
+      "status": "applied"
+    },
+    {
+      "index": 16,
+      "patch": "chrome/browser/background/extensions/background_mode_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 17,
+      "patch": "chrome/browser/browser_features.cc",
+      "status": "applied"
+    },
+    {
+      "index": 18,
+      "patch": "chrome/browser/browser_features.h",
+      "status": "applied"
+    },
+    {
+      "index": 19,
+      "patch": "chrome/browser/browseros/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 20,
+      "patch": "chrome/browser/browseros/buildflags.gni",
+      "status": "applied"
+    },
+    {
+      "index": 21,
+      "patch": "chrome/browser/browseros/bundled_extensions/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 22,
+      "patch": "chrome/browser/browseros/core/browseros_action_utils.h",
+      "status": "applied"
+    },
+    {
+      "index": 23,
+      "patch": "chrome/browser/browseros/core/browseros_constants.h",
+      "status": "applied"
+    },
+    {
+      "index": 24,
+      "patch": "chrome/browser/browseros/core/browseros_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 25,
+      "patch": "chrome/browser/browseros/core/browseros_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 26,
+      "patch": "chrome/browser/browseros/core/browseros_prefs_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 27,
+      "patch": "chrome/browser/browseros/core/browseros_product.cc",
+      "status": "applied"
+    },
+    {
+      "index": 28,
+      "patch": "chrome/browser/browseros/core/browseros_product.h",
+      "status": "applied"
+    },
+    {
+      "index": 29,
+      "patch": "chrome/browser/browseros/core/browseros_product_state.cc",
+      "status": "applied"
+    },
+    {
+      "index": 30,
+      "patch": "chrome/browser/browseros/core/browseros_product_state.h",
+      "status": "applied"
+    },
+    {
+      "index": 31,
+      "patch": "chrome/browser/browseros/core/browseros_switches.h",
+      "status": "applied"
+    },
+    {
+      "index": 32,
+      "patch": "chrome/browser/browseros/core/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 33,
+      "patch": "chrome/browser/browseros/customization/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 34,
+      "patch": "chrome/browser/browseros/customization/command_line_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 35,
+      "patch": "chrome/browser/browseros/customization/command_line_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 36,
+      "patch": "chrome/browser/browseros/customization/customization_pref_names.h",
+      "status": "applied"
+    },
+    {
+      "index": 37,
+      "patch": "chrome/browser/browseros/customization/customization_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 38,
+      "patch": "chrome/browser/browseros/customization/customization_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 39,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_installer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 40,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_installer.h",
+      "status": "applied"
+    },
+    {
+      "index": 41,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_loader.cc",
+      "status": "applied"
+    },
+    {
+      "index": 42,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_loader.h",
+      "status": "applied"
+    },
+    {
+      "index": 43,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_maintainer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 44,
+      "patch": "chrome/browser/browseros/extensions/browseros_extension_maintainer.h",
+      "status": "applied"
+    },
+    {
+      "index": 45,
+      "patch": "chrome/browser/browseros/metrics/browseros_installation_id.cc",
+      "status": "applied"
+    },
+    {
+      "index": 46,
+      "patch": "chrome/browser/browseros/metrics/browseros_installation_id.h",
+      "status": "applied"
+    },
+    {
+      "index": 47,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics.cc",
+      "status": "applied"
+    },
+    {
+      "index": 48,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics.h",
+      "status": "applied"
+    },
+    {
+      "index": 49,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.cc",
+      "status": "applied"
+    },
+    {
+      "index": 50,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.h",
+      "status": "applied"
+    },
+    {
+      "index": 51,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics_service.cc",
+      "status": "applied"
+    },
+    {
+      "index": 52,
+      "patch": "chrome/browser/browseros/metrics/browseros_metrics_service.h",
+      "status": "applied"
+    },
+    {
+      "index": 53,
+      "patch": "chrome/browser/browseros/metrics/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 54,
+      "patch": "chrome/browser/browseros/onboarding/browseros_onboarding.cc",
+      "status": "applied"
+    },
+    {
+      "index": 55,
+      "patch": "chrome/browser/browseros/onboarding/browseros_onboarding.h",
+      "status": "applied"
+    },
+    {
+      "index": 56,
+      "patch": "chrome/browser/browseros/onboarding/browseros_onboarding_api.ts",
+      "status": "applied"
+    },
+    {
+      "index": 57,
+      "patch": "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 58,
+      "patch": "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 59,
+      "patch": "chrome/browser/browseros/onboarding/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 60,
+      "patch": "chrome/browser/browseros/server/browseros_appcast_parser.cc",
+      "status": "applied"
+    },
+    {
+      "index": 61,
+      "patch": "chrome/browser/browseros/server/browseros_appcast_parser.h",
+      "status": "applied"
+    },
+    {
+      "index": 62,
+      "patch": "chrome/browser/browseros/server/browseros_appcast_parser_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 63,
+      "patch": "chrome/browser/browseros/server/browseros_server_config.cc",
+      "status": "applied"
+    },
+    {
+      "index": 64,
+      "patch": "chrome/browser/browseros/server/browseros_server_config.h",
+      "status": "applied"
+    },
+    {
+      "index": 65,
+      "patch": "chrome/browser/browseros/server/browseros_server_config_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 66,
+      "patch": "chrome/browser/browseros/server/browseros_server_constants.h",
+      "status": "applied"
+    },
+    {
+      "index": 67,
+      "patch": "chrome/browser/browseros/server/browseros_server_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 68,
+      "patch": "chrome/browser/browseros/server/browseros_server_manager.h",
+      "status": "applied"
+    },
+    {
+      "index": 69,
+      "patch": "chrome/browser/browseros/server/browseros_server_manager_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 70,
+      "patch": "chrome/browser/browseros/server/browseros_server_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 71,
+      "patch": "chrome/browser/browseros/server/browseros_server_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 72,
+      "patch": "chrome/browser/browseros/server/browseros_server_proxy.cc",
+      "status": "applied"
+    },
+    {
+      "index": 73,
+      "patch": "chrome/browser/browseros/server/browseros_server_proxy.h",
+      "status": "applied"
+    },
+    {
+      "index": 74,
+      "patch": "chrome/browser/browseros/server/browseros_server_proxy_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 75,
+      "patch": "chrome/browser/browseros/server/browseros_server_updater.cc",
+      "status": "applied"
+    },
+    {
+      "index": 76,
+      "patch": "chrome/browser/browseros/server/browseros_server_updater.h",
+      "status": "applied"
+    },
+    {
+      "index": 77,
+      "patch": "chrome/browser/browseros/server/browseros_server_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 78,
+      "patch": "chrome/browser/browseros/server/browseros_server_utils.h",
+      "status": "applied"
+    },
+    {
+      "index": 79,
+      "patch": "chrome/browser/browseros/server/browseros_server_utils_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 80,
+      "patch": "chrome/browser/browseros/server/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 81,
+      "patch": "chrome/browser/browseros/server/health_checker.h",
+      "status": "applied"
+    },
+    {
+      "index": 82,
+      "patch": "chrome/browser/browseros/server/health_checker_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 83,
+      "patch": "chrome/browser/browseros/server/health_checker_impl.h",
+      "status": "applied"
+    },
+    {
+      "index": 84,
+      "patch": "chrome/browser/browseros/server/process_controller.h",
+      "status": "applied"
+    },
+    {
+      "index": 85,
+      "patch": "chrome/browser/browseros/server/process_controller_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 86,
+      "patch": "chrome/browser/browseros/server/process_controller_impl.h",
+      "status": "applied"
+    },
+    {
+      "index": 87,
+      "patch": "chrome/browser/browseros/server/server_process_launcher.cc",
+      "status": "applied"
+    },
+    {
+      "index": 88,
+      "patch": "chrome/browser/browseros/server/server_process_launcher.h",
+      "status": "applied"
+    },
+    {
+      "index": 89,
+      "patch": "chrome/browser/browseros/server/server_process_launcher_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 90,
+      "patch": "chrome/browser/browseros/server/server_process_launcher_win.cc",
+      "status": "applied"
+    },
+    {
+      "index": 91,
+      "patch": "chrome/browser/browseros/server/server_state_store.h",
+      "status": "applied"
+    },
+    {
+      "index": 92,
+      "patch": "chrome/browser/browseros/server/server_state_store_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 93,
+      "patch": "chrome/browser/browseros/server/server_state_store_impl.h",
+      "status": "applied"
+    },
+    {
+      "index": 94,
+      "patch": "chrome/browser/browseros/server/server_updater.h",
+      "status": "applied"
+    },
+    {
+      "index": 95,
+      "patch": "chrome/browser/browseros/server/server_version_store.h",
+      "status": "applied"
+    },
+    {
+      "index": 96,
+      "patch": "chrome/browser/browseros/server/test/mock_health_checker.h",
+      "status": "applied"
+    },
+    {
+      "index": 97,
+      "patch": "chrome/browser/browseros/server/test/mock_implementations.cc",
+      "status": "applied"
+    },
+    {
+      "index": 98,
+      "patch": "chrome/browser/browseros/server/test/mock_process_controller.h",
+      "status": "applied"
+    },
+    {
+      "index": 99,
+      "patch": "chrome/browser/browseros/server/test/mock_server_state_store.h",
+      "status": "applied"
+    },
+    {
+      "index": 100,
+      "patch": "chrome/browser/browseros/server/test/mock_server_updater.h",
+      "status": "applied"
+    },
+    {
+      "index": 101,
+      "patch": "chrome/browser/browseros/server/validate_resources.py",
+      "status": "applied"
+    },
+    {
+      "index": 102,
+      "patch": "chrome/browser/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 103,
+      "patch": "chrome/browser/buildflags.gni",
+      "status": "applied"
+    },
+    {
+      "index": 104,
+      "patch": "chrome/browser/chrome_browser_application_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 105,
+      "patch": "chrome/browser/chrome_browser_main.cc",
+      "status": "applied"
+    },
+    {
+      "index": 106,
+      "patch": "chrome/browser/chrome_browser_main_win.cc",
+      "status": "applied"
+    },
+    {
+      "index": 107,
+      "patch": "chrome/browser/chrome_content_browser_client.cc",
+      "status": "applied"
+    },
+    {
+      "index": 108,
+      "patch": "chrome/browser/chrome_content_browser_client_navigation_throttles.cc",
+      "status": "applied"
+    },
+    {
+      "index": 109,
+      "patch": "chrome/browser/devtools/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 110,
+      "patch": "chrome/browser/devtools/chrome_devtools_manager_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 111,
+      "patch": "chrome/browser/devtools/chrome_devtools_manager_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 112,
+      "patch": "chrome/browser/devtools/chrome_devtools_session.cc",
+      "status": "applied"
+    },
+    {
+      "index": 113,
+      "patch": "chrome/browser/devtools/chrome_devtools_session.h",
+      "status": "applied"
+    },
+    {
+      "index": 114,
+      "patch": "chrome/browser/devtools/devtools_browser_context_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 115,
+      "patch": "chrome/browser/devtools/devtools_browser_context_manager.h",
+      "status": "applied"
+    },
+    {
+      "index": 116,
+      "patch": "chrome/browser/devtools/inspector_protocol_config.json",
+      "status": "applied"
+    },
+    {
+      "index": 117,
+      "patch": "chrome/browser/devtools/protocol/autofill_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 118,
+      "patch": "chrome/browser/devtools/protocol/autofill_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 119,
+      "patch": "chrome/browser/devtools/protocol/bookmarks_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 120,
+      "patch": "chrome/browser/devtools/protocol/bookmarks_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 121,
+      "patch": "chrome/browser/devtools/protocol/browser_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 122,
+      "patch": "chrome/browser/devtools/protocol/browser_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 123,
+      "patch": "chrome/browser/devtools/protocol/browser_handler_android.cc",
+      "status": "applied"
+    },
+    {
+      "index": 124,
+      "patch": "chrome/browser/devtools/protocol/browser_handler_android.h",
+      "status": "applied"
+    },
+    {
+      "index": 125,
+      "patch": "chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 126,
+      "patch": "chrome/browser/devtools/protocol/history_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 127,
+      "patch": "chrome/browser/devtools/protocol/history_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 128,
+      "patch": "chrome/browser/devtools/protocol/target_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 129,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
+      "status": "applied"
+    },
+    {
+      "index": 130,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api.h",
+      "status": "applied"
+    },
+    {
+      "index": 131,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.cc",
+      "status": "applied"
+    },
+    {
+      "index": 132,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.h",
+      "status": "applied"
+    },
+    {
+      "index": 133,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 134,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_api_utils.h",
+      "status": "applied"
+    },
+    {
+      "index": 135,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_change_detector.cc",
+      "status": "applied"
+    },
+    {
+      "index": 136,
+      "patch": "chrome/browser/extensions/api/browser_os/browser_os_change_detector.h",
+      "status": "applied"
+    },
+    {
+      "index": 137,
+      "patch": "chrome/browser/extensions/api/debugger/debugger_api.cc",
+      "status": "applied"
+    },
+    {
+      "index": 138,
+      "patch": "chrome/browser/extensions/api/settings_private/prefs_util.cc",
+      "status": "applied"
+    },
+    {
+      "index": 139,
+      "patch": "chrome/browser/extensions/api/side_panel/side_panel_api.cc",
+      "status": "applied"
+    },
+    {
+      "index": 140,
+      "patch": "chrome/browser/extensions/api/side_panel/side_panel_api.h",
+      "status": "applied"
+    },
+    {
+      "index": 141,
+      "patch": "chrome/browser/extensions/api/side_panel/side_panel_service.cc",
+      "status": "applied"
+    },
+    {
+      "index": 142,
+      "patch": "chrome/browser/extensions/api/side_panel/side_panel_service.h",
+      "status": "applied"
+    },
+    {
+      "index": 143,
+      "patch": "chrome/browser/extensions/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 144,
+      "patch": "chrome/browser/extensions/chrome_extension_registrar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 145,
+      "patch": "chrome/browser/extensions/chrome_extension_system.cc",
+      "status": "applied"
+    },
+    {
+      "index": 146,
+      "patch": "chrome/browser/extensions/chrome_extensions_browser_api_provider.cc",
+      "status": "applied"
+    },
+    {
+      "index": 147,
+      "patch": "chrome/browser/extensions/extension_context_menu_model.cc",
+      "status": "applied"
+    },
+    {
+      "index": 148,
+      "patch": "chrome/browser/extensions/extension_management.cc",
+      "status": "applied"
+    },
+    {
+      "index": 149,
+      "patch": "chrome/browser/extensions/extension_url_overrides_registrar.cc",
+      "status": "applied"
+    },
+    {
+      "index": 150,
+      "patch": "chrome/browser/extensions/external_provider_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 151,
+      "patch": "chrome/browser/extensions/external_provider_impl.h",
+      "status": "applied"
+    },
+    {
+      "index": 152,
+      "patch": "chrome/browser/extensions/external_provider_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 153,
+      "patch": "chrome/browser/extensions/updater/extension_updater.cc",
+      "status": "applied"
+    },
+    {
+      "index": 154,
+      "patch": "chrome/browser/extensions/updater/extension_updater.h",
+      "status": "applied"
+    },
+    {
+      "index": 155,
+      "patch": "chrome/browser/flag_descriptions.h",
+      "status": "applied"
+    },
+    {
+      "index": 156,
+      "patch": "chrome/browser/importer/external_process_importer_client.cc",
+      "status": "applied"
+    },
+    {
+      "index": 157,
+      "patch": "chrome/browser/importer/external_process_importer_client.h",
+      "status": "applied"
+    },
+    {
+      "index": 158,
+      "patch": "chrome/browser/importer/importer_list.cc",
+      "status": "applied"
+    },
+    {
+      "index": 159,
+      "patch": "chrome/browser/importer/importer_uma.cc",
+      "status": "applied"
+    },
+    {
+      "index": 160,
+      "patch": "chrome/browser/importer/in_process_importer_bridge.cc",
+      "status": "applied"
+    },
+    {
+      "index": 161,
+      "patch": "chrome/browser/importer/in_process_importer_bridge.h",
+      "status": "applied"
+    },
+    {
+      "index": 162,
+      "patch": "chrome/browser/importer/profile_writer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 163,
+      "patch": "chrome/browser/importer/profile_writer.h",
+      "status": "applied"
+    },
+    {
+      "index": 164,
+      "patch": "chrome/browser/lifetime/application_lifetime.cc",
+      "status": "applied"
+    },
+    {
+      "index": 165,
+      "patch": "chrome/browser/mac/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 166,
+      "patch": "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h",
+      "status": "applied"
+    },
+    {
+      "index": 167,
+      "patch": "chrome/browser/mac/chrome_browser_main_extra_parts_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 168,
+      "patch": "chrome/browser/mac/sparkle_glue.h",
+      "status": "applied"
+    },
+    {
+      "index": 169,
+      "patch": "chrome/browser/mac/sparkle_glue.mm",
+      "status": "applied"
+    },
+    {
+      "index": 170,
+      "patch": "chrome/browser/media/extension_media_access_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 171,
+      "patch": "chrome/browser/metrics/chrome_metrics_service_client.cc",
+      "status": "applied"
+    },
+    {
+      "index": 172,
+      "patch": "chrome/browser/net/profile_network_context_service.cc",
+      "status": "applied"
+    },
+    {
+      "index": 173,
+      "patch": "chrome/browser/prefs/browser_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 174,
+      "patch": "chrome/browser/prefs/browser_prefs.h",
+      "status": "applied"
+    },
+    {
+      "index": 175,
+      "patch": "chrome/browser/prefs/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 176,
+      "patch": "chrome/browser/prefs/chrome_command_line_pref_store.cc",
+      "status": "applied"
+    },
+    {
+      "index": 177,
+      "patch": "chrome/browser/profiles/profile.h",
+      "status": "applied"
+    },
+    {
+      "index": 178,
+      "patch": "chrome/browser/profiles/profile_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 179,
+      "patch": "chrome/browser/profiles/profile_impl.h",
+      "status": "applied"
+    },
+    {
+      "index": 180,
+      "patch": "chrome/browser/profiles/profile_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 181,
+      "patch": "chrome/browser/profiles/profile_manager.h",
+      "status": "applied"
+    },
+    {
+      "index": 182,
+      "patch": "chrome/browser/profiles/profile_window.cc",
+      "status": "applied"
+    },
+    {
+      "index": 183,
+      "patch": "chrome/browser/profiles/profile_window.h",
+      "status": "applied"
+    },
+    {
+      "index": 184,
+      "patch": "chrome/browser/resources/settings/about_page/about_page.css",
+      "status": "applied"
+    },
+    {
+      "index": 185,
+      "patch": "chrome/browser/resources/settings/about_page/about_page.html.ts",
+      "status": "applied"
+    },
+    {
+      "index": 186,
+      "patch": "chrome/browser/resources/settings/about_page/about_page.ts",
+      "status": "applied"
+    },
+    {
+      "index": 187,
+      "patch": "chrome/browser/resources/settings/people_page/import_data_browser_proxy.ts",
+      "status": "applied"
+    },
+    {
+      "index": 188,
+      "patch": "chrome/browser/resources/settings/people_page/import_data_dialog.html.ts",
+      "status": "applied"
+    },
+    {
+      "index": 189,
+      "patch": "chrome/browser/resources/settings/people_page/import_data_dialog.ts",
+      "status": "applied"
+    },
+    {
+      "index": 190,
+      "patch": "chrome/browser/resources/settings/reset_page/reset_profile_dialog.html.ts",
+      "status": "applied"
+    },
+    {
+      "index": 191,
+      "patch": "chrome/browser/signin/account_consistency_mode_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 192,
+      "patch": "chrome/browser/sparkle_buildflags.gni",
+      "status": "applied"
+    },
+    {
+      "index": 193,
+      "patch": "chrome/browser/themes/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 194,
+      "patch": "chrome/browser/themes/theme_service.cc",
+      "status": "applied"
+    },
+    {
+      "index": 195,
+      "patch": "chrome/browser/ui/actions/chrome_action_id.h",
+      "status": "applied"
+    },
+    {
+      "index": 196,
+      "patch": "chrome/browser/ui/bookmarks/bookmark_bar_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 197,
+      "patch": "chrome/browser/ui/bookmarks/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 198,
+      "patch": "chrome/browser/ui/browser_actions.cc",
+      "status": "applied"
+    },
+    {
+      "index": 199,
+      "patch": "chrome/browser/ui/browser_command_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 200,
+      "patch": "chrome/browser/ui/browser_commands.cc",
+      "status": "applied"
+    },
+    {
+      "index": 201,
+      "patch": "chrome/browser/ui/browser_element_identifiers.cc",
+      "status": "applied"
+    },
+    {
+      "index": 202,
+      "patch": "chrome/browser/ui/browser_element_identifiers.h",
+      "status": "applied"
+    },
+    {
+      "index": 203,
+      "patch": "chrome/browser/ui/browser_ui_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 204,
+      "patch": "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 205,
+      "patch": "chrome/browser/ui/browser_web_contents_delegate/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 206,
+      "patch": "chrome/browser/ui/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 207,
+      "patch": "chrome/browser/ui/cocoa/dock_icon.h",
+      "status": "applied"
+    },
+    {
+      "index": 208,
+      "patch": "chrome/browser/ui/cocoa/dock_icon.mm",
+      "status": "applied"
+    },
+    {
+      "index": 209,
+      "patch": "chrome/browser/ui/extensions/extension_side_panel_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 210,
+      "patch": "chrome/browser/ui/extensions/extension_side_panel_utils.h",
+      "status": "applied"
+    },
+    {
+      "index": 211,
+      "patch": "chrome/browser/ui/extensions/settings_overridden_params_providers.cc",
+      "status": "applied"
+    },
+    {
+      "index": 212,
+      "patch": "chrome/browser/ui/infobars/browser_infobar_registry.cc",
+      "status": "applied"
+    },
+    {
+      "index": 213,
+      "patch": "chrome/browser/ui/omnibox/chrome_omnibox_client.cc",
+      "status": "applied"
+    },
+    {
+      "index": 214,
+      "patch": "chrome/browser/ui/page_action/action_ids.h",
+      "status": "applied"
+    },
+    {
+      "index": 215,
+      "patch": "chrome/browser/ui/page_action/page_action_icon_type.h",
+      "status": "applied"
+    },
+    {
+      "index": 216,
+      "patch": "chrome/browser/ui/page_action/page_action_properties_provider.cc",
+      "status": "applied"
+    },
+    {
+      "index": 217,
+      "patch": "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 218,
+      "patch": "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 219,
+      "patch": "chrome/browser/ui/profiles/profile_error_dialog.cc",
+      "status": "applied"
+    },
+    {
+      "index": 220,
+      "patch": "chrome/browser/ui/profiles/profile_picker.cc",
+      "status": "applied"
+    },
+    {
+      "index": 221,
+      "patch": "chrome/browser/ui/profiles/profile_picker.h",
+      "status": "applied"
+    },
+    {
+      "index": 222,
+      "patch": "chrome/browser/ui/side_panel/side_panel_entry_id.h",
+      "status": "applied"
+    },
+    {
+      "index": 223,
+      "patch": "chrome/browser/ui/startup/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 224,
+      "patch": "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 225,
+      "patch": "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 226,
+      "patch": "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 227,
+      "patch": "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 228,
+      "patch": "chrome/browser/ui/startup/infobar_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 229,
+      "patch": "chrome/browser/ui/startup/startup_browser_creator.cc",
+      "status": "applied"
+    },
+    {
+      "index": 230,
+      "patch": "chrome/browser/ui/startup/startup_launch_infobar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 231,
+      "patch": "chrome/browser/ui/startup/startup_launch_infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 232,
+      "patch": "chrome/browser/ui/tabs/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 233,
+      "patch": "chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 234,
+      "patch": "chrome/browser/ui/toasts/api/toast_id.cc",
+      "status": "applied"
+    },
+    {
+      "index": 235,
+      "patch": "chrome/browser/ui/toasts/api/toast_id.h",
+      "status": "applied"
+    },
+    {
+      "index": 236,
+      "patch": "chrome/browser/ui/toasts/toast_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 237,
+      "patch": "chrome/browser/ui/toasts/toast_controller.h",
+      "status": "applied"
+    },
+    {
+      "index": 238,
+      "patch": "chrome/browser/ui/toasts/toast_service.cc",
+      "status": "applied"
+    },
+    {
+      "index": 239,
+      "patch": "chrome/browser/ui/toolbar/app_menu_icon_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 240,
+      "patch": "chrome/browser/ui/toolbar/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 241,
+      "patch": "chrome/browser/ui/toolbar/pinned_toolbar/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 242,
+      "patch": "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc",
+      "status": "applied"
+    },
+    {
+      "index": 243,
+      "patch": "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h",
+      "status": "applied"
+    },
+    {
+      "index": 244,
+      "patch": "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_browsertest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 245,
+      "patch": "chrome/browser/ui/toolbar/toolbar_actions_model.cc",
+      "status": "applied"
+    },
+    {
+      "index": 246,
+      "patch": "chrome/browser/ui/toolbar/toolbar_pref_names.cc",
+      "status": "applied"
+    },
+    {
+      "index": 247,
+      "patch": "chrome/browser/ui/ui_features.cc",
+      "status": "applied"
+    },
+    {
+      "index": 248,
+      "patch": "chrome/browser/ui/ui_features.h",
+      "status": "applied"
+    },
+    {
+      "index": 249,
+      "patch": "chrome/browser/ui/views/extensions/extension_view_views.cc",
+      "status": "applied"
+    },
+    {
+      "index": 250,
+      "patch": "chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 251,
+      "patch": "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc",
+      "status": "applied"
+    },
+    {
+      "index": 252,
+      "patch": "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h",
+      "status": "applied"
+    },
+    {
+      "index": 253,
+      "patch": "chrome/browser/ui/views/infobars/infobar_container_view.cc",
+      "status": "applied"
+    },
+    {
+      "index": 254,
+      "patch": "chrome/browser/ui/views/new_tab_footer/footer_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 255,
+      "patch": "chrome/browser/ui/views/profiles/avatar_toolbar_button_state_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 256,
+      "patch": "chrome/browser/ui/views/profiles/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 257,
+      "patch": "chrome/browser/ui/views/profiles/first_run_flow_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 258,
+      "patch": "chrome/browser/ui/views/profiles/first_run_flow_controller.h",
+      "status": "applied"
+    },
+    {
+      "index": 259,
+      "patch": "chrome/browser/ui/views/profiles/profile_management_flow_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 260,
+      "patch": "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.cc",
+      "status": "applied"
+    },
+    {
+      "index": 261,
+      "patch": "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 262,
+      "patch": "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 263,
+      "patch": "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.cc",
+      "status": "applied"
+    },
+    {
+      "index": 264,
+      "patch": "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.h",
+      "status": "applied"
+    },
+    {
+      "index": 265,
+      "patch": "chrome/browser/ui/views/side_panel/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 266,
+      "patch": "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_action_item_util.cc",
+      "status": "applied"
+    },
+    {
+      "index": 267,
+      "patch": "chrome/browser/ui/views/side_panel/side_panel.cc",
+      "status": "applied"
+    },
+    {
+      "index": 268,
+      "patch": "chrome/browser/ui/views/side_panel/side_panel.h",
+      "status": "applied"
+    },
+    {
+      "index": 269,
+      "patch": "chrome/browser/ui/views/side_panel/side_panel_coordinator.cc",
+      "status": "applied"
+    },
+    {
+      "index": 270,
+      "patch": "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc",
+      "status": "applied"
+    },
+    {
+      "index": 271,
+      "patch": "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.h",
+      "status": "applied"
+    },
+    {
+      "index": 272,
+      "patch": "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.cc",
+      "status": "applied"
+    },
+    {
+      "index": 273,
+      "patch": "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.h",
+      "status": "applied"
+    },
+    {
+      "index": 274,
+      "patch": "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.cc",
+      "status": "applied"
+    },
+    {
+      "index": 275,
+      "patch": "chrome/browser/ui/views/toolbar/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 276,
+      "patch": "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc",
+      "status": "applied"
+    },
+    {
+      "index": 277,
+      "patch": "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h",
+      "status": "applied"
+    },
+    {
+      "index": 278,
+      "patch": "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc",
+      "status": "applied"
+    },
+    {
+      "index": 279,
+      "patch": "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h",
+      "status": "applied"
+    },
+    {
+      "index": 280,
+      "patch": "chrome/browser/ui/views/toolbar/toolbar_view.cc",
+      "status": "applied"
+    },
+    {
+      "index": 281,
+      "patch": "chrome/browser/ui/webui/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 282,
+      "patch": "chrome/browser/ui/webui/chrome_web_ui_configs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 283,
+      "patch": "chrome/browser/ui/webui/help/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 284,
+      "patch": "chrome/browser/ui/webui/help/sparkle_version_updater_mac.h",
+      "status": "applied"
+    },
+    {
+      "index": 285,
+      "patch": "chrome/browser/ui/webui/help/sparkle_version_updater_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 286,
+      "patch": "chrome/browser/ui/webui/help/version_updater_basic.cc",
+      "status": "applied"
+    },
+    {
+      "index": 287,
+      "patch": "chrome/browser/ui/webui/help/version_updater_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 288,
+      "patch": "chrome/browser/ui/webui/help/winsparkle_version_updater_win.cc",
+      "status": "applied"
+    },
+    {
+      "index": 289,
+      "patch": "chrome/browser/ui/webui/help/winsparkle_version_updater_win.h",
+      "status": "applied"
+    },
+    {
+      "index": 290,
+      "patch": "chrome/browser/ui/webui/new_tab_footer/new_tab_footer_ui.cc",
+      "status": "applied"
+    },
+    {
+      "index": 291,
+      "patch": "chrome/browser/ui/webui/settings/browseros_metrics_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 292,
+      "patch": "chrome/browser/ui/webui/settings/browseros_metrics_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 293,
+      "patch": "chrome/browser/ui/webui/settings/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 294,
+      "patch": "chrome/browser/ui/webui/settings/import_data_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 295,
+      "patch": "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc",
+      "status": "applied"
+    },
+    {
+      "index": 296,
+      "patch": "chrome/browser/ui/webui/settings/settings_ui.cc",
+      "status": "applied"
+    },
+    {
+      "index": 297,
+      "patch": "chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 298,
+      "patch": "chrome/browser/ui/webui/webui_toolbar/utils/toolbar_button_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 299,
+      "patch": "chrome/browser/upgrade_detector/upgrade_detector_impl.cc",
+      "status": "applied"
+    },
+    {
+      "index": 300,
+      "patch": "chrome/browser/win/winsparkle_glue.cc",
+      "status": "applied"
+    },
+    {
+      "index": 301,
+      "patch": "chrome/browser/win/winsparkle_glue.h",
+      "status": "applied"
+    },
+    {
+      "index": 302,
+      "patch": "chrome/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 303,
+      "patch": "chrome/chrome_paks.gni",
+      "status": "applied"
+    },
+    {
+      "index": 304,
+      "patch": "chrome/common/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 305,
+      "patch": "chrome/common/chrome_constants.cc",
+      "status": "applied"
+    },
+    {
+      "index": 306,
+      "patch": "chrome/common/chrome_paths.cc",
+      "status": "applied"
+    },
+    {
+      "index": 307,
+      "patch": "chrome/common/chrome_paths.h",
+      "status": "applied"
+    },
+    {
+      "index": 308,
+      "patch": "chrome/common/chrome_paths_linux.cc",
+      "status": "applied"
+    },
+    {
+      "index": 309,
+      "patch": "chrome/common/extensions/api/_api_features.json",
+      "status": "applied"
+    },
+    {
+      "index": 310,
+      "patch": "chrome/common/extensions/api/_permission_features.json",
+      "status": "applied"
+    },
+    {
+      "index": 311,
+      "patch": "chrome/common/extensions/api/api_sources.gni",
+      "status": "applied"
+    },
+    {
+      "index": 312,
+      "patch": "chrome/common/extensions/api/browser_os.idl",
+      "status": "applied"
+    },
+    {
+      "index": 313,
+      "patch": "chrome/common/extensions/api/side_panel.idl",
+      "status": "applied"
+    },
+    {
+      "index": 314,
+      "patch": "chrome/common/extensions/permissions/chrome_api_permissions.cc",
+      "status": "applied"
+    },
+    {
+      "index": 315,
+      "patch": "chrome/common/importer/importer_bridge.h",
+      "status": "applied"
+    },
+    {
+      "index": 316,
+      "patch": "chrome/common/importer/mock_importer_bridge.h",
+      "status": "applied"
+    },
+    {
+      "index": 317,
+      "patch": "chrome/common/importer/profile_import.mojom",
+      "status": "applied"
+    },
+    {
+      "index": 318,
+      "patch": "chrome/common/importer/profile_import_process_param_traits_macros.h",
+      "status": "applied"
+    },
+    {
+      "index": 319,
+      "patch": "chrome/common/pref_names.h",
+      "status": "applied"
+    },
+    {
+      "index": 320,
+      "patch": "chrome/common/webui_url_constants.cc",
+      "status": "applied"
+    },
+    {
+      "index": 321,
+      "patch": "chrome/common/webui_url_constants.h",
+      "status": "applied"
+    },
+    {
+      "index": 322,
+      "patch": "chrome/install_static/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 323,
+      "patch": "chrome/install_static/chromium_install_modes.h",
+      "status": "applied"
+    },
+    {
+      "index": 324,
+      "patch": "chrome/installer/mini_installer/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 325,
+      "patch": "chrome/installer/mini_installer/chrome.release",
+      "status": "applied"
+    },
+    {
+      "index": 326,
+      "patch": "chrome/installer/setup/browseros_install_ui.cc",
+      "status": "applied"
+    },
+    {
+      "index": 327,
+      "patch": "chrome/installer/setup/browseros_install_ui.h",
+      "status": "applied"
+    },
+    {
+      "index": 328,
+      "patch": "chrome/installer/setup/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 329,
+      "patch": "chrome/installer/setup/setup_main.cc",
+      "status": "applied"
+    },
+    {
+      "index": 330,
+      "patch": "chrome/installer/util/util_constants.h",
+      "status": "applied"
+    },
+    {
+      "index": 331,
+      "patch": "chrome/test/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 332,
+      "patch": "chrome/test/data/webui/settings/import_data_dialog_test.ts",
+      "status": "applied"
+    },
+    {
+      "index": 333,
+      "patch": "chrome/utility/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 334,
+      "patch": "chrome/utility/importer/bookmarks_file_importer_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 335,
+      "patch": "chrome/utility/importer/browseros/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 336,
+      "patch": "chrome/utility/importer/browseros/chrome_autofill_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 337,
+      "patch": "chrome/utility/importer/browseros/chrome_autofill_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 338,
+      "patch": "chrome/utility/importer/browseros/chrome_bookmarks_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 339,
+      "patch": "chrome/utility/importer/browseros/chrome_bookmarks_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 340,
+      "patch": "chrome/utility/importer/browseros/chrome_cookie_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 341,
+      "patch": "chrome/utility/importer/browseros/chrome_cookie_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 342,
+      "patch": "chrome/utility/importer/browseros/chrome_decryptor.cc",
+      "status": "applied"
+    },
+    {
+      "index": 343,
+      "patch": "chrome/utility/importer/browseros/chrome_decryptor.h",
+      "status": "applied"
+    },
+    {
+      "index": 344,
+      "patch": "chrome/utility/importer/browseros/chrome_decryptor_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 345,
+      "patch": "chrome/utility/importer/browseros/chrome_decryptor_win.cc",
+      "status": "applied"
+    },
+    {
+      "index": 346,
+      "patch": "chrome/utility/importer/browseros/chrome_extensions_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 347,
+      "patch": "chrome/utility/importer/browseros/chrome_extensions_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 348,
+      "patch": "chrome/utility/importer/browseros/chrome_history_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 349,
+      "patch": "chrome/utility/importer/browseros/chrome_history_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 350,
+      "patch": "chrome/utility/importer/browseros/chrome_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 351,
+      "patch": "chrome/utility/importer/browseros/chrome_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 352,
+      "patch": "chrome/utility/importer/browseros/chrome_importer_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 353,
+      "patch": "chrome/utility/importer/browseros/chrome_importer_utils.h",
+      "status": "applied"
+    },
+    {
+      "index": 354,
+      "patch": "chrome/utility/importer/browseros/chrome_password_importer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 355,
+      "patch": "chrome/utility/importer/browseros/chrome_password_importer.h",
+      "status": "applied"
+    },
+    {
+      "index": 356,
+      "patch": "chrome/utility/importer/external_process_importer_bridge.cc",
+      "status": "applied"
+    },
+    {
+      "index": 357,
+      "patch": "chrome/utility/importer/external_process_importer_bridge.h",
+      "status": "applied"
+    },
+    {
+      "index": 358,
+      "patch": "chrome/utility/importer/importer_creator.cc",
+      "status": "applied"
+    },
+    {
+      "index": 359,
+      "patch": "components/bookmarks/browser/bookmark_utils.cc",
+      "status": "applied"
+    },
+    {
+      "index": 360,
+      "patch": "components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom",
+      "status": "applied"
+    },
+    {
+      "index": 361,
+      "patch": "components/content_settings/core/browser/cookie_settings_unittest.cc",
+      "status": "applied"
+    },
+    {
+      "index": 362,
+      "patch": "components/infobars/core/infobar_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 363,
+      "patch": "components/os_crypt/common/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 364,
+      "patch": "components/os_crypt/common/keychain_password_mac.mm",
+      "status": "applied"
+    },
+    {
+      "index": 365,
+      "patch": "components/os_crypt/common/keychain_password_mac_unittest.mm",
+      "status": "applied"
+    },
+    {
+      "index": 366,
+      "patch": "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 367,
+      "patch": "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h",
+      "status": "applied"
+    },
+    {
+      "index": 368,
+      "patch": "components/password_manager/core/browser/password_store/login_database.cc",
+      "status": "applied"
+    },
+    {
+      "index": 369,
+      "patch": "components/password_manager/core/browser/password_store/login_database.h",
+      "status": "applied"
+    },
+    {
+      "index": 370,
+      "patch": "components/password_manager/core/browser/password_store/login_database_async_helper.cc",
+      "status": "applied"
+    },
+    {
+      "index": 371,
+      "patch": "components/password_manager/core/browser/password_store/login_database_async_helper.h",
+      "status": "applied"
+    },
+    {
+      "index": 372,
+      "patch": "components/password_manager/core/browser/password_store/password_store.cc",
+      "status": "applied"
+    },
+    {
+      "index": 373,
+      "patch": "components/password_manager/core/browser/password_store/password_store.h",
+      "status": "applied"
+    },
+    {
+      "index": 374,
+      "patch": "components/password_manager/core/browser/password_store/password_store_backend.h",
+      "status": "applied"
+    },
+    {
+      "index": 375,
+      "patch": "components/password_manager/core/browser/password_store/password_store_built_in_backend.cc",
+      "status": "applied"
+    },
+    {
+      "index": 376,
+      "patch": "components/password_manager/core/browser/password_store/password_store_built_in_backend.h",
+      "status": "applied"
+    },
+    {
+      "index": 377,
+      "patch": "components/password_manager/core/browser/password_store/password_store_change.h",
+      "status": "applied"
+    },
+    {
+      "index": 378,
+      "patch": "components/password_manager/core/browser/password_store/password_store_consumer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 379,
+      "patch": "components/password_manager/core/browser/password_store/password_store_interface.h",
+      "status": "applied"
+    },
+    {
+      "index": 380,
+      "patch": "components/payments/core/payment_prefs.cc",
+      "status": "applied"
+    },
+    {
+      "index": 381,
+      "patch": "components/search/ntp_features.cc",
+      "status": "applied"
+    },
+    {
+      "index": 382,
+      "patch": "components/user_data_importer/common/importer_data_types.h",
+      "status": "applied"
+    },
+    {
+      "index": 383,
+      "patch": "components/user_data_importer/common/importer_type.h",
+      "status": "applied"
+    },
+    {
+      "index": 384,
+      "patch": "components/vector_icons/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 385,
+      "patch": "components/vector_icons/chat_orange.icon",
+      "status": "applied"
+    },
+    {
+      "index": 386,
+      "patch": "content/browser/devtools/protocol/target_handler.cc",
+      "status": "applied"
+    },
+    {
+      "index": 387,
+      "patch": "content/public/browser/devtools_manager_delegate.cc",
+      "status": "applied"
+    },
+    {
+      "index": 388,
+      "patch": "content/public/browser/devtools_manager_delegate.h",
+      "status": "applied"
+    },
+    {
+      "index": 389,
+      "patch": "extensions/browser/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 390,
+      "patch": "extensions/browser/crx_installer.cc",
+      "status": "applied"
+    },
+    {
+      "index": 391,
+      "patch": "extensions/browser/crx_installer.h",
+      "status": "applied"
+    },
+    {
+      "index": 392,
+      "patch": "extensions/browser/extension_function_histogram_value.h",
+      "status": "applied"
+    },
+    {
+      "index": 393,
+      "patch": "extensions/browser/external_install_info.cc",
+      "status": "applied"
+    },
+    {
+      "index": 394,
+      "patch": "extensions/browser/external_install_info.h",
+      "status": "applied"
+    },
+    {
+      "index": 395,
+      "patch": "extensions/browser/process_manager.cc",
+      "status": "applied"
+    },
+    {
+      "index": 396,
+      "patch": "extensions/browser/process_manager.h",
+      "status": "applied"
+    },
+    {
+      "index": 397,
+      "patch": "extensions/common/mojom/api_permission_id.mojom",
+      "status": "applied"
+    },
+    {
+      "index": 398,
+      "patch": "third_party/blink/public/devtools_protocol/browser_protocol.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 399,
+      "patch": "third_party/blink/public/devtools_protocol/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 400,
+      "patch": "third_party/blink/public/devtools_protocol/domains/Autofill.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 401,
+      "patch": "third_party/blink/public/devtools_protocol/domains/Bookmarks.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 402,
+      "patch": "third_party/blink/public/devtools_protocol/domains/Browser.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 403,
+      "patch": "third_party/blink/public/devtools_protocol/domains/History.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 404,
+      "patch": "third_party/blink/public/devtools_protocol/domains/Target.pdl",
+      "status": "applied"
+    },
+    {
+      "index": 405,
+      "patch": "third_party/blink/renderer/core/frame/navigator.cc",
+      "status": "applied"
+    },
+    {
+      "index": 406,
+      "patch": "third_party/libxml/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 407,
+      "patch": "third_party/sparkle/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 408,
+      "patch": "third_party/winsparkle/BUILD.gn",
+      "status": "applied"
+    },
+    {
+      "index": 409,
+      "patch": "third_party/winsparkle/README.browseros",
+      "status": "applied"
+    },
+    {
+      "index": 410,
+      "patch": "tools/gritsettings/resource_ids.spec",
+      "status": "applied"
+    },
+    {
+      "index": 411,
+      "patch": "tools/metrics/actions/actions.xml",
+      "status": "applied"
+    },
+    {
+      "index": 412,
+      "patch": "tools/metrics/histograms/metadata/browser/enums.xml",
+      "status": "applied"
+    },
+    {
+      "index": 413,
+      "patch": "tools/metrics/histograms/metadata/browser/histograms.xml",
+      "status": "applied"
+    },
+    {
+      "index": 414,
+      "patch": "tools/metrics/histograms/metadata/extensions/enums.xml",
+      "status": "applied"
+    },
+    {
+      "index": 415,
+      "patch": "tools/metrics/histograms/metadata/sql/histograms.xml",
+      "status": "applied"
+    },
+    {
+      "index": 416,
+      "patch": "tools/metrics/histograms/metadata/sync/enums.xml",
+      "status": "applied"
+    },
+    {
+      "index": 417,
+      "patch": "tools/metrics/histograms/metadata/toasts/enums.xml",
+      "status": "applied"
+    },
+    {
+      "index": 418,
+      "patch": "tools/metrics/histograms/metadata/toasts/histograms.xml",
+      "status": "applied"
+    },
+    {
+      "index": 419,
+      "patch": "ui/webui/resources/tools/generate_grd.gni",
+      "status": "applied"
+    },
+    {
+      "index": 420,
+      "patch": "ui/webui/resources/tools/generate_grd.py",
+      "status": "applied"
+    }
+  ],
+  "failed_patches": [],
+  "input_files_sha256": {
+    "base/threading/thread_restrictions.h": "a25df4333697a612ef86120e733d40f3f6520374bc02ebdee3ffa8c5337abdb1",
+    "base/version_info/BUILD.gn": "add7135d37e48d41cb1401853a0a278cc9e98e72c422c1424c0f3bb67ca66a82",
+    "base/version_info/version_info.h": "e4e286ddc4b778a11161381eb60be02ba6bb049566d7023852a6620816010959",
+    "base/version_info/version_info_values.h.version": "222e8afc4db65464f20a8a2b72f685142f87cec4c8538884b9b6cb0de3b76321",
+    "build/config/compiler/BUILD.gn": "cd7eea43caa4cd1a3092c04992a4273f0f03dd3c6a04b13353d47db7a68cbf85",
+    "chrome/BUILD.gn": "b6974ae3ce56e4ca1e096f79478b92a8271ddd4dff389354c88fa4a681cc5cb1",
+    "chrome/app/app-Info.plist": "b9086affccae0673758bbf886e836ad637e4bc9b37849498498a06f69c8edba5",
+    "chrome/app/chrome_command_ids.h": "8eca6f326159af678e0715593126c4ac4f6b104c6872865b0810f5de114bc9fc",
+    "chrome/app/chrome_crash_reporter_client.cc": "c401e25b495132453e1ae19c58447c23548220e8330310576726fbfc1135a8ac",
+    "chrome/app/chrome_crash_reporter_client.h": "dc3a4c176fdfb7d1f0b9f75804572b81b330a175c11298743667c6f612e9682b",
+    "chrome/app/chrome_crash_reporter_client_win.cc": "ba5b5a5031bcb78a96cd82f5872c351764f87f0a630a305bfe45214f9d2cb97d",
+    "chrome/app/chrome_crash_reporter_client_win.h": "a1a9bbfb7df0cf22c196202d463140f4ab411c4fb8f18a67c06d13c14bb94411",
+    "chrome/app/generated_resources.grd": "e4c7d77d1ac9621db8f10ec8586b4b62ea49545f0c638a8999959cf944febdbe",
+    "chrome/app/settings_strings.grdp": "563353ef8672235fd4298c44be7ed2bc571cd2429d63c100434c52c22312c0d2",
+    "chrome/browser/BUILD.gn": "e4098a876ac02db4ab67a4ce1ab3261545d1a4cd4b13433fa0b4bc03969baac3",
+    "chrome/browser/about_flags.cc": "dec54db69ac7c13314008cf967fa0f6980e631951a79ee9327efb1cd87721f88",
+    "chrome/browser/background/extensions/background_mode_manager.cc": "a56f54a699ae4d510ed04dc6404c933e48b74e8eaa6f7620617ed48048d7baf8",
+    "chrome/browser/browser_features.cc": "ffca8aadc2de73a54cfc4084e86df6e90e21d6d3c88d547be0b448f74348b039",
+    "chrome/browser/browser_features.h": "11fa62ff01ded6b69d14b566e378f059433fcec33c25627bc06c01a449302679",
+    "chrome/browser/buildflags.gni": "aacb7077932338a8cc1f6eae82a8eb14b498ed7213fdc4d59576cbcb06c5debf",
+    "chrome/browser/chrome_browser_application_mac.mm": "8b1d494027bb2f20a39d7c3793b7f99b052938a4c722261a042937a8aecc7c11",
+    "chrome/browser/chrome_browser_main.cc": "ca8b989d550aa1cafd469921e9bfd06bffa405b38656db33b6e457590fc9b6c6",
+    "chrome/browser/chrome_browser_main_win.cc": "4a73fdce0e9f5d3e88acf040208af15b6c132e7efaa8bde1eb20bf98f55c0436",
+    "chrome/browser/chrome_content_browser_client.cc": "235fbfdbfe13d7ce2833017f67d6a899dda5b14131e38e5f7177b62f8a4b981b",
+    "chrome/browser/chrome_content_browser_client_navigation_throttles.cc": "7e71ba2da1d92f4c5b2a261056497682b9d2ab20287e4e60d1054fc1a1fd72f7",
+    "chrome/browser/devtools/BUILD.gn": "0de49aa3257a4b229abdf7385d2b637c08502b1fcafee2660c65149b7e7e6f30",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.cc": "1ee569177deb31497abf9f38763b279fc68a105b67294cb2c1301905d9c94a91",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.h": "c7934fb5be32b4a2b6d3b97e773fce0df9d7af11c687ac4e2e8b696683599c45",
+    "chrome/browser/devtools/chrome_devtools_session.cc": "aa83643fd9f7ac1b11b78e78e96c0e4c22160cbf565ff2642edfc432192fbeca",
+    "chrome/browser/devtools/chrome_devtools_session.h": "2ec715c5b1e1249a8dcdc5ccbbcf1c7038c90179594c3233bb5bda3ff3e72e9e",
+    "chrome/browser/devtools/devtools_browser_context_manager.cc": "27bfcfcb35063b03bb0e45f18784d942615e8ceadffc01a6acdcf5252286be10",
+    "chrome/browser/devtools/devtools_browser_context_manager.h": "acff6a138586eb30652cd35afbd0e28384cf52af78c22bab9632ef7444f99e59",
+    "chrome/browser/devtools/inspector_protocol_config.json": "8f8fe5de01b820868d7ea6fa964d9a53ca9bf3148600d74e50922dd51b88d9db",
+    "chrome/browser/devtools/protocol/autofill_handler.cc": "ba314b7d10a223a85d79c996ef558c9b0f7dbba6641866a739bab0c29b7f5218",
+    "chrome/browser/devtools/protocol/autofill_handler.h": "d9c56a93dc6fee839d2087cc3c40ccfad0bce912a1c1a54b976cd7ab4c010bd5",
+    "chrome/browser/devtools/protocol/browser_handler.cc": "475e3eef998a5e3255bcd295901cab18672c17fa098bb0bd7ebbb642a1c31c2a",
+    "chrome/browser/devtools/protocol/browser_handler.h": "f5ceb168726411502ac6b0748e5ceefbe6b3276fcdfb81d19e97b503eb3b07e7",
+    "chrome/browser/devtools/protocol/browser_handler_android.cc": "1725e111aeab18a2802ac88c28d6da4c2b13beb4ead18c0408dde7f2785b9d67",
+    "chrome/browser/devtools/protocol/browser_handler_android.h": "0be3141e9e12509331f9e02d6ce33ee5915bd5e24d36d69a4e6c497ee0bf0c8e",
+    "chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc": "35f4b0f665fd544b0d82e84c35a6648f82fe9843586254a1af9395c719b4e172",
+    "chrome/browser/devtools/protocol/target_handler.cc": "b0ebb459d58b1b1caa26349d04b007038483dbc71044447cba2d7d36c8fcc8fb",
+    "chrome/browser/extensions/BUILD.gn": "ec35fff5ccd7af82c4355d0515c756d77a49a0d06cfaa3c78aa06c11cdc1750b",
+    "chrome/browser/extensions/api/debugger/debugger_api.cc": "0f4333952936bb59070d50cfe9ed85e7433408de8624693ea2673458f54b0b37",
+    "chrome/browser/extensions/api/settings_private/prefs_util.cc": "93b2037f82378f8db8cad29dfad1d29bff02cb5272d45ff1f7620affe547c62e",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.cc": "8eec7b4e7c8c352b781b0f54ccbfcc95ab4a66b7d20d12a8872c7de3814c817d",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.h": "c2705d3ca0a563245f5083d73991a76ac7f5af0358341da4deda7aba1963a976",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.cc": "98555f1be7c6e16a6a48af2062f7113e21ce074ecc08eee5ac32089cf6dac264",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.h": "577877fe363468417a605e0a4c8fffcf0e6c1cb2ea680b58c080b065695172c6",
+    "chrome/browser/extensions/chrome_extension_registrar_delegate.cc": "876a47835cc2de001acf30a23324b71039c631d95de8384b9b55a9111a28b44d",
+    "chrome/browser/extensions/chrome_extension_system.cc": "d067b37e95a797107956bdccf4f58694fb127d5ecb905ca7ef01d29733a8742f",
+    "chrome/browser/extensions/chrome_extensions_browser_api_provider.cc": "0fad6a5840469c98f1f57bdd0d7d40dec8d011fde9857d83bd0919c67578d7f2",
+    "chrome/browser/extensions/extension_context_menu_model.cc": "1e74ada35a598237dcd6ccc95e245e9495338b4b16e9ed767a5fdb625ed6369d",
+    "chrome/browser/extensions/extension_management.cc": "6527b5d6938ba69e29ee2e46c08dd96394d345a8d74a5111753e2e610a017964",
+    "chrome/browser/extensions/extension_url_overrides_registrar.cc": "e79971ea078cbfadeb4b63cffb74a7d6321fa738a2d081254694a4b23292b507",
+    "chrome/browser/extensions/external_provider_impl.cc": "75885ef58883c029dee9f3e6024371d190fc0369917ea64d99fc189abb0007dd",
+    "chrome/browser/extensions/external_provider_impl.h": "a1f778285ab11cae06c42efc228f991cb7d5b0f7e4c845a84e1635787205b872",
+    "chrome/browser/extensions/external_provider_manager.cc": "3fe2115fb327b7280242b1fefafb1f147bc88957d4aca61f845205ecbe5224e3",
+    "chrome/browser/extensions/updater/extension_updater.cc": "82c7e4aa919b689c8b3963a15a4406942b338d29fd86bf433ec929bc2564e512",
+    "chrome/browser/extensions/updater/extension_updater.h": "4e5e985d46e710077503c0c96144f670847b6b40af1139c7f6042e5b04a019ea",
+    "chrome/browser/flag_descriptions.h": "cd1c358ae54af4af4870456bb53792000d3eb916a75565146670b0edb0983b22",
+    "chrome/browser/importer/external_process_importer_client.cc": "d72d65c64cd4858264b2a8bb515a182cb54a4e3aac746f01e0d80ec0d4fc4aa2",
+    "chrome/browser/importer/external_process_importer_client.h": "0a899b654ac77e4d48e2b8ccd9458250fb03a94b857e7f8f424be0ea5149f486",
+    "chrome/browser/importer/importer_list.cc": "3bbc0f8a3c747fc24a85a4582fe5646e1f419717c51b887f06c9551be71f1abe",
+    "chrome/browser/importer/importer_uma.cc": "63b1144b53747ad45621af211ac043a9d135b1b9a6ed6d0f0d8ddb5ba64233cb",
+    "chrome/browser/importer/in_process_importer_bridge.cc": "d05ac55df8143832bbcd8f3384dbb3de145a866bf09c771c94999dfd14bf6557",
+    "chrome/browser/importer/in_process_importer_bridge.h": "34dc6fdd824070c2009a61826d19a681ebebfe22e1ef8dfa64507b3a828b7c7d",
+    "chrome/browser/importer/profile_writer.cc": "0978873017f68b4ae96b49082508e006ef19a5539f9afb5c73929e72afe85601",
+    "chrome/browser/importer/profile_writer.h": "c2cd54841a317389939c68f55bb9d7df0606c83254efcc028b9d37572f44883a",
+    "chrome/browser/lifetime/application_lifetime.cc": "994cab323c5c5a254779655cc1fb1203d85b505b8937192eb17ae23eec28439d",
+    "chrome/browser/mac/BUILD.gn": "beef92e9f39c39cfd43fd2e31050f68a330fa1d53e2f225c193c38f26bd902ec",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h": "83f1e60c8f4cdf662a678c2c09e04cfa59c98b73ca31a89994b98e6bc5211838",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.mm": "153d0833b4218267b3484dc2104b0fc9e2a8413f7a7c7bab53b5310f3966cf62",
+    "chrome/browser/media/extension_media_access_handler.cc": "d6bb4adbd122c7e726d6f97b1cd75a68d7adf9f22ebe85186e5a75374ec3493f",
+    "chrome/browser/metrics/chrome_metrics_service_client.cc": "b81ee4e837c6406110c1050111665eaafb5ca4c1f8fa3892b9345616ce07d144",
+    "chrome/browser/net/profile_network_context_service.cc": "3e8d8c050af9fafb831cff02c886f4cb0591d8c457829b6b39cd69fcfe4185f2",
+    "chrome/browser/prefs/BUILD.gn": "35816aa86f0103cc9bd4a8828eba61124ecd42ebe92b79b8dfb821e46c4c7a4d",
+    "chrome/browser/prefs/browser_prefs.cc": "380ab7f07fe47c5743f9799d5e864a1f487254cc8cefaac74642fbcb71181306",
+    "chrome/browser/prefs/browser_prefs.h": "017a18abe6e7d6e86c862b9d54753237a4dc554afe798b58870916d74d6902f5",
+    "chrome/browser/prefs/chrome_command_line_pref_store.cc": "1f4df8de12fbf79629fc8ff45b289f2ef92806d4aaec283d6dc41eec7463b2d8",
+    "chrome/browser/profiles/profile.h": "5db6ee89832255ffa4362027379ffc85c5dc2a411ec8fca9e00e34995e23f610",
+    "chrome/browser/profiles/profile_impl.cc": "162c875e9e421a4b28a9280daa7d38bcc9af5a361e4f6589737aa0072caa011c",
+    "chrome/browser/profiles/profile_impl.h": "e0919613cf2a3f0020b69551d2e1a94d7661462e1396d5b62cef8c276c44df69",
+    "chrome/browser/profiles/profile_manager.cc": "963af61c89828b2560dad89bcaf3a185aa5a2a17b693cc8a71d338318515e905",
+    "chrome/browser/profiles/profile_manager.h": "cba93d3f2d0c1dc9e6a0be507527543e6d5d5433bd0bd521b29f019c61ad7a9a",
+    "chrome/browser/profiles/profile_window.cc": "e494e87b6989c003a8b30f17b8becfcf48c85c282ba17c76f4fd4d731d645139",
+    "chrome/browser/profiles/profile_window.h": "eb6bcdebe0e54c16719fa95c1415a1d47fe9066e99a7fd378ebd1d234d376e66",
+    "chrome/browser/resources/settings/about_page/about_page.css": "a60acb9d315f31a4314a2039d83509325d33355d524689a1fdb83d36f7b729f3",
+    "chrome/browser/resources/settings/about_page/about_page.html.ts": "5565e3a6a80db8690e4bb6a2a3612c39709df528173c3050ba45fc769feb594b",
+    "chrome/browser/resources/settings/about_page/about_page.ts": "42903171748531e9630294aa96a12307936a8c92bdf6b37d35b4512e1b6a9ec7",
+    "chrome/browser/resources/settings/people_page/import_data_browser_proxy.ts": "bb70792944781b37473d17e25719e76b94ef22f4f18a93d1cbc56a1e68f65346",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.html.ts": "e92563b1c87674f9a807e91c42b6d46aebb0bddfe20760f8139bcd1e012857f1",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.ts": "83914d1431386b2278ebdb877b11e897a69a226f0b477a90d9a5a01b5f26112a",
+    "chrome/browser/resources/settings/reset_page/reset_profile_dialog.html.ts": "137500c9676f6c3cf4267a3b8cfe23760754dd4b5844c26a8bef4a78479a9161",
+    "chrome/browser/signin/account_consistency_mode_manager.cc": "783dcb5d690b59b035f1818d41ec9d494e825ecdbcc5969c76d345c56dff3acb",
+    "chrome/browser/themes/BUILD.gn": "3a12351e8ad919afe357ef0e8c62ce99fa7930125ca2afa2545140c6f082753c",
+    "chrome/browser/themes/theme_service.cc": "c72936fa4675256414db9c1a04e9bfb2af00e19361c77d9797e62478e73593c3",
+    "chrome/browser/ui/BUILD.gn": "f58efa9dc6f09644b3f75006b909da8d1e5e64a95b7ee6005b519d682791f966",
+    "chrome/browser/ui/actions/chrome_action_id.h": "a432d9b958024941bfb2e85496e19c432fab1fd9857878b8b1ce1a20318c4c2c",
+    "chrome/browser/ui/bookmarks/BUILD.gn": "ba11e8a3f18f7b0ebf5de786473f3d8b303c6147b7750613d90a39f11f93382a",
+    "chrome/browser/ui/bookmarks/bookmark_bar_controller.cc": "7e9c5f1232608892809840e63c7d63a4659d8f84412c85b01589f91a52a3767a",
+    "chrome/browser/ui/browser_actions.cc": "7d8cb2261c4fc688a2307a4e7a546b2950ffd0cad9cab1a82b9892d068a03055",
+    "chrome/browser/ui/browser_command_controller.cc": "2ec6f710e9caf3e02945fa0ae2fc1460ce9023bac73f5cb9762f6c4416870f1b",
+    "chrome/browser/ui/browser_commands.cc": "57236cc8c06434105b5264c32b170449bd36b1cbde379e0b8acb209b0930de05",
+    "chrome/browser/ui/browser_element_identifiers.cc": "7ab76e351cb1803afa15983c3c01124124a1a8bd70ae219499cb0f1213e4cb77",
+    "chrome/browser/ui/browser_element_identifiers.h": "460ac95f57460cc687272c637da15aebb5e15645aac88ce4d365b04ea823679d",
+    "chrome/browser/ui/browser_ui_prefs.cc": "218f29bc988f927e2255c464ae58274ad1b87476b894fe072ccdfe65ba714159",
+    "chrome/browser/ui/browser_web_contents_delegate/BUILD.gn": "5e1ffa831fe1b7b8cea2e6aec6d5b7311309fa8894a8cb737827f3843c499c36",
+    "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "e0ab17b1d976d5d5c5c6be22171d92c8a7d613f5d83894445bf03146df61b12d",
+    "chrome/browser/ui/cocoa/dock_icon.h": "f9a96274eb256057c8213f765a1705bc8207a7641886e6ec5747bfb8df6d4304",
+    "chrome/browser/ui/cocoa/dock_icon.mm": "2d43977fef3854fc3ce55270f0efabcf15e93806c19df7d341c927ee839df2ec",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.cc": "7d1e95b7fa1e547aebfa941e17b3945c78b60f4f9a8a50a4151ed9bbcc283fbd",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.h": "13fd3d5f4b6b1738fb18d16275bef5b30c649dbf83af3fe15845a745ce0cb98c",
+    "chrome/browser/ui/extensions/settings_overridden_params_providers.cc": "db1894e80e42098405891bfcc1e0682734165f3e3e12593f467a9c9fcb456dec",
+    "chrome/browser/ui/infobars/browser_infobar_registry.cc": "1db20774abadfa16b6ab1d45bcc37e126993fc38046434359e8e4f4702357b39",
+    "chrome/browser/ui/omnibox/chrome_omnibox_client.cc": "f2050fa004ef2b88f6a02da33917ca6f426704808a75a45b2e8789c555961160",
+    "chrome/browser/ui/page_action/action_ids.h": "69b3394223c6dc78ecfc46635955653ccfc1dc22d99cbbb2c2be44eb2b59356d",
+    "chrome/browser/ui/page_action/page_action_icon_type.h": "15d5a748150b28f760b5dccc1ad2b29758a9122e47257752db7b984219a1599d",
+    "chrome/browser/ui/page_action/page_action_properties_provider.cc": "2c63ecdf655c1d47c7a60659c821e1683588c575f4c2cb6c99a801b6a3c5f1bf",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.cc": "e5bb827a5f0f4b3110971f8c075816c32f9e95f7ac9139cbfcff154a194e3746",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.h": "18a6d0860809456052b3dea279df71e1d287b8c4e6b304c3c1ce02b1018ed97c",
+    "chrome/browser/ui/profiles/profile_error_dialog.cc": "945c88d0f0d22b9cb63de0d023cda380dc7f37a6359bc59a27d7fecdcd9fb29b",
+    "chrome/browser/ui/profiles/profile_picker.cc": "5d85b1dc831088bc8a4afd562e45989296483b711cf6a104ebb64c8c097cf3b2",
+    "chrome/browser/ui/profiles/profile_picker.h": "5c44148618698f990db7b090ef57db40d1096f1eacfc08011174dc68e2f22c22",
+    "chrome/browser/ui/side_panel/side_panel_entry_id.h": "cf1dd421fd0042e8c61ff5e5acd895217210d831681a4ce44a642ef789295b21",
+    "chrome/browser/ui/startup/BUILD.gn": "d00e2630c7853acc7fc2425fbb7c4692488b1e6207ad6892420eee47ff00d7e5",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.cc": "dfba4f1d0d3bd1078857ee7ec9ca0e39b1bab8044bd390af285d3a0c9213634a",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.h": "0098eae383414a00f63002b2752443ccf20225370e0031a559c98467b61e7de8",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.cc": "cdda31b57b278c1f4ccede556913b796ee8756f51a4fce93ea75e48672da0a0b",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.h": "a9c7eb9622afc5f6b4714b07f62bd915ba480c1b4c41c65e4a8bfe82da3a4fe4",
+    "chrome/browser/ui/startup/infobar_utils.cc": "bc4f762352f3de80d2e58714d03546e40dc7a2c7040834eab4c2e69e34bc33e6",
+    "chrome/browser/ui/startup/startup_browser_creator.cc": "90a94bfdd710e052061fe70831279e999cbc5aed5f7d6fd82004e660093d8ad7",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.cc": "14fd115fc54beb8de16bc814027fcf2b3f227a632b4b07fc5e8e0dcd7cb59eba",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.h": "719d9935fa47c775e0166f2d7c283dab3c175041c218174415d33547848e2347",
+    "chrome/browser/ui/tabs/BUILD.gn": "6c97916d7f8095ca7c2181866c4be04deee661e191191bf203224c39db99ad8c",
+    "chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc": "68fda4830bc509e00e90ec373e73dc8138189692ee27d30441c05d5fa0edd41a",
+    "chrome/browser/ui/toasts/api/toast_id.cc": "103cceca4273c428a482f0258951a67fbea7a1829ca54f5045d1d5a5c358a467",
+    "chrome/browser/ui/toasts/api/toast_id.h": "87e17bcc04e70a87bb123512131b617298c8ddbeb35875a6983a5c1bef1427bc",
+    "chrome/browser/ui/toasts/toast_controller.cc": "f1a35694be91dfe51ff23a095aca34951df586e8f04c1783bc430e5e2ddd89d0",
+    "chrome/browser/ui/toasts/toast_controller.h": "2bef8b20e85f4b3f6cd6b38d44f3d7858f9e8a4233ec5d1e26e2e91d1d10dd84",
+    "chrome/browser/ui/toasts/toast_service.cc": "5bdb3e61f0c0c7d86b190c39f03225ead59623051ab555762bb48059f0479a78",
+    "chrome/browser/ui/toolbar/BUILD.gn": "e786d1546a2ead0a481e8f88d1a77dcd75e04bc23eb7bfb56ad36094dbb0516e",
+    "chrome/browser/ui/toolbar/app_menu_icon_controller.cc": "70f31f80d88b807f810c7dbf8d1e5936e65fbc72bdc5b0938a5b1c63f4ed7da8",
+    "chrome/browser/ui/toolbar/pinned_toolbar/BUILD.gn": "6db986e6bb0ee03e1d181824a8b508f454632c7c85e942569c929d0cabba647b",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc": "8945683aa968ad1a9af3731aa2e5191b81e4e26023713d3f3ceb3ddba2abf88f",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h": "cb41ed719c0e05d181ffaa00329eba8f2302c60084ab03025569ce8fc6448e1b",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_browsertest.cc": "61bc7324675646edd0450fb4bdc92d35923253ce2a103064ad33224bd6008c2c",
+    "chrome/browser/ui/toolbar/toolbar_actions_model.cc": "50ed721ed7589ff686319cb4624076c46696464819fad891157793fb5ad5f588",
+    "chrome/browser/ui/toolbar/toolbar_pref_names.cc": "8e3407126b1fbb0e9a84630bdaec8f70239c104c06c83fadaed2ac0392cbcf99",
+    "chrome/browser/ui/ui_features.cc": "389e09d21449adee728644d3f3f1ae20a0a37c458f6625283bf49361627c5de8",
+    "chrome/browser/ui/ui_features.h": "2c4bc9cfb24970df3fdf8152cfb365447d89f9df2ba3d94d40c04729ecf9f0c4",
+    "chrome/browser/ui/views/extensions/extension_view_views.cc": "afa74843473cb5d5248d2830c6d99ad9ad65733852eef1d8bd92c7169ba74137",
+    "chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc": "6f77381819ccd5d10809fe4dec000809eef565141a738b0ac487cf1229ea0f44",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc": "7ec3691b4c787684a95ae2bae9a4e48c6a320273eb62312a52f2aba2fee4a297",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h": "81c63f706ef8d97708d8cc7bab40f65eec69fa8a2099a634dc249e2a901c5e13",
+    "chrome/browser/ui/views/infobars/infobar_container_view.cc": "106f5e2e245d00f18d958b6b5c46edf6813229120339dc95712ada29124de176",
+    "chrome/browser/ui/views/new_tab_footer/footer_controller.cc": "8c83fb7f403acfe1d615a9083f92a1eba50d2db982976b102115afb815dfd93b",
+    "chrome/browser/ui/views/profiles/BUILD.gn": "7402e20232b5cd3c9b5a58a3c984e8a8e083cb4c46e9571b6940f477248c2e30",
+    "chrome/browser/ui/views/profiles/avatar_toolbar_button_state_manager.cc": "dc7dc83cbf8b9fda9d172c28656178330d6f5d43049dbd041d4bd7a4cfd1cdb6",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.cc": "a8ef4c1b6634625ef03022cdf43c6aa210e173fe2f97e7e87ad56159317321ac",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.h": "1fbb2c168c70eef20b97fe09967bd0900d493f935e9b04f2509246de32a8ccfc",
+    "chrome/browser/ui/views/profiles/profile_management_flow_controller.cc": "9075870e7f939aaef81b894e9705663493449d36f3052bd0fa712696c2354a2d",
+    "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.cc": "dfc5cd598b1611f81fb04f1141ea4c9b18bb97ff00c9903c92d1715358b2404d",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.cc": "63892c1a3967edb0ee03e108acb8a1413eca4d24fff5029c41bc17c478999575",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.h": "2ef8066ef83f1579bc072211b50bc17be866f2f08c24a8131593e9eb78fb1b8d",
+    "chrome/browser/ui/views/side_panel/BUILD.gn": "8e85e1c18cf40dd5206f149929345438d2c40b434e18549877ff41b986d11113",
+    "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_action_item_util.cc": "6ea18b9767fc56f6b0104d5ae5ed2b4f1b02370cc92aa97a9651060bc9b5c731",
+    "chrome/browser/ui/views/side_panel/side_panel.cc": "8c33e6d068f3aaebd28d2a5a7e6e852d24cfb5fe2e962a49e5729f215808064f",
+    "chrome/browser/ui/views/side_panel/side_panel.h": "20f14143710e6e8b36c2f386429a11e0e44272dc31a47652affb4bc944680c0c",
+    "chrome/browser/ui/views/side_panel/side_panel_coordinator.cc": "79dc96dfe8e1b37e9579ade49f06c15b0e05f46d06fa8c981e9e8c0064a10267",
+    "chrome/browser/ui/views/toolbar/BUILD.gn": "3a9d711cc4b80f146c8b057f4e07bae24069c50e07dce79482874c3a8fdc6f32",
+    "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.cc": "5ddd6ca9d7431bb79aa55fa10117f2189174621ff62cff697d570ac9a2212805",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc": "1ec2430488f27b69dcfab98580fe5805ea66b52f34ff1a490ab0ec30b7bf850a",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h": "344b7afe9d4133ee00550a0a8a344ce8a6f53772ced3dcb4c50327c478b3ad3d",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc": "3632d3eda00567fc3b412fa57736981b463309fb0352178e71ba500c83de2e38",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h": "7717c9a1cad890d58bacbf483c7ff5c211e27817e337c0256cb98e1d9a2f4274",
+    "chrome/browser/ui/views/toolbar/toolbar_view.cc": "47e5d703c4e0b57934fde2cff3301e4bd4617197295f35bd753c541373f3b1cd",
+    "chrome/browser/ui/webui/BUILD.gn": "78a4ac4a9b9633ccb86a67d91a2a221854cb9e8dd76837327f1828927e5ed12a",
+    "chrome/browser/ui/webui/chrome_web_ui_configs.cc": "9c1649b7d6201d7e41f2873a4544e785b223b89b8a02f7637f6a2d33ef35927f",
+    "chrome/browser/ui/webui/help/BUILD.gn": "7a709a820072093c1b2223ca1328429bfb9e8d0f2a6e5db664901c36578bc704",
+    "chrome/browser/ui/webui/help/version_updater_basic.cc": "ea232dcbd003a75205f3e4e816bc49aa1483ac4953740e85547521d05792117d",
+    "chrome/browser/ui/webui/help/version_updater_mac.mm": "83e74ff4ded0d1b831866c6c63618b028f27a2b4262182e8458ec1e451ae6b22",
+    "chrome/browser/ui/webui/new_tab_footer/new_tab_footer_ui.cc": "726245bf72fb6b2869d57451425fae59e35da5ff5af6ede2c3e8b51d469f7473",
+    "chrome/browser/ui/webui/settings/BUILD.gn": "a30bb1a3d1b2abb3aa39830c0773d43954c1f3246d16bff8d14febb7b9f02777",
+    "chrome/browser/ui/webui/settings/import_data_handler.cc": "5f8ce9977d72a9c4f51423ef88925ba284bf237bc23c29963f097dc9fa4d186c",
+    "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc": "f49b9bcb14b1b672bb5b1928482b380717bb77412e6110e0a58e92707e0292c3",
+    "chrome/browser/ui/webui/settings/settings_ui.cc": "72b7f786bfbe7fb19335a35aac488dff182600e84e4046e5f8a30d1ed84e4329",
+    "chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler_unittest.cc": "1278ba2dbc76ad7bce2b4ff212e86fb0c371fc17c403369a904cdc9380dcd6f5",
+    "chrome/browser/ui/webui/webui_toolbar/utils/toolbar_button_utils.cc": "5d06dac84857d526038ba6552bd66e109e7c28574845d2bb735d5d675f98cc01",
+    "chrome/browser/upgrade_detector/upgrade_detector_impl.cc": "41e13dc78268bde2d644ed7029d41243bb477034766b7626bfbf7af8dd7d49bf",
+    "chrome/chrome_paks.gni": "3c6c44bdf6af2d3ac154ab268c540e5ff8dd3e8d2bb2c4c365a76d3171147222",
+    "chrome/common/BUILD.gn": "9fc88e8889adcd51e686221a709bda8b89fab9ba363f9765bfb2ae41166e6555",
+    "chrome/common/chrome_constants.cc": "31acb1832e0ab5f0c2c0f2df6d403589baeb2b1a553b982edf17e395d13d9672",
+    "chrome/common/chrome_paths.cc": "6dea46743f837f37ba1374de64270d77e5795d8d89152baf3ed81c5b1ab56261",
+    "chrome/common/chrome_paths.h": "f1142a48f418102653d705e86148917a84f81f6bf7a3cfe224a8de337062c55f",
+    "chrome/common/chrome_paths_linux.cc": "e4d5a3c62d12f018b5e37dc86a474570ae278b36f772863802f1663e923d33cc",
+    "chrome/common/extensions/api/_api_features.json": "1a2ca95a77340b18fe38c5a91bae918b3bcc2ba1ea2929ffe0edd78c9bec6fc3",
+    "chrome/common/extensions/api/_permission_features.json": "e71c4be61cea5ec00d64d01569593c7ea4ddb9221dee85d91da29a47e3a94617",
+    "chrome/common/extensions/api/api_sources.gni": "d46f5dfed6d3d849d9823a313ff41e54278e7b1913d80f758bcaf0f6ec213034",
+    "chrome/common/extensions/api/side_panel.idl": "92e7591b8f4560567978002066b24ae36293890947c4a2207eb2e9e83ad5bfa5",
+    "chrome/common/extensions/permissions/chrome_api_permissions.cc": "ac3f37f275d56d86089f72645646e0af09cceea38a10c937e6e80c3b662f9208",
+    "chrome/common/importer/importer_bridge.h": "d2ae14c794205f445013bc7bacd125ef0839ea8069e5cfadf0e8bf6cb8b37205",
+    "chrome/common/importer/mock_importer_bridge.h": "b2467fe70ea43931570129ebf65b0e19eb35b5d06476769140bb304af98e6cc5",
+    "chrome/common/importer/profile_import.mojom": "48dfb0d1f3813278a04dc110517d6050f7fcec6c507abd1fe094f84305f89344",
+    "chrome/common/importer/profile_import_process_param_traits_macros.h": "e1fb7711d6504e3b385c791cd2b8e1e13d0e43775a85b970bec5d31785b210a8",
+    "chrome/common/pref_names.h": "ec97aedf833a765ebcb4fd8bdc1639be0e7e8792fe13a6abd3c5d3df2c32bed0",
+    "chrome/common/webui_url_constants.cc": "443b0853af61c87df333391cb195e83c3e50bd267d913e910fb21e3dcaa151cf",
+    "chrome/common/webui_url_constants.h": "2b38937d56ccd4bdbcd0cde5f90037f29edd29f9cc6e55d720b0501129c5da30",
+    "chrome/install_static/BUILD.gn": "39ba627e8b382188f4c6ae57114bfb2e723e6581e694437ac286bdd6e516322a",
+    "chrome/install_static/chromium_install_modes.h": "f1e173ce85627969b995e1844a9260d31aef8f4b27ccdca9ac728b60c4f23cd1",
+    "chrome/installer/mini_installer/BUILD.gn": "18c8b14497aa028a95c9eb4cd206e9e9b0108e39f73152a0bc56f02169a031ca",
+    "chrome/installer/mini_installer/chrome.release": "06da138e8192bf6ccf4e589ff943792acaaeac0a04ee14beaa27f540beef6eae",
+    "chrome/installer/setup/BUILD.gn": "ed98b0ab7fb852c206626bd638364e3b9a844ab0e3809177d708134449315e29",
+    "chrome/installer/setup/setup_main.cc": "861d8af92aa7e5d206f15c188d187205e220d8df17fab297e37b0addb16f8bba",
+    "chrome/installer/util/util_constants.h": "a0afe0f69ad9165af8d2f21680568df9eac95294ef8d493e1a6c4b07f121a859",
+    "chrome/test/BUILD.gn": "b6682f76965d841a682792d13928c9e7c0c495c04bee677ffb3241a6a02e4f8f",
+    "chrome/test/data/webui/settings/import_data_dialog_test.ts": "5f15431d9c9c609f4340f96dc42d24be531636b52f0475878a63e51fbaa022bd",
+    "chrome/utility/BUILD.gn": "8d16a9fbe5f56543fb41820795047eec0317e7996cdf74b84bd02d14ed5e6376",
+    "chrome/utility/importer/bookmarks_file_importer_unittest.cc": "d8514c806c9b6f5c344b63f192e478623b21327ef2304f3429d15f290ed2a08f",
+    "chrome/utility/importer/external_process_importer_bridge.cc": "199228c7dd3fcf32d96c554cdca493493385c323c0374e56818f186bbbd99ee7",
+    "chrome/utility/importer/external_process_importer_bridge.h": "f2e24c33c70db13c96fcf5de62a78bccc2c51679c99ce2e151f8c8fddda48af7",
+    "chrome/utility/importer/importer_creator.cc": "0004b3ab2a428d66b894d8fa56f92bd61da5b95cfee2acbea3abf06b5ffeda94",
+    "components/bookmarks/browser/bookmark_utils.cc": "2b8eff0bd89b5e0f6f574c4c23410d3927f8052bedc91cbcf47fb1998979854f",
+    "components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom": "19f1f70e05e19b6c545fe1977a6c1291370ed8cbbca4dcec12e42707cfadd866",
+    "components/content_settings/core/browser/cookie_settings_unittest.cc": "d75bc955f78c195b53d89179446b56cb628d2cb3e217583be6c4ab6a906a314e",
+    "components/infobars/core/infobar_delegate.h": "b73748679d20b23c0f81799675e110cbf172d610672f800fa940d61ad2631230",
+    "components/os_crypt/common/BUILD.gn": "6ba956c1524c48915c46c99ff6ea2378794e83602ee5e859a1d8123299e4336e",
+    "components/os_crypt/common/keychain_password_mac.mm": "dcf606d11c33974f57370e491b408232646f8ea8a55e2b5c513abf0dbc7a2214",
+    "components/os_crypt/common/keychain_password_mac_unittest.mm": "321d2dd742bf6a02e0803506f178c23036274d8c26d93d454a7e6370dc4c4fd1",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.cc": "2ffd297c3c965d005e9dd30f2042cb59c9aafbf4ea77b6e5e131bb671ce1b5fb",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h": "9b8310d41efb128b26477c6dae1c50e20c4d2e5b5b72e3583d4ab3a39aee3dbb",
+    "components/password_manager/core/browser/password_store/login_database.cc": "875539cee95c4d4eb64a507e33b9a04c1b6ecc99eefc8376db8def060b87a9ab",
+    "components/password_manager/core/browser/password_store/login_database.h": "6f4a9f80c50839e836c3ef6a3da4bb3dc31543b230983e5e8a390e6b6f01a38d",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.cc": "5d50ae5fb87cfa4d3c93b2532f74d5b6a34997bda2ef4bf027a7f35bda46286a",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.h": "7e858e17a929f36ca5541edd937c31d6a5b5e026641ceb9024ec94a9822c7fb5",
+    "components/password_manager/core/browser/password_store/password_store.cc": "4bacbf390c3652178c8c3d144cae3bfbf38b23d9bf15829bc09d0f93f2f04c4d",
+    "components/password_manager/core/browser/password_store/password_store.h": "b3993f387e64599d04673b824764822186bf1a1d7ab7d2c7cc9bfd76e9a94068",
+    "components/password_manager/core/browser/password_store/password_store_backend.h": "3365ba5adc1f2567eec505cd45f5b812fad20175b79955a3492664a2773f444e",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.cc": "eac65cdad51cf29b8e72cef8e57994ade6003cef1cf76662e4a1ee431340aa70",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.h": "93c0fb32c3c89a3e57016810338cf3569dffedab556789f4d670110a614f6da3",
+    "components/password_manager/core/browser/password_store/password_store_change.h": "b2d97c23dc452492b68443c0862e5589e74d456cdea02f3b03d38ae5d7400376",
+    "components/password_manager/core/browser/password_store/password_store_consumer.cc": "3b66b35e0756246d791a7b4d239be580f4979a9345780a2714956a6fd26da7a2",
+    "components/password_manager/core/browser/password_store/password_store_interface.h": "354894dba0fdab491b760972dc6eabe5c4d4666b37fbde0ef921d8367684fc18",
+    "components/payments/core/payment_prefs.cc": "633a0c5fabecaa2b50bbbb2b35e366bdcc049f1015f6fcac88f3a643705cc14f",
+    "components/search/ntp_features.cc": "e559030290bb9cdf608d765c273970b0df382bd01ee9012ef7f42e5c4702f385",
+    "components/user_data_importer/common/importer_data_types.h": "6a6415c9c3d806d8177178947d3ebb5fdfe1ea2d5f3ea714d77a52cee2775b1b",
+    "components/user_data_importer/common/importer_type.h": "67f1fc92e4c3bd57b2708bfa5ad2ce5cbeca242e4494c7ef3c82ebaad170081f",
+    "components/vector_icons/BUILD.gn": "6c32ee94c36590f201248b47e0fbf82eefc1fc59fec2a306376eec71a7caf576",
+    "content/browser/devtools/protocol/target_handler.cc": "ee82410b2668ed99bdb77ea3fe68933ebd8b9a237ab8449f8085a7f43ffd1e99",
+    "content/public/browser/devtools_manager_delegate.cc": "e3f0528fcbf04a1f77c6fff208de214707037063cae5b82d08a82c3224d93b4a",
+    "content/public/browser/devtools_manager_delegate.h": "ec72689613e6d4ee971cfeeb5042e37cf8d39290d790a2a71a0cd56943112d8c",
+    "extensions/browser/BUILD.gn": "3e6c5c27f119f5f07b66b6b3f1bb702da4c860876dcedd0dd0356df18bea3aa9",
+    "extensions/browser/crx_installer.cc": "4d1f3181aa07a0181b8b60617cf557bacab38e1a2d0d6362a94db8dcebb713ea",
+    "extensions/browser/crx_installer.h": "192be040932cdb2b7a95492c40440508af7160fa560a105e346024dd714af9a4",
+    "extensions/browser/extension_function_histogram_value.h": "32b0103db393a88299eb0f30148193ba408246c07bc24c891b6bcebfce9866b8",
+    "extensions/browser/external_install_info.cc": "252183d98809be8a143ab904d90709483a6df2652f7a98d45e22527c0a46eacb",
+    "extensions/browser/external_install_info.h": "5f610e55a0e3765b23be1359f179221b7fbf73328234318c399f420eea3f75ae",
+    "extensions/browser/process_manager.cc": "10e4da2cf549085b0364c4b218d2f047757d134d3f15e3f09d290737af31a2ea",
+    "extensions/browser/process_manager.h": "fe2f0436573d4355367a9a2981b67d792c9e2e4a72bb0d126acf6a9d6f22ecac",
+    "extensions/common/mojom/api_permission_id.mojom": "52d96ef80bbe7ef2e96a7de95099e7747665c52828837420223285ae3be4d151",
+    "third_party/blink/public/devtools_protocol/BUILD.gn": "a5d6cce120b94ce7ea20efeb9d56b553aa9f0e5c5cdda42c38fca065bf1c1469",
+    "third_party/blink/public/devtools_protocol/browser_protocol.pdl": "f1aa425c26e6c00459f7f5880d3adfc63d3c79762ba7658fdb88b31a59161775",
+    "third_party/blink/public/devtools_protocol/domains/Autofill.pdl": "8a17c3a48eb214450aee2852f20a998d7eba72099b17e48b6ec72c67f852cefb",
+    "third_party/blink/public/devtools_protocol/domains/Browser.pdl": "3f2ff83cc3a997369a4d7bda3a726e1c83c4cc6cdab593831511ee3092a82da2",
+    "third_party/blink/public/devtools_protocol/domains/Target.pdl": "136ca4a240e64aa727e0b261cbe7ac853748154aaa8c4a86fe818d7c522535d6",
+    "third_party/blink/renderer/core/frame/navigator.cc": "ef3503300560c2e74bd850789507e5c4b47f23468c449a3912c4aae14b2f236e",
+    "third_party/libxml/BUILD.gn": "253b4e1d51d5468fad704b19d9f2408f5886e4fe555a00147372b2c016d73d2f",
+    "tools/gritsettings/resource_ids.spec": "1fe2055216d5b91dfc21347e80dae92ecbdec74c0ca7965de558ad742491c024",
+    "tools/metrics/actions/actions.xml": "993233514147f9b64bf561995cb61b8b83d44a5e0d1f652ebc50a2f744387e82",
+    "tools/metrics/histograms/metadata/browser/enums.xml": "94caa1150c610897854975e0975c1bd31c2f9223f5896b1df80d53e942bb9256",
+    "tools/metrics/histograms/metadata/browser/histograms.xml": "3b04c58f4f98c615c7cfe56e5a95ddef113c0864297c579a964afa0138f7da98",
+    "tools/metrics/histograms/metadata/extensions/enums.xml": "a2e1bf9c85f053ad48df0096b8bcc3abee04948cd8e269e459a2d628fb744b9d",
+    "tools/metrics/histograms/metadata/sql/histograms.xml": "4e89c3318c6e2ab549f48a493319a337cfeeeaedc3acc3e506bb46c0d44fbd1b",
+    "tools/metrics/histograms/metadata/sync/enums.xml": "4c2f5a2a675e522d55afa42519d21810c226a81a21101885dc61a85c9565daa6",
+    "tools/metrics/histograms/metadata/toasts/enums.xml": "877ff99fe2ef9bdfac3b8dd58b226b726c3d037e8b143eda872d73f3af038a28",
+    "tools/metrics/histograms/metadata/toasts/histograms.xml": "97f85b34b37a0b2fb29bc51657fe6a74de5519d4308ce2934702ad7d2a71796c",
+    "ui/webui/resources/tools/generate_grd.gni": "e423036c4e191e7ffce60d1d55347e07825cb1ec7fef4c1000562503e7058388",
+    "ui/webui/resources/tools/generate_grd.py": "3a2c865cbed633f92fbe7919e877c2d10de1b80e7c6fd984e2977ab0562b29b6"
+  },
+  "output_files_sha256": {
+    "base/threading/thread_restrictions.h": "f496564f39c93bb6544c6f34940f6c855549f9308b45e700f8c5ecfa89a156d3",
+    "base/version_info/BUILD.gn": "c9beaf9c41a6fa02c768e1a22b917bf4660fae72ddd59c66056d3a8e357d0057",
+    "base/version_info/version_info.h": "c653763835df63cd5186b1570d672bf78305e82e748262779e8e3eba9b30e517",
+    "base/version_info/version_info_values.h.version": "130aa8cd2dcb8deac0b70f0fc8d192fbb8259d7979956891b7ba6a9ad48f85bf",
+    "build/config/compiler/BUILD.gn": "45c894cad6ae70501e59d75155d2fbd3660b6cf46d5240dc73b47076eabd26a8",
+    "chrome/BUILD.gn": "a1117e018ca39ae86eac715a7e9bf3fe988acfd616c80ada75dc09ee0d451a6e",
+    "chrome/app/app-Info.plist": "bce76200c576c628426fbe8ab39e486bda2dd65ede223c49ad3e2242d8238eaf",
+    "chrome/app/app-entitlements-browseros.plist": "16a9cc48863eb280dce9881770fb37d05f8cb4144d525527395e58b4f00a4fa9",
+    "chrome/app/chrome_command_ids.h": "b7ef8c07e73c3a96d7d14774f22185d3c493bc7c8220dcc10936822675e885a5",
+    "chrome/app/chrome_crash_reporter_client.cc": "12fc89055a120456c1d2b40eeed6d7f548e0b20057c17c7a554c50b65a54a8b4",
+    "chrome/app/chrome_crash_reporter_client.h": "bd3fd84a388c86347dcede62204099d64d8244876189638491a1b4fc9f0ad836",
+    "chrome/app/chrome_crash_reporter_client_win.cc": "13b9acde8f81f92db17931b8ceb89c66ad2d6c1ab865237c6b2be3a19ab97ed0",
+    "chrome/app/chrome_crash_reporter_client_win.h": "83fbb47f0580303c7077837f7c7c865943bbac32a36396758fe1916729dc0668",
+    "chrome/app/generated_resources.grd": "c6ca5cdf8886031e5513e7c5e11aa3a3f55dc243165c5ab8e176df343d232c3f",
+    "chrome/app/settings_strings.grdp": "f7ea096a1fde0b3eba7729b5b66d79e7dfac01770dd79e43660b657b6a6358b0",
+    "chrome/browser/BUILD.gn": "8087e8ae8a4833d453440a7a6b844117be6d576e0aff8e48e5c70f62d6b57e8b",
+    "chrome/browser/about_flags.cc": "5d531e9130404fa237916c6dacbb68da4c0b14b7283ae57e5d2bb9d60fb1efec",
+    "chrome/browser/background/extensions/background_mode_manager.cc": "0f2c1b850ab79bac2beeaaae7335c277b1b7566276842439083706ea94a2f9c2",
+    "chrome/browser/browser_features.cc": "0ecaefea4b632cd9c3ffdc12aff575c511a84bf72ff0b96286377e222b79b1bc",
+    "chrome/browser/browser_features.h": "dc21e9501f22be8dcd93faaac95e27295e1898c5120bf6101732837ce4f3e34e",
+    "chrome/browser/browseros/BUILD.gn": "12071a0dce04eca09540628bb6ac5147b58aac8f3b0b99789dd928d5c86d1fc9",
+    "chrome/browser/browseros/buildflags.gni": "540958029812ae581352477d09b52e2c1f67bbe64aa6bb3ba15f8077b64e775b",
+    "chrome/browser/browseros/bundled_extensions/BUILD.gn": "ce107a92d493b348271f7b5479b56a1b240d7a0b2b67f2b8a01658a754bc6e37",
+    "chrome/browser/browseros/core/BUILD.gn": "6c41463b3135c7eb4c245e7fb3787ef44686718bd21dfd61ef447cc5a64fc590",
+    "chrome/browser/browseros/core/browseros_action_utils.h": "f298693e4a3e1df586d20686dbb79469111ee8c7609a9da6e642bd1fa55e102f",
+    "chrome/browser/browseros/core/browseros_constants.h": "c347c3fb7679c5660a85dc96f511e77a1cf76cdf46798a332a55bbe4c63bd8a2",
+    "chrome/browser/browseros/core/browseros_prefs.cc": "5dd86eca1a6dd8409ec68b544e33355a26ad3d66e17d457892b90d1e1eb46b4c",
+    "chrome/browser/browseros/core/browseros_prefs.h": "350fdb198971ce27a0be082f632fa5d4977e28998026e75d7cfe55d61ae98779",
+    "chrome/browser/browseros/core/browseros_prefs_unittest.cc": "30f526a1c6a4d8cd218560cf84fc61651c13f175c153aabfc6268acd1cb91dcd",
+    "chrome/browser/browseros/core/browseros_product.cc": "0a4cbc9172538aeeeb012dd53051a964de5c56f314723d80c416349702c5a52d",
+    "chrome/browser/browseros/core/browseros_product.h": "e63f7ff1173964d38b5f0dbafb53a6a916aa921fcad571161c87ac85b0fa1487",
+    "chrome/browser/browseros/core/browseros_product_state.cc": "7f256f6c332168606d00487cb84ec598139410ec4e0088bd531c297608e93a91",
+    "chrome/browser/browseros/core/browseros_product_state.h": "24e2b2ee06d2e8024b7fb1bf0a6d8e8c35e4e81929233b7f57b8d1c7748029d5",
+    "chrome/browser/browseros/core/browseros_switches.h": "1a05d5c31cfeb856e7e980942ed432e181b550cd3c842ff7c32b25a2c6d4daa8",
+    "chrome/browser/browseros/customization/BUILD.gn": "2ce9fe3c53f5aad2f43319f5f0978b200d0495bd20db0b47163e09fd8f9980a4",
+    "chrome/browser/browseros/customization/command_line_prefs.cc": "afc135ae4923845115a449cb20b3abfa2b06eac174c0a1986751eb710b162166",
+    "chrome/browser/browseros/customization/command_line_prefs.h": "32846c289a774b47bcc70b7078eb19813b5947be8e65a7ec34325d8c24718576",
+    "chrome/browser/browseros/customization/customization_pref_names.h": "6b0a5981e9d61ae759ed5a2883e896537c958eca28cb652805c8ecf226bc2c3a",
+    "chrome/browser/browseros/customization/customization_prefs.cc": "bde2691c2e97d6ff833214bc0b86bea46b3693aea34544ae4f0585dc5595b965",
+    "chrome/browser/browseros/customization/customization_prefs.h": "dcfb53c507b06e42319ed2bab2d14e4c37eac71e469b57545682814c1f9280e6",
+    "chrome/browser/browseros/extensions/browseros_extension_installer.cc": "8f5362284c2a2f98da76c164f980bd11297e7da4481e911672006be8386c5ce2",
+    "chrome/browser/browseros/extensions/browseros_extension_installer.h": "abe6726bec1bf7bcedcbc1c92615e346a0736f7aa824c4111ef9341330d95cae",
+    "chrome/browser/browseros/extensions/browseros_extension_loader.cc": "e95d218763908933fe3c34cb9029741767662aefdc4930b52be0b0fd22600999",
+    "chrome/browser/browseros/extensions/browseros_extension_loader.h": "72a7082b38c6585b5b137f7dcd0fd4716bbc729891d8f831c8a1d34545f1c001",
+    "chrome/browser/browseros/extensions/browseros_extension_maintainer.cc": "8f5086778a6741bee5ae07065e21906d8e613354f1279cc28beff390650be3b8",
+    "chrome/browser/browseros/extensions/browseros_extension_maintainer.h": "13c0201b855a759572bcbee7c17ff419d6f245aeb9103fe349dae5f52d3a5b93",
+    "chrome/browser/browseros/metrics/BUILD.gn": "d2ec4377b8f9b0a97832af037d946578e1f142100c09b87cc9417c749054dce5",
+    "chrome/browser/browseros/metrics/browseros_installation_id.cc": "82d0f438bc8e95c6e24ff7412fa6f3efa71bec63c58c0ea4692e42febbd84cb6",
+    "chrome/browser/browseros/metrics/browseros_installation_id.h": "940cdbcc52b07141d1798a49833c19aa12c49cadbcd3d7fb3aacc622bb1d0484",
+    "chrome/browser/browseros/metrics/browseros_metrics.cc": "d5ca3b6f27d1c9d51f5f17329c70814f0d722da35857bdcd7b1842011c89391c",
+    "chrome/browser/browseros/metrics/browseros_metrics.h": "268071941bb28d07243900994ea813307bedccd7def799e6f7d16ad259da9a4d",
+    "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.cc": "33612e34d151a2d66ee935afecaa9437ef72383503e77fd9ba667ecef06d3cc0",
+    "chrome/browser/browseros/metrics/browseros_metrics_extra_parts.h": "9ca94fc392ec41a25a44a2243aae26bd3c201efad06e36bd898c11e68abb8ac1",
+    "chrome/browser/browseros/metrics/browseros_metrics_service.cc": "4b72919525f5753685b6a430652a222d4b0ee91bc71913126d0f5be82f5258c4",
+    "chrome/browser/browseros/metrics/browseros_metrics_service.h": "52a6e60520ea60254e6e03a051b03ab310cb2ee24762e539c7d804b5d017e251",
+    "chrome/browser/browseros/onboarding/BUILD.gn": "ce07dfa1d5923e4b52d1e8969006118c7197a097d4a3caa79632f2275afba187",
+    "chrome/browser/browseros/onboarding/browseros_onboarding.cc": "e6431575ebdd5ea5b86c4cb7be34f4ad73990a3e040664aeba7d281830e03dda",
+    "chrome/browser/browseros/onboarding/browseros_onboarding.h": "ab099152ad4524a6a32d4f8275e5dacc6dc21f967c55c8e717513ce3270ca38b",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_api.ts": "1d8c6da8023f3d1235b894520c9b57503cda8fc4b33195a3c2c5fa5a1dc505d7",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.cc": "73973f5c6b11e741ac970e65aad78bc7aa2f761c0bf6d8e3561042b41f2bb94e",
+    "chrome/browser/browseros/onboarding/browseros_onboarding_prefs.h": "b94ab5501d3fdfc954e674c80440697e9b185744f9d18c55945a76decb5ca77e",
+    "chrome/browser/browseros/server/BUILD.gn": "4b39069dcd77556211f6df3ade849b7578d77b210c9dba54dc99a1fc9995fccb",
+    "chrome/browser/browseros/server/browseros_appcast_parser.cc": "21fccf89ab1d3bad49f2e86ee93b871533f6f36f0ba23b96b5ac0fc532fe3830",
+    "chrome/browser/browseros/server/browseros_appcast_parser.h": "9e2cb0ae86fd05e509d65d78729e30ef7125e28fcf304f31ca8b1d4b20a4993e",
+    "chrome/browser/browseros/server/browseros_appcast_parser_unittest.cc": "ff71397b5e6a3a26463875e030083013aab0396610674b4ea89f465db3a64b4b",
+    "chrome/browser/browseros/server/browseros_server_config.cc": "4c9ab2c456427595cf84e7408c7bebb53e89ad2cc00f1aeead7b0b68474bc886",
+    "chrome/browser/browseros/server/browseros_server_config.h": "6614cf048ac5fc965fc9dcd32100d0b02f4bf88af6a3b421d823119803afcccf",
+    "chrome/browser/browseros/server/browseros_server_config_unittest.cc": "254e1c3501fcf0a62937684ca3c25b994ea94f675cb5ba080851c055900f08ff",
+    "chrome/browser/browseros/server/browseros_server_constants.h": "96a57759f53217786989e25b47f926f8449c4deaf79da9a56c6287a291cc75ab",
+    "chrome/browser/browseros/server/browseros_server_manager.cc": "f05cb6b761f6261635bbdf85291f4d59e83129cfab74627a46e52920894a5b90",
+    "chrome/browser/browseros/server/browseros_server_manager.h": "db4096d14a19fc079aa3cb4fe8adf5ca6f159b5aa6d1816c0aff026e6feba0f7",
+    "chrome/browser/browseros/server/browseros_server_manager_unittest.cc": "a4e952423ad97700caecbe383ba7234fb3bf86a2b45d36e1be13079854106cff",
+    "chrome/browser/browseros/server/browseros_server_prefs.cc": "243e9577919556b72bb66a8d9910b86a95ba530ebcc37853cbdd04a3afbc6105",
+    "chrome/browser/browseros/server/browseros_server_prefs.h": "df082402a2d400df9babaddac47c62ca50cb7d254d07175f331f8f34c31ffc5f",
+    "chrome/browser/browseros/server/browseros_server_proxy.cc": "e48ca50a1729ed155045127a9db9c8062b6ed456405c89d3e1c89df6d5d98e24",
+    "chrome/browser/browseros/server/browseros_server_proxy.h": "a1d377c60e054032e374177a0ec6e81ba198f6fc497ae137c893fd7f70da09de",
+    "chrome/browser/browseros/server/browseros_server_proxy_unittest.cc": "05fb3f6377ae960c6332bebebae0849972683d5bd927c36ec0227c61f818684c",
+    "chrome/browser/browseros/server/browseros_server_updater.cc": "83a1a3849313a95f8b29171885082f2d062f742a7bd22301698cbbc37170fe54",
+    "chrome/browser/browseros/server/browseros_server_updater.h": "ab0e1d95b855d781e43aeb1395e09aa0f55f5be858cdf4fdec71b91c28064d1a",
+    "chrome/browser/browseros/server/browseros_server_utils.cc": "07f375a34bc58e0ce66b3a8872df48c84fdd4e81b9e139d43b42d27ecf192ee0",
+    "chrome/browser/browseros/server/browseros_server_utils.h": "edd868a9e11490a0cf296d44ccb8f83037f939ed809d860d43d2935496276c96",
+    "chrome/browser/browseros/server/browseros_server_utils_unittest.cc": "47ca62539228e944ac9a9dfd3a8f9167a8df5594786edf9ca5fb11eaf0422a20",
+    "chrome/browser/browseros/server/health_checker.h": "2e2cf55f542d33e6d5b187897f1e4db7c1e13967ec96f8df04976f06df823b66",
+    "chrome/browser/browseros/server/health_checker_impl.cc": "a18ed6170ded59d7e30a7cbc7b3a1342bac2b936f5086f7ae74795532603ee7e",
+    "chrome/browser/browseros/server/health_checker_impl.h": "1c29ed0137c5ced8e3c32168312c0660103afba373c4eeb5d24c80fa1df0a296",
+    "chrome/browser/browseros/server/process_controller.h": "3cf587684fe7720e36417bd61ac7645b1482242127fc7822f32b539257d23d7d",
+    "chrome/browser/browseros/server/process_controller_impl.cc": "79d12ea9aa7e7fc87a6e520c3518f9d2f3b93eff26dd6319a26b7fd414fb4603",
+    "chrome/browser/browseros/server/process_controller_impl.h": "c8a62456f4d511d819c7326c52dfe8d790a22903a9fea0083e7e704c64f9024b",
+    "chrome/browser/browseros/server/server_process_launcher.cc": "5ee106d68dc5a9b29cd592f061b69b96ee55308d511c6b69627ad848b0efc45d",
+    "chrome/browser/browseros/server/server_process_launcher.h": "3d45821c303f8034ac5c34639e7d54ed56949bbb518fe1305296fd5c0e042202",
+    "chrome/browser/browseros/server/server_process_launcher_unittest.cc": "02131e27b2e871045e512168041bec87b9148af2b814d26c82b17edad13c12da",
+    "chrome/browser/browseros/server/server_process_launcher_win.cc": "ecd1f12a0f75f76efcd44f9c26dab2ec61fa690f0a6213c32838afdad1dc1a79",
+    "chrome/browser/browseros/server/server_state_store.h": "22e1d4e60979cbebada9196c7d255b20769333c40746af8859020f0104bf83d3",
+    "chrome/browser/browseros/server/server_state_store_impl.cc": "935458d2f705906d17f70d309438662fcb66a49701dc1ac8d3547eccbab25569",
+    "chrome/browser/browseros/server/server_state_store_impl.h": "d372d22b0874e68c211bb01a3071606364978fca2ade1f6700962feded870154",
+    "chrome/browser/browseros/server/server_updater.h": "f9fbe3e777df3a8d5d08e43206c40c3bc7827721ca31faf4953aad86d7cf7122",
+    "chrome/browser/browseros/server/server_version_store.h": "f75cae381fce9893c5496dc25ff21868cbb452e28e2c356e5551468dc330babc",
+    "chrome/browser/browseros/server/test/mock_health_checker.h": "78318017053fc327fd6422bfe2bfb5ec9c203b14eebe535e8f8ddaa63b0172df",
+    "chrome/browser/browseros/server/test/mock_implementations.cc": "f2a1864e85e810ed534c1d4ce65ac6263ea1c0f9a6e3178499eed84e2e4a8a7a",
+    "chrome/browser/browseros/server/test/mock_process_controller.h": "0e4b0b79d16be9a70ffca35f4c492c78574c7275109d15f2205a0f51db3a7bab",
+    "chrome/browser/browseros/server/test/mock_server_state_store.h": "8b2d4763aa69fdcab57647799cf7cccdcea1596f31c5c16cb45bf03d8e95efea",
+    "chrome/browser/browseros/server/test/mock_server_updater.h": "18af22cf7253756e63745ca5b0bae8c722f1deb23a11a6a78af3aba211be8835",
+    "chrome/browser/browseros/server/validate_resources.py": "e88555ff64bf69eab5f1bb435fab34579c1ff6f43c86881a3749ca09f373bfcf",
+    "chrome/browser/buildflags.gni": "c43fa129cf5a1b3c05ca43b3c3a8ba2e9561ee62a0a957831f8d26651441071e",
+    "chrome/browser/chrome_browser_application_mac.mm": "c406719c330c16f8cbaa75798a1e5c158379ffbb2111e5e4d13d94fc7845640d",
+    "chrome/browser/chrome_browser_main.cc": "1422ad0eeb4a28dc9d3e1d2070dcfb873cca2e2c494f3b1d329bfc3d68b080b7",
+    "chrome/browser/chrome_browser_main_win.cc": "2f945bff6d672e0b4792eaf4b17359d59916d27108a1c695a4b3f1094422f481",
+    "chrome/browser/chrome_content_browser_client.cc": "eaa8b4f4402f52e53e77d170c40398aac3ba773b92ebf3359c3b3f46f7a25a92",
+    "chrome/browser/chrome_content_browser_client_navigation_throttles.cc": "fe59e52824781332b2f7f0eeb7847de7f6c5f062e4bca0d6a9a52ae44160f395",
+    "chrome/browser/devtools/BUILD.gn": "cfac2a84b5c5892094f8bfb17b50e379bfd2459f010ae7527e65b8ebde96aa1d",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.cc": "18e5b2e7b6a03f719e231e52c82b5a8fa82bc38f0a223ebb675099d7a012c040",
+    "chrome/browser/devtools/chrome_devtools_manager_delegate.h": "62bcc8618ada8b7f336b1914b16269528840a84171477f739345d9d2efe230f9",
+    "chrome/browser/devtools/chrome_devtools_session.cc": "f41e27c246a050455f3fcef6d576b8bdd5f7815e2aec74f244f30eb841d88ad5",
+    "chrome/browser/devtools/chrome_devtools_session.h": "573e648ea8c7a5b941807bff2529c0743caef43efc6d378c39dbda76c4cc6e5c",
+    "chrome/browser/devtools/devtools_browser_context_manager.cc": "98bce79a85d2b94917e2869655136d038aef6af72675ea95cd20b8723bbbfaaf",
+    "chrome/browser/devtools/devtools_browser_context_manager.h": "bd07cf3ef7cca1b2a35fa01518dd01eaa61a15243cdea7ebaf0bc84611bb4d65",
+    "chrome/browser/devtools/inspector_protocol_config.json": "bc39548cc9f5c66fb13cf14f48bc0caa19959678f800a52782987e0829a8f0cf",
+    "chrome/browser/devtools/protocol/autofill_handler.cc": "da8453764a838a6e466c1fc5113c04db65ce337737f8218fe1f0f2b94821314f",
+    "chrome/browser/devtools/protocol/autofill_handler.h": "eb04bf74e9a631818dd6e6bf5c4144556dc0c3f04b4a64a67c48913bc03bbb6b",
+    "chrome/browser/devtools/protocol/bookmarks_handler.cc": "a0d4064beefcc0777f8239dc991bd64a1965b9fd82b3dd580ecd2af691aff1b2",
+    "chrome/browser/devtools/protocol/bookmarks_handler.h": "5926bbd9a8af93886f5faac3db4f275d7d349a4241cc981cf1db535ff006410a",
+    "chrome/browser/devtools/protocol/browser_handler.cc": "eeeedfdc0663a6c40fd7864d50a65c6ca667bcfef0f779566abcb5ce4485ef8d",
+    "chrome/browser/devtools/protocol/browser_handler.h": "67aa5e3e8631ac1bb79326d84e4b9e5f3579a1cbbfbae8ee9d5494438ae2a996",
+    "chrome/browser/devtools/protocol/browser_handler_android.cc": "de18eee0b0db01271bd5d065480fa4d3e03a9d3097573d6c81aabf73f2d3820e",
+    "chrome/browser/devtools/protocol/browser_handler_android.h": "3084674ef51dfe81d40c63d25a66e5548c994883315368f843cd17c8da955bd2",
+    "chrome/browser/devtools/protocol/devtools_protocol_browsertest.cc": "cc5d93339328894ebd45fea8343314eeaec9845034c1a80b598f26c542559be7",
+    "chrome/browser/devtools/protocol/history_handler.cc": "e3c1ff0b252139b5f6bbeb0f4ade3b29ce40f96fde4bedb54da9c51e1e80e42d",
+    "chrome/browser/devtools/protocol/history_handler.h": "67f0cfb1aa9951d7c24c957d3abe5f4278bf6342ca63123ee402e9e1779c6518",
+    "chrome/browser/devtools/protocol/target_handler.cc": "a6f116419dd8399ed4fe74dbec0619c5fd5d81f180db154966f8b03acc43367c",
+    "chrome/browser/extensions/BUILD.gn": "d065f5985d00f9385edad9f1323b33280ed8a1d2ad9a005a64f2223a61676190",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.cc": "7d8f14c588efb3b097d15f2ffdac850562d33ffac802be77e8b8d801b0d8865a",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.h": "caed808b557e763b11d91f67c0084fd5c429f29c637a2b57f801747883fad864",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.cc": "9ca2b49bbd2305cb8fe8fd394beea85db1fc8c7b2dab975e06f4f274fd3d0485",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_helpers.h": "6e2c14d93cf495302a09837c5c47db0071d00fce993f23931f402ad9c51d823a",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_utils.cc": "a9e1f98a1f5d05045a3a2491e9c8e9330cda6be7ff2a0abce2b355f4140fa03c",
+    "chrome/browser/extensions/api/browser_os/browser_os_api_utils.h": "67bea243ce0812b0f6c6be68b6b508f507e4bcbfd06ce1fe968f15c4dd01278e",
+    "chrome/browser/extensions/api/browser_os/browser_os_change_detector.cc": "ad101db99a04293926a8c57333eb520036115db91b9c67fb7db13fa49a58c118",
+    "chrome/browser/extensions/api/browser_os/browser_os_change_detector.h": "eea56ebf140f300a9af673bdcfa9774ada7ca4d9fcc436bc1f8bd61b845d0255",
+    "chrome/browser/extensions/api/debugger/debugger_api.cc": "f7ec823c07b4ee60517c503a4b26612449180b1ee0d00525561ee6826c3dc97e",
+    "chrome/browser/extensions/api/settings_private/prefs_util.cc": "66c28049b461446f02649100040fe10d5211b6d8696d21a23fc2ed9847d4c349",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.cc": "a0239dd9b07f95f39d55fcec440c0ccf79d6d499376831dac2540343d8b909a5",
+    "chrome/browser/extensions/api/side_panel/side_panel_api.h": "49fddb32379f843f541f20932df7dbe68445345e20063e94c31a014dd759b720",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.cc": "ccb3a8352f21afe651ba691f329aa6fcecaaba2a529bdb8b088a5b27e3085ebb",
+    "chrome/browser/extensions/api/side_panel/side_panel_service.h": "4b6e6e580fbbdc8b504d07788d3c159856b4338c4d26aca77f97da750582af3a",
+    "chrome/browser/extensions/chrome_extension_registrar_delegate.cc": "b57652540560d7c29475f4bf94d4327303f1bde7c82e5622e7dd7238a8de2396",
+    "chrome/browser/extensions/chrome_extension_system.cc": "ae6528fb6c81395549378c14527aac22991145f86015a03353c914b033076a8b",
+    "chrome/browser/extensions/chrome_extensions_browser_api_provider.cc": "2eb6c1bd67ae78234039257684c9e6f7b51580830ee4f1dd83ddef22f6a8e1d0",
+    "chrome/browser/extensions/extension_context_menu_model.cc": "a1954be61ccd2cc219174530e476300360a6b31a59ad9d55d1a308f34a5c8327",
+    "chrome/browser/extensions/extension_management.cc": "09585bf51a1437d7bc1bf8807c16ee3eb537d94c1d9c37f3ec28f7ad337ed241",
+    "chrome/browser/extensions/extension_url_overrides_registrar.cc": "20a68c0c644f465d54dceacc28e4a3ab5a5474f10e003e0532a8502d559a342b",
+    "chrome/browser/extensions/external_provider_impl.cc": "8f2c33f1c28aa8aff1971764dbfd55f49bfb044bd55002f49d10ba84bd8561f6",
+    "chrome/browser/extensions/external_provider_impl.h": "b1d0436dd236404848ae9e54a1fe264616787e88d6956dc75bf2ec157230245e",
+    "chrome/browser/extensions/external_provider_manager.cc": "9af5d0a039dad9529477f88fe6152c216b040a0c89d88b39f6ece3cacb6a9e0e",
+    "chrome/browser/extensions/updater/extension_updater.cc": "26a0113972a5bdc60f7b3ae61fb47fbc5e38051cdb383e6ebbdf840f8a0267a4",
+    "chrome/browser/extensions/updater/extension_updater.h": "559e146af5afcbb9455bf8b3c1db665f91b3906ed392851f209be02f72f0b58d",
+    "chrome/browser/flag_descriptions.h": "5517b4d58daef9ac11d38a79647fd7f7f4919ccbf8c9e1ca16cfe3eea1d308ce",
+    "chrome/browser/importer/external_process_importer_client.cc": "e985252701682374a1b8ac92b252352ab165a32f4e9f374af5f7cc8d27ce99e2",
+    "chrome/browser/importer/external_process_importer_client.h": "3b67c83de99d9708641989b1a2bb4c8e2941069c80b75e3db99d1d1807f4a37d",
+    "chrome/browser/importer/importer_list.cc": "8fad0c7c72ed36d4383e2181442e427fcb1ff858a47668efa1837d815c59b461",
+    "chrome/browser/importer/importer_uma.cc": "9dace20256279bcdf90b6d2d7a2c7f5495f42a16030e72fb2a41a0907a232401",
+    "chrome/browser/importer/in_process_importer_bridge.cc": "91a0bc69490ff341fcd645bfc29d8f582cc4b794b5bda8975f80789d2e4f2a8c",
+    "chrome/browser/importer/in_process_importer_bridge.h": "2f11b0bc3049ac13295ce55a4010ce8f1c2f3ff4b34b7a45c3773d61a358454d",
+    "chrome/browser/importer/profile_writer.cc": "4ba10ac154eec4de085c7ad25975f207b78499509a10c7d90ffaf54b143fa358",
+    "chrome/browser/importer/profile_writer.h": "91f926f2a05cce3f3031639fa446045bae930e3eb746090c2efc40e7490a86ff",
+    "chrome/browser/lifetime/application_lifetime.cc": "df93efaa2b5d8a002adc8201ed04c86fec7cc77dfd7f93a79881fb803dec33c6",
+    "chrome/browser/mac/BUILD.gn": "9b2cd2e30993ab892f6281f4f56119a873c279fd0bad7e799573fe41337aeddf",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.h": "3dfe60b6f74381b075e1c3b8632e4046c0d23d9e11c7e08377b253a989c0676a",
+    "chrome/browser/mac/chrome_browser_main_extra_parts_mac.mm": "f65a8af73636703bafa8a0329cb017602980885f8e0c033caaf88daa2ac67adf",
+    "chrome/browser/mac/sparkle_glue.h": "2e3ccbe213253141f781d733d18eb6da2a1c308df1262b0f3f4bcaa9c65f73a8",
+    "chrome/browser/mac/sparkle_glue.mm": "4681146982dc82ee4219331410b26dfcf4f89f6f37f7935f556283bb97836e39",
+    "chrome/browser/media/extension_media_access_handler.cc": "4ebe31d85976f8adf0da821dc3c48d6526e301c3749ce82cabf6e0f0fae67465",
+    "chrome/browser/metrics/chrome_metrics_service_client.cc": "7ff5a027570bd7298a7723c5aeb4183584d5cc32018ff71b7b5b7bc586faf079",
+    "chrome/browser/net/profile_network_context_service.cc": "91b69899c278997350f93d35b9f0747f1025bed8095d067ed8cbf94e1892e90f",
+    "chrome/browser/prefs/BUILD.gn": "d7e583e9b82d51bb2670db1b9a9c627764afe3e7661c379db310562f0fc6e060",
+    "chrome/browser/prefs/browser_prefs.cc": "cdd5339746bcee6a79bd33f338541948442cf66009f5b23ba1dd36f9c3ef9275",
+    "chrome/browser/prefs/browser_prefs.h": "dde6f494f6f10b3529735eb9b8e23e5f27fbfd2572e7ef048fd024596de74e06",
+    "chrome/browser/prefs/chrome_command_line_pref_store.cc": "48c3f71a4a8f6fb98c892fea02ce15f074a4ec7ba1f229a50546c629ac824cfd",
+    "chrome/browser/profiles/profile.h": "fb557b69f9a1da239df3deb49b65898720af115419f93112ba7b545b0f70cdf1",
+    "chrome/browser/profiles/profile_impl.cc": "09e083d8c202ecd8469df97fb987c7a19e927260ab70f23fb3504948eb6dd022",
+    "chrome/browser/profiles/profile_impl.h": "06aef00af1a484da468e21efd1efae7bd298a7c3b21ada41667c4a0f387e3558",
+    "chrome/browser/profiles/profile_manager.cc": "5591bb459f62325d0df873148161305fa3388c54e3028cc7b4a4a75e2fa19382",
+    "chrome/browser/profiles/profile_manager.h": "7fe5ea1184eb1edc33ca18b59525ee88a79706051792896f5e01a2013807a3a2",
+    "chrome/browser/profiles/profile_window.cc": "173db0c5bfea27548c0ebf4f33f64873093dde778cdcdd9fbc76ead1b6c0ac45",
+    "chrome/browser/profiles/profile_window.h": "6ab1caf9418d1e8f7fa2926be8dc1903f94626678bde80c5efeda92bbb9fca11",
+    "chrome/browser/resources/settings/about_page/about_page.css": "bb0a41e0872a3e667a531fde68ddaf021fdcb2dca2210a5424bdf350c36d3353",
+    "chrome/browser/resources/settings/about_page/about_page.html.ts": "33f92d6dbb7353348e3dca1b3f37f8679b9d29633a4ef17b0b55c8abc2d98050",
+    "chrome/browser/resources/settings/about_page/about_page.ts": "901de1d9a88e59773a350da608af7e00fc6ba52c924c05270673bdbe18baf32c",
+    "chrome/browser/resources/settings/people_page/import_data_browser_proxy.ts": "140bd5a4b901193541a4273e275aced1c767203a085af781854a381a8f5fe80e",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.html.ts": "7de960b8c8f4378a3357ba730c5e9c3ab58125a9a98872f892b0cf094da2b63c",
+    "chrome/browser/resources/settings/people_page/import_data_dialog.ts": "209dc0b1d4cc0d4ecfa211bb2744cad1feab97b78ec7bac6caad149b56070ca1",
+    "chrome/browser/resources/settings/reset_page/reset_profile_dialog.html.ts": "9d55fa870f687bd38f205bf0a8b80b30f9bd383984cd93d2f653f3ba3336b5cc",
+    "chrome/browser/signin/account_consistency_mode_manager.cc": "28a753dbf1e05d416ef3764794287de60d4aaef13dce3bc49c78365d3861579b",
+    "chrome/browser/sparkle_buildflags.gni": "1b847d9a0508d7c97a3c67f422b76bdf540931e583cc15142023e3543516199f",
+    "chrome/browser/themes/BUILD.gn": "e188edf195180d7001c254009d3b516881f69eddd06182ce9cdf34968eb5bece",
+    "chrome/browser/themes/theme_service.cc": "727cd6bc72195596c368d2a8fb82be0583856ba284359293bcecb6cce5f08612",
+    "chrome/browser/ui/BUILD.gn": "d5a713500ad2703e461e84d02a3259490ff09469d0c9b1095136427e733b88db",
+    "chrome/browser/ui/actions/chrome_action_id.h": "21dd7364519ee41573a8856d6e9ceadc452bc5096806352362802606f7f55c80",
+    "chrome/browser/ui/bookmarks/BUILD.gn": "5eed7b0dc4d338b9dd15f96b4c490bb907559531e53b8a58b14a1bbdcbbc1af2",
+    "chrome/browser/ui/bookmarks/bookmark_bar_controller.cc": "33ca17df960f5242c1f44b32aa329846ff2004e0534acc874b8d40effdfa0a29",
+    "chrome/browser/ui/browser_actions.cc": "6b2d64930201cdae7832e3916617bd3d2102869b22e7d77819fc7787ca5c9067",
+    "chrome/browser/ui/browser_command_controller.cc": "6b14983f8a21ecc2fc95c424981218ec5cb4b733436509b976cee07a0588d504",
+    "chrome/browser/ui/browser_commands.cc": "5ba48383cef4434a336a1dac784bf93e638c66403146e40bccccbe0ac29f4f2a",
+    "chrome/browser/ui/browser_element_identifiers.cc": "6f5290ee6f123e02657d328296599d094fa3512267d75cc4199a96ec2fc48be9",
+    "chrome/browser/ui/browser_element_identifiers.h": "61e45032583e51b561a5b5f532a606fb629423935e79b740779a8f82c74be3ce",
+    "chrome/browser/ui/browser_ui_prefs.cc": "30bfefcf7b50852e176b1471b8bad2b4844dd46f84e5937e1d6415e446fb685e",
+    "chrome/browser/ui/browser_web_contents_delegate/BUILD.gn": "979af185e64575ff10ec29363861376beb357b3fa16cedbecff2ccce93918db6",
+    "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "17ea8bf989f0941c399bc6dc0837c78e0602d29ff8b6f96be6636892ac74dcf1",
+    "chrome/browser/ui/cocoa/dock_icon.h": "6301dfe6c4159d738b79812ac04a067e014e634492d16f4e040b7bae2d1e102a",
+    "chrome/browser/ui/cocoa/dock_icon.mm": "c7a82fe7522fe0d695d982a70e95bd17e2b740eb863c541e0ccd88a0454583fd",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.cc": "7dcf5f0fd041b006209bbd2ad3be296ba79147e28e5b3844067a07a36fab21fa",
+    "chrome/browser/ui/extensions/extension_side_panel_utils.h": "eee8f92912b33a25672bb34dba55759edde9d331b2a1432687e34cfd85deeb5e",
+    "chrome/browser/ui/extensions/settings_overridden_params_providers.cc": "f452a5bc86506c9a3f2d6467efd1be7dcd0dd453cd5eaa9e9788870ceaaad51d",
+    "chrome/browser/ui/infobars/browser_infobar_registry.cc": "e9e7db2adff10dbce7611a7eda45c74fdab63c6e92dec969ed44f987fbe30d1f",
+    "chrome/browser/ui/omnibox/chrome_omnibox_client.cc": "8f95eca450e8766b9bc34278d12626693797f343293e9c347ef20199be2dc083",
+    "chrome/browser/ui/page_action/action_ids.h": "31182f027d76e5b0b51fabe5b92abc35feb07c57ee5b9f25251dfb6740d914fe",
+    "chrome/browser/ui/page_action/page_action_icon_type.h": "cc3898703e25c6360f3074f0d8865425adadbea2bba6e4c7cad27cf91244efe9",
+    "chrome/browser/ui/page_action/page_action_properties_provider.cc": "752433da8588d4d9bb9c575b06dcb875378ddea3a40285a8fb7e656baa14870d",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.cc": "bae263c45a342d7afa59b1792cc379ef68cd0fad98f1ef4b1d210211a4440a98",
+    "chrome/browser/ui/pdf/infobar/pdf_infobar_delegate.h": "6f3b68c3c75193028d94b3abe36f6d5dd7fde0e5fb7944c28ad06f46f4c0f1d2",
+    "chrome/browser/ui/profiles/profile_error_dialog.cc": "149b31faeca9564de789e56834cc3a0a1b9130b8d191002db3c93765e162c076",
+    "chrome/browser/ui/profiles/profile_picker.cc": "e1562751a12f861410a0b0cb3826f91db07a4e01b5bf0ff3c5e5f83ffa37bccc",
+    "chrome/browser/ui/profiles/profile_picker.h": "5f473700b736d2eb9c425057aa41e540d02a572a7c81243d01c9fea5dde3d945",
+    "chrome/browser/ui/side_panel/side_panel_entry_id.h": "7d88c7517875ce21198bad55bfe19168ca40aeaee7e4cff039550bf326f80d4b",
+    "chrome/browser/ui/startup/BUILD.gn": "3a930d93c627c38db4940294aedeee0fc3b401bad5a4aa7e72dd1ab66f42c1a7",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.cc": "fa62476badcf3a89d7ae5aa5a31c2b89ec0866dd0c144196e12eb08fc2dc6edc",
+    "chrome/browser/ui/startup/default_browser_prompt/default_browser_infobar_delegate.h": "1c0a985f7f60f72773a1498eba6e8d4a5246cdb9103fa354916e26413f4ae7e2",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.cc": "d094f2b46b743b18ded36e85be0d92b11e59054ab6547ddc24757ea788c40b2e",
+    "chrome/browser/ui/startup/default_browser_prompt/pin_infobar/pin_infobar_delegate.h": "5d34b77061c0e66a5b78877d91b9caa22b092caf087a9e7a0d6800131cc5d1f9",
+    "chrome/browser/ui/startup/infobar_utils.cc": "d196f601fc816fec3cf38cef06fef89bf80b697f2aed49c76a2d1a2ab235ff2d",
+    "chrome/browser/ui/startup/startup_browser_creator.cc": "d62d9d48a216cda759aaefd9c72ff94f9419f10470b75bcbaad3a80a6d7488cf",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.cc": "5b6fd3311796ff7e2ab0f39f89a44031af7bda28aa7d5a57dc77f81bc9485230",
+    "chrome/browser/ui/startup/startup_launch_infobar_delegate.h": "90636db77514f50197d821c47ab038cada1b5ea528120b2f42c9512365c2583d",
+    "chrome/browser/ui/tabs/BUILD.gn": "f3ce73a175e911e8b510eca2ea8a5a6f263e66e118d6ed6dfcf3ae02fbb01c29",
+    "chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc": "77c8feb3d07240184e9046ba5307fc979e5590b9e34e309035a314f99193d198",
+    "chrome/browser/ui/toasts/api/toast_id.cc": "4bb43ac59f327f31dee05a3bb64c875fc38fc8d555f3a00b0a0f017fcb08ca4c",
+    "chrome/browser/ui/toasts/api/toast_id.h": "dbdc420814fe0ae60ac0b84584f3681efb6e29bcd174f515a3df6b3601ef3869",
+    "chrome/browser/ui/toasts/toast_controller.cc": "5e2ad8352e3bbe3689a282fcf106053ff60d769753bc15d23877ed7806442ff2",
+    "chrome/browser/ui/toasts/toast_controller.h": "67a6e7106854a86ea3cb4865f0effb17316598dace383aa8c9955e83e922ade2",
+    "chrome/browser/ui/toasts/toast_service.cc": "d7979fff3ec799aff4cf297d8d4535b1d0e9052a9e8ff0c233fa1197f8972c35",
+    "chrome/browser/ui/toolbar/BUILD.gn": "8af350e11b1940512f02b970a84ea7f3aca8d88691531fdb172598c02037f10a",
+    "chrome/browser/ui/toolbar/app_menu_icon_controller.cc": "c9a7f6d9ca72ad777af593c5fe05201d00fd709cd6f53e177ce45b41e33c0fbd",
+    "chrome/browser/ui/toolbar/pinned_toolbar/BUILD.gn": "7b7c5a9c74223634bf067ef48d8ec32339b740b504a8ce4facf5ecc13eeaf8d1",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc": "ddc166e0aa88d8e3dd1d9bb54411aebc92895f05b1470be3656a15c7b19bbe7b",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h": "b8549e266db6c97a3420119e2f15eef690fdc57ef085bef393b2956de2cff595",
+    "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_browsertest.cc": "288d81f5241d4aed4d30b8d8711236ecde79eae74dba93c3ef9452a5a435ad6f",
+    "chrome/browser/ui/toolbar/toolbar_actions_model.cc": "ddd60fd148b3502eca5aa23c6d5527749cfdc8b545eee72406220072f442fcb5",
+    "chrome/browser/ui/toolbar/toolbar_pref_names.cc": "dbc8723c8b53dcc541501223cb736e19bb15d6a33ed0af8220215922c4c68bdf",
+    "chrome/browser/ui/ui_features.cc": "29c07a4e2a68227800522f3ddd48a18de42fb62a02041c10d543bb98c564d909",
+    "chrome/browser/ui/ui_features.h": "4bc7575a8b53a879d9740e166e541e15bd2a67b03850e60afeb30bbfad8a5a53",
+    "chrome/browser/ui/views/extensions/extension_view_views.cc": "686aaa64519ee924d656c5ff5df74d161f263d906d2953ba6c95c6ad39f0c3b0",
+    "chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc": "875b92181074a36ca55343519fc5b2ce05a13ac83c30607d55049fd2f13121d2",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc": "f43c6da5ed0d49ddb29a9d4b0cd78230bea8049e1a79772c38800f1e9f6d7932",
+    "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h": "01c08450e058328804210ed9d78529e03790f6078d920d59e01350d17bc5929b",
+    "chrome/browser/ui/views/infobars/infobar_container_view.cc": "9ba42c8e40e5f863f8b5d798544c897af61f7e80f3e7cbfe43bde2bc081b8ca8",
+    "chrome/browser/ui/views/new_tab_footer/footer_controller.cc": "97cfad321c368f54e1f3d7582aa26536818dc6c22b735c02d53a4ae27bd685c9",
+    "chrome/browser/ui/views/profiles/BUILD.gn": "0bd32fbdac3f3c09b63502294f2e03b27b9c43ed628c070c5aa31480092c4f24",
+    "chrome/browser/ui/views/profiles/avatar_toolbar_button_state_manager.cc": "397455f78339ebf2b3d12d5fe470920bf18810203d19bd6e4805e4008f9db524",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.cc": "a78317f9230960a3f88de8362c3a08e485cd383741256d62aef7cdb2dde5d183",
+    "chrome/browser/ui/views/profiles/first_run_flow_controller.h": "5b95d1c7f863229cf28ad65c2429923938718e216c6b4c2194fef1ee13800e0d",
+    "chrome/browser/ui/views/profiles/profile_management_flow_controller.cc": "ee98d18455b957fd648c61beec44fd4b5018a8f53328160e5c3f473d9eb16f99",
+    "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.cc": "1963b6262b415564b1ac11c9e03d44596af98f4f28244ef91b27caa6a2735ebd",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.cc": "255c1dc20a071018bb1f0922d1b0c734637add5cd8524c58f48537017b06223f",
+    "chrome/browser/ui/views/session_restore_infobar/session_restore_infobar_delegate.h": "1f75fc27fdea92d686b81080bf508dd4d16856ee00d1abb524ec28ed6822a848",
+    "chrome/browser/ui/views/side_panel/BUILD.gn": "519758f0ae7711fc50db4cccca93a7ac388169178c7e1bbfdbb1b6f2d18f6cbc",
+    "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.cc": "bf652a6ea052686bdcce8871bbfbf9293e6bee4e064eac553215b4904db30974",
+    "chrome/browser/ui/views/side_panel/browseros_simple_page_extractor.h": "6149169331dbf619241de790cf5dab5267e87f5e326a8837413b11654897b212",
+    "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_action_item_util.cc": "093020904a552022c6560fd5c21c33bcc55c1075cd24ce942812563a7fd135e3",
+    "chrome/browser/ui/views/side_panel/side_panel.cc": "a0e866e8098096e4cec375eb8feb20bec63393a075c93b337b64f2bcd279922a",
+    "chrome/browser/ui/views/side_panel/side_panel.h": "c67933ffeae4c0d49809a6c59715fe06881c8a8e72d204acfe929699891cceb7",
+    "chrome/browser/ui/views/side_panel/side_panel_coordinator.cc": "0a03451a369918ea14f93b3918963eacf4adfaf15cd5d3cab6414f432d357c43",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc": "96458ae9d326ca5af70bd21c3f01d441b9d3508b4f77938473f2ff0e8902cf09",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.h": "a2c8aadfac773c03b24d75ba22c278d3ec299d65fd6d9b863465362d1131b0e2",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.cc": "56c24e033f809f6f8d399d16db68908a955c8969a3c0d0fd4fe14501e0c0b9bc",
+    "chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_view.h": "c5734877d14055f8020d71be27902b3e3f923ec705a505ded1c9f781c12ca603",
+    "chrome/browser/ui/views/toolbar/BUILD.gn": "ce0e85bd10dbde266219f012b05cf8bd1d4995b48e4abeaad59526738a6e9028",
+    "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.cc": "dea5bb20cb73a55a62786a4de93de2e51fac0ed83e0a9da813a144170ef4d2ef",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc": "07d3c563de7c6328cf33d651b21057e8dd7c7b5ca7cd00436f0e0048948a5003",
+    "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h": "c891b244d65940959058257e03e960e716f38a97abb7ca819dfbb750c013d811",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc": "55919a93e04f5e792a0f448ef2f32d576b25c71b78af1334f8454b2bca1cadba",
+    "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h": "c4efb9270ebeafeec467749263fad5d79f16744d5beffde693d728f05320443a",
+    "chrome/browser/ui/views/toolbar/toolbar_view.cc": "c6ef0940e705e5aeaa82fc4ef8b41ddca4997ab995f78660c4f20671a4270274",
+    "chrome/browser/ui/webui/BUILD.gn": "456c38eca9c7fbf2f83ba8c0dd3988bb5bcd5241acc3947135ac189ecc5cb3db",
+    "chrome/browser/ui/webui/chrome_web_ui_configs.cc": "827cf94df9b531dfcf30730ede40e1f0345ccdfeac17765a0347b64b0dc35cc2",
+    "chrome/browser/ui/webui/help/BUILD.gn": "3d9108068291dade6f2f949895c3ff2ad3ce78d83773a5c9b9782b7c406f2d71",
+    "chrome/browser/ui/webui/help/sparkle_version_updater_mac.h": "62512e4d43f1a55fa7898f51405a68b508d87ffeac9c824509e38b0d00d00704",
+    "chrome/browser/ui/webui/help/sparkle_version_updater_mac.mm": "7be40d2bbc131c3f097f05116304c70aa9d11ecd01e2a44a816e155e2a8d1fa9",
+    "chrome/browser/ui/webui/help/version_updater_basic.cc": "dd3e761201758c225815dd58d46db0c5bf3c2c12e55a18ffd916432a7cc022bd",
+    "chrome/browser/ui/webui/help/version_updater_mac.mm": "05af6247d9fbf482b29c47bacceded9c56eceef321cc453890978c4846ec6422",
+    "chrome/browser/ui/webui/help/winsparkle_version_updater_win.cc": "489a54ff9108ecbe329e039e13cc90957892e8e258108ca238173904b83a0b0b",
+    "chrome/browser/ui/webui/help/winsparkle_version_updater_win.h": "d84e769458f183e4085dcabd0eeea09f14370323360ee5283ae8f02dfcc27c34",
+    "chrome/browser/ui/webui/new_tab_footer/new_tab_footer_ui.cc": "892e90a7d1d7f9fafe31279e02bf9d4f4584b646c924dd66cc1d35ff24aed188",
+    "chrome/browser/ui/webui/settings/BUILD.gn": "dcf3e3af65073b159587ba3dede4996ffa9e20d3186cf3690b4349f5ac341bfe",
+    "chrome/browser/ui/webui/settings/browseros_metrics_handler.cc": "531f0efb541ada695ac1ec8cf378b61a1e125b86f99d306ae674ea259bee54fe",
+    "chrome/browser/ui/webui/settings/browseros_metrics_handler.h": "3dce59578450e227142701c124f0c24c720f314f4556d42ce316ea6f77db7a71",
+    "chrome/browser/ui/webui/settings/import_data_handler.cc": "8e299a6b345bc2829e15db0034eb1eb85dcbf04996842db66837cc906b3a006e",
+    "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc": "7d730c874955a00f613b150c3b5c20d4cfa4bcec02d3942c9fc0aa2b34b905f0",
+    "chrome/browser/ui/webui/settings/settings_ui.cc": "e79b5123438ac1f25cfafed44c472a40cc5ceac5e5ee5b4753d5060aed73ab88",
+    "chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler_unittest.cc": "bab99bfde8efef275bc4c83f995db11dc24500ed8d0d3fddcb03265d13a582ef",
+    "chrome/browser/ui/webui/webui_toolbar/utils/toolbar_button_utils.cc": "617920334aee94100b22c8b40a738eb6cf8f1762808e4c293a2f1abb6154724d",
+    "chrome/browser/upgrade_detector/upgrade_detector_impl.cc": "c45be28c049602767f4da9d6b6bd437bf142c9101d69e3f0052e80e9d67b7436",
+    "chrome/browser/win/winsparkle_glue.cc": "2698146618a57325c8149e02225322253fc0165083a21a078473099895c68920",
+    "chrome/browser/win/winsparkle_glue.h": "e020168bbc48297df52b93466e62f52ab5cfde841513af584dc6bb3ecc10ca68",
+    "chrome/chrome_paks.gni": "a806313545084e771cf4b8bdc44b5b0497b1c72eefa2669451bc644f16986459",
+    "chrome/common/BUILD.gn": "8f6eb0896e3719ad005df0943b907968a4a2ad5ec6b9d673a5bc28225f2ee57b",
+    "chrome/common/chrome_constants.cc": "dd4b2ab8201053e9a0bb31ef294623c96a1c784bb247fbb3f6a26578a988b05a",
+    "chrome/common/chrome_paths.cc": "2d585518b4ba7b5107157461ef682e581c8e52171d27cc398346a23197241c99",
+    "chrome/common/chrome_paths.h": "c5347de749a9ce386c8a5a8a9b2ae97967ced7c576b4f9c4d682747ff3815cd7",
+    "chrome/common/chrome_paths_linux.cc": "c071f46e9d012fa475d46a8c85dd28cae1134a01269ca4a9e685611f94ee6ec4",
+    "chrome/common/extensions/api/_api_features.json": "cb5df7620e0b52caa16e4246046aa089c82e6e29a3679cc7f01b0b0967170848",
+    "chrome/common/extensions/api/_permission_features.json": "03e9b2323f45cf6d967c5bb3bde84e0782d5e2a9ef2eca1f9c2beed5ba78e310",
+    "chrome/common/extensions/api/api_sources.gni": "11c753b7184bc0c520211e4f1faf9b30bc847a9673d03c49b59e3d5ce295da84",
+    "chrome/common/extensions/api/browser_os.idl": "7bfaf3ba72d4604712a613a5bef81be2db04f4d34230107d7aca0135e6c895ae",
+    "chrome/common/extensions/api/side_panel.idl": "e61942a6400b212139cbde4c743d5bae436d9343e3ea509db0c39a8bd84777cc",
+    "chrome/common/extensions/permissions/chrome_api_permissions.cc": "d459202b8cdff300d108a2d0e1f15cc6fc9881af315ac257f88e36009bcaaea3",
+    "chrome/common/importer/importer_bridge.h": "d78b132178c7924e0bcee3dfaafb78a9dd1f3547cf9d80d8fa5673f6e688b2a9",
+    "chrome/common/importer/mock_importer_bridge.h": "0b7b55d2d10369e7f578dc82ed410a573acade69aa2f1adff65c6b4e56795260",
+    "chrome/common/importer/profile_import.mojom": "1d5add5c6e744b67a9c75bccf4ccc51423893e7571e8b29e68f562609c823189",
+    "chrome/common/importer/profile_import_process_param_traits_macros.h": "9f000ba0dadd0cd87c69c384cdc7b02af9c05de979af722d99291347cc51a04a",
+    "chrome/common/pref_names.h": "3ca697a0ed91f8d257dac675bf6d95beae062ba1c45962f305b4c7ac769c4b0b",
+    "chrome/common/webui_url_constants.cc": "4e05f479825e49da914c394a89a9ef0c5b53953157522e06668bb79a4e7effcd",
+    "chrome/common/webui_url_constants.h": "a9fdc670a87d2bcfcec423e80dc4dba67634213bfee1de579858701b118d99f7",
+    "chrome/install_static/BUILD.gn": "35438d5f932e1d62ddca4c3995fb2be9995aa5c1d870f6e38db9af7e67f723d1",
+    "chrome/install_static/chromium_install_modes.h": "e25f625bec7d328ea97e367556dc7efc80638c7556d8215d5906162bcd967d93",
+    "chrome/installer/mini_installer/BUILD.gn": "76ce3839ab49ee06df7fc2d1f7581587069191cfa217f5219b07a7e77ae1fee2",
+    "chrome/installer/mini_installer/chrome.release": "56e7276468caa31daa36512becd3bf6c3d1f864752a025b7c510ffaf143ae86b",
+    "chrome/installer/setup/BUILD.gn": "7c62f70e0d029bd6537f037fcb36548885802c9cbc6d38771c57004af4fd686c",
+    "chrome/installer/setup/browseros_install_ui.cc": "d11a146944d8093a841d717e41d623b6e20da526abf374439cfcf6ea67d27ded",
+    "chrome/installer/setup/browseros_install_ui.h": "12d2b776bda7964bce96b39a3ac4059c6258573e2eb07482f16a02f2480ca242",
+    "chrome/installer/setup/setup_main.cc": "8430cba0ee34f24efba04aba0ae31f46ef863541d4dd9c8a521cbf422a4198a5",
+    "chrome/installer/util/util_constants.h": "d7b69d6ab7b351097865d6395bcff23c4946e7fabab6264f941dd7037c5b19d6",
+    "chrome/test/BUILD.gn": "2f6d0272216cd6bb85f0d688f9d1e50e83acbc571e55cf04d96a40992ef23fce",
+    "chrome/test/data/webui/settings/import_data_dialog_test.ts": "fe61f0639a25d316f86cfec70db7ea1e9006668c669caeba29fd51bcb0a40794",
+    "chrome/utility/BUILD.gn": "7d42fc2110f5b8b9352b9768b635f742d1fabbeb7123d0769069fa2135f199f5",
+    "chrome/utility/importer/bookmarks_file_importer_unittest.cc": "ce9063fb079220133d13745336e496868bab11ce1784d446747a412723098f66",
+    "chrome/utility/importer/browseros/BUILD.gn": "5f8b2ff6feb63b44f2e11075ac0f4facba16be582c39b650a19bb965ee02dd04",
+    "chrome/utility/importer/browseros/chrome_autofill_importer.cc": "dda3b6c804b9e1a55b2f723e4c749cad5e3d1aa5dc43c9ca15a5ca49c8bf0ebe",
+    "chrome/utility/importer/browseros/chrome_autofill_importer.h": "f328c632dece9cd2b8d27bb746985864faa23fc61b7a100bb56cd500e7ce7fcd",
+    "chrome/utility/importer/browseros/chrome_bookmarks_importer.cc": "6e3c1ac940b2f502cfcdf3ff29231ac7d640ea86918c5e870450620605528a24",
+    "chrome/utility/importer/browseros/chrome_bookmarks_importer.h": "ce38391abce1af61215a3af931990ea69dd67d5fa9e2237d61f0d7afc976cf27",
+    "chrome/utility/importer/browseros/chrome_cookie_importer.cc": "cea67a2898bd81ce9f3b69c73f6ed00e86320ebdf53b280f2db1782128f98809",
+    "chrome/utility/importer/browseros/chrome_cookie_importer.h": "91091d73ba3345ecd7b04bc355bd16a08dfcef2f3235576011b11467bd2c9581",
+    "chrome/utility/importer/browseros/chrome_decryptor.cc": "5863f484909dd65388f2e1d84b5c1d8045776302ddcc276a360ac8040a75d147",
+    "chrome/utility/importer/browseros/chrome_decryptor.h": "54a1a4fcd812065b9015fde4e4da2a3bdd148bdfbcd487ca80a0949f3d8ece70",
+    "chrome/utility/importer/browseros/chrome_decryptor_mac.mm": "a663b1fe447e23cf433d4171385bcff9431bcb1200dfff06748ed69467786241",
+    "chrome/utility/importer/browseros/chrome_decryptor_win.cc": "86ce83df6e30edc93e78853cfe796aeb5cbf440988c899e251b150518f58d1d2",
+    "chrome/utility/importer/browseros/chrome_extensions_importer.cc": "8967eb5dc10a4346e199ac27d294b34f3fef030b04d5f779e33d66893b374769",
+    "chrome/utility/importer/browseros/chrome_extensions_importer.h": "1ec515518ff53d0e63b8a15a9cee1299ee684955ec6bcc1a85e2066b260702ae",
+    "chrome/utility/importer/browseros/chrome_history_importer.cc": "2fb7a718e9c5eb10eb965ade1783697c33a9e2a8c2bf4420ad6cf77635d83c91",
+    "chrome/utility/importer/browseros/chrome_history_importer.h": "2b4a45ca014876bdec4387cabad40053620ee7559d36375e94231b7e5195c9cd",
+    "chrome/utility/importer/browseros/chrome_importer.cc": "559cedb60c057eadcec650a3dfedab7b212ec69a806353ec21e0d76c960fa0c9",
+    "chrome/utility/importer/browseros/chrome_importer.h": "05575259c294a937f07f90750f9146987252b809e7a06193bf27417214acf5f9",
+    "chrome/utility/importer/browseros/chrome_importer_utils.cc": "4a6a550458a4ddd9df936927161835c17e9ba2596916855c9841c4ef32de0ca3",
+    "chrome/utility/importer/browseros/chrome_importer_utils.h": "bcc4171add62c98000f87e12821602fdba0bba3773fdb0a096da158da6d0b4b9",
+    "chrome/utility/importer/browseros/chrome_password_importer.cc": "ccfdfb6a6518e02e3fe06318efeea9fb9f1d5db9282c05f14ea9d22afa56fa47",
+    "chrome/utility/importer/browseros/chrome_password_importer.h": "5f6dd34b7251ac92cf0871c2011febaad4f39de0d1ceb43e6e1060ea49428ac9",
+    "chrome/utility/importer/external_process_importer_bridge.cc": "ae938c44a8a7d613664e108197557cb08484f398d7229b3cc5b61a04aa8d030a",
+    "chrome/utility/importer/external_process_importer_bridge.h": "ab49c0c5951b0d7aa6a4428d83826762c3c52612d67bfb6c26d76a2b3343afff",
+    "chrome/utility/importer/importer_creator.cc": "cb87eee7966460ca4d39f3a2c41675d6b8e0fa1283d712ea0e8e4bc61a3c8def",
+    "components/bookmarks/browser/bookmark_utils.cc": "57e3dc6ad64cdd78a9c006ac6b1526c4bc2e95d3c3e6b3ad10bedf99f3325955",
+    "components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom": "75a54388229c54387c0530a50a99429d480663bf80d5301695c8a5e382c109f7",
+    "components/content_settings/core/browser/cookie_settings_unittest.cc": "9962a075a43a9d1fd9d9f3b91ddb65db7d7ff1df0474309ff01ae159fe876b48",
+    "components/infobars/core/infobar_delegate.h": "a9b336cb4ff71df49f069cded3dc1d0f8566283c352e615094255384a17bfd1a",
+    "components/os_crypt/common/BUILD.gn": "139e8e913b66b2039fe70829a9c1e8b3b4132d5eda1eda86829480fd1fe257ca",
+    "components/os_crypt/common/keychain_password_mac.mm": "0f535cd0c56f761cc42786f1a93b33aac5d971592a83f3abdc0bd88d85ffda6a",
+    "components/os_crypt/common/keychain_password_mac_unittest.mm": "ed7367352634fbd321f336704ef94c8bc9f85a01372a6f0256d44f28ba74bb7f",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.cc": "1262cd8d0bf51cbea86cc1f02fa8575caa1e1998326cb4c22beedd78dcb5c653",
+    "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h": "788886444975a121414a9b740755349066a72ad2918a490b02e687235114929e",
+    "components/password_manager/core/browser/password_store/login_database.cc": "decd83df84c79a1eb3ff7c2f46b915f2bac4d7799550271da094f88fa4dd2c14",
+    "components/password_manager/core/browser/password_store/login_database.h": "6a11801c105d7861cb835e01fe5d0abc97e2305ee565642bc85c00e0cc637de1",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.cc": "5dfd7bc77c0b5da065ace5f1ef91cf99c60e415bf6e74efce3f6faf2d5d3966b",
+    "components/password_manager/core/browser/password_store/login_database_async_helper.h": "a9c56021df5bc5e8309b4f96f57538924e6573bdcb7e42d3639a0306bc2200ba",
+    "components/password_manager/core/browser/password_store/password_store.cc": "5de8498ae85172953ebabe31c7711c3511c6f80971c3354ef7a04c4e490a7ef4",
+    "components/password_manager/core/browser/password_store/password_store.h": "a864e65f913c8fd45b05d562f809a92e7f5d9ee702de9228dddc3ef0521328b6",
+    "components/password_manager/core/browser/password_store/password_store_backend.h": "b37da94536a8a64e50413fd6fa9a73883fed6de356abb288cef83803115a4ee7",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.cc": "69bcb5924ebc76336c70de6e80ffc3d054e8630c0a2e82133d3d87bd4b309516",
+    "components/password_manager/core/browser/password_store/password_store_built_in_backend.h": "4db185ce8d23ecf6e194719dacf63142f5f5784fe80dd0c580a09e140fd0c513",
+    "components/password_manager/core/browser/password_store/password_store_change.h": "262aaf262f32c13b7f5bbd6b685b0063234000ddbea9cb22b7693ac4ddd86a15",
+    "components/password_manager/core/browser/password_store/password_store_consumer.cc": "bacd80d92c24a96c1f1c777a17e9de5731df01deb3286fa72c7969de4f436d43",
+    "components/password_manager/core/browser/password_store/password_store_interface.h": "485d22477de5d88452dec0e7d1da237931a2e521c4a25c6ab04fe68245bc36bd",
+    "components/payments/core/payment_prefs.cc": "fffd7dd546e45c28a18d5c5418a85562820619e05751c4eaf38d8d3830ef7096",
+    "components/search/ntp_features.cc": "a33afad161b1b67d0a3ffd5b017ddac4a2b4d41179bfa2f13c25fd3b3e1b7ee4",
+    "components/user_data_importer/common/importer_data_types.h": "4faffa2756bfc5e374b1f471766b4a08361a0c5a7bc47e5673f762f5243219a7",
+    "components/user_data_importer/common/importer_type.h": "ef53a4aaa5af8bafd4f29db9d8c291946f87ba6c5af7fbb850a90edc7a9be3f2",
+    "components/vector_icons/BUILD.gn": "34f9cc75e6b1361f2419760c0fe07d40cc6b05cb866e9d13937080d6c77e98df",
+    "components/vector_icons/chat_orange.icon": "bc93fa998a56eee1c228024fac2c28ad76f6b4f96aef282acca653a9a1e1e2f6",
+    "content/browser/devtools/protocol/target_handler.cc": "fcfda53220996fdaa21953d37228738921f5b14e8eaa0c0c01029429dcd095ff",
+    "content/public/browser/devtools_manager_delegate.cc": "539ff39076f80de1832bbf972cc9051f12ec519fbdb55f5700e6e428adbeac7c",
+    "content/public/browser/devtools_manager_delegate.h": "600bab6febd2a0423fd8ee2d283be3008153288ca54c3f631ea486ca634750d0",
+    "extensions/browser/BUILD.gn": "fa0217852a0c2227cb2cd5f0f41f5874d7fea9659aa23cd48780a4cd93fe9edd",
+    "extensions/browser/crx_installer.cc": "f08c800c5ae8729657496f9cc12f36a14bb7fdae5a21bc7f29229b43c3372d30",
+    "extensions/browser/crx_installer.h": "82bbf91ac1f816d9b168969762f4bacb87b40b2e5fd15e1eb4daa9cb7f48f70e",
+    "extensions/browser/extension_function_histogram_value.h": "e72656579b1dabe1151321526f845931e6a67a4a9798145f27308b4229505836",
+    "extensions/browser/external_install_info.cc": "e8f48c8b93b6608efe185dbda9d1fb4cac85cbbfb37dc583992c3620e9d08d1f",
+    "extensions/browser/external_install_info.h": "8315e5e791f0ac4707354d4a2de63326588fe9930168745fda83977823257437",
+    "extensions/browser/process_manager.cc": "5609ac77a42eeff6571b35ccc2f6354246e1cbb354c6208c45e67aa427108dba",
+    "extensions/browser/process_manager.h": "faa2a97d2ffa766d0622d6a996209064dd096a809ec79a3848f871b8ab36ebc0",
+    "extensions/common/mojom/api_permission_id.mojom": "250d954c3a78ce734362d9ae6bfda44f1a07944b7b1654dd05a2b571622bd8ea",
+    "third_party/blink/public/devtools_protocol/BUILD.gn": "7cb1ff67cf80cd48344ef25ab69e7b47593945c2669e4fdbf849e931b7e52776",
+    "third_party/blink/public/devtools_protocol/browser_protocol.pdl": "0fd2d45072366add924b924a0ad9328c222e806d2fc97557a0dcd1b128827697",
+    "third_party/blink/public/devtools_protocol/domains/Autofill.pdl": "9f13ed4c89789609c5497bb970b6d721a82519be68a2e2413b5f7696cf251966",
+    "third_party/blink/public/devtools_protocol/domains/Bookmarks.pdl": "182a1ef090ca65a783bb027b69c54171a32ebd109513a02cb4f50e8b66f21b18",
+    "third_party/blink/public/devtools_protocol/domains/Browser.pdl": "dd17b018b014231ace2970d623aa28809b99a8d4137c40e174f27365def917c3",
+    "third_party/blink/public/devtools_protocol/domains/History.pdl": "5e725a2f25c01afadc108092a6cadc71aa285162d350936bd250079a5663f591",
+    "third_party/blink/public/devtools_protocol/domains/Target.pdl": "978dec9b8b86e2297047e555966e8024d831554454cc4fb38f8a5064d79add19",
+    "third_party/blink/renderer/core/frame/navigator.cc": "25755249a4cec745794dd1aa5965bbd146edf31fea13d4c0c39d095b8d706f2d",
+    "third_party/libxml/BUILD.gn": "92a207fca6c16900bf20d3a8cc4353efc3dfc489f2df685652e28228ae215d5a",
+    "third_party/sparkle/BUILD.gn": "53b7dd67a752349609cb1d3dd88a4d82a2940b234e2a2c1b2af8ea3cfa280da6",
+    "third_party/winsparkle/BUILD.gn": "619fc9cef221d33edcc2c232486794abe2798d4b1948c91289aa89aac7b22e79",
+    "third_party/winsparkle/README.browseros": "88bcd7c40757696a2f9575e165f10932614933d3d398f93617d02f46232e0a02",
+    "tools/gritsettings/resource_ids.spec": "f1b0415efeaf2025aa16a3378d2bf099f28d8c292e16ef8c953f0e01b83f30dc",
+    "tools/metrics/actions/actions.xml": "f6111e2d78a12c81579b0e938cf579a200fd02212884249682f1da104c4c1177",
+    "tools/metrics/histograms/metadata/browser/enums.xml": "51f9f1661b7f6123c20f99633d00829cab9423f540e6bb26f2b68a99f1a1a054",
+    "tools/metrics/histograms/metadata/browser/histograms.xml": "3c7270235d819d73af003f4aaee514da5388279eab542ecc55c9bd9649baeb94",
+    "tools/metrics/histograms/metadata/extensions/enums.xml": "3c3a74c698becff68424c2a6e2a4fb27becf78b8457c9c79589d66736e7856cc",
+    "tools/metrics/histograms/metadata/sql/histograms.xml": "a5475864a5c5a77510fb4043d6709f88e11345c1e69aa0585839ab3379c6cf00",
+    "tools/metrics/histograms/metadata/sync/enums.xml": "ef69b5b98dd6baa39002820ed249b829bbf4352a6f157fc503cf4ad59fe1fe67",
+    "tools/metrics/histograms/metadata/toasts/enums.xml": "03ca4f769b3c7c85aa60b85f15c06d0168c6ed198c5b99587d43541311428221",
+    "tools/metrics/histograms/metadata/toasts/histograms.xml": "22331be49f0c96b7c5237630a33f8be4a114256ed2dc03a79274bb3b184321e1",
+    "ui/webui/resources/tools/generate_grd.gni": "aaea90ae6d776955fce17c9e71bf548f615c3160fd6b5f9e9aa333caa0cd533b",
+    "ui/webui/resources/tools/generate_grd.py": "425d1f4d9760594345c8e4501cd5c13e9cc40551fabca89e1f3a84601ff0ad4a"
+  }
+}

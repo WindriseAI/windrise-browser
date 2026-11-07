@@ -1,10 +1,10 @@
 diff --git a/base/version_info/version_info.h b/base/version_info/version_info.h
-index 1f54eef6f4b0a..ad12af4d982c2 100644
+index 3d83451..d7c3a9c 100644
 --- a/base/version_info/version_info.h
 +++ b/base/version_info/version_info.h
-@@ -30,6 +30,11 @@ constexpr std::string_view GetVersionNumber() {
-   return PRODUCT_VERSION;
+@@ -34,6 +34,11 @@ constexpr std::string_view GetVersionNumber() {
  }
+ #endif
  
 +// Returns the BrowserOS version number, e.g. "0.30.0.0".
 +constexpr std::string_view GetBrowserOSVersionNumber() {

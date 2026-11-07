@@ -1,8 +1,16 @@
 diff --git a/chrome/browser/ui/actions/chrome_action_id.h b/chrome/browser/ui/actions/chrome_action_id.h
-index b9c8319367e60c5925b83f809a8a8b71d8b56df8..cebc12be82a90be129f6c96f8957e4abc7e6e29e 100644
+index 4bcf8e9afd..4d5b36672c 100644
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -512,7 +512,9 @@
+@@ -88,6 +88,7 @@
+   E(kActionShowMemorySaverChip) \
+   E(kActionShowJsOptimizationsIcon) \
+   E(kActionShowCookieControls) \
++  E(kActionWindriseSlot) \
+   E(kActionShowZoomBubble) \
+   E(kActionAddNewTabToGroup, IDC_ADD_NEW_TAB_TO_GROUP) \
+   E(kActionCreateNewTabGroup, IDC_CREATE_NEW_TAB_GROUP) \
+@@ -353,7 +354,9 @@
    E(kActionSidePanelShowSideSearch) \
    E(kActionSidePanelShowMerchantTrust) \
    E(kActionSidePanelShowTabsFromOtherDevices, \

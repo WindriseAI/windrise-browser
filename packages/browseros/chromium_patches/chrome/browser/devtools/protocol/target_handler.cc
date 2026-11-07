@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/devtools/protocol/target_handler.cc b/chrome/browser/devtools/protocol/target_handler.cc
-index f03b44a4953b7c1e05a3b062e1c8006504a572b1..1929465710681d8f672b8bceece9e08a4f12c1f2 100644
+index a70077e..7ede1f9 100644
 --- a/chrome/browser/devtools/protocol/target_handler.cc
 +++ b/chrome/browser/devtools/protocol/target_handler.cc
-@@ -120,6 +120,17 @@ protocol::Response TargetHandler::CreateTarget(
-     DCHECK(profile);
+@@ -130,6 +130,17 @@ protocol::Response TargetHandler::CreateTarget(
+     }
    }
  
 +  // Explicit regular contexts are now discoverable without opening a window

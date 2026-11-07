@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000000..baeb98959b39a
+index 0000000000..5320053822
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,166 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -41,6 +41,18 @@ index 0000000000000..baeb98959b39a
 +
 +    // File or folder name (e.g., "myapp")
 +    DOMString name;
++  };
++
++  // Options for setAddressBarSlot.
++  dictionary AddressBarSlotOptions {
++    // The id of the tab whose address bar slot should be updated.
++    long tabId;
++
++    // Whether the slot should be shown or hidden.
++    boolean visible;
++
++    // Text shown in the slot. Omitted or null clears the text.
++    DOMString? text;
 +  };
 +
 +  // Settings-related types
@@ -140,5 +152,21 @@ index 0000000000000..baeb98959b39a
 +    static void showInfoBar(
 +        DOMString message,
 +        ShowInfoBarCallback callback);
++
++    // Shows, updates or hides the generic address bar slot for a tab.
++    // |options|: The tab, visibility and optional text.
++    // |callback|: Called when the slot has been updated.
++    //
++    // Errors:
++    // - "No tab with id: N" if the tab cannot be found.
++    static void setAddressBarSlot(
++        AddressBarSlotOptions options,
++        optional VoidCallback callback);
++  };
++
++  interface Events {
++    // Fired when the address bar slot of a tab is clicked.
++    // |tabId|: The id of the tab that owns the slot.
++    static void onAddressBarSlotClicked(long tabId);
 +  };
 +};

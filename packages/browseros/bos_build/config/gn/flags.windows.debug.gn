@@ -36,7 +36,7 @@ proprietary_codecs = true
 enable_platform_hevc = true
 disable_fieldtrial_testing_config = true
 
-enable_winsparkle = true
+enable_winsparkle = false
 
 # Disable Windows-specific features that macOS doesn't use
 enable_nacl = false

@@ -531,3 +531,32 @@ features:
       - "chrome/browser/prefs/chrome_command_line_pref_store.cc"
       - "chrome/browser/ui/views/toolbar/toolbar_view.cc"
       - "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.cc"
+
+  windrise-address-bar-slot:
+    description: "feat: address bar general slot and event routing (hook 14)"
+    files:
+      - "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+      - "chrome/browser/extensions/api/browser_os/browser_os_api.h"
+      - "chrome/browser/ui/actions/chrome_action_id.h"
+      - "chrome/browser/ui/browser_actions.cc"
+      - "chrome/browser/ui/browser_element_identifiers.cc"
+      - "chrome/browser/ui/browser_element_identifiers.h"
+      - "chrome/browser/ui/page_action/action_ids.h"
+      - "chrome/browser/ui/page_action/page_action_icon_type.h"
+      - "chrome/browser/ui/page_action/page_action_properties_provider.cc"
+      - "chrome/browser/ui/webui/top_chrome/webui_toolbar/utils/toolbar_button_utils.cc"
+      - "chrome/common/extensions/api/browser_os.idl"
+      - "chrome/common/top_chrome_webui/toolbar/toolbar_ui_api_data_model.mojom"
+      - "extensions/browser/extension_function_histogram_value.h"
+
+  browseros-attention-api:
+    description: "feat: browseros attention API and macOS helper (3b48c65d7 slice)"
+    files:
+      - "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+      - "chrome/browser/extensions/api/browser_os/browser_os_api.h"
+      - "chrome/browser/extensions/api/browser_os/browser_os_attention_mac.h"
+      - "chrome/browser/extensions/api/browser_os/browser_os_attention_mac.mm"
+      - "chrome/browser/extensions/BUILD.gn"
+      - "chrome/common/extensions/api/browser_os.idl"
+      - "extensions/browser/extension_function_histogram_value.h"
+      - "tools/metrics/histograms/metadata/extensions/enums.xml"

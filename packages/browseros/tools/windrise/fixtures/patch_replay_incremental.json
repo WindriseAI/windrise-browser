@@ -1,0 +1,19 @@
+{
+  "mode": "incremental",
+  "applied_tree_sample_files": [
+    "chrome/browser/background/extensions/background_mode_manager.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.h",
+    "chrome/browser/ui/browser_actions.cc",
+    "chrome/common/extensions/api/browser_os.idl"
+  ],
+  "input_files_sha256": {
+    "chrome/browser/background/extensions/background_mode_manager.cc": "0f2c1b850ab79bac2beeaaae7335c277b1b7566276842439083706ea94a2f9c2",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.cc": "7d8f14c588efb3b097d15f2ffdac850562d33ffac802be77e8b8d801b0d8865a",
+    "chrome/browser/extensions/api/browser_os/browser_os_api.h": "caed808b557e763b11d91f67c0084fd5c429f29c637a2b57f801747883fad864",
+    "chrome/browser/ui/browser_actions.cc": "6b2d64930201cdae7832e3916617bd3d2102869b22e7d77819fc7787ca5c9067",
+    "chrome/common/extensions/api/browser_os.idl": "7bfaf3ba72d4604712a613a5bef81be2db04f4d34230107d7aca0135e6c895ae"
+  },
+  "sample_verified": true,
+  "duration_seconds": 0.043
+}

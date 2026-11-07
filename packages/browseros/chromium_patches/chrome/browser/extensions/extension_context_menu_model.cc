@@ -1,16 +1,16 @@
 diff --git a/chrome/browser/extensions/extension_context_menu_model.cc b/chrome/browser/extensions/extension_context_menu_model.cc
-index 1e239298fab827300c4f1645a2d588e48413ddbb..7010a3050d7370e1390f0db65df2a66dd23eddcd 100644
+index 2ea4a34..06f12da 100644
 --- a/chrome/browser/extensions/extension_context_menu_model.cc
 +++ b/chrome/browser/extensions/extension_context_menu_model.cc
-@@ -15,6 +15,7 @@
+@@ -16,6 +16,7 @@
  #include "base/notreached.h"
  #include "base/strings/utf_string_conversions.h"
  #include "base/types/pass_key.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
+ #include "chrome/browser/extensions/api/side_panel/side_panel_service.h"
  #include "chrome/browser/extensions/context_menu_matcher.h"
  #include "chrome/browser/extensions/extension_management.h"
- #include "chrome/browser/extensions/extension_tab_util.h"
-@@ -859,7 +860,11 @@ void ExtensionContextMenuModel::InitMenuWithFeature(
+@@ -892,7 +893,11 @@ void ExtensionContextMenuModel::InitMenuWithFeature(
  
    // Controls section.
    bool has_options_page = OptionsPageInfo::HasOptionsPage(extension);

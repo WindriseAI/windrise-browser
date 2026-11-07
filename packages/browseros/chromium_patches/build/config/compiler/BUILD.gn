@@ -1,0 +1,13 @@
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index c267546ebd..726dc026f3 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -826,7 +826,7 @@ config("compiler") {
+ 
+     if (is_win) {
+       ldflags += [
+-        "/opt:lldltojobs=all",
++        "/opt:lldltojobs=4",  # windrise：31GB 内存，16 线程 LTO 会顶满
+         "-mllvm:-import-instr-limit=$import_instr_limit",
+         "-mllvm:-disable-auto-upgrade-debug-info",
+       ]

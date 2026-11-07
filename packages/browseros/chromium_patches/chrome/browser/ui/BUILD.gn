@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
-index 82f397571fefaff0096247d0e98c28c20db709bd..fc55717cabc492b8d64d6e8ee27d58ea2b3c543a 100644
+index 88668a0..7c4c3b0 100644
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
 @@ -9,6 +9,7 @@ import("//build/config/features.gni")
@@ -10,7 +10,7 @@ index 82f397571fefaff0096247d0e98c28c20db709bd..fc55717cabc492b8d64d6e8ee27d58ea
  import("//chrome/common/features.gni")
  import("//components/captive_portal/core/features.gni")
  import("//components/compose/features.gni")
-@@ -212,6 +213,8 @@ if (!is_android) {
+@@ -308,6 +309,8 @@ if (!is_android) {
        "//build:branding_buildflags",
        "//chrome/app:command_ids",
        "//chrome/app/vector_icons",
@@ -19,23 +19,23 @@ index 82f397571fefaff0096247d0e98c28c20db709bd..fc55717cabc492b8d64d6e8ee27d58ea
        "//chrome/browser/browsing_data",
        "//chrome/browser/contextual_cueing",
        "//chrome/browser/contextual_tasks:ui",
-@@ -223,6 +226,7 @@ if (!is_android) {
-       "//chrome/browser/glic/browser_ui",
+@@ -320,6 +323,7 @@ if (!is_android) {
+       "//chrome/browser/history_clusters",
        "//chrome/browser/indigo",
        "//chrome/browser/indigo/resources:indigo_strings",
 +      "//chrome/browser/infobars",
        "//chrome/browser/media/router:media_router_feature",
        "//chrome/browser/multistep_filter/ui",
        "//chrome/browser/prefs",
-@@ -242,6 +246,7 @@ if (!is_android) {
-       "//chrome/browser/ui/bookmarks",
+@@ -342,6 +346,7 @@ if (!is_android) {
        "//chrome/browser/ui/commerce",
        "//chrome/browser/ui/customize_chrome",
+       "//chrome/browser/ui/dialogs:browser_dialogs",
 +      "//chrome/browser/ui/extensions",
        "//chrome/browser/ui/fuzzy_search",
        "//chrome/browser/ui/interaction",
        "//chrome/browser/ui/lens",
-@@ -288,6 +293,10 @@ if (!is_android) {
+@@ -394,6 +399,10 @@ if (!is_android) {
        "//components/spellcheck/browser",
        "//components/undo",
      ]
@@ -46,26 +46,23 @@ index 82f397571fefaff0096247d0e98c28c20db709bd..fc55717cabc492b8d64d6e8ee27d58ea
      if (is_mac) {
        deps += [
          ":browser_commands_mac",
-@@ -859,6 +868,7 @@ static_library("ui") {
-     "//chrome/browser/bookmarks",
-     "//chrome/browser/bookmarks:impl",
-     "//chrome/browser/breadcrumbs",
-+    "//chrome/browser/browseros/onboarding",
-     "//chrome/browser/commerce",
-     "//chrome/browser/complex_tasks",
-     "//chrome/browser/component_updater",
-@@ -1788,6 +1798,14 @@ static_library("ui") {
-       ]
-     }
- 
-+    # BrowserOS commands and the vertical tab strip read BrowserOS prefs.
-+    deps += [
+@@ -860,6 +869,11 @@ if (!is_android) {
+       "//chrome/browser/autocomplete",
+       "//chrome/browser/autofill",
+       "//chrome/browser/bookmarks",
++      # BrowserOS commands and the vertical tab strip read BrowserOS prefs.
 +      "//chrome/browser/browseros/core",
 +      "//chrome/browser/browseros/core:prefs",
 +      "//chrome/browser/browseros/core:product",
++      "//chrome/browser/browseros/onboarding",
+       "//chrome/browser/browsing_data",
+       "//chrome/browser/content_settings:content_settings_factory",
+       "//chrome/browser/contextual_tasks:ui",
+@@ -870,6 +884,7 @@ if (!is_android) {
+       "//chrome/browser/feedback",
+       "//chrome/browser/feedback:feedback_impl",
+       "//chrome/browser/history",
 +      "//chrome/browser/infobars",
-+    ]
-+
-     # Non-android public_deps for "ui" target.
-     public_deps += [
-       "//chrome/browser/contextual_cueing/internals",
+       "//chrome/browser/lens/region_search",
+       "//chrome/browser/lifetime",
+       "//chrome/browser/media/router",
