@@ -23,7 +23,7 @@
 |---|---|---|---|---|---|
 | **1 品牌名** | C++固定项与资源 | `BRANDING.release` / `chromium_strings.grd` / `settings_chromium_strings.grdp` | 资源重新生成与链接 | 页面统一显示 Windrise Browser | 补丁已备，编译未测 |
 | **2 关窗即退出** | C++固定项 | `chrome/browser/background/extensions/background_mode_manager.cc` | 局部编译并链接 | 主程序统一生命周期 | 源码已核，行为未测 |
-| **3 kit-v5 图标** | C++固定项资源 | `resources/browseros/icons/win/chromium.ico` 及各尺寸原图 | 资源重新生成与链接 | 页面/工具栏共用图标套件 | 资源待接入，视觉未测 |
+| **3 浏览器独立图标（B6 定稿）** | C++固定项资源 | `tools/windrise/make_icons.py` / `brand-src/` / `resources/browseros/icons/win/chromium.ico` 及各尺寸原图 | 资源重新生成与链接 | 页面/工具栏共用 B6 套件，风桥隧道仍用 kit-v5 | 资源已接入并解码核验，视觉未测 |
 | **4 左下角插槽** | C++通用插槽 | `browser_view.cc` / `browser_view_layout_impl.cc` / `vertical_tab_strip_region_view.cc` | UI/扩展API局部编译并链接 | 插件页面报高度，限幅 44~480px；AI 图标/额度/入口由插件绘制 | 补丁回放通过，运行未测 |
 | **5 设置页主题变量** | C++通用插槽 | `web_ui_data_source_impl.cc` / `web_ui_util.cc` / `browseros_prefs.cc` | 共用WebUI局部编译并链接 | 读运行时偏好注入 `--wr-*` 变量；配置缺失退原生样式 | 补丁回放通过，运行未测 |
 | **6 ColorMixer** | C++通用插槽 | `chrome_color_mixers.cc` / `browseros_prefs.cc` | 原生颜色/偏好局部编译并链接 | 读 profile 9个亮暗偏好键；改偏好触发重算或新窗口生效 | 补丁回放通过，运行未测 |
@@ -43,6 +43,34 @@
 | **新增：Windows闪烁** | 只改插件 | `windows_api.cc:1223` -> `FlashFrame` | 无需重编 | 插件调用 `chrome.windows.update(windowId, {drawAttention: true})` | 源码已核，行为未测 |
 | **上游：禁用开关** | C++固定项 | `command_line_prefs.cc/.h` / `.features.yaml` | 无需新增重编 | `--disable-browseros-features` 命令行高于用户低于策略且不落盘 | 源码已核，行为未测 |
 | **上游：注意力API** | C++固定项 | `browser_os_api.cc` / `browser_os_attention_mac.mm` / `browser_os.idl` | 扩展API局部编译并链接 | 仅移植 3b48c65d7 必要片段，mac 调新能力，Windows 走 drawAttention | 补丁回放通过，运行未测 |
+
+---
+
+### 2.2 钩子 3 图标资源：来源、尺寸映射与验证边界
+
+**来源**：图标采用 B6 定稿稿。仓内品牌源 `packages/browseros/tools/windrise/brand-src/` 只收 B6 实际用到的成品，字节与定稿一致，构建全程离线且只读仓内目录：
+
+| 仓内品牌源 | 内容 |
+|---|---|
+| `windrise-browser-icon-{16,24,32,48,64,128,256,512,1024}.png` | 带乳白玻璃底的应用图标，每个尺寸单独绘制 |
+| `windrise-browser-mark-white-{16,24,32,48,256}.png` | 深底用的无底白色图形标；定稿的 1024 白标与墨标当前没有消费者槽位，故未入库 |
+| `windrise-browser-icon-256.svg` | 矢量母版；按定稿 README，16/24/32/48 的加粗矢量不得放大，只入库 64px 起可放大的 256 那份 |
+
+`windrise-bridge-*`（kit-v5）母版原样保留给风桥隧道，`make_icons.py` 已不再读取它们；隧道、安装器与其他产品的图标不动。
+
+**尺寸映射**（由 `make_icons.py` 落地，保留 `--brand-dir` / `--out` / `--check` 合同，仅依赖 Pillow；无独立定稿的尺寸一律不拿 1024 大图硬缩）：
+
+| 输出尺寸 | 取源 | 规则 |
+|---|---|---|
+| 16 / 24 / 32 / 48 / 64 / 128 / 256 / 512 / 1024 | 同尺寸定稿 PNG | 字节级直用，不重采样 |
+| 22 → `icon-24`；44 → `icon-48` | 加粗族 16–48 | ≤48 取对数距离最近的定稿帧 |
+| 96 → `icon-128`；192 → `icon-256` | 标准族 | >48 取不小于目标的最小定稿帧，只缩不放 |
+| 深底槽位 22/44 → `mark-white-24/48`；70/150 → `mark-white-256` | 白色图形标族 | 同上；`*_white`、`product_logo_22_mono`、`win/tiles/*` 按定稿 README 用不带底板的白标 |
+| `win/chromium.ico`、`app_list.ico`、`incognito.ico` | 定稿 ICO 帧集 16/24/32/48/64/128/256 | 仓内重组 PNG-in-ICO，每帧就是定稿原帧 |
+| `mac/app.icns`、`AppIcon.icns`、`document.icns` | 定稿 ICNS 元素集 ic07/ic08/ic09/ic10/ic11/ic12/ic13/ic14（128/256/512/1024/32/64/256/512） | 仓内重组 PNG 元素，每元素就是定稿原帧 |
+| `win/chromium_doc.ico`、`chromium_pdf.ico` | `mark-white-*`（字形 10/20/30/159）+ 既有蓝色底板合成 | 定稿未出文档图标，底板配色待设计确认 |
+
+**实际验证边界**：只运行了 `python packages/browseros/tools/windrise/make_icons.py --check`（通过：58 个 `resources/browseros/icons` 文件与 12 个 agent/repo 资源和 brand-src 成品一致）与 `python -m py_compile` 语法检查，并逐个解码产出核对——`product_logo_16/24/256.png`、`win/chromium.ico`（7 帧）、`mac/app.icns`（8 元素）与定稿 `windrise-browser.ico` / `.icns` 逐帧像素全等。**浏览器本体未编译、未运行**：任务栏与桌面实际观感、深浅底色下的辨识度、DPI 缩放与 16px 可读性均为【未测】；`mac/Assets.car` 仍需 macOS `actool` 从本脚本更新后的 `Assets.xcassets` PNG 另行重编。
 
 ---
 
@@ -241,7 +269,7 @@ Dry-run verified: compile command prepared but NOT executed.
 | **4/14/浮层/光效** | 420 补丁完整顺序回放通过，API IDL 合同就绪 | **【未测】** 普通扩展调用受限接口被拒绝；跨 profile/隐身窗口隔离；卡片可点击且空白穿透；光效层无焦点；DPI 缩放与关窗清理 |
 | **5/6/12 主题与字体** | WebUI 与 ColorMixer 入口补丁回放就绪 | **【未测】** 亮暗模式切换即时生效；系统字体失败回退；安全警告页红底醒目保留；第三方页面及 DevTools 样式不被破坏 |
 | **11/13/15 标签与工具栏** | 5 按钮 320/200 窄窗让位规则规范冻结 | **【未测】** 窗口变窄时 5 个槽依次收进拼图面板，空槽不占宽；中文/emoji首字素折叠显示与悬停全标题；双段滚动拖拽持久化 |
-| **3/7 内置资源与插件** | 随包内置插件加载逻辑补丁就绪 | **【未测】** 随包自动载入、用户无法卸载；新标签页各业务卡片正常渲染；更新跟随主程序 |
+| **3/7 内置资源与插件** | 随包内置插件加载逻辑补丁就绪；钩子 3 的 B6 图标资源已过 `make_icons.py --check` 与逐帧解码核验（见 2.2） | **【未测】** 随包自动载入、用户无法卸载；新标签页各业务卡片正常渲染；更新跟随主程序；桌面/任务栏/快捷方式取到 B6 图标且与风桥隧道靠形状可辨，深浅底与 16px 无糊 |
 | **8/9/10 固定项** | 更新关闭与搜索入口补丁就绪 | **【未测】** 无独立更新网络请求；首次启动默认 Google 搜索且保留用户后续改动；首次引导页未经同意不导入数据 |
 | **1/2/Windows闪烁/上游项** | 关窗即退出与 FlashFrame 源码路径核对 | **【未测】** 关窗进程完全退出；任务栏闪烁能正常触发并适时停止；命令行参数强制值高于用户低于策略且不落盘 |
 
