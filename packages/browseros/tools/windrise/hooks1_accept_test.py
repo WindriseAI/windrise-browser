@@ -21,13 +21,14 @@ import hashlib
 import re
 import subprocess
 import sys
+import os
 import unittest
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PKG = HERE.parents[1]
 BASE = "ce18291e3"
-KIT = Path("D:/work/_dispatch/design/opus/logo/kit/png/windrise-app-icon-1024.png")
+KIT = Path(os.environ.get("WINDRISE_ICON_KIT", str(HERE / "brand-src" / "windrise-browser-icon-1024.png")))
 THEME = PKG / "chromium_files/products/browseros/chrome/app/theme/chromium"
 
 

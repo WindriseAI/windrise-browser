@@ -24,7 +24,7 @@
   Vite build itself does not depend on it.
 
 .EXAMPLE
-  .\build-onboarding.ps1 -Bun D:\work\_dispatch\tools\bun.exe -ChromiumSrc A:\src\chromium\src
+  .\build-onboarding.ps1 -Bun C:\tools\bun.exe -ChromiumSrc C:\src\chromium\src
 #>
 [CmdletBinding()]
 param(
