@@ -1,5 +1,5 @@
 diff --git a/chrome/installer/mini_installer/BUILD.gn b/chrome/installer/mini_installer/BUILD.gn
-index df9408b..49a1847 100644
+index df9408bb16..f072a3da1a 100644
 --- a/chrome/installer/mini_installer/BUILD.gn
 +++ b/chrome/installer/mini_installer/BUILD.gn
 @@ -6,6 +6,7 @@ import("//build/config/compiler/compiler.gni")
@@ -10,7 +10,35 @@ index df9408b..49a1847 100644
  import("//chrome/process_version_rc_template.gni")
  import("//third_party/dawn/scripts/dawn_features.gni")
  import("//third_party/ffmpeg/ffmpeg_options.gni")
-@@ -231,6 +232,13 @@ action("mini_installer_archive") {
+@@ -143,6 +144,14 @@ if (enable_uncompressed_archive) {
+       "$target_gen_dir/mini_installer/packed_files_uncompressed.rc"
+ }
+ 
++copy("installer_legal_files") {
++  sources = [
++    "LICENSE",
++    "SOURCE.txt",
++  ]
++  outputs = [ "$root_out_dir/{{source_file_part}}" ]
++}
++
+ action("mini_installer_archive") {
+   script = "//chrome/tools/build/win/create_installer_archive.py"
+ 
+@@ -200,6 +209,12 @@ action("mini_installer_archive") {
+     "//third_party/icu:icudata",
+   ]
+ 
++  inputs += [
++    "$root_out_dir/LICENSE",
++    "$root_out_dir/SOURCE.txt",
++  ]
++  deps += [ ":installer_legal_files" ]
++
+   if (enable_hidpi) {
+     args += [ "--enable_hidpi=1" ]
+   }
+@@ -231,6 +246,13 @@ action("mini_installer_archive") {
      inputs += [ "$root_out_dir/icudtl.dat" ]
    }
  

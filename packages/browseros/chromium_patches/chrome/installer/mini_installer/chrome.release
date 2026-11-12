@@ -1,8 +1,17 @@
 diff --git a/chrome/installer/mini_installer/chrome.release b/chrome/installer/mini_installer/chrome.release
-index 037b80488cf24ffe8be09cb4166be618141cdd33..fa9cb239f78963ad80da37e370e77d1a1f5fe76a 100644
+index 33e8546206..4e92362dc2 100644
 --- a/chrome/installer/mini_installer/chrome.release
 +++ b/chrome/installer/mini_installer/chrome.release
-@@ -38,9 +38,11 @@ vk_swiftshader.dll: %(VersionDir)s\
+@@ -8,6 +8,8 @@
+ #
+ chrome.exe: %(ChromeDir)s\
+ chrome_proxy.exe: %(ChromeDir)s\
++LICENSE: %(ChromeDir)s\
++SOURCE.txt: %(ChromeDir)s\
+ #
+ # Chrome version dir assembly manifest.
+ # The name of this file must match the name of the version dir, so we cannot
+@@ -38,9 +40,11 @@ vk_swiftshader.dll: %(VersionDir)s\
  vk_swiftshader_icd.json: %(VersionDir)s\
  vulkan-1.dll: %(VersionDir)s\
  v8_context_snapshot.bin: %(VersionDir)s\
@@ -14,7 +23,7 @@ index 037b80488cf24ffe8be09cb4166be618141cdd33..fa9cb239f78963ad80da37e370e77d1a
  Extensions\*.*: %(VersionDir)s\Extensions\
  locales\*.pak: %(VersionDir)s\Locales
  
-@@ -65,6 +67,23 @@ PrivacySandboxAttestationsPreloaded\privacy-sandbox-attestations.dat: %(VersionD
+@@ -59,6 +63,23 @@ SmallLogo.png: %(VersionDir)s\VisualElements\
  MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
  MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
  
