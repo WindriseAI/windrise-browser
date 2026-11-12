@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/BUILD.gn b/chrome/browser/browseros/core/BUILD.gn
 new file mode 100644
-index 0000000000..29dad8137b
+index 0000000..66ebac5
 --- /dev/null
 +++ b/chrome/browser/browseros/core/BUILD.gn
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,115 @@
 +# Copyright 2024 The Chromium Authors
 +# Use of this source code is governed by a BSD-style license that can be
 +# found in the LICENSE file.
@@ -69,6 +69,21 @@ index 0000000000..29dad8137b
 +    "//components/pref_registry",
 +    "//components/prefs",
 +    "//skia",
++  ]
++}
++
++# 扩展推来的 AI 运行状态（哪些标签是 AI 的、哪些在操作、已连接的 AI 列表）。
++# 按浏览器窗口保存；视图 Attach/Detach，扩展接口写入，视图订阅。
++source_set("ai_state") {
++  sources = [
++    "windrise_ai_state.cc",
++    "windrise_ai_state.h",
++  ]
++
++  deps = [
++    "//base",
++    "//chrome/browser/ui/browser_window",
++    "//components/tab_groups",
 +  ]
 +}
 +

@@ -1,8 +1,8 @@
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index a0e09ac9a7..957abf7591 100644
+index a0e09ac..edeb1c3 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -9423,6 +9423,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
+@@ -9423,6 +9423,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
        <message name="IDS_READ_LATER_COLLAPSE_BUTTON_ARIA_LABEL" desc="Aria label for the Read later list collapse button.">
          Collapse <ph name="HEADER">$1<ex>Unread</ex></ph>
        </message>
@@ -12,10 +12,31 @@ index a0e09ac9a7..957abf7591 100644
 +      <message name="IDS_WINDRISE_GRID" desc="Label of the Windrise toolbar button that opens grid mode">
 +        Grid
 +      </message>
++      <message name="IDS_WINDRISE_AI_CONNECTED_COUNT" desc="Windrise: bottom-left card showing how many AIs are connected to the browser">
++        <ph name="NUM">$1<ex>2</ex></ph> AIs connected
++      </message>
++      <message name="IDS_WINDRISE_AI_NONE_CONNECTED" desc="Windrise: bottom-left card shown when no AI is connected to the browser">
++        No AI connected
++      </message>
++      <message name="IDS_WINDRISE_AI_OPERATING" desc="Windrise: header of the side panel section that lists the tabs an AI is currently using">
++        <ph name="AI">$1<ex>Claude</ex></ph> is working
++      </message>
++      <message name="IDS_WINDRISE_AI_OPEN_APP" desc="Windrise: panel button that opens the Windrise desktop app">
++        Open Windrise
++      </message>
++      <message name="IDS_WINDRISE_AI_GALLERY" desc="Windrise: panel button that opens the Flash Plaza page">
++        Gallery
++      </message>
++      <message name="IDS_WINDRISE_AI_SETTINGS" desc="Windrise: panel button that opens the AI settings">
++        AI settings
++      </message>
++      <message name="IDS_WINDRISE_AI_MINUTES_AGO" desc="Windrise: when an AI was last used, in minutes">
++        <ph name="NUM">$1<ex>2</ex></ph> min ago
++      </message>
        <message name="IDS_READ_LATER_MENU_UNREAD_HEADER" desc="Header for section of unread Read later items.">
          Unread
        </message>
-@@ -11912,6 +11918,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
+@@ -11912,6 +11939,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
          <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
            Mozilla Firefox
          </message>

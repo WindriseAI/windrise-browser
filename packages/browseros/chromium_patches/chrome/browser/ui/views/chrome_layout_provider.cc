@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/chrome_layout_provider.cc b/chrome/browser/ui/views/chrome_layout_provider.cc
-index 6ee376f2de..3b4a41d343 100644
+index 6ee376f..9671b65 100644
 --- a/chrome/browser/ui/views/chrome_layout_provider.cc
 +++ b/chrome/browser/ui/views/chrome_layout_provider.cc
 @@ -8,6 +8,7 @@
@@ -10,22 +10,29 @@ index 6ee376f2de..3b4a41d343 100644
  #include "chrome/browser/ui/ui_features.h"
  #include "chrome/browser/ui/views/chrome_typography.h"
  #include "components/omnibox/common/omnibox_features.h"
-@@ -351,6 +352,22 @@ int ChromeLayoutProvider::GetCornerRadiusMetric(views::ShapeContextToken token,
+@@ -351,6 +352,29 @@ int ChromeLayoutProvider::GetCornerRadiusMetric(views::ShapeContextToken token,
    CHECK_GE(token, views::kShapeContextTokenStart, base::NotFatalUntil::M162);
    CHECK_LT(token, kChromeShapeContextTokenEnd, base::NotFatalUntil::M162);
  
-+  // 风桥：弹层圆角走偏好（方案 N2，偏好 browseros.windrise.layout.radius_*）。
-+  // 菜单、气泡、对话框在 158 里都取这几个 token，先统一取 radius_medium(12)。
-+  // 方案里对话框要 16，但 158 的对话框和气泡共用 kDialogRadius，没法定点区分，
-+  // 见报告「没把握 / 待办」。
++  // 风桥：弹层 / 控件圆角走偏好（方案 N2，偏好 browseros.windrise.layout.radius_*）。
++  // - 对话框 16（radius_large）；
++  // - 菜单 / 气泡 12（radius_medium）。气泡在 BubbleDialogDelegate 构造函数里
++  //   把 corner_radius 直接设成 kMenuRadius，所以两者不再共用 kDialogRadius；
++  // - 输入框 / 下拉 / 徽标 8（radius_small）。
 +  const browseros::windrise::LayoutMetrics& metrics =
 +      browseros::windrise::GetLayoutMetrics();
 +  switch (token) {
 +    case views::kDialogRadius:
++      return metrics.Get(browseros::windrise::LayoutMetric::kRadiusLarge);
 +    case views::kMenuRadius:
 +    case views::kMenuAuxRadius:
 +    case views::kMenuTouchRadius:
 +      return metrics.Get(browseros::windrise::LayoutMetric::kRadiusMedium);
++    case views::kBadgeRadius:
++    case views::kComboboxRadius:
++    case views::kTextfieldRadius:
++    case views::kContentSeparatorRadius:
++      return metrics.Get(browseros::windrise::LayoutMetric::kRadiusSmall);
 +    default:
 +      break;
 +  }

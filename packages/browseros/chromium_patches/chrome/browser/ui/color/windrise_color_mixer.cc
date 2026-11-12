@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/color/windrise_color_mixer.cc b/chrome/browser/ui/color/windrise_color_mixer.cc
 new file mode 100644
-index 0000000000..918625cfe7
+index 0000000..3850104
 --- /dev/null
 +++ b/chrome/browser/ui/color/windrise_color_mixer.cc
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,117 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -98,4 +98,26 @@ index 0000000000..918625cfe7
 +      token(ThemeToken::kSlotChipBackground)};
 +  mixer[kColorWindriseSlotChipForeground] = {
 +      token(ThemeToken::kSlotChipForeground)};
++
++  // N7：左下「已连接 N 个 AI」卡片与浮出面板（B 版银色玻璃的平涂近似）。
++  mixer[kColorWindriseAiCardBackground] = {token(ThemeToken::kAiCardBackground)};
++  mixer[kColorWindriseAiPanelBackground] = {
++      token(ThemeToken::kAiPanelBackground)};
++  mixer[kColorWindriseAiPanelButtonBackground] = {
++      token(ThemeToken::kAiPanelButtonBackground)};
++
++  // N12：WebUI 的 --color-sys-* 在 Windows 上不由 theme_source 下发，页面里用
++  // 的是 cr_shared_vars.css 的兜底值；这里把同一组 ui 颜色也按偏好给出，凡是
++  // 走 ColorProvider 的 WebUI 部件（以及后续要下发 sys 集合的平台）都一致。
++  mixer[ui::kColorSysPrimary] = {token(ThemeToken::kText)};
++  mixer[ui::kColorSysOnPrimary] = {token(ThemeToken::kTabActive)};
++  mixer[ui::kColorSysTonalContainer] = {token(ThemeToken::kTile)};
++  mixer[ui::kColorSysOnTonalContainer] = {token(ThemeToken::kText)};
++  mixer[ui::kColorSysDivider] = {token(ThemeToken::kLine)};
++  mixer[ui::kColorSysStateFocusRing] = {token(ThemeToken::kText)};
++  mixer[ui::kColorSysOnSurface] = {token(ThemeToken::kText)};
++  mixer[ui::kColorSysOnSurfaceSubtle] = {token(ThemeToken::kTextSecondary)};
++  mixer[ui::kColorSysNeutralContainer] = {token(ThemeToken::kTile)};
++  mixer[ui::kColorSysBaseContainer] = {token(ThemeToken::kPopup)};
++  mixer[ui::kColorSysSurface] = {token(ThemeToken::kPopup)};
 +}

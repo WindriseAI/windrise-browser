@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..ee37a536d7
+index 0000000..165bc45
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,418 @@
+@@ -0,0 +1,590 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -16,6 +16,7 @@ index 0000000000..ee37a536d7
 +#include <string>
 +#include <utility>
 +
++#include "base/base64.h"
 +#include "base/files/file_util.h"
 +#include "base/logging.h"
 +#include "base/strings/stringprintf.h"
@@ -24,6 +25,7 @@ index 0000000000..ee37a536d7
 +#include "base/values.h"
 +#include "base/version_info/version_info.h"
 +#include "chrome/browser/browser_process.h"
++#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "chrome/browser/browseros/metrics/browseros_metrics.h"
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
 +#include "chrome/browser/platform_util.h"
@@ -35,18 +37,23 @@ index 0000000000..ee37a536d7
 +#include "chrome/browser/ui/page_action/page_action_controller.h"
 +#include "chrome/browser/ui/select_file_policy/chrome_select_file_policy.h"
 +#include "chrome/browser/ui/tabs/public/tab_features.h"
++#include "chrome/browser/ui/tabs/tab_group_model.h"
 +#include "chrome/browser/ui/tabs/tab_strip_model.h"
 +#include "chrome/browser/ui/toasts/api/toast_id.h"
 +#include "chrome/browser/ui/toasts/toast_controller.h"
 +#include "chrome/common/extensions/api/browser_os.h"
++#include "chrome/grit/generated_resources.h"
 +#include "components/infobars/content/content_infobar_manager.h"
 +#include "components/infobars/core/infobar.h"
 +#include "components/infobars/core/infobar_delegate.h"
 +#include "components/infobars/core/simple_alert_infobar_delegate.h"
 +#include "components/prefs/pref_service.h"
++#include "components/tab_groups/tab_group_visual_data.h"
++#include "components/tabs/public/tab_group.h"
 +#include "components/tabs/public/tab_interface.h"
 +#include "content/public/browser/web_contents.h"
 +#include "chrome/browser/extensions/extension_tab_util.h"
++#include "ui/base/l10n/l10n_util.h"
 +#include "ui/shell_dialogs/selected_file_info.h"
 +
 +namespace extensions {
@@ -66,6 +73,34 @@ index 0000000000..ee37a536d7
 +  }
 +
 +  return nullptr;
++}
++
++// 按标签 id 找到窗口（与 setAddressBarSlot 同一套查法）。
++BrowserWindowInterface* FindBrowserForTabId(Profile* profile, int tab_id) {
++  ProfileBrowserCollection* browser_collection =
++      ProfileBrowserCollection::GetForProfile(profile);
++  if (!browser_collection) {
++    return nullptr;
++  }
++  BrowserWindowInterface* found = nullptr;
++  browser_collection->ForEach(
++      [&found, tab_id](BrowserWindowInterface* browser) {
++        TabStripModel* tab_strip_model = browser->GetTabStripModel();
++        if (!tab_strip_model) {
++          return true;
++        }
++        for (int i = 0; i < tab_strip_model->count(); ++i) {
++          content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
++          if (contents &&
++              extensions::ExtensionTabUtil::GetTabId(contents) == tab_id) {
++            found = browser;
++            return false;
++          }
++        }
++        return true;
++      },
++      BrowserCollection::Order::kActivation);
++  return found;
 +}
 +
 +std::string GetPrefTypeName(const base::Value* value) {
@@ -417,6 +452,143 @@ index 0000000000..ee37a536d7
 +    page_action_controller->Hide(kActionWindriseSlot);
 +  }
 +
++  return RespondNow(NoArguments());
++}
++
++// 风桥 N6：哪些标签是当前 AI 的。浏览器把这些标签收成一个标签组，组标题就是
++// 侧边栏那一段的段标题（「<AI 名> 正在操作」），组排到最下面 = 下面那一段。
++// 组本身由扩展推的列表决定，浏览器不改用户的组名以外的任何东西。
++ExtensionFunction::ResponseAction BrowserOSSetAiTabsFunction::Run() {
++  std::optional<browser_os::SetAiTabs::Params> params =
++      browser_os::SetAiTabs::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  BrowserWindowInterface* browser =
++      FindBrowserForTabId(profile, params->options.tab_id);
++  if (!browser) {
++    return RespondNow(
++        Error(base::StringPrintf("No tab with id: %d", params->options.tab_id)));
++  }
++  browseros::windrise::AiWindowState* ai_state =
++      browseros::windrise::AiWindowState::From(browser);
++  if (!ai_state) {
++    return RespondNow(Error("No browser window state"));
++  }
++  TabStripModel* tab_strip_model = browser->GetTabStripModel();
++  if (!tab_strip_model) {
++    return RespondNow(Error("No tab strip"));
++  }
++
++  // 标签 id → 模型下标，升序（AddToNewGroup 要求）。
++  std::vector<int> indices;
++  for (int tab_id : params->options.tab_ids) {
++    for (int i = 0; i < tab_strip_model->count(); ++i) {
++      content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
++      if (contents && extensions::ExtensionTabUtil::GetTabId(contents) == tab_id) {
++        indices.push_back(i);
++        break;
++      }
++    }
++  }
++  std::ranges::sort(indices);
++
++  if (!indices.empty()) {
++    std::optional<tab_groups::TabGroupId> group_id =
++        tab_strip_model->GetTabAtIndex(indices.front())->GetGroup();
++    for (int index : indices) {
++      if (tab_strip_model->GetTabAtIndex(index)->GetGroup() != group_id) {
++        group_id = std::nullopt;
++        break;
++      }
++    }
++    if (!group_id) {
++      group_id = tab_strip_model->AddToNewGroup(indices);
++    }
++    if (group_id) {
++      tab_strip_model->ChangeTabGroupVisuals(
++          *group_id,
++          tab_groups::TabGroupVisualData(
++              l10n_util::GetStringFUTF16(
++                  IDS_WINDRISE_AI_OPERATING,
++                  base::UTF8ToUTF16(params->options.ai_name)),
++              tab_groups::TabGroupColorId::kGrey));
++      // 排到最后 = 侧边栏最下面那一段。
++      tab_strip_model->MoveGroupTo(*group_id, tab_strip_model->count());
++      browseros::windrise::AiGroups::Set({*group_id});
++    }
++  } else {
++    browseros::windrise::AiGroups::Set({});
++  }
++
++  ai_state->SetAiTabs(base::UTF8ToUTF16(params->options.ai_name),
++                      params->options.tab_ids);
++  return RespondNow(NoArguments());
++}
++
++// 风桥 N7：卡片 / 面板的数据。图标是 base64 PNG，原生自己解码，不联网。
++ExtensionFunction::ResponseAction BrowserOSSetConnectedAisFunction::Run() {
++  std::optional<browser_os::SetConnectedAis::Params> params =
++      browser_os::SetConnectedAis::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  BrowserWindowInterface* browser =
++      FindBrowserForTabId(profile, params->options.tab_id);
++  if (!browser) {
++    return RespondNow(
++        Error(base::StringPrintf("No tab with id: %d", params->options.tab_id)));
++  }
++  browseros::windrise::AiWindowState* ai_state =
++      browseros::windrise::AiWindowState::From(browser);
++  if (!ai_state) {
++    return RespondNow(Error("No browser window state"));
++  }
++
++  // 面板只画得下这么多行；图标也有上限，避免扩展推超大值。
++  constexpr size_t kMaxConnections = 8;
++  constexpr size_t kMaxIconBytes = 64 * 1024;
++  std::vector<browseros::windrise::AiConnection> connections;
++  for (const browser_os::AiConnection& input : params->options.connections) {
++    if (connections.size() >= kMaxConnections) {
++      break;
++    }
++    browseros::windrise::AiConnection connection;
++    connection.name = base::UTF8ToUTF16(input.name);
++    connection.last_active_minutes =
++        input.last_active_minutes.value_or(-1);
++    if (input.icon_png) {
++      std::string decoded;
++      if (base::Base64Decode(*input.icon_png, &decoded) &&
++          decoded.size() <= kMaxIconBytes) {
++        connection.icon_png = std::move(decoded);
++      }
++    }
++    connections.push_back(std::move(connection));
++  }
++  ai_state->SetConnections(std::move(connections));
++  return RespondNow(NoArguments());
++}
++
++// 风桥 N11：开关某个标签的银色海浪。
++ExtensionFunction::ResponseAction BrowserOSSetAiActivityFunction::Run() {
++  std::optional<browser_os::SetAiActivity::Params> params =
++      browser_os::SetAiActivity::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  BrowserWindowInterface* browser =
++      FindBrowserForTabId(profile, params->options.tab_id);
++  if (!browser) {
++    return RespondNow(
++        Error(base::StringPrintf("No tab with id: %d", params->options.tab_id)));
++  }
++  browseros::windrise::AiWindowState* ai_state =
++      browseros::windrise::AiWindowState::From(browser);
++  if (!ai_state) {
++    return RespondNow(Error("No browser window state"));
++  }
++  ai_state->SetActivity(params->options.tab_id, params->options.active);
 +  return RespondNow(NoArguments());
 +}
 +

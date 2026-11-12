@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/color/chrome_color_id.h b/chrome/browser/ui/color/chrome_color_id.h
-index 6129096713..fc089725e4 100644
+index 6129096..9469472 100644
 --- a/chrome/browser/ui/color/chrome_color_id.h
 +++ b/chrome/browser/ui/color/chrome_color_id.h
-@@ -1194,6 +1194,19 @@
+@@ -1194,6 +1194,22 @@
    /* Window control button background colors. */ \
    E_CPONLY(kColorWindowControlButtonBackgroundActive) \
    E_CPONLY(kColorWindowControlButtonBackgroundInactive) \
@@ -19,6 +19,9 @@ index 6129096713..fc089725e4 100644
 +  E_CPONLY(kColorWindriseSectionDivider) \
 +  E_CPONLY(kColorWindriseSlotChipBackground) \
 +  E_CPONLY(kColorWindriseSlotChipForeground) \
++  E_CPONLY(kColorWindriseAiCardBackground) \
++  E_CPONLY(kColorWindriseAiPanelBackground) \
++  E_CPONLY(kColorWindriseAiPanelButtonBackground) \
  
  #if BUILDFLAG(IS_CHROMEOS)
  #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

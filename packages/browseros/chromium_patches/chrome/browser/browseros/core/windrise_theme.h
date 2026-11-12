@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..b3f701fc95
+index 0000000..1fbeade
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,181 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -52,9 +52,19 @@ index 0000000000..b3f701fc95
 +  kSectionDivider,      // 分段之间的分隔线（N6）
 +  kSlotChipBackground,  // 闪办芯片底（墨色实心）
 +  kSlotChipForeground,  // 闪办芯片字与图标
++  // N7 左下卡片与浮出面板（B 版银色玻璃，原生只能平涂）
++  kAiCardBackground,     // 卡片底
++  kAiPanelBackground,    // 面板底
++  kAiPanelButtonBackground,  // 面板按钮底（白玻璃的平涂近似）
++  // N11 银色海浪（取值来自 native/silver_wave.sksl 第四版里的常量）
++  kSilverWaveWash,        // 雾：浅银灰
++  kSilverWaveSoftDeep,    // 晕的暗处（深银）
++  kSilverWaveSoftBright,  // 晕的亮处
++  kSilverWaveCoreDeep,    // 芯的暗处
++  kSilverWaveCoreBright,  // 芯的亮处
 +};
 +inline constexpr size_t kThemeTokenCount =
-+    static_cast<size_t>(ThemeToken::kSlotChipForeground) + 1;
++    static_cast<size_t>(ThemeToken::kSilverWaveCoreBright) + 1;
 +
 +// 布局数值 token（像素）。
 +enum class LayoutMetric {
@@ -69,9 +79,42 @@ index 0000000000..b3f701fc95
 +  kGridButtonFontSize,       // 格子按钮文字字号
 +  kWebContentsRadius,        // 网页区圆角
 +  kWebContentsGap,           // 网页区与窗框之间的缝（N10 定：默认 0）
++  // N3 竖向标签栏
++  kTabHeight,                  // 标签高
++  kTabRadius,                  // 标签圆角
++  kTabStripHorizontalPadding,  // 标签列左右留白（标签宽 = 栏宽 - 两倍）
++  kTabContentsInsetLeft,       // 标签内左内边
++  kTabContentsInsetRight,      // 标签内右内边（关闭按钮外侧）
++  kTopButtonSize,              // 顶部见方小按钮（展开收起 / 格子 / 搜索）
++  kTopButtonIconSize,          // 顶部小按钮图标
++  kTopButtonRadius,            // 顶部小按钮圆角
++  kNewTabButtonHeight,         // 整宽「+」的高度
++  // N6 上下分段
++  kAiSectionHeaderHeight,   // 段标题行高
++  kAiSectionHeaderFontSize, // 段标题字号
++  // N7 左下「已连接 N 个 AI」卡片与面板
++  kAiCardHeight,           // 卡片高
++  kAiCardRadius,           // 卡片圆角
++  kAiCardPaddingLeft,      // 卡片左内边（AI 标志与面板文字同一条竖线）
++  kAiCardIconSize,         // 卡片里 AI 标志方块边长
++  kAiCardPanelGap,         // 卡片与浮出面板的间距
++  kAiPanelWidth,           // 面板宽（标签栏展开时）
++  kAiPanelCollapsedWidth,  // 面板宽（标签栏折叠、向右浮出时）
++  kAiPanelRadius,          // 面板圆角
++  kAiPanelPadding,         // 面板内边
++  kAiPanelRowHeight,       // 面板行高
++  kAiPanelButtonHeight,    // 面板按钮高
++  // N10 / N11
++  kWindowCornerRadius,       // 窗口圆角（Windows 11 系统裁出来的那 8px）
++  kSilverWaveSpread,         // 银浪层向网页区外扩的距离（外溢辉光）
++  kSilverWaveInwardMax,      // 银浪往里羽化的最大宽度
++  kSilverWaveOutwardMax,     // 银浪往外的最大宽度
++  kSilverWaveFadeInMs,       // 起：亮起时长
++  kSilverWaveFadeOutMs,      // 收：淡出时长
++  kSilverWaveIntroMs,        // 开场那一道沿边跑一圈的时长
 +};
 +inline constexpr size_t kLayoutMetricCount =
-+    static_cast<size_t>(LayoutMetric::kWebContentsGap) + 1;
++    static_cast<size_t>(LayoutMetric::kSilverWaveIntroMs) + 1;
 +
 +// 颜色 token 的偏好名与编译期默认值。
 +struct ThemeColorSpec {

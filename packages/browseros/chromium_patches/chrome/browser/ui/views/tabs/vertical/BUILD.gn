@@ -1,0 +1,54 @@
+diff --git a/chrome/browser/ui/views/tabs/vertical/BUILD.gn b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
+index e88955e..2098882 100644
+--- a/chrome/browser/ui/views/tabs/vertical/BUILD.gn
++++ b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
+@@ -48,6 +48,8 @@ source_set("impl") {
+ 
+   deps = [
+     "//chrome/browser:primitives",
++    # 风桥 N3：顶部小按钮的底与圆角读外观偏好。
++    "//chrome/browser/browseros/core:theme",
+     "//chrome/browser/glic",
+     "//chrome/browser/glic/browser_ui:glow",
+     "//chrome/browser/glic/browser_ui:glow_controller",
+@@ -108,6 +110,40 @@ source_set("impl") {
+   ]
+ }
+ 
++# 风桥 N7：左下「已连接 N 个 AI」卡片与浮出面板。单独成 target，供
++# frame:vertical_tab_strip_region_view 挂进侧边栏；这里不依赖 frame，避免与
++# vertical:impl -> frame:vertical_tab_strip_region_view 形成环形依赖。
++source_set("windrise_ai_ui") {
++  public = [ "windrise_ai_card_view.h" ]
++  sources = [
++    "windrise_ai_card_view.cc",
++    "windrise_ai_panel_view.cc",
++  ]
++
++  deps = [
++    "//base",
++    "//base:i18n",
++    "//cc/paint",
++    "//chrome/app:generated_resources",
++    "//chrome/app/vector_icons",
++    "//chrome/browser/browseros/core:ai_state",
++    "//chrome/browser/browseros/core:theme",
++    "//chrome/browser/extensions",
++    "//chrome/browser/profiles:profile",
++    "//chrome/browser/ui/browser_window",
++    "//chrome/browser/ui/color:color_headers",
++    "//skia",
++    "//ui/base",
++    "//ui/base:l10n",
++    "//ui/base/metadata",
++    "//ui/base/mojom",
++    "//ui/color",
++    "//ui/gfx",
++    "//ui/gfx/geometry",
++    "//ui/views",
++  ]
++}
++
+ source_set("browser_tests") {
+   testonly = true
+   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

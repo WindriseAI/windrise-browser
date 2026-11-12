@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..1b636fa692
+index 0000000..9f980bb
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,292 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -62,6 +62,35 @@ index 0000000000..1b636fa692
 +    {ThemeToken::kSlotChipForeground,
 +     "browseros.windrise.theme.light.slot_chip_foreground",
 +     "browseros.windrise.theme.dark.slot_chip_foreground", 0xFFFFFF, 0xFFFFFF},
++    // WINDRISE-TODO(value)：N7 卡片 / 面板的 B 版银色玻璃是渐变 + 上缘高光，
++    // 原生 color id 只能平涂，先取 --wr-tile 值；设计帮手给平涂定值后改这里。
++    {ThemeToken::kAiCardBackground,
++     "browseros.windrise.theme.light.ai_card_background",
++     "browseros.windrise.theme.dark.ai_card_background", 0xE8EBEE, 0x323840},
++    {ThemeToken::kAiPanelBackground,
++     "browseros.windrise.theme.light.ai_panel_background",
++     "browseros.windrise.theme.dark.ai_panel_background", 0xE8EBEE, 0x323840},
++    {ThemeToken::kAiPanelButtonBackground,
++     "browseros.windrise.theme.light.ai_panel_button_background",
++     "browseros.windrise.theme.dark.ai_panel_button_background", 0xE8EBEE,
++     0x323840},
++    // 来自 native/silver_wave.sksl 第四版：雾 (0.690,0.722,0.757)、晕
++    // (0.549,0.588,0.631)→(0.957,0.965,0.973)、芯 (0.478,0.522,0.573)→白。
++    {ThemeToken::kSilverWaveWash,
++     "browseros.windrise.theme.light.silver_wave_wash",
++     "browseros.windrise.theme.dark.silver_wave_wash", 0xB0B8C1, 0xB0B8C1},
++    {ThemeToken::kSilverWaveSoftDeep,
++     "browseros.windrise.theme.light.silver_wave_soft_deep",
++     "browseros.windrise.theme.dark.silver_wave_soft_deep", 0x8C96A1, 0x8C96A1},
++    {ThemeToken::kSilverWaveSoftBright,
++     "browseros.windrise.theme.light.silver_wave_soft_bright",
++     "browseros.windrise.theme.dark.silver_wave_soft_bright", 0xF4F6F8, 0xF4F6F8},
++    {ThemeToken::kSilverWaveCoreDeep,
++     "browseros.windrise.theme.light.silver_wave_core_deep",
++     "browseros.windrise.theme.dark.silver_wave_core_deep", 0x7A8592, 0x7A8592},
++    {ThemeToken::kSilverWaveCoreBright,
++     "browseros.windrise.theme.light.silver_wave_core_bright",
++     "browseros.windrise.theme.dark.silver_wave_core_bright", 0xFFFFFF, 0xFFFFFF},
 +};
 +
 +// 布局默认值来自 browser-theme-v2.md 第 3 节与内部页样式表（圆角 s/m/l）。
@@ -87,6 +116,67 @@ index 0000000000..1b636fa692
 +    // 改偏好即可，不用重编。
 +    {LayoutMetric::kWebContentsGap, "browseros.windrise.layout.web_contents_gap",
 +     0},
++    // N3 竖向标签栏：帧 36:26925 的量（标签 36 高、圆角 10、左右各留 8、
++    // 内左 10 / 内右 12、顶部按钮 32 见方、图标 16、「+」整宽 36）。
++    {LayoutMetric::kTabHeight, "browseros.windrise.layout.tab_height", 36},
++    {LayoutMetric::kTabRadius, "browseros.windrise.layout.tab_radius", 10},
++    {LayoutMetric::kTabStripHorizontalPadding,
++     "browseros.windrise.layout.tab_strip_horizontal_padding", 8},
++    {LayoutMetric::kTabContentsInsetLeft,
++     "browseros.windrise.layout.tab_contents_inset_left", 10},
++    {LayoutMetric::kTabContentsInsetRight,
++     "browseros.windrise.layout.tab_contents_inset_right", 12},
++    {LayoutMetric::kTopButtonSize, "browseros.windrise.layout.top_button_size",
++     32},
++    {LayoutMetric::kTopButtonIconSize,
++     "browseros.windrise.layout.top_button_icon_size", 16},
++    {LayoutMetric::kTopButtonRadius,
++     "browseros.windrise.layout.top_button_radius", 10},
++    {LayoutMetric::kNewTabButtonHeight,
++     "browseros.windrise.layout.new_tab_button_height", 36},
++    // N6 分段标题。WINDRISE-TODO(value)：行高 / 字号方案里没写，先按标签
++    // 文字行（14px 字号、28 高）来。
++    {LayoutMetric::kAiSectionHeaderHeight,
++     "browseros.windrise.layout.ai_section_header_height", 28},
++    {LayoutMetric::kAiSectionHeaderFontSize,
++     "browseros.windrise.layout.ai_section_header_font_size", 14},
++    // N7 卡片与面板：theme-v2 第 5 节（收起 44 高圆角 10；面板圆角 12）。
++    {LayoutMetric::kAiCardHeight, "browseros.windrise.layout.ai_card_height", 44},
++    {LayoutMetric::kAiCardRadius, "browseros.windrise.layout.ai_card_radius", 10},
++    {LayoutMetric::kAiCardPaddingLeft,
++     "browseros.windrise.layout.ai_card_padding_left", 14},
++    {LayoutMetric::kAiCardIconSize,
++     "browseros.windrise.layout.ai_card_icon_size", 16},
++    {LayoutMetric::kAiCardPanelGap,
++     "browseros.windrise.layout.ai_card_panel_gap", 8},
++    {LayoutMetric::kAiPanelWidth, "browseros.windrise.layout.ai_panel_width", 224},
++    {LayoutMetric::kAiPanelCollapsedWidth,
++     "browseros.windrise.layout.ai_panel_collapsed_width", 280},
++    {LayoutMetric::kAiPanelRadius, "browseros.windrise.layout.ai_panel_radius",
++     12},
++    {LayoutMetric::kAiPanelPadding,
++     "browseros.windrise.layout.ai_panel_padding", 14},
++    {LayoutMetric::kAiPanelRowHeight,
++     "browseros.windrise.layout.ai_panel_row_height", 35},
++    {LayoutMetric::kAiPanelButtonHeight,
++     "browseros.windrise.layout.ai_panel_button_height", 36},
++    // N10 / N11：窗口圆角取 Windows 11 的 8；银浪外扩 24、往里最多 44、往外最多
++    // 16，起 420ms、收 200ms（review-animations：系统响应要快收），开场那一道
++    // 900ms（方案 N11 细节）。
++    {LayoutMetric::kWindowCornerRadius,
++     "browseros.windrise.layout.window_corner_radius", 8},
++    {LayoutMetric::kSilverWaveSpread,
++     "browseros.windrise.layout.silver_wave_spread", 24},
++    {LayoutMetric::kSilverWaveInwardMax,
++     "browseros.windrise.layout.silver_wave_inward_max", 44},
++    {LayoutMetric::kSilverWaveOutwardMax,
++     "browseros.windrise.layout.silver_wave_outward_max", 16},
++    {LayoutMetric::kSilverWaveFadeInMs,
++     "browseros.windrise.layout.silver_wave_fade_in_ms", 420},
++    {LayoutMetric::kSilverWaveFadeOutMs,
++     "browseros.windrise.layout.silver_wave_fade_out_ms", 200},
++    {LayoutMetric::kSilverWaveIntroMs,
++     "browseros.windrise.layout.silver_wave_intro_ms", 900},
 +};
 +
 +namespace {

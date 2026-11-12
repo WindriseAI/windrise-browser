@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.h b/chrome/browser/extensions/api/browser_os/browser_os_api.h
 new file mode 100644
-index 0000000000..9dd2e3bdff
+index 0000000..1325e56
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.h
-@@ -0,0 +1,137 @@
+@@ -0,0 +1,175 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -134,6 +134,44 @@ index 0000000000..9dd2e3bdff
 +
 + protected:
 +  ~BrowserOSSetAddressBarSlotFunction() override = default;
++
++  ResponseAction Run() override;
++};
++
++class BrowserOSSetAiTabsFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.setAiTabs", BROWSER_OS_SETAITABS)
++
++  BrowserOSSetAiTabsFunction() = default;
++
++ protected:
++  ~BrowserOSSetAiTabsFunction() override = default;
++
++  ResponseAction Run() override;
++};
++
++class BrowserOSSetConnectedAisFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.setConnectedAis",
++                             BROWSER_OS_SETCONNECTEDAIS)
++
++  BrowserOSSetConnectedAisFunction() = default;
++
++ protected:
++  ~BrowserOSSetConnectedAisFunction() override = default;
++
++  ResponseAction Run() override;
++};
++
++class BrowserOSSetAiActivityFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.setAiActivity",
++                             BROWSER_OS_SETAIACTIVITY)
++
++  BrowserOSSetAiActivityFunction() = default;
++
++ protected:
++  ~BrowserOSSetAiActivityFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};

@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/extensions/BUILD.gn b/chrome/browser/extensions/BUILD.gn
-index 563383fc71d7bc73f0af0fd2130879d0844ba2af..b656b6ed235b1e25636a6eca216df1ce698cb1a6 100644
+index aa70420..fbf8b44 100644
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
-@@ -346,6 +346,12 @@ source_set("extensions") {
+@@ -353,6 +353,12 @@ source_set("extensions") {
      "external_install_manager.h",
      "external_install_manager_factory.cc",
      "external_install_manager_factory.h",
@@ -15,7 +15,7 @@ index 563383fc71d7bc73f0af0fd2130879d0844ba2af..b656b6ed235b1e25636a6eca216df1ce
      "external_policy_loader.cc",
      "external_policy_loader.h",
      "external_pref_loader.cc",
-@@ -765,6 +771,14 @@ source_set("extensions") {
+@@ -792,6 +798,14 @@ source_set("extensions") {
        "api/automation_internal/chrome_automation_internal_api_delegate.h",
        "api/bookmark_manager_private/bookmark_manager_private_api.cc",
        "api/bookmark_manager_private/bookmark_manager_private_api.h",
@@ -30,13 +30,17 @@ index 563383fc71d7bc73f0af0fd2130879d0844ba2af..b656b6ed235b1e25636a6eca216df1ce
        "api/chrome_device_permissions_prompt.h",
        "api/enterprise_reporting_private/conversion_utils.cc",
        "api/enterprise_reporting_private/conversion_utils.h",
-@@ -1033,6 +1047,9 @@ source_set("extensions") {
+@@ -1062,6 +1076,13 @@ source_set("extensions") {
        "//components/language/core/common",
        "//components/language/core/language_model",
        "//components/live_caption:constants",
++      "//chrome/app:generated_resources",
 +      "//chrome/browser/browseros/core",
++      # 风桥 N6/N7/N11：browserOS.setAiTabs / setConnectedAis / setAiActivity。
++      "//chrome/browser/browseros/core:ai_state",
 +      "//chrome/browser/browseros/core:prefs",
 +      "//chrome/browser/browseros/metrics",
++      "//ui/base/l10n",
        "//components/media_device_salt",
        "//components/navigation_interception",
        "//components/net_log",

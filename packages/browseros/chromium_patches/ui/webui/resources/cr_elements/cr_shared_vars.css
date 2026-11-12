@@ -1,0 +1,94 @@
+diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
+index f478cec..5054f8c 100644
+--- a/ui/webui/resources/cr_elements/cr_shared_vars.css
++++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
+@@ -377,3 +377,89 @@ html[webui-refresh-2026] {
+     --cr-animations-disabled: 1;
+   }
+ }
++
++/* Copyright 2026 Windrise. Use of this source code is governed by the
++ * AGPL-3.0 license that can be found in the LICENSE file. */
++
++/* 风桥内部页统一样式（方案 N12）。追加在 cr_shared_vars.css 末尾，生成模块
++ * 会被 document.adoptedStyleSheets 全局采用，所以这里的 html / body 规则对所有
++ * 内部页生效。
++ * 依据：kb/browser-internal-style-v1.md 第 2、3 节；亮色值同 browser-theme-v2.md。
++ * 原生侧：--color-sys-* 这组值同时由 windrise_color_mixer.cc 从
++ * browseros.windrise.theme.* 偏好给出（Windows 的 theme_source 不下发 sys 集合，
++ * 所以这里的兜底值就是页面实际用的值）；渐变与玻璃不能映射成单个颜色，写死。
++ * 效果图：mock/internal-pages.mjs 在真 158 的 chrome://settings 等页面上原样注入
++ * 这一份，截图即最终效果。
++ *
++ * html / body 两条规则对所有内部页共用；--color-sys-* 由 ColorMixer 补丁
++ * （windrise_color_mixer.cc）从同一组偏好值给出，这里写的是同值兜底。
++ */
++html {
++  --wr-text: #0E1116;
++  --wr-text-2: #4A515C;
++  --wr-line: #C9CED5;
++  --wr-tile: #E8EBEE;
++  --wr-surface: #F7F8F9;
++  --wr-accent: #0E1116;
++  --wr-card: rgb(255 255 255 / .74);
++  --wr-page-bg:
++    radial-gradient(42% 38% at 84% 8%, rgb(255 255 255 / .9), rgb(255 255 255 / 0) 70%),
++    radial-gradient(36% 44% at 0% 58%, rgb(98 108 120 / .55), rgb(98 108 120 / 0) 72%),
++    radial-gradient(50% 30% at 60% 100%, rgb(255 255 255 / .8), rgb(255 255 255 / 0) 72%),
++    linear-gradient(135deg, #D5DADF, #AEB6BF 42%, #C3CAD1 72%, #EDEFF1);
++
++  /* 蓝色整组改墨色：强调色只有墨色（internal-style-v1 第 1 节） */
++  --google-blue-50-rgb: 232, 235, 238; --google-blue-100-rgb: 221, 225, 229;
++  --google-blue-300-rgb: 60, 67, 77; --google-blue-400-rgb: 60, 67, 77;
++  --google-blue-500-rgb: 14, 17, 22; --google-blue-600-rgb: 14, 17, 22;
++  --google-blue-700-rgb: 14, 17, 22; --google-blue-800-rgb: 14, 17, 22; --google-blue-900-rgb: 14, 17, 22;
++
++  /* ColorMixer 的系统色（同值兜底） */
++  --color-sys-primary: #0E1116;
++  --color-sys-on-primary: #FFFFFF;
++  --color-sys-tonal-container: #E8EBEE;
++  --color-sys-on-tonal-container: #0E1116;
++  --color-sys-surface: transparent;
++  --color-sys-base: transparent;
++  --color-sys-header: transparent;
++  --color-sys-base-container: rgb(255 255 255 / .74);
++  --color-sys-base-container-elevated: rgb(255 255 255 / .86);
++  --color-sys-neutral-container: #E8EBEE;
++  --color-sys-divider: #C9CED5;
++  --color-sys-state-focus-ring: #0E1116;
++  --color-sys-state-hover: rgb(20 23 28 / .06);
++  --color-sys-on-surface: #0E1116;
++  --color-sys-on-surface-subtle: #4A515C;
++  --color-primary-foreground: #0E1116;
++  --color-secondary-foreground: #4A515C;
++  --color-link-foreground-default: #0E1116;
++  --color-checkbox-foreground-checked: #0E1116;
++  --color-toggle-button-thumb-on: #FFFFFF;
++  --color-toggle-button-track-on: #0E1116;
++  --color-webui-card-background: rgb(255 255 255 / .74);
++  --color-toolbar-background: transparent;
++  --color-settings-side-panel-background: transparent;
++
++  --cr-primary-text-color: #0E1116;
++  --cr-secondary-text-color: #4A515C;
++  --cr-link-color: #0E1116;
++  --cr-checked-color: #0E1116;
++  /* 焦点：internal-style-v1 只定了颜色（--wr-focus 墨色），没定粗细；按协调人 11-12 晚：1px 墨色 + 外面 2px 半透明墨色，
++     不用上游那圈 2px 实心深色（和银色不搭）。原生补丁里各输入框 / 搜索框的 :focus-visible 统一成下面这个 box-shadow。 */
++  --cr-focus-outline-color: #0E1116;
++  --wr-focus-ring: 0 0 0 1px #0E1116, 0 0 0 3px rgb(14 17 22 / .16);
++  --cr-card-background-color: rgb(255 255 255 / .74);
++  --cr-card-border-radius: 12px;
++  --cr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .9), 0 1px 2px rgb(20 26 33 / .06);
++  --cr-separator-color: #C9CED5;
++  --cr-menu-background-color: #F7F8F9;
++  --cr-menu-shadow: 0 0 0 .5px rgb(60 60 67 / .22), 0 8px 24px rgb(13 18 23 / .2);
++  --cr-hover-background-color: rgb(20 23 28 / .06);
++  --cr-toolbar-height: 56px;
++
++  font-family: "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
++}
++body {
++  background: var(--wr-page-bg) fixed !important;
++  color: var(--wr-text);
++}

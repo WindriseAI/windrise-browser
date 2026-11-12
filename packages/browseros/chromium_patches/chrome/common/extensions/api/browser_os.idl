@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..dd9069ef59
+index 0000000..82e575f
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,230 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -53,6 +53,48 @@ index 0000000000..dd9069ef59
 +
 +    // Text shown in the slot. Omitted or null clears the text.
 +    DOMString? text;
++  };
++
++  // 一家已连接的 AI（N7 卡片 / 面板用）。
++  dictionary AiConnection {
++    // 显示名（Claude、豆包……）。
++    DOMString name;
++
++    // 16x16 以内的 PNG，base64 编码。空字符串表示没有图标。
++    DOMString? iconPng;
++
++    // 上次调用距今多少分钟。负数表示不显示时间。
++    long? lastActiveMinutes;
++  };
++
++  // Options for setAiTabs（N6 上下分段）。
++  dictionary SetAiTabsOptions {
++    // 这个 AI 当前拥有的任一标签（用来定位窗口）。
++    long tabId;
++
++    // AI 名，浏览器用它写段标题「<AI 名> 正在操作」。
++    DOMString aiName;
++
++    // 属于这个 AI 的标签 id。空数组表示这一段现在没有标签。
++    long[] tabIds;
++  };
++
++  // Options for setConnectedAis（N7）。
++  dictionary SetConnectedAisOptions {
++    // 窗口里的任一标签（用来定位窗口）。
++    long tabId;
++
++    // 已连接的 AI 列表，顺序就是面板里的行序。
++    AiConnection[] connections;
++  };
++
++  // Options for setAiActivity（N11 银色海浪）。
++  dictionary SetAiActivityOptions {
++    // 正在被 AI 操作的标签。
++    long tabId;
++
++    // true = 开始画光效，false = 淡出。
++    boolean active;
 +  };
 +
 +  // Settings-related types
@@ -153,6 +195,20 @@ index 0000000000..dd9069ef59
 +        DOMString message,
 +        ShowInfoBarCallback callback);
 +
++    // 风桥 N6：告诉浏览器哪些标签属于当前 AI，浏览器把这些标签收成侧边栏
++    // 最下面的一段，段标题是「<AI 名> 正在操作」。
++    static void setAiTabs(SetAiTabsOptions options, optional VoidCallback callback);
++
++    // 风桥 N7：左下「已连接 N 个 AI」卡片与面板的数据。
++    static void setConnectedAis(
++        SetConnectedAisOptions options,
++        optional VoidCallback callback);
++
++    // 风桥 N11：开关某个标签的 AI 操作光效。
++    static void setAiActivity(
++        SetAiActivityOptions options,
++        optional VoidCallback callback);
++
 +    // Shows, updates or hides the generic address bar slot for a tab.
 +    // |options|: The tab, visibility and optional text.
 +    // |callback|: Called when the slot has been updated.
@@ -172,5 +228,9 @@ index 0000000000..dd9069ef59
 +    // Fired when the Windrise toolbar grid button is clicked. The extension
 +    // owns what "grid mode" looks like; the browser only reports the click.
 +    static void onGridButtonClicked();
++
++    // 风桥 N7：面板底部按钮被点了。|action| 是 "open_app"、"grid" 或
++    // "settings"。
++    static void onAiPanelAction(DOMString action);
 +  };
 +};

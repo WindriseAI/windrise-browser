@@ -1,0 +1,39 @@
+diff --git a/components/neterror/resources/neterror.css b/components/neterror/resources/neterror.css
+index dbdbeac..93d8b39 100644
+--- a/components/neterror/resources/neterror.css
++++ b/components/neterror/resources/neterror.css
+@@ -701,3 +701,34 @@ html[dir='rtl'].offline .icon-offline {
+     display: none;
+   }
+ }
++
++/* 风桥 N12：出错页与内部页同一套底色 / 字色 / 字体。安全警告页（不是这个文件）
++ * 的红色不动；这里只改错误页。渐变与内部页 cr_shared_vars.css 末尾一致。 */
++body.neterror {
++  --wr-page-bg:
++    radial-gradient(42% 38% at 84% 8%, rgb(255 255 255 / .9), rgb(255 255 255 / 0) 70%),
++    radial-gradient(36% 44% at 0% 58%, rgb(98 108 120 / .55), rgb(98 108 120 / 0) 72%),
++    radial-gradient(50% 30% at 60% 100%, rgb(255 255 255 / .8), rgb(255 255 255 / 0) 72%),
++    linear-gradient(135deg, #D5DADF, #AEB6BF 42%, #C3CAD1 72%, #EDEFF1);
++  background: var(--wr-page-bg) fixed;
++  color: #0E1116;
++  /* body 上有内联 font-family（$i18n{fontfamily}），这里要 !important 才盖得住。 */
++  font-family: "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif !important;
++}
++
++body.neterror h1,
++body.neterror .error-code {
++  color: #0E1116;
++}
++
++body.neterror a {
++  color: #0E1116;
++}
++
++body.neterror button,
++body.neterror #reload-button,
++body.neterror #details-button {
++  background-color: #E8EBEE;
++  border-radius: 8px;
++  color: #0E1116;
++}
