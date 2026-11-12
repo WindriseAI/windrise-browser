@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/BUILD.gn b/chrome/browser/ui/views/toolbar/BUILD.gn
-index 9719e01b69..13dced3a81 100644
+index fcc7a53051..53ddc5e34c 100644
 --- a/chrome/browser/ui/views/toolbar/BUILD.gn
 +++ b/chrome/browser/ui/views/toolbar/BUILD.gn
 @@ -216,6 +216,8 @@ source_set("impl") {
@@ -22,7 +22,7 @@ index 9719e01b69..13dced3a81 100644
      "//cc/paint",
      "//chrome/app:branded_strings",
      "//chrome/app:branded_strings_grit",
-@@ -361,6 +367,7 @@ source_set("impl") {
+@@ -362,6 +368,7 @@ source_set("impl") {
      "//components/vector_icons",
      "//components/zoom",
      "//content/public/browser",

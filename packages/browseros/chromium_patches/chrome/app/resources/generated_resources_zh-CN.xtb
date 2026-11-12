@@ -1,5 +1,5 @@
 diff --git a/chrome/app/resources/generated_resources_zh-CN.xtb b/chrome/app/resources/generated_resources_zh-CN.xtb
-index 2882602..69e4e38 100644
+index fc23805d5a..6ab3cb9247 100644
 --- a/chrome/app/resources/generated_resources_zh-CN.xtb
 +++ b/chrome/app/resources/generated_resources_zh-CN.xtb
 @@ -2864,6 +2864,7 @@
@@ -10,7 +10,7 @@ index 2882602..69e4e38 100644
  <translation id="3177338796769255211">登录即可将书签等信息同步到您的所有设备上</translation>
  <translation id="3177430966804511955">管理独立式 Web 应用（Beta 版）</translation>
  <translation id="31774765611822736">在左侧新增标签页</translation>
-@@ -3823,7 +3824,7 @@
+@@ -3822,7 +3823,7 @@
  <translation id="3859869403161297890">在此处发送关于共享标签页分组的反馈</translation>
  <translation id="386009056910366930">管理标签页分组“<ph name="GROUP_NAME" />”</translation>
  <translation id="3861852898230054539">目前使用的是 Google 账号密码。您可以设置一个 <ph name="DEVICE_TYPE" /> 密码，使登录更便捷。</translation>
@@ -19,7 +19,7 @@ index 2882602..69e4e38 100644
  <translation id="3863215163880213672">导入并绑定到<ph name="CERT_GROUP" /></translation>
  <translation id="3864481028928394786">您访问过这些网站，它们请求设为快捷字词。您可以选择启用它们。</translation>
  <translation id="3865414814144988605">分辨率</translation>
-@@ -4017,6 +4018,7 @@
+@@ -4016,6 +4017,7 @@
  <translation id="4003617970184602156">如要使用密码并将其保存在您的 Google 账号中，请验证是您本人在操作</translation>
  <translation id="4005817994523282006">时区检测方法</translation>
  <translation id="4007064749990466867">{GROUP_COUNT,plural, =1{此操作会将该分组从您的设备中永久删除。}other{此操作会将这些分组从您的设备中永久删除。}}</translation>
@@ -27,7 +27,7 @@ index 2882602..69e4e38 100644
  <translation id="4010036441048359843">开启突出显示功能</translation>
  <translation id="4011073493055408531">城市上空闪耀着紫色和绿色的北极光。</translation>
  <translation id="4011897773956589748">下次 Gemini 需要访问此账号时，会再次向您发出请求。</translation>
-@@ -5144,7 +5146,7 @@
+@@ -5146,7 +5148,7 @@
  <translation id="4890399733764921729">无法连接。已被其他移动服务商锁定。</translation>
  <translation id="4890585766056792498">保护您免受危险网站的侵害</translation>
  <translation id="4890773143211625964">显示高级打印机选项</translation>
@@ -36,7 +36,7 @@ index 2882602..69e4e38 100644
  <translation id="4891795846939730995">如要重新授权此设备访问您的通行密钥，请使用已保存的通行密钥在网站或应用中登录账号</translation>
  <translation id="4892229439761351791">此网站可能会使用蓝牙</translation>
  <translation id="4892328231620815052">准备就绪后，您可在“书签和清单”部分中找到自己的阅读清单</translation>
-@@ -5620,7 +5622,7 @@
+@@ -5623,7 +5625,7 @@
  <translation id="5256861893479663409">在所有网站上</translation>
  <translation id="5258992782919386492">在此设备上安装</translation>
  <translation id="5260334392110301220">智能引号</translation>
@@ -45,7 +45,7 @@ index 2882602..69e4e38 100644
  <translation id="5261799091118902550">此文件可能是病毒或恶意软件。您可将它发送给 Google 以检查它是否安全。</translation>
  <translation id="5261929928981501666">始终显示滚动条</translation>
  <translation id="5262334727506665688">继续将密码保存在您的 Google 账号中</translation>
-@@ -6381,6 +6383,7 @@
+@@ -6383,6 +6385,7 @@
  <translation id="5868822853313956582">遵循设备配色方案</translation>
  <translation id="5869029295770560994">知道了</translation>
  <translation id="5869522115854928033">已保存的密码</translation>
@@ -53,7 +53,7 @@ index 2882602..69e4e38 100644
  <translation id="5869611709939872766"><ph name="FIRST_NAME" />，您好！想聊点什么？</translation>
  <translation id="5870155679953074650">硬故障数</translation>
  <translation id="587234395549708302">要清理书签吗？</translation>
-@@ -6660,6 +6663,7 @@
+@@ -6662,6 +6665,7 @@
  <translation id="6095984072944024315">−</translation>
  <translation id="6096047740730590436">以最大化模式打开</translation>
  <translation id="6096192567014958958"><ph name="USER_NAME" />，欢迎您！</translation>
@@ -61,15 +61,15 @@ index 2882602..69e4e38 100644
  <translation id="6097480669505687979">如果不释放空间，系统可能会自动移除用户和数据。</translation>
  <translation id="6097600385983390082">已关闭语音搜索</translation>
  <translation id="60980640539386483"><ph name="BUTTON_TEXT" />，<ph name="TOOLTIP_TEXT" /></translation>
-@@ -6831,6 +6835,7 @@
+@@ -6832,6 +6836,7 @@
+ <translation id="622484624075952240">向下箭头键</translation>
  <translation id="622537739776246443">个人资料将被删除</translation>
- <translation id="622568138962270592">Gemini 应用活动记录</translation>
  <translation id="6226777517901268232">私钥文件（选填）</translation>
 +<translation id="622707051037402736">已连接 <ph name="NUM" /> 个 AI</translation>
  <translation id="6227280783235722609">扩展程序</translation>
  <translation id="6228999859806946695"><ph name="TASK_TITLE" />：Gemini 已停止处理此任务</translation>
  <translation id="622902691730729894">从书签栏上取消固定分组</translation>
-@@ -7088,7 +7093,7 @@
+@@ -7089,7 +7094,7 @@
  <translation id="6434755719322447931">混乱</translation>
  <translation id="6435307030888827407">保持未登录状态</translation>
  <translation id="6435339218366409950">选择要将字幕翻译成哪种语言</translation>
@@ -78,7 +78,7 @@ index 2882602..69e4e38 100644
  <translation id="6436778875248895551">您的管理员已屏蔽扩展程序“<ph name="EXTENSION_NAME" />”</translation>
  <translation id="6438475350605608554">您已在另一个标签页中启动密码导入流程</translation>
  <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 正在播放音频</translation>
-@@ -7403,6 +7408,7 @@
+@@ -7404,6 +7409,7 @@
  <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
  <translation id="6669195257625975787">数据处理方式与您正在查看的网站相同</translation>
  <translation id="6669865825859209286">点击此处可分离或排列拆分视图</translation>
@@ -86,7 +86,7 @@ index 2882602..69e4e38 100644
  <translation id="6670767097276846646">某些扩展程序可以向 Chrome 添加搜索引擎</translation>
  <translation id="6670983860904543332">自动更新可为您提供最新功能。探索近期更新中的亮点。</translation>
  <translation id="6671320560732140690">{COUNT,plural, =1{1 个地址}other{# 个地址}}</translation>
-@@ -7919,7 +7925,7 @@
+@@ -7920,7 +7926,7 @@
  <translation id="7044606776288350625">同步数据</translation>
  <translation id="7050037487872780845">热点配置无效</translation>
  <translation id="7051222203795962489">{COUNT,plural, =1{密码已保存到您的 Google 账号 <ph name="USER_EMAIL" />}other{密码已保存到您的 Google 账号 <ph name="USER_EMAIL" />}}</translation>
@@ -95,7 +95,7 @@ index 2882602..69e4e38 100644
  <translation id="7052762602787632571">删除浏览数据(&amp;D)…</translation>
  <translation id="705352103640172578">瀑布</translation>
  <translation id="7053983685419859001">屏蔽</translation>
-@@ -8661,6 +8667,7 @@
+@@ -8662,6 +8668,7 @@
  <translation id="7625568159987162309">查看各网站的权限及储存的数据</translation>
  <translation id="7625823789272218216">在左侧新增标签页</translation>
  <translation id="762730429396410864">手动设置向网站报告的 CPU 性能层级</translation>
@@ -103,7 +103,7 @@ index 2882602..69e4e38 100644
  <translation id="7627749368210392160">网站可以使用此功能访问本地网络中的其他设备</translation>
  <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，等级：<ph name="GRADE" /></translation>
  <translation id="762917478230183172">为每个键选择一项操作</translation>
-@@ -9264,6 +9271,7 @@
+@@ -9265,6 +9272,7 @@
  <translation id="8063235345342641131">默认的绿色头像</translation>
  <translation id="8064015586118426197">ChromeOS Flex</translation>
  <translation id="8066444921260601116">连接对话框</translation>

@@ -1,8 +1,8 @@
 diff --git a/chrome/app/resources/generated_resources_zh-TW.xtb b/chrome/app/resources/generated_resources_zh-TW.xtb
-index 28a56afe1b..36d632be06 100644
+index 10f135eb45..1252003c06 100644
 --- a/chrome/app/resources/generated_resources_zh-TW.xtb
 +++ b/chrome/app/resources/generated_resources_zh-TW.xtb
-@@ -7915,7 +7915,7 @@
+@@ -7916,7 +7916,7 @@
  <translation id="7044606776288350625">同步處理資料</translation>
  <translation id="7050037487872780845">無效的無線基地台設定</translation>
  <translation id="7051222203795962489">{COUNT,plural, =1{密碼已儲存到 Google 帳戶 (<ph name="USER_EMAIL" />)}other{密碼已儲存到 Google 帳戶 (<ph name="USER_EMAIL" />)}}</translation>

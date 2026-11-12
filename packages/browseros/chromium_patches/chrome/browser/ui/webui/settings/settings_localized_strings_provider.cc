@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-index c14a8b0fb5..b1ef7850ee 100644
+index 0bdda85eaa..052d5e8e46 100644
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 @@ -1278,6 +1278,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {

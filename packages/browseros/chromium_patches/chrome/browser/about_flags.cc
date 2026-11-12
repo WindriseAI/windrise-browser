@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
-index 05bbf0b..ecf48da 100644
+index 0f43cb2b3c..c8f9844b79 100644
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -11429,6 +11429,17 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -11488,6 +11488,17 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(display::features::kFastDrmMasterDrop)},
  #endif  // BUILDFLAG(IS_CHROMEOS)
  

@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
-index 3644a2c9a69cd163806e9058bf39a122d1f0812e..6e5b1d75147b211921112e3c8cf9c6f2adc43bd2 100644
+index 196b469873..a45aa2de70 100644
 --- a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
 +++ b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
-@@ -132,6 +132,7 @@
+@@ -133,6 +133,7 @@
  #include "url/gurl.h"
  
  #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -10,7 +10,7 @@ index 3644a2c9a69cd163806e9058bf39a122d1f0812e..6e5b1d75147b211921112e3c8cf9c6f2
  #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
  
  #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-@@ -474,15 +475,50 @@ gfx::Image ChromeOmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
+@@ -477,15 +478,50 @@ gfx::Image ChromeOmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
  }
  
  std::u16string ChromeOmniboxClient::GetFormattedFullURL() const {

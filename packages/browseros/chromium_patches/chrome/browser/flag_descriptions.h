@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/flag_descriptions.h b/chrome/browser/flag_descriptions.h
-index 9d1ff04..c0a3d51 100644
+index ccecbadcfe..860dc57dc4 100644
 --- a/chrome/browser/flag_descriptions.h
 +++ b/chrome/browser/flag_descriptions.h
 @@ -353,6 +353,18 @@ inline constexpr char kBlockingFocusWithoutUserActivationDescription[] =

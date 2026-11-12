@@ -1,11 +1,11 @@
 diff --git a/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc b/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc
-index 31da453..525f6c8 100644
+index b1843d11db..14efc20165 100644
 --- a/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc
 +++ b/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc
-@@ -13,14 +13,20 @@
- #include "base/metrics/user_metrics.h"
+@@ -14,14 +14,20 @@
  #include "base/notreached.h"
  #include "base/strings/strcat.h"
+ #include "build/branding_buildflags.h"
 +#include "chrome/browser/browseros/core/browseros_action_utils.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
  #include "chrome/browser/profiles/profile.h"
@@ -23,19 +23,21 @@ index 31da453..525f6c8 100644
  #include "chrome/browser/ui/tabs/public/tab_features.h"
  #include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_ids.h"
  #include "chrome/browser/ui/views/event_utils.h"
-@@ -33,7 +39,11 @@
+@@ -34,9 +40,13 @@
  #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
  #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
  #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 +#include "chrome/common/extensions/extension_constants.h"
 +#include "chrome/common/pref_names.h"
  #include "chrome/grit/generated_resources.h"
+ #include "components/contextual_tasks/public/features.h"
 +#include "components/prefs/pref_service.h"
+ #include "components/vector_icons/vector_icons.h"
 +#include "third_party/skia/include/core/SkColor.h"
  #include "ui/actions/action_id.h"
  #include "ui/actions/actions.h"
  #include "ui/base/metadata/metadata_impl_macros.h"
-@@ -98,6 +108,28 @@ PinnedActionToolbarButton::PinnedActionToolbarButton(
+@@ -101,6 +111,28 @@ PinnedActionToolbarButton::PinnedActionToolbarButton(
    GetViewAccessibility().SetDescription(
        std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
  
@@ -64,7 +66,7 @@ index 31da453..525f6c8 100644
    // Normally, the notify action is determined by whether a view is draggable
    // (and is set to press for non-draggable and release for draggable views).
    // However, PinnedActionToolbarButton may be draggable or non-draggable
-@@ -243,6 +275,30 @@ void PinnedActionToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
+@@ -246,6 +278,30 @@ void PinnedActionToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
    skip_execution_ = false;
  }
  
@@ -92,10 +94,10 @@ index 31da453..525f6c8 100644
 +  }
 +}
 +
- void PinnedActionToolbarButton::UpdateIcon() {
+ int PinnedActionToolbarButton::GetIconSize() const {
    const std::optional<VectorIcons>& icons = GetVectorIcons();
-   // If the button is a cached permanent button the color provider will not be
-@@ -255,9 +311,14 @@ void PinnedActionToolbarButton::UpdateIcon() {
+   if (icons.has_value()) {
+@@ -280,9 +336,14 @@ void PinnedActionToolbarButton::UpdateIcon() {
                                      ? icons->touch_icon
                                      : icons->icon;
  
@@ -113,7 +115,7 @@ index 31da453..525f6c8 100644
      UpdateIconsWithColors(
          icon, GetColorProvider()->GetColor(kColorToolbarActionItemEngaged),
          GetColorProvider()->GetColor(kColorToolbarActionItemEngaged),
-@@ -374,6 +435,26 @@ void PinnedActionToolbarButtonActionViewInterface::ActionItemChangedImpl(
+@@ -399,6 +460,26 @@ void PinnedActionToolbarButtonActionViewInterface::ActionItemChangedImpl(
      }
    }
  

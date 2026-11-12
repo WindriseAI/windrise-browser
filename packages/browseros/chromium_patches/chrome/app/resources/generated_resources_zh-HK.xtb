@@ -1,8 +1,8 @@
 diff --git a/chrome/app/resources/generated_resources_zh-HK.xtb b/chrome/app/resources/generated_resources_zh-HK.xtb
-index ef42901270..a21c0de3a8 100644
+index aaabef94f2..ea315bdcd1 100644
 --- a/chrome/app/resources/generated_resources_zh-HK.xtb
 +++ b/chrome/app/resources/generated_resources_zh-HK.xtb
-@@ -5157,7 +5157,7 @@
+@@ -5159,7 +5159,7 @@
  <translation id="4890399733764921729">無法連接。已由其他流動服務供應商鎖定。</translation>
  <translation id="4890585766056792498">防範危險網站</translation>
  <translation id="4890773143211625964">顯示進階打印機選項</translation>
@@ -11,7 +11,7 @@ index ef42901270..a21c0de3a8 100644
  <translation id="4891795846939730995">如要再次授予此裝置密鑰存取權，請使用已儲存的密鑰登入網站或應用程式</translation>
  <translation id="4892229439761351791">網站可以使用藍牙</translation>
  <translation id="4892328231620815052">準備就緒後，即可在「書籤」和「清單」中查看閱讀清單</translation>
-@@ -5633,7 +5633,7 @@
+@@ -5636,7 +5636,7 @@
  <translation id="5256861893479663409">在所有網站上</translation>
  <translation id="5258992782919386492">在此裝置上安裝</translation>
  <translation id="5260334392110301220">智能引號</translation>
@@ -20,7 +20,7 @@ index ef42901270..a21c0de3a8 100644
  <translation id="5261799091118902550">此檔案可能是病毒或惡意軟件。你可將此檔案傳送至 Google，檢查是否不安全。</translation>
  <translation id="5261929928981501666">一律顯示捲軸</translation>
  <translation id="5262334727506665688">繼續將密碼儲存至 Google 帳戶</translation>
-@@ -7932,7 +7932,7 @@
+@@ -7933,7 +7933,7 @@
  <translation id="7044606776288350625">同步處理資料</translation>
  <translation id="7050037487872780845">無效的熱點設定</translation>
  <translation id="7051222203795962489">{COUNT,plural, =1{密碼已儲存至 Google 帳戶 (<ph name="USER_EMAIL" />)}other{密碼已儲存至 Google 帳戶 (<ph name="USER_EMAIL" />)}}</translation>

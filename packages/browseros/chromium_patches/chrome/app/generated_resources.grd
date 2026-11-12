@@ -1,8 +1,8 @@
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index a0e09ac..edeb1c3 100644
+index b9d0f60014..97f44f6784 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -9423,6 +9423,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
+@@ -9412,6 +9412,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
        <message name="IDS_READ_LATER_COLLAPSE_BUTTON_ARIA_LABEL" desc="Aria label for the Read later list collapse button.">
          Collapse <ph name="HEADER">$1<ex>Unread</ex></ph>
        </message>
@@ -36,7 +36,7 @@ index a0e09ac..edeb1c3 100644
        <message name="IDS_READ_LATER_MENU_UNREAD_HEADER" desc="Header for section of unread Read later items.">
          Unread
        </message>
-@@ -11912,6 +11939,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
+@@ -11901,6 +11928,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
          <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
            Mozilla Firefox
          </message>
