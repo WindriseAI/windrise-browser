@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/browser_actions.cc b/chrome/browser/ui/browser_actions.cc
-index 411759de1e..5ec242be33 100644
+index 411759de1e..3b6fcc800d 100644
 --- a/chrome/browser/ui/browser_actions.cc
 +++ b/chrome/browser/ui/browser_actions.cc
 @@ -20,6 +20,7 @@
@@ -20,7 +20,7 @@ index 411759de1e..5ec242be33 100644
  #include "extensions/common/extension_urls.h"
  #if BUILDFLAG(IS_CHROMEOS)
  #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-@@ -1576,6 +1580,39 @@ void BrowserActions::InitializeChromeMenuActions() {
+@@ -1576,6 +1580,36 @@ void BrowserActions::InitializeChromeMenuActions() {
            vector_icons::kGTranslateIcon)
            .Build());
  
@@ -51,10 +51,7 @@ index 411759de1e..5ec242be33 100644
 +              bwi))
 +          .SetActionId(kActionWindriseSlot)
 +          .SetImage(ui::ImageModel::FromVectorIcon(
-+              features::IsRoundedIconsEnabled()
-+                  ? vector_icons::kChromeExtensionIcon
-+                  : vector_icons::kExtensionChromeRefreshOldIcon,
-+              ui::kColorIcon))
++              kWindriseFlashIcon, ui::kColorIcon))
 +          .Build());
 +
    root_action_item_->AddChild(

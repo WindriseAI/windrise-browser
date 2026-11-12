@@ -1,0 +1,12 @@
+diff --git a/chrome/app/vector_icons/BUILD.gn b/chrome/app/vector_icons/BUILD.gn
+index d08b8c017e..5a088297ea 100644
+--- a/chrome/app/vector_icons/BUILD.gn
++++ b/chrome/app/vector_icons/BUILD.gn
+@@ -11,6 +11,7 @@ aggregate_vector_icons("chrome_vector_icons") {
+ 
+   sources = [
+     # go/keep-sorted start
++    "windrise_flash.icon",
+     "account_add_chrome_refresh_old.icon",
+     "account_box.icon",
+     "account_box_old.icon",

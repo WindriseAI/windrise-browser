@@ -464,9 +464,10 @@ def generate(brand_dir: Path, destination: Path) -> list[Path]:
 
     for relative, sizes in DOC_ICO_TARGETS:
         target = destination / relative
-        _write_ico(
-            {size: _png_blob(_doc_icon(size, art)) for size in sizes}, target
-        )
+        # 2026-11-12：doc/pdf 图标改用 brand-src 里的成品 ico（brand-ext 设计定稿），
+        # 不再现场合成——与应用图标 ICO 帧直用的做法一致。
+        source_ico = brand_dir / f"{target.stem}.ico"
+        target.write_bytes(source_ico.read_bytes())
         written.append(target)
 
     xpm_target = destination / "linux" / "product_logo_32.xpm"
