@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..da3e63fe3f
+index 0000000000..6ca6efa48b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,311 @@
+@@ -0,0 +1,320 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -75,6 +75,15 @@ index 0000000000..da3e63fe3f
 +     "browseros.windrise.theme.light.ai_panel_button_background",
 +     "browseros.windrise.theme.dark.ai_panel_button_background", 0xE8EBEE,
 +     0x323840},
++    // N7 B 版银色玻璃：上浅下深的竖向渐变（方案标注表第 6 行：#F1F3F5 -> #E2E6EA）。
++    // 暗色原生不做，先同亮色。
++    {ThemeToken::kAiCardBackgroundTop,
++     "browseros.windrise.theme.light.ai_card_background_top",
++     "browseros.windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0xF1F3F5},
++    {ThemeToken::kAiCardBackgroundBottom,
++     "browseros.windrise.theme.light.ai_card_background_bottom",
++     "browseros.windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
++     0xE2E6EA},
 +    // 来自 native/silver_wave.sksl 第四版：雾 (0.690,0.722,0.757)、晕
 +    // (0.549,0.588,0.631)→(0.957,0.965,0.973)、芯 (0.478,0.522,0.573)→白。
 +    {ThemeToken::kSilverWaveWash,
@@ -104,13 +113,13 @@ index 0000000000..da3e63fe3f
 +    {LayoutMetric::kGridButtonRadius,
 +     "browseros.windrise.layout.grid_button_radius", 16},
 +    {LayoutMetric::kGridButtonPaddingLeft,
-+     "browseros.windrise.layout.grid_button_padding_left", 10},
++     "browseros.windrise.layout.grid_button_padding_left", 8},
 +    {LayoutMetric::kGridButtonPaddingRight,
-+     "browseros.windrise.layout.grid_button_padding_right", 12},
++     "browseros.windrise.layout.grid_button_padding_right", 10},
 +    {LayoutMetric::kGridButtonIconGap,
-+     "browseros.windrise.layout.grid_button_icon_gap", 6},
++     "browseros.windrise.layout.grid_button_icon_gap", 4},
 +    {LayoutMetric::kGridButtonFontSize,
-+     "browseros.windrise.layout.grid_button_font_size", 14},
++     "browseros.windrise.layout.grid_button_font_size", 13},
 +    {LayoutMetric::kWebContentsRadius,
 +     "browseros.windrise.layout.web_contents_radius", 12},
 +    // N10 定稿：网页区四边的缝为 0（还剩圆角）。留着这个键是为了以后要缝时

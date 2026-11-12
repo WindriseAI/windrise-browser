@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/color/windrise_color_mixer.cc b/chrome/browser/ui/color/windrise_color_mixer.cc
 new file mode 100644
-index 0000000..3850104
+index 0000000000..fe19a9e9e9
 --- /dev/null
 +++ b/chrome/browser/ui/color/windrise_color_mixer.cc
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,121 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -101,6 +101,10 @@ index 0000000..3850104
 +
 +  // N7：左下「已连接 N 个 AI」卡片与浮出面板（B 版银色玻璃的平涂近似）。
 +  mixer[kColorWindriseAiCardBackground] = {token(ThemeToken::kAiCardBackground)};
++  mixer[kColorWindriseAiCardBackgroundTop] = {
++      token(ThemeToken::kAiCardBackgroundTop)};
++  mixer[kColorWindriseAiCardBackgroundBottom] = {
++      token(ThemeToken::kAiCardBackgroundBottom)};
 +  mixer[kColorWindriseAiPanelBackground] = {
 +      token(ThemeToken::kAiPanelBackground)};
 +  mixer[kColorWindriseAiPanelButtonBackground] = {

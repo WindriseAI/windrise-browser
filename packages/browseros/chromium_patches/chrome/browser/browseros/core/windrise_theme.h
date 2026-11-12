@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..7609bdc9be
+index 0000000000..9808ac3818
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,190 @@
+@@ -0,0 +1,192 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -56,6 +56,8 @@ index 0000000000..7609bdc9be
 +  kAiCardBackground,     // 卡片底
 +  kAiPanelBackground,    // 面板底
 +  kAiPanelButtonBackground,  // 面板按钮底（白玻璃的平涂近似）
++  kAiCardBackgroundTop,      // 卡片底：B 版银色玻璃渐变的上端（#F1F3F5）
++  kAiCardBackgroundBottom,   // 卡片底：渐变的下端（#E2E6EA）
 +  // N11 银色海浪（取值来自 native/silver_wave.sksl 第四版里的常量）
 +  kSilverWaveWash,        // 雾：浅银灰
 +  kSilverWaveSoftDeep,    // 晕的暗处（深银）

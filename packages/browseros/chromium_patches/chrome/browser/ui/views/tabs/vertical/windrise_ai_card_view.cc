@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..fd6668c75c
+index 0000000000..e6f2ef845f
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,343 @@
+@@ -0,0 +1,359 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -36,6 +36,7 @@ index 0000000000..fd6668c75c
 +#include "ui/gfx/canvas.h"
 +#include "ui/gfx/codec/png_codec.h"
 +#include "ui/gfx/geometry/skia_conversions.h"
++#include "ui/gfx/skia_paint_util.h"
 +#include "ui/gfx/image/image_skia.h"
 +#include "ui/views/background.h"
 +#include "ui/views/widget/widget.h"
@@ -251,13 +252,28 @@ index 0000000000..fd6668c75c
 +  cc::PaintFlags flags;
 +  flags.setAntiAlias(true);
 +  flags.setStyle(cc::PaintFlags::kFill_Style);
-+  // B 版银色玻璃是渐变 + 上缘高光，原生 color id 只能平涂；平涂值走偏好
-+  // （browseros.windrise.theme.*.ai_card_background）。
++  // B 版银色玻璃：上浅下深的竖向渐变（#F1F3F5 -> #E2E6EA，色值走偏好
++  // browseros.windrise.theme.*.ai_card_background_top / _bottom）+ 上缘 1px 白
++  // 高光 + .5px 线。渐变用 gfx::CreateGradientShader，圆角由 drawRRect 裁。
 +  flags.setColor(
 +      GetColorProvider()->GetColor(kColorWindriseAiCardBackground));
++  flags.setShader(gfx::CreateGradientShader(
++      gfx::Point(0, 0), gfx::Point(0, height()),
++      GetColorProvider()->GetColor(kColorWindriseAiCardBackgroundTop),
++      GetColorProvider()->GetColor(kColorWindriseAiCardBackgroundBottom)));
 +  canvas->sk_canvas()->drawRRect(
 +      SkRRect::MakeRectXY(gfx::RectToSkRect(GetLocalBounds()), radius, radius),
 +      flags);
++  flags.setShader(nullptr);
++
++  // 上缘 1px 白高光：只画在圆角直边那一段，内缩圆角半径。
++  cc::PaintFlags highlight;
++  highlight.setAntiAlias(true);
++  highlight.setStyle(cc::PaintFlags::kStroke_Style);
++  highlight.setStrokeWidth(1.0f);
++  highlight.setColor(SkColorSetARGB(0xE6, 0xFF, 0xFF, 0xFF));
++  canvas->sk_canvas()->drawLine(radius, 0.5f, width() - radius, 0.5f,
++                                highlight);
 +
 +  // 方案标注表第 6 行：悬停在底色上叠墨色 4%；面板开着时底换成窗框色（#DDE1E5）。
 +  if (panel_) {
