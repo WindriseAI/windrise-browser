@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/ui/views/BUILD.gn b/chrome/browser/ui/views/BUILD.gn
+index ccf57b0555..9f12b4d731 100644
+--- a/chrome/browser/ui/views/BUILD.gn
++++ b/chrome/browser/ui/views/BUILD.gn
+@@ -200,6 +200,7 @@ source_set("layout_provider_impl") {
+ 
+   deps = [
+     ":layout_provider",
++    "//chrome/browser/browseros/core:theme",
+     "//chrome/browser/ui:ui_features",
+     "//chrome/browser/ui/color:color_headers",
+     "//chrome/browser/ui/views/location_bar",

@@ -1,0 +1,57 @@
+diff --git a/chrome/app/resources/generated_resources_zh-CN.xtb b/chrome/app/resources/generated_resources_zh-CN.xtb
+index 2882602cb8..b3caf3a519 100644
+--- a/chrome/app/resources/generated_resources_zh-CN.xtb
++++ b/chrome/app/resources/generated_resources_zh-CN.xtb
+@@ -3823,7 +3823,7 @@
+ <translation id="3859869403161297890">在此处发送关于共享标签页分组的反馈</translation>
+ <translation id="386009056910366930">管理标签页分组“<ph name="GROUP_NAME" />”</translation>
+ <translation id="3861852898230054539">目前使用的是 Google 账号密码。您可以设置一个 <ph name="DEVICE_TYPE" /> 密码，使登录更便捷。</translation>
+-<translation id="3861977424605124250">在 Chrome 启动时显示</translation>
++<translation id="3861977424605124250">在 Windrise Browser 启动时显示</translation>
+ <translation id="3863215163880213672">导入并绑定到<ph name="CERT_GROUP" /></translation>
+ <translation id="3864481028928394786">您访问过这些网站，它们请求设为快捷字词。您可以选择启用它们。</translation>
+ <translation id="3865414814144988605">分辨率</translation>
+@@ -5144,7 +5144,7 @@
+ <translation id="4890399733764921729">无法连接。已被其他移动服务商锁定。</translation>
+ <translation id="4890585766056792498">保护您免受危险网站的侵害</translation>
+ <translation id="4890773143211625964">显示高级打印机选项</translation>
+-<translation id="4891089016822695758">Chrome（测试版）论坛</translation>
++<translation id="4891089016822695758">Windrise Browser（测试版）论坛</translation>
+ <translation id="4891795846939730995">如要重新授权此设备访问您的通行密钥，请使用已保存的通行密钥在网站或应用中登录账号</translation>
+ <translation id="4892229439761351791">此网站可能会使用蓝牙</translation>
+ <translation id="4892328231620815052">准备就绪后，您可在“书签和清单”部分中找到自己的阅读清单</translation>
+@@ -5620,7 +5620,7 @@
+ <translation id="5256861893479663409">在所有网站上</translation>
+ <translation id="5258992782919386492">在此设备上安装</translation>
+ <translation id="5260334392110301220">智能引号</translation>
+-<translation id="5261683757250193089">在 Chrome 应用商店中打开</translation>
++<translation id="5261683757250193089">在 Windrise Browser 应用商店中打开</translation>
+ <translation id="5261799091118902550">此文件可能是病毒或恶意软件。您可将它发送给 Google 以检查它是否安全。</translation>
+ <translation id="5261929928981501666">始终显示滚动条</translation>
+ <translation id="5262334727506665688">继续将密码保存在您的 Google 账号中</translation>
+@@ -6381,6 +6381,7 @@
+ <translation id="5868822853313956582">遵循设备配色方案</translation>
+ <translation id="5869029295770560994">知道了</translation>
+ <translation id="5869522115854928033">已保存的密码</translation>
++<translation id="5869546221129391014">格子</translation>
+ <translation id="5869611709939872766"><ph name="FIRST_NAME" />，您好！想聊点什么？</translation>
+ <translation id="5870155679953074650">硬故障数</translation>
+ <translation id="587234395549708302">要清理书签吗？</translation>
+@@ -7088,7 +7089,7 @@
+ <translation id="6434755719322447931">混乱</translation>
+ <translation id="6435307030888827407">保持未登录状态</translation>
+ <translation id="6435339218366409950">选择要将字幕翻译成哪种语言</translation>
+-<translation id="6436164536244065364">在 Chrome 应用商店中查看</translation>
++<translation id="6436164536244065364">在 Windrise Browser 应用商店中查看</translation>
+ <translation id="6436778875248895551">您的管理员已屏蔽扩展程序“<ph name="EXTENSION_NAME" />”</translation>
+ <translation id="6438475350605608554">您已在另一个标签页中启动密码导入流程</translation>
+ <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 正在播放音频</translation>
+@@ -7919,7 +7920,7 @@
+ <translation id="7044606776288350625">同步数据</translation>
+ <translation id="7050037487872780845">热点配置无效</translation>
+ <translation id="7051222203795962489">{COUNT,plural, =1{密码已保存到您的 Google 账号 <ph name="USER_EMAIL" />}other{密码已保存到您的 Google 账号 <ph name="USER_EMAIL" />}}</translation>
+-<translation id="7051728324516005763">Chrome 中的 AI</translation>
++<translation id="7051728324516005763">Windrise Browser 中的 AI</translation>
+ <translation id="7052762602787632571">删除浏览数据(&amp;D)…</translation>
+ <translation id="705352103640172578">瀑布</translation>
+ <translation id="7053983685419859001">屏蔽</translation>

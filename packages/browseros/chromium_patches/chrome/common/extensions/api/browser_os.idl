@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..5320053822
+index 0000000000..dd9069ef59
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,170 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -168,5 +168,9 @@ index 0000000000..5320053822
 +    // Fired when the address bar slot of a tab is clicked.
 +    // |tabId|: The id of the tab that owns the slot.
 +    static void onAddressBarSlotClicked(long tabId);
++
++    // Fired when the Windrise toolbar grid button is clicked. The extension
++    // owns what "grid mode" looks like; the browser only reports the click.
++    static void onGridButtonClicked();
 +  };
 +};

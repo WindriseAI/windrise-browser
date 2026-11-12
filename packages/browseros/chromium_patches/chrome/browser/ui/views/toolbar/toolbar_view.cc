@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-index 7f404c6864..09f51beb0d 100644
+index 7f404c6864..0642e53fa1 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
 @@ -23,6 +23,7 @@
@@ -10,7 +10,15 @@ index 7f404c6864..09f51beb0d 100644
  #include "chrome/browser/command_updater.h"
  #include "chrome/browser/glic/browser_ui/activity_list_bubble/glic_activity_list_bubble.h"
  #include "chrome/browser/glic/browser_ui/activity_list_bubble/glic_activity_list_bubble_controller.h"
-@@ -416,7 +417,14 @@ void ToolbarView::Init() {
+@@ -118,6 +119,7 @@
+ #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
+ #include "chrome/browser/ui/views/toolbar/webui_back_forward_control.h"
+ #include "chrome/browser/ui/views/toolbar/webui_toolbar_web_view.h"
++#include "chrome/browser/ui/views/toolbar/windrise_grid_button.h"
+ #include "chrome/browser/ui/views/zoom/zoom_view_controller.h"
+ #include "chrome/browser/ui/waap/initial_webui_window_metrics_manager.h"
+ #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+@@ -416,7 +418,14 @@ void ToolbarView::Init() {
    // profile (only regular and incognito profiles host extensions).
    if (!browser_->GetProfile()->IsGuestSession() &&
        !features::IsWebUIExtensionsContainerEnabled()) {
@@ -26,7 +34,19 @@ index 7f404c6864..09f51beb0d 100644
  
      toolbar_divider = std::make_unique<ToolbarDivider>();
    }
-@@ -607,6 +615,12 @@ void ToolbarView::Init() {
+@@ -507,6 +516,11 @@ void ToolbarView::Init() {
+     }
+   }
+ 
++  // 风桥「格子」按钮（方案 N8）：地址栏（和 glic 按钮）之后、扩展按钮之前。
++  // 尺寸与配色都从偏好取，见 WindriseGridButton。
++  windrise_grid_button_ =
++      AddChildView(std::make_unique<WindriseGridButton>(browser_));
++
+   if (extensions_container) {
+     extensions_container_ = AddChildView(std::move(extensions_container));
+     extensions_toolbar_coordinator_ =
+@@ -607,6 +621,12 @@ void ToolbarView::Init() {
      avatar_ = AddChildView(std::make_unique<AvatarToolbarButton>(browser_));
      bool show_avatar_toolbar_button =
          AvatarToolbarButtonInterface::CanShowForProfile(browser_->GetProfile());
@@ -39,3 +59,30 @@ index 7f404c6864..09f51beb0d 100644
      avatar_->SetVisible(show_avatar_toolbar_button);
    }
  
+@@ -1577,6 +1597,8 @@ void ToolbarView::InitLayout() {
+           : kOrderOffset + 1;
+   constexpr int kToolbarActionsFlexOrder = kOrderOffset + 2;
+   constexpr int kExtensionsFlexOrder = kOrderOffset + 3;
++  // 风桥「格子」按钮比扩展容器更早让位（order 越大越先让位）。
++  constexpr int kGridButtonFlexOrder = kOrderOffset + 4;
+ 
+   const views::FlexSpecification location_bar_flex_rule =
+       views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+@@ -1610,6 +1632,17 @@ void ToolbarView::InitLayout() {
+                                        extensions_flex_rule);
+   }
+ 
++  if (windrise_grid_button_) {
++    // 窄窗让位：先缩「格子」按钮，扩展按钮后让（方案 N8）。
++    windrise_grid_button_->SetProperty(
++        views::kFlexBehaviorKey,
++        views::FlexSpecification(
++            views::LayoutOrientation::kHorizontal,
++            views::MinimumFlexSizeRule::kPreferredSnapToZero,
++            views::MaximumFlexSizeRule::kPreferred)
++            .WithOrder(kGridButtonFlexOrder));
++  }
++
+   if (pinned_toolbar_actions_container_) {
+     pinned_toolbar_actions_container_->SetProperty(
+         views::kFlexBehaviorKey,

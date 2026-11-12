@@ -1,0 +1,103 @@
+diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.cc b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
+new file mode 100644
+index 0000000000..38a474028c
+--- /dev/null
++++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
+@@ -0,0 +1,97 @@
++// Copyright 2026 Windrise. Use of this source code is governed by the
++// AGPL-3.0 license that can be found in the LICENSE file.
++
++#include "chrome/browser/ui/views/toolbar/windrise_grid_button.h"
++
++#include <memory>
++#include <utility>
++
++#include "base/functional/bind.h"
++#include "base/memory/ref_counted.h"
++#include "chrome/app/vector_icons/vector_icons.h"
++#include "chrome/browser/browseros/core/windrise_theme.h"
++#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
++#include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/grit/generated_resources.h"
++#include "extensions/browser/event_router.h"
++#include "extensions/browser/extension_event_histogram_value.h"
++#include "ui/base/l10n/l10n_util.h"
++#include "ui/base/metadata/metadata_impl_macros.h"
++#include "ui/gfx/font_list.h"
++#include "ui/gfx/geometry/insets.h"
++#include "ui/views/controls/label.h"
++
++namespace {
++
++using browseros::windrise::LayoutMetric;
++
++// 工具栏「格子」按钮点下去后扩展收到的事件名。扩展侧用
++// chrome.browserOS.onGridButtonClicked 监听（见 browser_os.idl）。
++constexpr char kGridClickedEventName[] = "browserOS.onGridButtonClicked";
++
++}  // namespace
++
++WindriseGridButton::WindriseGridButton(BrowserWindowInterface* browser)
++    : ToolbarButton(base::BindRepeating(
++          &WindriseGridButton::NotifyExtensionGridClicked,
++          base::Unretained(this))),
++      browser_(browser) {
++  SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
++  SetTooltipText(GetText());
++  SetDefaultBackgroundColorId(kColorWindriseTileBackground);
++  UpdateIconsWithStandardColors(kGridViewIcon);
++  ApplyStyleFromPrefs();
++}
++
++WindriseGridButton::~WindriseGridButton() = default;
++
++void WindriseGridButton::OnThemeChanged() {
++  ToolbarButton::OnThemeChanged();
++  UpdateIconsWithStandardColors(kGridViewIcon);
++  // 颜色缓存被清掉时也会走到这里，顺手重读一遍尺寸类偏好。
++  ApplyStyleFromPrefs();
++}
++
++int WindriseGridButton::GetRoundedCornerRadius() const {
++  return browseros::windrise::GetLayoutMetrics().Get(
++      LayoutMetric::kGridButtonRadius);
++}
++
++void WindriseGridButton::ApplyStyleFromPrefs() {
++  const browseros::windrise::LayoutMetrics& metrics =
++      browseros::windrise::GetLayoutMetrics();
++
++  SetLayoutInsets(gfx::Insets::TLBR(
++      0, metrics.Get(LayoutMetric::kGridButtonPaddingLeft), 0,
++      metrics.Get(LayoutMetric::kGridButtonPaddingRight)));
++  SetMinSize(gfx::Size(0, metrics.Get(LayoutMetric::kGridButtonHeight)));
++  SetImageLabelSpacing(metrics.Get(LayoutMetric::kGridButtonIconGap));
++
++  const int font_size = metrics.Get(LayoutMetric::kGridButtonFontSize);
++  const gfx::FontList& font_list = label()->font_list();
++  if (font_list.GetFontSize() != font_size) {
++    label()->SetFontList(
++        font_list.DeriveWithSizeDelta(font_size - font_list.GetFontSize()));
++  }
++
++  UpdateColorsAndInsets();
++  PreferredSizeChanged();
++}
++
++void WindriseGridButton::NotifyExtensionGridClicked() {
++  Profile* profile = browser_->GetProfile();
++  if (!profile) {
++    return;
++  }
++  auto* event_router = extensions::EventRouter::Get(profile);
++  if (!event_router) {
++    return;
++  }
++  event_router->BroadcastEvent(std::make_unique<extensions::Event>(
++      extensions::events::UNKNOWN, kGridClickedEventName,
++      base::MakeRefCounted<extensions::EventArgs>(), profile));
++}
++
++BEGIN_METADATA(WindriseGridButton)
++END_METADATA

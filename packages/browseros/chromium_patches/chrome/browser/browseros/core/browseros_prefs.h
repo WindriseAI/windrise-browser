@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.h b/chrome/browser/browseros/core/browseros_prefs.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df283d81a7
+index 0000000000..056e03af66
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,118 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -30,8 +30,9 @@ index 0000000000000000000000000000000000000000..19e8b58261088485efa15d05db4819df
 +inline constexpr char kVerticalTabsEnabled[] =
 +    "browseros.vertical_tabs_enabled";
 +
-+// Boolean: Start the vertical tab strip collapsed (default: true). Once the
-+// user expands or collapses it, the upstream persisted state wins.
++// Boolean: Start the vertical tab strip collapsed (default: false, i.e. a new
++// profile opens with the strip expanded). Once the user expands or collapses
++// it, the upstream persisted state wins.
 +inline constexpr char kVerticalTabsStartCollapsed[] =
 +    "browseros.vertical_tabs_start_collapsed";
 +

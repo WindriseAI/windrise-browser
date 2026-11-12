@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.cc b/chrome/browser/browseros/core/browseros_prefs.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8bd202b50
+index 0000000000..0e63bd0465
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.cc
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,111 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -12,6 +12,7 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +
 +#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/browseros_product.h"
++#include "chrome/browser/browseros/core/windrise_theme.h"
 +#include "chrome/common/pref_names.h"
 +#include "components/bookmarks/common/bookmark_pref_names.h"
 +#include "components/pref_registry/pref_registry_syncable.h"
@@ -24,7 +25,8 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +  registry->RegisterBooleanPref(prefs::kShowToolbarLabels,
 +                                !IsBrowserClawProduct());
 +  registry->RegisterBooleanPref(prefs::kVerticalTabsEnabled, true);
-+  registry->RegisterBooleanPref(prefs::kVerticalTabsStartCollapsed, true);
++  // 风桥竖向标签栏首启即展开（方案 N4，帧里都是展开态）。
++  registry->RegisterBooleanPref(prefs::kVerticalTabsStartCollapsed, false);
 +  registry->RegisterStringPref(prefs::kAIWorkspaceGroupPrefix, "AI ");
 +  registry->RegisterBooleanPref(prefs::kShowTabGroupsInBookmarkBar, false);
 +
@@ -35,6 +37,9 @@ index 0000000000000000000000000000000000000000..f09b13c6c45676dc7ed83f51ff28aaa8
 +  // default. BrowserOS keeps stock focus behaviour.
 +  registry->RegisterBooleanPref(prefs::kAutomationNeverStealsFocus,
 +                                IsBrowserClawProduct());
++
++  // 风桥外观数值（颜色、圆角、尺寸）：偏好即外观，运行时改不用重编。
++  windrise::RegisterProfilePrefs(registry);
 +}
 +
 +bool ShouldShowToolbarLabels(PrefService* pref_service) {

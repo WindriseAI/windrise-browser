@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/ui/color/BUILD.gn b/chrome/browser/ui/color/BUILD.gn
+index a73bb08210..013d142532 100644
+--- a/chrome/browser/ui/color/BUILD.gn
++++ b/chrome/browser/ui/color/BUILD.gn
+@@ -45,12 +45,15 @@ source_set("mixers") {
+     "tab_group_color_ids.h",
+     "tab_strip_color_mixer.cc",
+     "tab_strip_color_mixer.h",
++    "windrise_color_mixer.cc",
++    "windrise_color_mixer.h",
+   ]
+ 
+   deps = [
+     ":color_headers",
+     "//build:branding_buildflags",
+     "//chrome/app/theme:theme_resources",
++    "//chrome/browser/browseros/core:theme",
+     "//chrome/browser/task_manager/common",
+     "//chrome/browser/themes",
+     "//chrome/browser/ui:ui_features",
