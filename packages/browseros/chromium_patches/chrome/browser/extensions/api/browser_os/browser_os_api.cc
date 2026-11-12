@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000..165bc45
+index 0000000000..859aabf524
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,590 @@
+@@ -0,0 +1,677 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -11,6 +11,7 @@ index 0000000..165bc45
 +#include "chrome/browser/extensions/api/browser_os/browser_os_api.h"
 +
 +#include <algorithm>
++#include <cstring>
 +#include <memory>
 +#include <optional>
 +#include <string>
@@ -25,6 +26,7 @@ index 0000000..165bc45
 +#include "base/values.h"
 +#include "base/version_info/version_info.h"
 +#include "chrome/browser/browser_process.h"
++#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "chrome/browser/browseros/metrics/browseros_metrics.h"
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
@@ -48,12 +50,16 @@ index 0000000..165bc45
 +#include "components/infobars/core/infobar_delegate.h"
 +#include "components/infobars/core/simple_alert_infobar_delegate.h"
 +#include "components/prefs/pref_service.h"
++#include "components/tab_groups/tab_group_color.h"
 +#include "components/tab_groups/tab_group_visual_data.h"
 +#include "components/tabs/public/tab_group.h"
 +#include "components/tabs/public/tab_interface.h"
 +#include "content/public/browser/web_contents.h"
 +#include "chrome/browser/extensions/extension_tab_util.h"
 +#include "ui/base/l10n/l10n_util.h"
++#include "extensions/common/extension.h"
++#include "extensions/common/mojom/manifest.mojom.h"
++#include "ui/gfx/range/range.h"
 +#include "ui/shell_dialogs/selected_file_info.h"
 +
 +namespace extensions {
@@ -101,6 +107,46 @@ index 0000000..165bc45
 +      },
 +      BrowserCollection::Order::kActivation);
 +  return found;
++}
++
++// 风桥 N6/N7/N11 三个接口会改用户的标签分组 / 往浏览器里塞数据，只许我们自己的
++// 扩展调：--load-extension 载入的（风桥启动浏览器时挂上的那一个）、组件扩展、
++// 或 BrowserOS 目录里登记的扩展。browserOS 权限本身没有 allowlist（任何声明了
++// 该权限的扩展都能拿到），所以这里必须再校验一次。
++bool IsWindriseCaller(const extensions::Extension* extension) {
++  if (!extension) {
++    return false;
++  }
++  switch (extension->location()) {
++    case extensions::mojom::ManifestLocation::kCommandLine:
++    case extensions::mojom::ManifestLocation::kComponent:
++      return true;
++    default:
++      return browseros::IsActiveBrowserOSExtension(extension->id());
++  }
++}
++
++// 扩展推来的图标只收 PNG，宽高各不超过 256：先看 IHDR 再交给解码器，
++// 避免「几十 KB 的 PNG 声明几万像素宽」把浏览器进程内存撑爆。
++bool IsSmallPng(const std::string& data) {
++  static constexpr unsigned char kSignature[8] = {0x89, 'P',  'N',  'G',
++                                                  '\r', '\n', 0x1A, '\n'};
++  if (data.size() < 24 || memcmp(data.data(), kSignature, 8) != 0 ||
++      memcmp(data.data() + 12, "IHDR", 4) != 0) {
++    return false;
++  }
++  const auto read_be32 = [&data](size_t offset) {
++    uint32_t value = 0;
++    for (size_t i = 0; i < 4; ++i) {
++      value = (value << 8) | static_cast<unsigned char>(data[offset + i]);
++    }
++    return value;
++  };
++  const uint32_t width = read_be32(16);
++  const uint32_t height = read_be32(20);
++  constexpr uint32_t kMaxIconEdge = 256;
++  return width >= 1 && height >= 1 && width <= kMaxIconEdge &&
++         height <= kMaxIconEdge;
 +}
 +
 +std::string GetPrefTypeName(const base::Value* value) {
@@ -457,8 +503,12 @@ index 0000000..165bc45
 +
 +// 风桥 N6：哪些标签是当前 AI 的。浏览器把这些标签收成一个标签组，组标题就是
 +// 侧边栏那一段的段标题（「<AI 名> 正在操作」），组排到最下面 = 下面那一段。
-+// 组本身由扩展推的列表决定，浏览器不改用户的组名以外的任何东西。
++// 组本身由扩展推的列表决定；浏览器只动这一个组（记在 AiState::ai_group），
++// 不碰用户自己的组与固定标签。
 +ExtensionFunction::ResponseAction BrowserOSSetAiTabsFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<browser_os::SetAiTabs::Params> params =
 +      browser_os::SetAiTabs::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -480,32 +530,53 @@ index 0000000..165bc45
 +    return RespondNow(Error("No tab strip"));
 +  }
 +
-+  // 标签 id → 模型下标，升序（AddToNewGroup 要求）。
++  // 标签 id -> 模型下标。固定标签不进组（AddToNewGroup 会把整组钉住，再把钉住的
++  // 组挪到末尾会破坏「固定标签在最前」的不变量）。
 +  std::vector<int> indices;
 +  for (int tab_id : params->options.tab_ids) {
 +    for (int i = 0; i < tab_strip_model->count(); ++i) {
 +      content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
-+      if (contents && extensions::ExtensionTabUtil::GetTabId(contents) == tab_id) {
-+        indices.push_back(i);
++      if (contents &&
++          extensions::ExtensionTabUtil::GetTabId(contents) == tab_id) {
++        if (!tab_strip_model->IsTabPinned(i)) {
++          indices.push_back(i);
++        }
 +        break;
 +      }
 +    }
 +  }
 +  std::ranges::sort(indices);
++  indices.erase(std::unique(indices.begin(), indices.end()), indices.end());
 +
-+  if (!indices.empty()) {
++  if (tab_strip_model->SupportsTabGroups()) {
++    TabGroupModel* group_model = tab_strip_model->group_model();
++    // 本窗口上一次建的 AI 组；用户可能已经把它关了。
 +    std::optional<tab_groups::TabGroupId> group_id =
-+        tab_strip_model->GetTabAtIndex(indices.front())->GetGroup();
-+    for (int index : indices) {
-+      if (tab_strip_model->GetTabAtIndex(index)->GetGroup() != group_id) {
-+        group_id = std::nullopt;
-+        break;
++        ai_state->state().ai_group;
++    if (group_id && !group_model->ContainsTabGroup(*group_id)) {
++      group_id = std::nullopt;
++    }
++    const auto list_group_indices = [&](const tab_groups::TabGroupId& id) {
++      std::vector<int> result;
++      const gfx::Range range = group_model->GetTabGroup(id)->ListTabs();
++      for (size_t i = range.start(); i < range.end(); ++i) {
++        result.push_back(static_cast<int>(i));
 +      }
-+    }
-+    if (!group_id) {
-+      group_id = tab_strip_model->AddToNewGroup(indices);
-+    }
-+    if (group_id) {
++      return result;
++    };
++
++    if (!indices.empty()) {
++      // 组里的成员必须正好是扩展给的这些；不一样就把旧组拆了重建，不改
++      // 不属于 AI 的标签。
++      if (group_id && list_group_indices(*group_id) != indices) {
++        tab_strip_model->RemoveFromGroup(list_group_indices(*group_id));
++        group_id = std::nullopt;
++      }
++      if (!group_id) {
++        group_id = tab_strip_model->AddToNewGroup(indices);
++      }
++      // 先登记成 AI 组再改标题：组头在 OnDataChanged 里按「是不是 AI 组」选样式。
++      ai_state->SetAiGroup(group_id);
 +      tab_strip_model->ChangeTabGroupVisuals(
 +          *group_id,
 +          tab_groups::TabGroupVisualData(
@@ -513,12 +584,21 @@ index 0000000..165bc45
 +                  IDS_WINDRISE_AI_OPERATING,
 +                  base::UTF8ToUTF16(params->options.ai_name)),
 +              tab_groups::TabGroupColorId::kGrey));
-+      // 排到最后 = 侧边栏最下面那一段。
-+      tab_strip_model->MoveGroupTo(*group_id, tab_strip_model->count());
-+      browseros::windrise::AiGroups::Set({*group_id});
++      // 排到最后 = 侧边栏最下面那一段。MoveGroupTo 要的是组首标签的目标下标，
++      // 不是 count()。
++      const gfx::Range range = group_model->GetTabGroup(*group_id)->ListTabs();
++      const int target =
++          tab_strip_model->count() - static_cast<int>(range.length());
++      if (static_cast<int>(range.start()) != target) {
++        tab_strip_model->MoveGroupTo(*group_id, target);
++      }
++    } else {
++      // 清空：把 AI 组拆回普通标签（只拆我们建的那一个）。
++      if (group_id) {
++        tab_strip_model->RemoveFromGroup(list_group_indices(*group_id));
++      }
++      ai_state->SetAiGroup(std::nullopt);
 +    }
-+  } else {
-+    browseros::windrise::AiGroups::Set({});
 +  }
 +
 +  ai_state->SetAiTabs(base::UTF8ToUTF16(params->options.ai_name),
@@ -528,6 +608,9 @@ index 0000000..165bc45
 +
 +// 风桥 N7：卡片 / 面板的数据。图标是 base64 PNG，原生自己解码，不联网。
 +ExtensionFunction::ResponseAction BrowserOSSetConnectedAisFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<browser_os::SetConnectedAis::Params> params =
 +      browser_os::SetConnectedAis::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -554,13 +637,14 @@ index 0000000..165bc45
 +      break;
 +    }
 +    browseros::windrise::AiConnection connection;
-+    connection.name = base::UTF8ToUTF16(input.name);
++    // 名字只用于显示，截到 64 字节内，避免扩展塞超长串撑坏面板。
++    connection.name = base::UTF8ToUTF16(input.name.substr(0, 64));
 +    connection.last_active_minutes =
 +        input.last_active_minutes.value_or(-1);
 +    if (input.icon_png) {
 +      std::string decoded;
 +      if (base::Base64Decode(*input.icon_png, &decoded) &&
-+          decoded.size() <= kMaxIconBytes) {
++          decoded.size() <= kMaxIconBytes && IsSmallPng(decoded)) {
 +        connection.icon_png = std::move(decoded);
 +      }
 +    }
@@ -572,6 +656,9 @@ index 0000000..165bc45
 +
 +// 风桥 N11：开关某个标签的银色海浪。
 +ExtensionFunction::ResponseAction BrowserOSSetAiActivityFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<browser_os::SetAiActivity::Params> params =
 +      browser_os::SetAiActivity::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);

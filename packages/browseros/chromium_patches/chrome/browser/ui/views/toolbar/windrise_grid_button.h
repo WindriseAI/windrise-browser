@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.h b/chrome/browser/ui/views/toolbar/windrise_grid_button.h
 new file mode 100644
-index 0000000000..aa7106672c
+index 0000000000..429b72667f
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.h
 @@ -0,0 +1,42 @@
@@ -19,7 +19,7 @@ index 0000000000..aa7106672c
 +// 风桥工具栏「格子」按钮（方案 N8）。位置：地址栏之后、扩展按钮之前。
 +// 外观（高、圆角、内边距、图标间距、字号、底色）都从 browseros.windrise.layout.*
 +// 与 browseros.windrise.theme.* 偏好取，改偏好并在运行时重绘即可，不用重编。
-+// 点击时不自己做任何事，只把 browserOS.onWindriseGridClicked 广播给扩展，
++// 点击时不自己做任何事，只把 browserOS.onGridButtonClicked 广播给扩展，
 +// 由扩展开格子模式（同地址栏插槽 browserOS.onAddressBarSlotClicked 的做法）。
 +class WindriseGridButton : public ToolbarButton {
 +  METADATA_HEADER(WindriseGridButton, ToolbarButton)

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e..0262317 100644
+index 338178e75c..be43c47ccf 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 @@ -16,7 +16,12 @@
@@ -44,7 +44,7 @@ index 338178e..0262317 100644
    gemini_button_ =
        content_area_view_->AddChildView(std::make_unique<views::View>());
  
-@@ -231,9 +251,28 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -231,9 +251,29 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
    }
  
    SetNotifyEnterExitOnChild(true);
@@ -55,9 +55,10 @@ index 338178e..0262317 100644
 +    UpdateAIWorkspaceExpansion(tab_strip_model()->GetActiveTab());
 +  }
 +  // N6：扩展推来 AI 段（哪些标签是 AI 的）后，重新算一次「保持展开」。
++  // 析构时 BrowserView 的成员可能已经先拆掉，所以把窗口指针存下来供 Detach 用。
++  windrise_ai_window_ = browser_view->browser();
 +  if (browseros::windrise::AiWindowState* ai_state =
-+          browseros::windrise::AiWindowState::Attach(
-+              browser_view->browser())) {
++          browseros::windrise::AiWindowState::Attach(windrise_ai_window_)) {
 +    ai_state_subscription_ = ai_state->AddObserver(base::BindRepeating(
 +        &VerticalTabStripRegionView::UpdateAIWorkspaceExpansionFromState,
 +        base::Unretained(this)));
@@ -69,11 +70,11 @@ index 338178e..0262317 100644
 +    tab_strip_model()->RemoveObserver(this);
 +  }
 +  ai_state_subscription_ = {};
-+  browseros::windrise::AiWindowState::Detach(browser_view()->browser());
++  browseros::windrise::AiWindowState::Detach(windrise_ai_window_);
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -934,6 +973,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
+@@ -934,6 +974,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
    if (tab_strip_view()) {
      tab_strip_view()->SetCollapsedState(collapsed);
    }
@@ -83,7 +84,7 @@ index 338178e..0262317 100644
  
    if ((state == tabs::VerticalTabStripCollapseState::kCollapsing) ||
        (state == tabs::VerticalTabStripCollapseState::kExpanded &&
-@@ -1231,6 +1273,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
+@@ -1231,6 +1274,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
  void VerticalTabStripRegionView::OnActiveTabChanged(
      const tabs::TabInterface* active_tab) {
    BaseTabStripRegionView::OnActiveTabChanged(active_tab);
@@ -91,7 +92,7 @@ index 338178e..0262317 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1242,5 +1285,61 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1286,61 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

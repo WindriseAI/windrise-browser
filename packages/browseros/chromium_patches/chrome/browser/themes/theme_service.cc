@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/themes/theme_service.cc b/chrome/browser/themes/theme_service.cc
-index cc3523cb5c..6dac060a4d 100644
+index cc3523cb5c..bc51ee85ba 100644
 --- a/chrome/browser/themes/theme_service.cc
 +++ b/chrome/browser/themes/theme_service.cc
 @@ -34,6 +34,7 @@
@@ -19,7 +19,7 @@ index cc3523cb5c..6dac060a4d 100644
    registry->RegisterIntegerPref(prefs::kUserColor, SK_ColorTRANSPARENT);
    registry->RegisterIntegerPref(
        prefs::kBrowserColorVariant,
-@@ -346,6 +347,18 @@ ThemeService::~ThemeService() = default;
+@@ -346,6 +347,22 @@ ThemeService::~ThemeService() = default;
  void ThemeService::Init() {
    theme_helper_->DCheckCalledOnValidSequence();
  
@@ -33,12 +33,16 @@ index cc3523cb5c..6dac060a4d 100644
 +      std::make_unique<browseros::windrise::ThemePrefObserver>(
 +          profile_->GetPrefs(),
 +          base::BindRepeating(&ThemeService::OnWindriseThemePrefsChanged,
-+                              base::Unretained(this)));
++                              base::Unretained(this)),
++          // 外观快照是进程级的，只让常规 profile 当属主；访客、系统（选人页）
++          // profile 不参与，多个 profile 并存时也只有第一个的偏好生效。
++          /*take_ownership=*/profile_->IsRegularProfile() &&
++              !profile_->IsGuestSession() && !profile_->IsSystemProfile());
 +
    InitFromPrefs();
  
    // ThemeObserver should be constructed before calling
-@@ -1046,6 +1059,15 @@ void ThemeService::NotifyThemeChanged() {
+@@ -1046,6 +1063,15 @@ void ThemeService::NotifyThemeChanged() {
    }
  }
  

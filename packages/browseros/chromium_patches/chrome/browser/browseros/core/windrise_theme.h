@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000..1fbeade
+index 0000000000..7609bdc9be
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,190 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -167,9 +167,17 @@ index 0000000..1fbeade
 +
 +// 观察外观偏好：构造时先装一次快照并注册全部键，之后任一键变化就重装快照
 +// 并在真的变了时回调。生命周期跟持有者（ThemeService）。
++//
++// 多 profile：快照是进程级的，颜色 / 尺寸只能有一份。第一个以
++// `take_ownership = true` 构造的观察者成为「属主」，只有属主读偏好、监听变化；
++// 其余观察者什么都不做（避免两个 profile 的窗口并排时互相覆盖配色）。
++// 属主析构后快照保留最后一份值，不会自动换属主。
++// 只应让常规、非访客、非系统 profile 传 true。
 +class ThemePrefObserver {
 + public:
-+  ThemePrefObserver(PrefService* prefs, base::RepeatingClosure on_changed);
++  ThemePrefObserver(PrefService* prefs,
++                    base::RepeatingClosure on_changed,
++                    bool take_ownership);
 +  ThemePrefObserver(const ThemePrefObserver&) = delete;
 +  ThemePrefObserver& operator=(const ThemePrefObserver&) = delete;
 +  ~ThemePrefObserver();
@@ -180,6 +188,7 @@ index 0000000..1fbeade
 +  raw_ptr<PrefService> prefs_;
 +  base::RepeatingClosure on_changed_;
 +  PrefChangeRegistrar registrar_;
++  bool is_owner_ = false;
 +};
 +
 +}  // namespace browseros::windrise

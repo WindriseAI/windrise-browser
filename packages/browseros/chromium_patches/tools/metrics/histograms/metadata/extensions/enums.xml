@@ -1,8 +1,8 @@
 diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metrics/histograms/metadata/extensions/enums.xml
-index 4bcc6c1..053f09f 100644
+index 4bcc6c1f81..552c7260ba 100644
 --- a/tools/metrics/histograms/metadata/extensions/enums.xml
 +++ b/tools/metrics/histograms/metadata/extensions/enums.xml
-@@ -2952,6 +2952,33 @@ Called by update_extension_histograms.py.-->
+@@ -2952,6 +2952,37 @@ Called by update_extension_histograms.py.-->
    <int value="1991" label="AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS"/>
    <int value="1992" label="EXPERIMENTALAIDATA_GETAPCSNAPSHOT"/>
    <int value="1993" label="EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION"/>
@@ -33,10 +33,14 @@ index 4bcc6c1..053f09f 100644
 +  <int value="2018" label="DELETED_BROWSER_OS_SCROLLTONODE"/>
 +  <int value="2019" label="DELETED_BROWSER_OS_SENDKEYS"/>
 +  <int value="2020" label="DELETED_BROWSER_OS_GETPAGESTRUCTURE"/>
++  <int value="2021" label="BROWSER_OS_SETADDRESSBARSLOT"/>
++  <int value="2022" label="BROWSER_OS_SETAITABS"/>
++  <int value="2023" label="BROWSER_OS_SETCONNECTEDAIS"/>
++  <int value="2024" label="BROWSER_OS_SETAIACTIVITY"/>
  </enum>
  
  <!-- LINT.ThenChange(//extensions/browser/extension_function_histogram_value.h:HistogramValue) -->
-@@ -3353,6 +3380,7 @@ Called by update_extension_permission.py.-->
+@@ -3353,6 +3384,7 @@ Called by update_extension_permission.py.-->
    <int value="273" label="kPublicSuffix"/>
    <int value="274" label="kEnterpriseWebrtc"/>
    <int value="275" label="kMimeTypesHandlerPdf"/>

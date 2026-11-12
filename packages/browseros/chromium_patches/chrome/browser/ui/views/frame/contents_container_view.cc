@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f6..c443251 100644
+index 413b2f626d..8648d71158 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -10,6 +10,8 @@
@@ -25,7 +25,7 @@ index 413b2f6..c443251 100644
  #include "chrome/browser/ui/views/frame/multi_contents_view_mini_toolbar.h"
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/frame/tab_modal_dialog_host.h"
-@@ -156,6 +160,16 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -156,6 +160,19 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
              .Build());
    }
  
@@ -33,8 +33,11 @@ index 413b2f6..c443251 100644
 +  silver_wave_view_ = AddChildView(std::make_unique<WindriseSilverWaveView>(
 +      browser_view->GetProfile()));
 +  silver_wave_view_->SetCanProcessEventsWithinSubtree(false);
++  // 析构时 BrowserView 的成员可能已经先拆掉了，所以这里把窗口指针存下来，
++  // 析构只用它做 Detach 的键。
++  windrise_ai_window_ = browser_view->browser();
 +  if (browseros::windrise::AiWindowState* ai_state =
-+          browseros::windrise::AiWindowState::Attach(browser_view->browser())) {
++          browseros::windrise::AiWindowState::Attach(windrise_ai_window_)) {
 +    ai_state_subscription_ = ai_state->AddObserver(base::BindRepeating(
 +        &ContentsContainerView::UpdateSilverWave, base::Unretained(this)));
 +  }
@@ -42,7 +45,7 @@ index 413b2f6..c443251 100644
    mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
        browser_view, contents_view_));
  
-@@ -166,9 +180,15 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -166,9 +183,13 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
        AddChildView(std::make_unique<ContentsCaptureBorderView>(mini_toolbar_));
  
    view_bounds_observer_.Observe(contents_view_);
@@ -51,14 +54,12 @@ index 413b2f6..c443251 100644
  
  ContentsContainerView::~ContentsContainerView() {
 +  ai_state_subscription_ = {};
-+  if (browser_view_) {
-+    browseros::windrise::AiWindowState::Detach(browser_view_->browser());
-+  }
++  browseros::windrise::AiWindowState::Detach(windrise_ai_window_);
 +  silver_wave_view_ = nullptr;
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -318,6 +338,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +339,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -68,7 +69,7 @@ index 413b2f6..c443251 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +364,38 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +365,38 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -79,7 +80,7 @@ index 413b2f6..c443251 100644
 +void ContentsContainerView::UpdateSilverWave() {
 +  if (!silver_wave_view_) {
 +    return;
-   }
++  }
 +  // 圆角：上两角是网页区圆角，下两角跟窗口（Windows 11 由系统裁，最大化时 0）。
 +  const browseros::windrise::LayoutMetrics& metrics =
 +      browseros::windrise::GetLayoutMetrics();
@@ -97,7 +98,7 @@ index 413b2f6..c443251 100644
 +void ContentsContainerView::SyncSilverWaveVisibility() {
 +  if (!silver_wave_view_) {
 +    return;
-+  }
+   }
 +  browseros::windrise::AiWindowState* ai_state =
 +      browseros::windrise::AiWindowState::From(browser_view_->browser());
 +  content::WebContents* web_contents = contents_view_->web_contents();
@@ -107,7 +108,7 @@ index 413b2f6..c443251 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +591,16 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +592,18 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  
@@ -117,8 +118,10 @@ index 413b2f6..c443251 100644
 +    const int spread = WindriseSilverWaveView::GetSpread();
 +    gfx::Rect wave_bounds = contents_rect;
 +    wave_bounds.Inset(gfx::Insets::VH(-spread, -spread));
++    // 可见性由光效层自己管（Show() / 淡出结束时 StopShowing()）；这里不能用
++    // IsShowing()：开始淡出那一刻它就变 false，会把 200ms 的淡出直接砍掉。
 +    layouts.child_layouts.emplace_back(
-+        silver_wave_view_.get(), silver_wave_view_->IsShowing(), wave_bounds);
++        silver_wave_view_.get(), silver_wave_view_->GetVisible(), wave_bounds);
 +  }
 +
    // The content scrim view should cover the entire contents bounds.

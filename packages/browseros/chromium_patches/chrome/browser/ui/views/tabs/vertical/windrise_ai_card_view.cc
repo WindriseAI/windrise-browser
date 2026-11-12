@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000..3cb9b6a
+index 0000000000..fd6668c75c
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,313 @@
+@@ -0,0 +1,343 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -14,11 +14,13 @@ index 0000000..3cb9b6a
 +#include <utility>
 +
 +#include "base/functional/bind.h"
++#include "base/containers/span.h"
 +#include "base/i18n/number_formatting.h"
 +#include "base/strings/utf_string_conversions.h"
 +#include "cc/paint/paint_flags.h"
 +#include "chrome/app/vector_icons/vector_icons.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
++#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/color/chrome_color_id.h"
 +#include "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h"
@@ -53,10 +55,10 @@ index 0000000..3cb9b6a
 +  if (png.empty()) {
 +    return gfx::ImageSkia();
 +  }
-+  SkBitmap bitmap;
-+  if (!gfx::PNGCodec::Decode(
-+          reinterpret_cast<const unsigned char*>(png.data()), png.size(),
-+          &bitmap)) {
++  // 158 的 PNGCodec 只剩「返回 SkBitmap」这一个重载；解码失败返回空位图。
++  // 尺寸已在扩展接口处按 IHDR 限过（见 browser_os_api.cc），这里不再重复。
++  const SkBitmap bitmap = gfx::PNGCodec::Decode(base::as_byte_span(png));
++  if (bitmap.isNull()) {
 +    return gfx::ImageSkia();
 +  }
 +  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -257,6 +259,27 @@ index 0000000..3cb9b6a
 +      SkRRect::MakeRectXY(gfx::RectToSkRect(GetLocalBounds()), radius, radius),
 +      flags);
 +
++  // 方案标注表第 6 行：悬停在底色上叠墨色 4%；面板开着时底换成窗框色（#DDE1E5）。
++  if (panel_) {
++    cc::PaintFlags open = flags;
++    open.setColor(
++        GetColorProvider()->GetColor(kColorWindriseTabInactiveBackground));
++    canvas->sk_canvas()->drawRRect(
++        SkRRect::MakeRectXY(gfx::RectToSkRect(GetLocalBounds()), radius,
++                            radius),
++        open);
++  } else if (GetState() == views::Button::STATE_HOVERED ||
++             GetState() == views::Button::STATE_PRESSED) {
++    cc::PaintFlags hover = flags;
++    hover.setColor(SkColorSetA(
++        GetColorProvider()->GetColor(kColorTabForegroundActiveFrameActive),
++        GetState() == views::Button::STATE_PRESSED ? 20 : 10));
++    canvas->sk_canvas()->drawRRect(
++        SkRRect::MakeRectXY(gfx::RectToSkRect(GetLocalBounds()), radius,
++                            radius),
++        hover);
++  }
++
 +  // .5px 边线（同样走偏好）。
 +  cc::PaintFlags hairline = flags;
 +  hairline.setStyle(cc::PaintFlags::kStroke_Style);
@@ -266,6 +289,11 @@ index 0000000..3cb9b6a
 +  canvas->sk_canvas()->drawRRect(
 +      SkRRect::MakeRectXY(inset.makeInset(0.5f, 0.5f), radius, radius),
 +      hairline);
++}
++
++void WindriseAiCardView::StateChanged(ButtonState old_state) {
++  views::Button::StateChanged(old_state);
++  SchedulePaint();
 +}
 +
 +void WindriseAiCardView::OnThemeChanged() {
@@ -288,7 +316,8 @@ index 0000000..3cb9b6a
 +  }
 +  auto* panel = new WindriseAiPanelView(browser_.get());
 +  panel_ = panel;
-+  panel->ShowAtAnchor(this);
++  SchedulePaint();
++  panel->ShowAtAnchor(this, collapsed_);
 +  if (panel->GetWidget()) {
 +    panel_observation_.Observe(panel->GetWidget());
 +  }
@@ -297,6 +326,7 @@ index 0000000..3cb9b6a
 +void WindriseAiCardView::OnWidgetDestroyed(views::Widget* widget) {
 +  panel_observation_.Reset();
 +  panel_ = nullptr;
++  SchedulePaint();
 +}
 +
 +void WindriseAiCardView::NotifyPanelAction(const char* action) {

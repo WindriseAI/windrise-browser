@@ -1,14 +1,16 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_silver_wave_view.h b/chrome/browser/ui/views/frame/windrise_silver_wave_view.h
 new file mode 100644
-index 0000000..36bcb88
+index 0000000000..d4159958ad
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_silver_wave_view.h
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,71 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_WINDRISE_SILVER_WAVE_VIEW_H_
 +#define CHROME_BROWSER_UI_VIEWS_FRAME_WINDRISE_SILVER_WAVE_VIEW_H_
++
++#include <vector>
 +
 +#include "base/time/time.h"
 +#include "chrome/browser/glic/browser_ui/animated_effect_view.h"
@@ -51,7 +53,7 @@ index 0000000..36bcb88
 +
 + protected:
 +  // glic::AnimatedEffectView:
-+  bool IsCycleDone(base::TimeTicks timestamp) const override;
++  bool IsCycleDone(base::TimeTicks timestamp) override;
 +  base::TimeDelta GetTotalDuration() const override;
 +  void PopulateShaderUniforms(
 +      std::vector<cc::PaintShader::FloatUniform>& float_uniforms,
@@ -68,6 +70,8 @@ index 0000000..36bcb88
 +  gfx::Rect ContentsRectInView() const;
 +
 +  gfx::RoundedCornersF corner_radii_;
++  // 要求显示时本层还没进 widget：记下来，AddedToWidget() 再开。
++  bool wants_showing_ = false;
 +};
 +
 +#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WINDRISE_SILVER_WAVE_VIEW_H_

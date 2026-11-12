@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.cc b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
 new file mode 100644
-index 0000000000..38a474028c
+index 0000000000..b387fc3113
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,99 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -48,6 +48,8 @@ index 0000000000..38a474028c
 +  SetDefaultBackgroundColorId(kColorWindriseTileBackground);
 +  UpdateIconsWithStandardColors(kGridViewIcon);
 +  ApplyStyleFromPrefs();
++  // 格子模式是普通浏览窗口的功能；弹窗 / 应用窗口的工具栏不放这个按钮。
++  SetVisible(browser_ && browser_->GetType() == BrowserWindowInterface::TYPE_NORMAL);
 +}
 +
 +WindriseGridButton::~WindriseGridButton() = default;
@@ -86,7 +88,7 @@ index 0000000000..38a474028c
 +}
 +
 +void WindriseGridButton::NotifyExtensionGridClicked() {
-+  Profile* profile = browser_->GetProfile();
++  Profile* profile = browser_ ? browser_->GetProfile() : nullptr;
 +  if (!profile) {
 +    return;
 +  }

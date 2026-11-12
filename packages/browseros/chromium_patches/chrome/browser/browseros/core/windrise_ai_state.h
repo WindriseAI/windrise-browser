@@ -1,15 +1,16 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000..42a3136
+index 0000000000..d628b569bf
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,99 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#ifndef CHROME_BROWSER_BROWSEROS_CORE_WINDRISE_AI_STATE_H_
 +#define CHROME_BROWSER_BROWSEROS_CORE_WINDRISE_AI_STATE_H_
 +
++#include <optional>
 +#include <string>
 +#include <utility>
 +#include <vector>
@@ -49,6 +50,8 @@ index 0000000..42a3136
 +  std::vector<int> ai_tab_ids;
 +  // 正在被 AI 操作的标签。
 +  std::vector<int> active_tab_ids;
++  // 本窗口里「AI 那一段」对应的标签组（由 setAiTabs 建立）。
++  std::optional<tab_groups::TabGroupId> ai_group;
 +};
 +
 +// 侧边栏「AI 那一段」对应的标签组。分组本身由扩展推的标签列表决定（见
@@ -58,6 +61,8 @@ index 0000000..42a3136
 +class AiGroups {
 + public:
 +  static void Set(std::vector<tab_groups::TabGroupId> groups);
++  static void Add(const tab_groups::TabGroupId& group);
++  static void Remove(const tab_groups::TabGroupId& group);
 +  static bool Contains(const tab_groups::TabGroupId& group);
 +};
 +
@@ -75,6 +80,7 @@ index 0000000..42a3136
 +
 +  // 扩展接口的写入点。值没变时不通知。
 +  void SetAiTabs(std::u16string ai_name, std::vector<int> tab_ids);
++  void SetAiGroup(std::optional<tab_groups::TabGroupId> group);
 +  void SetConnections(std::vector<AiConnection> connections);
 +  void SetActivity(int tab_id, bool active);
 +

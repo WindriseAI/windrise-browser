@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000..1650580
+index 0000000000..70e67d3db1
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,220 @@
+@@ -0,0 +1,222 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -111,7 +111,7 @@ index 0000000..1650580
 +    button->SetText(l10n_util::GetStringUTF16(string_id));
 +    button->SetMinSize(gfx::Size(0, button_height));
 +    button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-+    button->SetEnabledColor(
++    button->SetEnabledTextColors(
 +        ui::ColorVariant(kColorTabForegroundActiveFrameActive));
 +    button->SetBackground(views::CreateRoundedRectBackground(
 +        ui::ColorVariant(kColorWindriseAiPanelButtonBackground), radius));
@@ -138,15 +138,17 @@ index 0000000..1650580
 +
 +WindriseAiPanelView::~WindriseAiPanelView() = default;
 +
-+void WindriseAiPanelView::ShowAtAnchor(views::View* anchor) {
++void WindriseAiPanelView::ShowAtAnchor(views::View* anchor, bool collapsed) {
 +  if (!anchor) {
 +    return;
 +  }
 +  SetAnchorView(anchor);
-+  SetArrow(views::BubbleBorder::BOTTOM_RIGHT);
-+  // 折叠时向右浮出、宽 280；展开时与卡片同宽（224）。
-+  set_fixed_width(anchor->width() >= 100 ? Metric(LayoutMetric::kAiPanelWidth)
-+                                         : Metric(LayoutMetric::kAiPanelCollapsedWidth));
++  // 展开：面板在卡片正上方、左边对齐卡片（宽 224）；
++  // 折叠：卡片只有 54 宽，面板从它右边浮出（宽 280），底边对齐卡片。
++  SetArrow(collapsed ? views::BubbleBorder::LEFT_BOTTOM
++                     : views::BubbleBorder::BOTTOM_LEFT);
++  set_fixed_width(collapsed ? Metric(LayoutMetric::kAiPanelCollapsedWidth)
++                            : Metric(LayoutMetric::kAiPanelWidth));
 +  views::Widget* widget =
 +      views::BubbleDialogDelegateView::CreateBubble(this);
 +  widget->Show();
@@ -199,10 +201,10 @@ index 0000000..1650580
 +    rows_container_->AddChildView(std::move(separator));
 +  }
 +
-+  // 面板已经开出来时，扩展再推新数据要让气泡跟着长高（158 的 Widget 没有
-+  // SizeToPreferredSize，用根视图的期望尺寸重设一次）。
-+  if (views::Widget* widget = GetWidget()) {
-+    widget->SetSize(widget->GetRootView()->GetPreferredSize());
++  // 面板已经开出来时，扩展再推新数据要让气泡跟着长高：BubbleDialogDelegate::
++  // SizeToContents() 会把边框 / 箭头也算进窗口尺寸并重新定位。
++  if (GetWidget()) {
++    SizeToContents();
 +  }
 +}
 +

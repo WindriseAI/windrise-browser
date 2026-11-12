@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_silver_wave_view.cc b/chrome/browser/ui/views/frame/windrise_silver_wave_view.cc
 new file mode 100644
-index 0000000..0298e21
+index 0000000000..23695543cc
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_silver_wave_view.cc
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,216 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -69,8 +69,16 @@ index 0000000..0298e21
 +    return;
 +  }
 +  if (showing) {
++    // 还没进 widget（没有 compositor）时 Show() 会上报一次无崩溃转储；先记下
++    // 想显示，等 AddedToWidget() 再开。
++    if (!parent() || !GetWidget()) {
++      wants_showing_ = true;
++      return;
++    }
++    wants_showing_ = false;
 +    Show();
 +  } else {
++    wants_showing_ = false;
 +    StartRampingDown();
 +  }
 +}
@@ -90,7 +98,8 @@ index 0000000..0298e21
 +  glic::AnimatedEffectView::AddedToWidget();
 +  // Show() 在还没有 compositor 的时候只是把层画出来、不挂观察者；进 widget 之后
 +  // 补一次，光效才真的开始走。
-+  if (IsShowing() && !compositor_) {
++  if (wants_showing_ || (IsShowing() && !compositor_)) {
++    wants_showing_ = false;
 +    Show();
 +  }
 +}
@@ -101,9 +110,11 @@ index 0000000..0298e21
 +  ResetIfActive();
 +}
 +
-+bool WindriseSilverWaveView::IsCycleDone(base::TimeTicks timestamp) const {
++bool WindriseSilverWaveView::IsCycleDone(base::TimeTicks timestamp) {
 +  // 只要 AI 还在操作就一直流动；收尾由 StartRampingDown() 控制。
-+  return false;
++  // 例外：GPU 不可用 / 减少动态效果时画的是静止边框，不需要每帧重绘，
++  // 起亮完成后就让合成器观察者退出（软件光栅的机器上尤其要省这个）。
++  return skip_animation_cycle_;
 +}
 +
 +base::TimeDelta WindriseSilverWaveView::GetTotalDuration() const {
@@ -197,7 +208,7 @@ index 0000000..0298e21
 +    rim.setStrokeWidth(1.5f);
 +    SkColor color = ThemeColor(ThemeToken::kSilverWaveSoftBright);
 +    rim.setColor(SkColorSetA(
-+        color, static_cast<U8CPU>(0.55f * SkColorGetA(color))));
++        color, static_cast<uint8_t>(0.55f * SkColorGetA(color))));
 +    SkRect rect = gfx::RectToSkRect(contents);
 +    rect.inset(0.75f, 0.75f);
 +    canvas->sk_canvas()->drawRRect(SkRRect::MakeRectXY(rect, radius, radius),

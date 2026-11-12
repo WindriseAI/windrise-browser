@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
 new file mode 100644
-index 0000000..66e8532
+index 0000000000..454ddf6ad2
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
 @@ -0,0 +1,38 @@
@@ -29,8 +29,8 @@ index 0000000..66e8532
 +  WindriseAiPanelView& operator=(const WindriseAiPanelView&) = delete;
 +  ~WindriseAiPanelView() override;
 +
-+  // 以 `anchor`（卡片）为锚点在它上方浮出。面板宽按卡片所在形态取偏好。
-+  void ShowAtAnchor(views::View* anchor);
++  // 以 `anchor`（卡片）为锚点浮出：展开时在卡片上方，折叠时在卡片右边。
++  void ShowAtAnchor(views::View* anchor, bool collapsed);
 +
 + private:
 +  void RebuildContent();

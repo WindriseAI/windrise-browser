@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.cc b/chrome/browser/browseros/core/windrise_ai_state.cc
 new file mode 100644
-index 0000000..8d8c50e
+index 0000000000..71f2445158
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.cc
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,194 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -13,6 +13,7 @@ index 0000000..8d8c50e
 +#include <map>
 +#include <vector>
 +#include <memory>
++#include <optional>
 +#include <utility>
 +
 +#include "base/no_destructor.h"
@@ -59,6 +60,18 @@ index 0000000..8d8c50e
 +}
 +
 +// static
++void AiGroups::Add(const tab_groups::TabGroupId& group) {
++  if (!std::ranges::contains(GetAiGroups(), group)) {
++    GetAiGroups().push_back(group);
++  }
++}
++
++// static
++void AiGroups::Remove(const tab_groups::TabGroupId& group) {
++  std::erase(GetAiGroups(), group);
++}
++
++// static
 +bool AiGroups::Contains(const tab_groups::TabGroupId& group) {
 +  return std::ranges::contains(GetAiGroups(), group);
 +}
@@ -66,7 +79,11 @@ index 0000000..8d8c50e
 +AiWindowState::AiWindowState(BrowserWindowInterface* browser)
 +    : browser_(browser) {}
 +
-+AiWindowState::~AiWindowState() = default;
++AiWindowState::~AiWindowState() {
++  if (state_.ai_group) {
++    AiGroups::Remove(*state_.ai_group);
++  }
++}
 +
 +// static
 +AiWindowState* AiWindowState::From(BrowserWindowInterface* browser) {
@@ -86,7 +103,8 @@ index 0000000..8d8c50e
 +  Entry& entry = GetRegistry()[browser];
 +  ++entry.refs;
 +  if (!entry.state) {
-+    entry.state = std::make_unique<AiWindowState>(browser);
++    // 构造函数是私有的，make_unique 访问不了，这里在成员函数里直接 new。
++    entry.state.reset(new AiWindowState(browser));
 +  }
 +  return entry.state.get();
 +}
@@ -116,6 +134,20 @@ index 0000000..8d8c50e
 +  state_.active_ai_name = std::move(ai_name);
 +  state_.ai_tab_ids = std::move(tab_ids);
 +  NotifyIfChanged(true);
++}
++
++void AiWindowState::SetAiGroup(std::optional<tab_groups::TabGroupId> group) {
++  if (state_.ai_group == group) {
++    return;
++  }
++  // 窗口各自一个 AI 组：换组 / 清空时把旧组从进程级集合里摘掉。
++  if (state_.ai_group) {
++    AiGroups::Remove(*state_.ai_group);
++  }
++  state_.ai_group = group;
++  if (group) {
++    AiGroups::Add(*group);
++  }
 +}
 +
 +void AiWindowState::SetConnections(std::vector<AiConnection> connections) {

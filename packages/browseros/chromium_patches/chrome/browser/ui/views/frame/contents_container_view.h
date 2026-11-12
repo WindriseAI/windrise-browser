@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.h b/chrome/browser/ui/views/frame/contents_container_view.h
-index e3ae9d1..ff69621 100644
+index e3ae9d104d..78b37f8eed 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.h
 +++ b/chrome/browser/ui/views/frame/contents_container_view.h
 @@ -8,6 +8,7 @@
@@ -10,15 +10,18 @@ index e3ae9d1..ff69621 100644
  #include "base/memory/raw_ptr.h"
  #include "base/scoped_observation.h"
  #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
-@@ -20,6 +21,7 @@
+@@ -18,8 +19,10 @@
+ #include "ui/views/view.h"
+ 
  class BrowserView;
++class BrowserWindowInterface;
  class ContentsCaptureBorderView;
  class ContentsContainerOutline;
 +class WindriseSilverWaveView;
  class ContentsWebView;
  class MultiContentsViewMiniToolbar;
  class ScrimView;
-@@ -154,6 +156,11 @@ class ContentsContainerView : public views::View,
+@@ -154,6 +157,11 @@ class ContentsContainerView : public views::View,
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
@@ -30,13 +33,15 @@ index e3ae9d1..ff69621 100644
    // views::View:
    void ChildVisibilityChanged(View* child) override;
    void Layout(PassKey) override;
-@@ -169,6 +176,9 @@ class ContentsContainerView : public views::View,
+@@ -169,6 +177,11 @@ class ContentsContainerView : public views::View,
    bool is_in_split_ = false;
  
    raw_ptr<BrowserView> browser_view_ = nullptr;
 +  // 风桥 N11：AI 操作时的银色海浪层（挂在网页区上方，不接输入）。
 +  raw_ptr<WindriseSilverWaveView> silver_wave_view_ = nullptr;
 +  base::CallbackListSubscription ai_state_subscription_;
++  // AiWindowState 的键（只比较指针，不解引用）。
++  raw_ptr<BrowserWindowInterface> windrise_ai_window_ = nullptr;
  
    // An invisible view used to anchor tab toasts to the top of the contents
    // view, while being before the contents view in the focus order.

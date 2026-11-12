@@ -1,14 +1,15 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000..9f980bb
+index 0000000000..da3e63fe3f
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,292 @@
+@@ -0,0 +1,311 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/browseros/core/windrise_theme.h"
 +
++#include <algorithm>
 +#include <utility>
 +
 +#include "base/functional/bind.h"
@@ -243,7 +244,9 @@ index 0000000..9f980bb
 +
 +  for (const LayoutMetricSpec& spec : kLayoutMetricSpecs) {
 +    const size_t index = static_cast<size_t>(spec.metric);
-+    const int value = prefs.GetInteger(spec.pref);
++    // 偏好可以被扩展写（setPref 放行所有 browseros.*），越界值会把布局撑坏，
++    // 统一夹到 [0, 1000]。
++    const int value = std::clamp(prefs.GetInteger(spec.pref), 0, 1000);
 +    if (snapshot.layout.value[index] != value) {
 +      snapshot.layout.value[index] = value;
 +      changed = true;
@@ -265,9 +268,21 @@ index 0000000..9f980bb
 +  return GetSnapshot().layout;
 +}
 +
++namespace {
++// 当前的属主；只在 UI 线程读写。
++ThemePrefObserver* g_owner = nullptr;
++}  // namespace
++
 +ThemePrefObserver::ThemePrefObserver(PrefService* prefs,
-+                                     base::RepeatingClosure on_changed)
++                                     base::RepeatingClosure on_changed,
++                                     bool take_ownership)
 +    : prefs_(prefs), on_changed_(std::move(on_changed)) {
++  if (!take_ownership || g_owner) {
++    return;
++  }
++  g_owner = this;
++  is_owner_ = true;
++
 +  // 先装一次，保证第一帧就用偏好里的值。
 +  LoadFromPrefs(*prefs_);
 +
@@ -287,7 +302,11 @@ index 0000000..9f980bb
 +  }
 +}
 +
-+ThemePrefObserver::~ThemePrefObserver() = default;
++ThemePrefObserver::~ThemePrefObserver() {
++  if (g_owner == this) {
++    g_owner = nullptr;
++  }
++}
 +
 +void ThemePrefObserver::OnPrefChanged() {
 +  if (LoadFromPrefs(*prefs_) && on_changed_) {

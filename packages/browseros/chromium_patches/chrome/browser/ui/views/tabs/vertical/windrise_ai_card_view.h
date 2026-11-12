@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000..880d04b
+index 0000000000..127ddeb36a
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,77 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -55,6 +55,10 @@ index 0000000..880d04b
 +
 +  // views::WidgetObserver:
 +  void OnWidgetDestroyed(views::Widget* widget) override;
++
++ protected:
++  // views::Button:
++  void StateChanged(ButtonState old_state) override;
 +
 + private:
 +  void OnAiStateChanged();

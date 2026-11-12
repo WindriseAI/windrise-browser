@@ -1,0 +1,14 @@
+diff --git a/chrome/browser/glic/resources/BUILD.gn b/chrome/browser/glic/resources/BUILD.gn
+index 7f572434eb..9ec795bc7e 100644
+--- a/chrome/browser/glic/resources/BUILD.gn
++++ b/chrome/browser/glic/resources/BUILD.gn
+@@ -84,6 +84,9 @@ grit("grit") {
+       "glic_status_icon_light.png",
+       "logo.svg",
+       "tab_media_glic_active.svg",
++      # 风桥 N11：AI 操作时的银色海浪着色器（webui/resources 侧同一份源码在
++      # native/silver_wave.sksl）。
++      "windrise_silver_wave.sksl",
+     ]
+   }
+   use_brotli = true

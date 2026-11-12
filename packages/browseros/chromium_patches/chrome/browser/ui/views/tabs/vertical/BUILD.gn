@@ -1,17 +1,19 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/BUILD.gn b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
-index e88955e..2098882 100644
+index e88955ec6c..bb1f5a3772 100644
 --- a/chrome/browser/ui/views/tabs/vertical/BUILD.gn
 +++ b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
-@@ -48,6 +48,8 @@ source_set("impl") {
+@@ -47,7 +47,10 @@ source_set("impl") {
+   ]
  
    deps = [
++    "//cc/paint",
      "//chrome/browser:primitives",
 +    # 风桥 N3：顶部小按钮的底与圆角读外观偏好。
 +    "//chrome/browser/browseros/core:theme",
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
      "//chrome/browser/glic/browser_ui:glow_controller",
-@@ -108,6 +110,40 @@ source_set("impl") {
+@@ -108,6 +111,44 @@ source_set("impl") {
    ]
  }
  
@@ -23,6 +25,7 @@ index e88955e..2098882 100644
 +  sources = [
 +    "windrise_ai_card_view.cc",
 +    "windrise_ai_panel_view.cc",
++    "windrise_ai_panel_view.h",
 +  ]
 +
 +  deps = [
@@ -37,6 +40,8 @@ index e88955e..2098882 100644
 +    "//chrome/browser/profiles:profile",
 +    "//chrome/browser/ui/browser_window",
 +    "//chrome/browser/ui/color:color_headers",
++    "//extensions/browser",
++    "//extensions/common",
 +    "//skia",
 +    "//ui/base",
 +    "//ui/base:l10n",
@@ -44,6 +49,7 @@ index e88955e..2098882 100644
 +    "//ui/base/mojom",
 +    "//ui/color",
 +    "//ui/gfx",
++    "//ui/gfx/codec",
 +    "//ui/gfx/geometry",
 +    "//ui/views",
 +  ]
