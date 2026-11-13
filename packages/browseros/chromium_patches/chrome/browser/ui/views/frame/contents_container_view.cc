@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..2afe0d4860 100644
+index 413b2f626..d6ece6952 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -4,12 +4,17 @@
@@ -20,11 +20,13 @@ index 413b2f626d..2afe0d4860 100644
  #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
  #include "chrome/browser/enterprise/data_protection/data_protection_overlay_view.h"
  #include "chrome/browser/glic/browser_ui/context_sharing_border_view.h"
-@@ -20,11 +25,18 @@
+@@ -20,11 +25,20 @@
  #include "chrome/browser/ui/read_anything/read_anything_immersive_overlay_view.h"
  #include "chrome/browser/ui/ui_features.h"
  #include "chrome/browser/ui/view_ids.h"
 +#include "chrome/browser/extensions/extension_tab_util.h"
++#include "chrome/browser/extensions/windrise_extension_protection.h"
++#include "extensions/browser/extension_registry.h"
  #include "chrome/browser/ui/views/frame/browser_view.h"
  #include "chrome/browser/ui/views/frame/contents_capture_border_view.h"
  #include "chrome/browser/ui/views/frame/contents_container_outline.h"
@@ -39,7 +41,7 @@ index 413b2f626d..2afe0d4860 100644
  #include "chrome/browser/ui/views/frame/multi_contents_view_mini_toolbar.h"
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/frame/tab_modal_dialog_host.h"
-@@ -156,6 +168,36 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -156,6 +170,36 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
              .Build());
    }
  
@@ -76,7 +78,7 @@ index 413b2f626d..2afe0d4860 100644
    mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
        browser_view, contents_view_));
  
-@@ -166,9 +208,20 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -166,9 +210,20 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
        AddChildView(std::make_unique<ContentsCaptureBorderView>(mini_toolbar_));
  
    view_bounds_observer_.Observe(contents_view_);
@@ -97,7 +99,7 @@ index 413b2f626d..2afe0d4860 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +357,53 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +359,53 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -152,7 +154,7 @@ index 413b2f626d..2afe0d4860 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +414,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +416,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -162,7 +164,7 @@ index 413b2f626d..2afe0d4860 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +440,77 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +442,84 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -220,8 +222,15 @@ index 413b2f626d..2afe0d4860 100644
 +  if (!edge_light_web_view_ || !edge_light_view_) {
 +    return;
 +  }
-+  const bool want =
-+      edge_light_mode_ == "layer" && edge_light_view_->IsActive();
++  bool want = edge_light_mode_ == "layer" && edge_light_view_->IsActive();
++  if (want) {
++    Profile* profile = browser_view_->GetProfile();
++    const std::string& id = profile->GetPrefs()->GetString(
++        browseros::prefs::kWindriseEdgeLightExtensionId);
++    auto* registry = extensions::ExtensionRegistry::Get(profile);
++    const auto* extension = registry->enabled_extensions().GetByID(id);
++    want = extensions::IsVerifiedWindriseExtension(extension);
++  }
 +  if (want == edge_light_web_view_->shown()) {
 +    return;
 +  }
@@ -240,7 +249,7 @@ index 413b2f626d..2afe0d4860 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +706,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +715,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  

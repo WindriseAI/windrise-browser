@@ -283,3 +283,14 @@ Dry-run verified: compile command prepared but NOT executed.
    git revert HEAD
    ```
 2. 主电脑 `D:/src/chromium/src`、编译产物 `out/` 及用户 profile 保持纯只读，未做任何就地修改，无需还原。
+
+## 9. 风桥助手扩展保护（ext-lock-1113）
+
+基线为 `edge-light-layer-1113b` 的 `f4005acda`。助手保持 `kCommandLine` 加载，固定 ID 为 `amlnokjigkbgngdgkofikfphjbknfodp`。专用管理策略只对固定公钥且资源签名完整的助手实施 `MustRemainInstalled`、`MustRemainEnabled` 和用户/扩展设置修改限制，不设置企业管理策略，不改变其他扩展。
+
+首次校验包含固定公钥、清单 RSA-SHA256 签名和完整目录文件的 SHA256。校验前先启动递归文件监听；任何变更或监听错误使该 Extension 实例永久失去可信状态，重新加载才能重新验签。管理查询、光效活动接口和每帧 layer 可见性查询只读取已验证状态，不反复读取字体等资源。未验证的同 ID 扩展不能加载，其他扩展不能调用风桥专有接口，layer 也不显示来自失效助手的资源。同步首验仅在固定身份加载边界执行，`base/threading/thread_restrictions.h` 仅给该验证函数增加窄范围许可。
+
+公钥固定在浏览器，扩展 JS、清单及签名随主程序更新；使用同一私钥重新签名即可，无需重编浏览器。主程序先修复账号资料目录的 `WindriseAssistant/`，确认 `management.getSelf().mayDisable === false` 后才完成握手，并监测运行时失效状态。已保留的用户禁用原因由 registrar 的 `MustRemainEnabled` 分支清除。
+
+8 个改动补丁已在任务临时目录中打到 `158.0.8127.41` 原文并逐字节比较成功；没有修改源码树或执行编译。新增 `ExtensionRegistrarTest.MustRemainEnabledOverridesPersistedUserDisableOnInstall`，覆盖既有用户禁用原因在受保护安装时被清除的决策，以及普通扩展仍保留该原因；此原生回归待编译操作员执行。管理页按钮、图标菜单、旧禁用资料目录、损坏恢复、换签名资源无需重编和全局无新增管理提示，仍须按 `请求-05-扩展保护.md` 编译并实机验收。
+
