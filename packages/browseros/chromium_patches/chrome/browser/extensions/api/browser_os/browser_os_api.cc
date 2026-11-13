@@ -552,12 +552,12 @@ index 0000000000..dd2a61f13b
 +  if (tab_strip_model->SupportsTabGroups()) {
 +    TabGroupModel* group_model = tab_strip_model->group_model();
 +    // 本窗口上一次建的 AI 组；用户可能已经把它关了。
-+    std::optional<tab_groups::TabGroupId> group_id =
++    std::optional<::tab_groups::TabGroupId> group_id =
 +        ai_state->state().ai_group;
 +    if (group_id && !group_model->ContainsTabGroup(*group_id)) {
 +      group_id = std::nullopt;
 +    }
-+    const auto list_group_indices = [&](const tab_groups::TabGroupId& id) {
++    const auto list_group_indices = [&](const ::tab_groups::TabGroupId& id) {
 +      std::vector<int> result;
 +      const gfx::Range range = group_model->GetTabGroup(id)->ListTabs();
 +      for (size_t i = range.start(); i < range.end(); ++i) {
@@ -580,11 +580,11 @@ index 0000000000..dd2a61f13b
 +      ai_state->SetAiGroup(group_id);
 +      tab_strip_model->ChangeTabGroupVisuals(
 +          *group_id,
-+          tab_groups::TabGroupVisualData(
++          ::tab_groups::TabGroupVisualData(
 +              l10n_util::GetStringFUTF16(
 +                  IDS_WINDRISE_AI_OPERATING,
 +                  base::UTF8ToUTF16(params->options.ai_name)),
-+              tab_groups::TabGroupColorId::kGrey));
++              ::tab_groups::TabGroupColorId::kGrey));
 +      // 排到最后 = 侧边栏最下面那一段。MoveGroupTo 要的是组首标签的目标下标，
 +      // 不是 count()。
 +      const gfx::Range range = group_model->GetTabGroup(*group_id)->ListTabs();
