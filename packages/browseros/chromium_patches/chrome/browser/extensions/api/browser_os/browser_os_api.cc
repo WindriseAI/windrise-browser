@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..ea33d5345c76cadb47e38e58dbfd31a9bbf3e51b
+index 0000000000..ea33d5345c
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 @@ -0,0 +1,726 @@

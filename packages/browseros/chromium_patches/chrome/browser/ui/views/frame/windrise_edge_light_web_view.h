@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..367a3e827da3e75b03e54aebef8b5a2d145ad321
+index 0000000000..367a3e827d
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h
 @@ -0,0 +1,68 @@

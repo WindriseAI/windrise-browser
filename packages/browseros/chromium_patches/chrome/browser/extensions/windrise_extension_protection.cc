@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/extensions/windrise_extension_protection.cc b/chrome/browser/extensions/windrise_extension_protection.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..622c8730b398d9113e264b1331b382670909bf18
+index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
 @@ -0,0 +1,341 @@

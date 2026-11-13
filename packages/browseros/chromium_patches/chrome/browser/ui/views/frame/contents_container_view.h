@@ -1,14 +1,13 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.h b/chrome/browser/ui/views/frame/contents_container_view.h
-index e3ae9d104db2d7e03712a6f0dbc3c4c2f34af0d8..bceff72ce6ebcaba389ff73376a11915ceebbf41 100644
+index e3ae9d104d..bceff72ce6 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.h
 +++ b/chrome/browser/ui/views/frame/contents_container_view.h
 @@ -7,22 +7,33 @@
  
  #include <memory>
  #include <optional>
--
 +#include <string>
-+
+ 
 +#include "base/callback_list.h"
  #include "base/memory/raw_ptr.h"
  #include "base/scoped_observation.h"
@@ -37,7 +36,7 @@ index e3ae9d104db2d7e03712a6f0dbc3c4c2f34af0d8..bceff72ce6ebcaba389ff73376a11915
  class ActorOverlayWebView;
  class ReadAnythingImmersiveOverlayView;
  
-@@ -154,6 +165,27 @@
+@@ -154,6 +165,27 @@ class ContentsContainerView : public views::View,
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
@@ -65,7 +64,7 @@ index e3ae9d104db2d7e03712a6f0dbc3c4c2f34af0d8..bceff72ce6ebcaba389ff73376a11915
    // views::View:
    void ChildVisibilityChanged(View* child) override;
    void Layout(PassKey) override;
-@@ -169,6 +201,20 @@
+@@ -169,6 +201,20 @@ class ContentsContainerView : public views::View,
    bool is_in_split_ = false;
  
    raw_ptr<BrowserView> browser_view_ = nullptr;

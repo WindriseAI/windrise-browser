@@ -1,0 +1,237 @@
+diff --git a/chrome/test/data/webui/history/history_app_test.ts b/chrome/test/data/webui/history/history_app_test.ts
+index fa62f61f3e..5f3305d4d0 100644
+--- a/chrome/test/data/webui/history/history_app_test.ts
++++ b/chrome/test/data/webui/history/history_app_test.ts
+@@ -14,12 +14,6 @@ import {eventToPromise, isChildVisible, microtasksFinished} from 'chrome://webui
+ import {TestUserEducationMixedTrustHandler} from 'chrome://webui-test/test_user_education_mixed_trust_handler.js';
+ import {COLORS_CSS_SELECTOR} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+ import {TimePeriodOptionId} from 'chrome://resources/cr_components/history/history.mojom-webui.js';
+-// <if expr="not is_chromeos">
+-import {AccessPoint} from 'chrome://resources/cr_components/history/history.mojom-webui.js';
+-import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
+-import {HistorySignInState, SyncState} from 'chrome://history/history.js';
+-
+-// </if>
+ 
+ import {TestHistoryBrowserProxy} from './test_browser_proxy.js';
+ 
+@@ -362,219 +356,6 @@ suite('HistoryAppTest', function() {
+   // </if>
+ });
+ 
+-// <if expr="not is_chromeos">
+-// history sync promo is not shown for ChromeOS.
+-suite('HistoryAppUnoPhase2FollowUpTest', () => {
+-  let element: HistoryAppElement;
+-  let browserProxy: TestHistoryBrowserProxy;
+-
+-  setup(() => {
+-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+-    loadTimeData.overrideValues({
+-      unoPhase2FollowUp: true,
+-    });
+-    browserProxy = new TestHistoryBrowserProxy();
+-    BrowserProxyImpl.setInstance(browserProxy);
+-    browserProxy.handler.setResultFor(
+-        'shouldShowHistoryPageHistorySyncPromo', Promise.resolve({
+-          shouldShow: true,
+-        }));
+-
+-    // Some of the tests below assume the query state is fully reset to empty
+-    // between tests.
+-    window.history.replaceState({}, '', '/');
+-    CrRouter.resetForTesting();
+-
+-    element = document.createElement('history-app');
+-    document.body.appendChild(element);
+-    return microtasksFinished();
+-  });
+-
+-  test('ShowsHistorySyncPromoElementWhenDataIsTrue', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGNED_IN,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_OFF,
+-    });
+-    await microtasksFinished();
+-
+-    assertTrue(
+-        isChildVisible(element, 'history-sync-promo'), 'Promo should be shown');
+-  });
+-
+-  test('HidesHistorySyncPromoElementWhenDataIsFalse', async () => {
+-    browserProxy.handler.setResultFor(
+-        'shouldShowHistoryPageHistorySyncPromo',
+-        Promise.resolve({shouldShow: false}));
+-    // Re-create the element to pick up the new loadTimeData.
+-    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+-    element = document.createElement('history-app');
+-    document.body.appendChild(element);
+-    await microtasksFinished();
+-
+-    assertFalse(
+-        isChildVisible(element, 'history-sync-promo'),
+-        'Promo should not be shown');
+-  });
+-
+-  test('HidesHistorySyncPromoElementWhenHistorySyncIsDisabled', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGNED_IN,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.DISABLED,
+-    });
+-    await microtasksFinished();
+-
+-    assertFalse(
+-        isChildVisible(element, 'history-sync-promo'),
+-        'Promo should not be shown');
+-  });
+-
+-  test('HistorySyncPromoElementSignedIn', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGNED_IN,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_OFF,
+-    });
+-    await microtasksFinished();
+-    const historySyncPromo =
+-        element.shadowRoot.querySelector('history-sync-promo');
+-    assertTrue(!!historySyncPromo, 'Promo should be shown');
+-
+-    // The promo elements for current state are shown correctly.
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-illustration'));
+-    assertTrue(isChildVisible(historySyncPromo, '#signed-in-description'));
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-button'));
+-
+-    // The other states promo elements should not be visible.
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-out-description'));
+-    assertFalse(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-not-syncing-history-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#verify-its-you-button'));
+-
+-    const button = historySyncPromo.shadowRoot.querySelector<HTMLElement>(
+-        '#sync-history-button');
+-    assertTrue(!!button);
+-    button.click();
+-    const accessPoint =
+-        await browserProxy.handler.whenCalled('turnOnHistorySync');
+-    assertEquals(AccessPoint.kHistoryPage, accessPoint);
+-  });
+-
+-  test('HistorySyncPromoElementPendingSignInWithHistorySyncOn', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGN_IN_PENDING,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_ON,
+-    });
+-    await microtasksFinished();
+-    const historySyncPromo =
+-        element.shadowRoot.querySelector('history-sync-promo');
+-    assertTrue(!!historySyncPromo, 'Promo should be shown');
+-
+-    // The promo elements for current state are shown correctly.
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-illustration'));
+-    assertTrue(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-syncing-history-description'));
+-    assertTrue(isChildVisible(historySyncPromo, '#verify-its-you-button'));
+-    assertEquals(1, browserProxy.getCallCount('recordSigninPendingOffered'));
+-    assertEquals(
+-        AccessPoint.kHistoryPage,
+-        await browserProxy.whenCalled('recordSigninPendingOffered'));
+-
+-    // The other states promo elements should not be visible.
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-out-description'));
+-    assertFalse(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-not-syncing-history-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-in-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#sync-history-button'));
+-  });
+-
+-  test('HistorySyncPromoElementPendingSignInWithHistorySyncOff', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGN_IN_PENDING,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_OFF,
+-    });
+-    await microtasksFinished();
+-    const historySyncPromo =
+-        element.shadowRoot.querySelector('history-sync-promo');
+-    assertTrue(!!historySyncPromo, 'Promo should be shown');
+-
+-    // The promo elements for current state are shown correctly.
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-illustration'));
+-    assertTrue(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-not-syncing-history-description'));
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-button'));
+-
+-    // The other states promo elements should not be visible.
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-out-description'));
+-    assertFalse(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-syncing-history-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-in-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#verify-its-you-button'));
+-  });
+-
+-  test('HistorySyncPromoElementWebOnlySignIn', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.WEB_ONLY_SIGNED_IN,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_OFF,
+-    });
+-    await microtasksFinished();
+-    const historySyncPromo =
+-        element.shadowRoot.querySelector('history-sync-promo');
+-    assertTrue(!!historySyncPromo, 'Promo should be shown');
+-
+-    // The promo elements for current state are shown correctly.
+-    assertTrue(
+-        isChildVisible(historySyncPromo, '#web-only-signed-in-description'));
+-    assertEquals(
+-        loadTimeData.getString('historySyncPromoBodyWebOnlySignedIn'),
+-        historySyncPromo.shadowRoot
+-            .querySelector<HTMLElement>(
+-                '#web-only-signed-in-description')!.textContent.trim());
+-    assertTrue(isChildVisible(historySyncPromo, '#profile-info-row'));
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-button'));
+-
+-    // The other states promo elements should not be visible.
+-    assertFalse(isChildVisible(historySyncPromo, '#sync-history-illustration'));
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-in-description'));
+-    assertFalse(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-not-syncing-history-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#verify-its-you-button'));
+-  });
+-
+-  test('HistorySyncPromoElementSignedOut', async () => {
+-    webUIListenerCallback('history-identity-state-changed', {
+-      signIn: HistorySignInState.SIGNED_OUT,
+-      tabsSync: SyncState.TURNED_OFF,
+-      historySync: SyncState.TURNED_OFF,
+-    });
+-    await microtasksFinished();
+-    const historySyncPromo =
+-        element.shadowRoot.querySelector('history-sync-promo');
+-    assertTrue(!!historySyncPromo, 'Promo should be shown');
+-
+-    // The promo elements for current state are shown correctly.
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-illustration'));
+-    assertTrue(isChildVisible(historySyncPromo, '#signed-out-description'));
+-    assertEquals(
+-        loadTimeData.getString('historySyncPromoBodySignedOut'),
+-        historySyncPromo.shadowRoot
+-            .querySelector<HTMLElement>(
+-                '#signed-out-description')!.textContent.trim());
+-    assertTrue(isChildVisible(historySyncPromo, '#sync-history-button'));
+-
+-    // The other states promo elements should not be visible.
+-    assertFalse(isChildVisible(historySyncPromo, '#signed-in-description'));
+-    assertFalse(isChildVisible(
+-        historySyncPromo, '#sign-in-pending-not-syncing-history-description'));
+-    assertFalse(isChildVisible(historySyncPromo, '#verify-its-you-button'));
+-  });
+-});
+-// </if>
+-
+ suite('HistoryFilterChipsVisibility', function() {
+   let element: HistoryAppElement;
+   let browserProxy: TestHistoryBrowserProxy;
