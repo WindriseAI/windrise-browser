@@ -1,8 +1,19 @@
 diff --git a/chrome/app/settings_strings.grdp b/chrome/app/settings_strings.grdp
-index caae29834c2cf5fd07bbfb05dc1f98be09e34470..c4d394aea392ef966064d703a729f1001ddfa400 100644
+index e1bf5d1..a025ee4 100644
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -3806,6 +3806,12 @@
+@@ -3529,8 +3529,8 @@
+     </message>
+ 
+     <!-- Sync / People Page -->
+-    <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages the user's relationship to Google.">
+-      You and Google
++    <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages the user's profile, imports and related options.">
++      Profile
+     </message>
+     <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
+       Google Profile photo
+@@ -3712,6 +3712,12 @@
        <message name="IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX" desc="Checkbox for importing form data for autofill">
          Autofill form data
        </message>
