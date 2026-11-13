@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..9c55e5aa27
+index 0000000000..52fc024f41
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,262 @@
+@@ -0,0 +1,263 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -113,6 +113,7 @@ index 0000000000..9c55e5aa27
 +
 +    // Action position in logical page pixels (relative to the top-left of
 +    // the web contents). Pass both or neither; without a position the pulse
++    // rings the whole edge.
 +    double? x;
 +    double? y;
 +  };
