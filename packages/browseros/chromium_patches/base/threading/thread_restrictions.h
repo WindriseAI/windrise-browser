@@ -1,5 +1,5 @@
 diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restrictions.h
-index db88f6ab7629f41a1c51945c570a82c35e9ef723..4dbd375f1d10a3f0caa0b7fc78c49d5fa2c7f91a 100644
+index 95bafac63..a615a7eb0 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
 @@ -206,6 +206,9 @@ namespace scheduler {
@@ -12,7 +12,16 @@ index db88f6ab7629f41a1c51945c570a82c35e9ef723..4dbd375f1d10a3f0caa0b7fc78c49d5f
  namespace cc {
  class CategorizedWorkerPoolJob;
  class CategorizedWorkerPool;
-@@ -622,6 +625,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -292,6 +295,8 @@ namespace enterprise_connectors {
+ class LinuxKeyRotationCommand;
+ }  // namespace enterprise_connectors
+ namespace extensions {
++class Extension;
++bool IsVerifiedWindriseExtension(const Extension* extension);
+ class InstalledLoader;
+ class UnpackedInstaller;
+ }  // namespace extensions
+@@ -622,6 +627,7 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class base::subtle::PlatformSharedMemoryRegion;
    friend class base::win::ScopedAllowBlockingForUserAccountControl;
    friend class blink::DiskDataAllocator;
@@ -20,7 +29,17 @@ index db88f6ab7629f41a1c51945c570a82c35e9ef723..4dbd375f1d10a3f0caa0b7fc78c49d5f
    friend class chromecast::CrashUtil;
    friend class content::BrowserProcessIOThread;
    friend class content::DWriteFontProxyImpl;
-@@ -771,6 +775,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -700,6 +706,9 @@ class BASE_EXPORT ScopedAllowBlocking {
+   friend base::File content::CreateFileForDrop(
+       base::FilePath* file_path);  // http://crbug.com/110709
+   friend bool disk_cache::CleanupDirectorySync(const base::FilePath&);
++  // Product extension privileges require checking the signed local resources.
++  friend bool extensions::IsVerifiedWindriseExtension(
++      const extensions::Extension* extension);
+   friend bool gl::init::InitializeStaticGLBindings(gl::GLImplementationParts);
+   friend void printing::DumpMetafileIfDebugEnabled(
+       const std::u16string&,
+@@ -770,6 +779,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class base::SimpleThread;
    friend class base::internal::GetAppOutputScopedAllowBaseSyncPrimitives;
    friend class blink::SourceStream;

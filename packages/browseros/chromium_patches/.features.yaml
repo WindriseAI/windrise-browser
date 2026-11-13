@@ -190,6 +190,9 @@ features:
       - chrome/browser/extensions/api/side_panel/side_panel_service.h
       - chrome/browser/extensions/BUILD.gn
       - chrome/browser/extensions/chrome_extensions_browser_api_provider.cc
+      - chrome/browser/extensions/windrise_extension_protection.cc
+      - chrome/browser/extensions/windrise_extension_protection.h
+      - extensions/browser/extension_registrar_unittest.cc
       - chrome/browser/media/extension_media_access_handler.cc
       - chrome/browser/ui/extensions/extension_side_panel_utils.h
       - chrome/browser/ui/toasts/api/toast_id.cc

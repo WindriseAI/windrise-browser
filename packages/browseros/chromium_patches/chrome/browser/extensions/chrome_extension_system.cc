@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/extensions/chrome_extension_system.cc b/chrome/browser/extensions/chrome_extension_system.cc
-index c31a741d21e0206ee73860aa4cf7c643125f4c04..a5e396187dbcee97ee5cecc5ca1c66ff8c5c2447 100644
+index 53e2ad0e8..b2e2ed3ca 100644
 --- a/chrome/browser/extensions/chrome_extension_system.cc
 +++ b/chrome/browser/extensions/chrome_extension_system.cc
-@@ -18,6 +18,7 @@
+@@ -18,9 +18,11 @@
  #include "build/build_config.h"
  #include "build/chromeos_buildflags.h"
  #include "chrome/browser/browser_process.h"
@@ -10,7 +10,11 @@ index c31a741d21e0206ee73860aa4cf7c643125f4c04..a5e396187dbcee97ee5cecc5ca1c66ff
  #include "chrome/browser/extensions/blocklist_factory.h"
  #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
  #include "chrome/browser/extensions/chrome_extension_system_factory.h"
-@@ -64,6 +65,7 @@
++#include "chrome/browser/extensions/windrise_extension_protection.h"
+ #include "chrome/browser/extensions/component_loader.h"
+ #include "chrome/browser/extensions/extension_error_controller.h"
+ #include "chrome/browser/extensions/extension_garbage_collector.h"
+@@ -64,6 +66,7 @@
  #include "extensions/browser/user_script_manager.h"
  #include "extensions/buildflags/buildflags.h"
  #include "extensions/common/constants.h"
@@ -18,7 +22,7 @@ index c31a741d21e0206ee73860aa4cf7c643125f4c04..a5e396187dbcee97ee5cecc5ca1c66ff
  #include "extensions/common/features/feature_channel.h"
  #include "extensions/common/manifest_handlers/manifest_url_handlers.h"
  #include "ui/message_center/public/cpp/notifier_id.h"
-@@ -96,6 +98,37 @@ namespace extensions {
+@@ -96,6 +99,37 @@ namespace extensions {
  
  namespace {
  
@@ -56,7 +60,15 @@ index c31a741d21e0206ee73860aa4cf7c643125f4c04..a5e396187dbcee97ee5cecc5ca1c66ff
  // Helper to serve as an UninstallPingSender::Filter callback.
  UninstallPingSender::FilterResult ShouldSendUninstallPing(
      Profile* profile,
-@@ -194,7 +227,7 @@ void ChromeExtensionSystem::Shared::RegisterManagementPolicyProviders() {
+@@ -156,6 +190,7 @@ void ChromeExtensionSystem::Shared::InitPrefs() {
+ }
+ 
+ void ChromeExtensionSystem::Shared::RegisterManagementPolicyProviders() {
++  RegisterWindriseExtensionProtection(management_policy_.get());
+   management_policy_->RegisterProviders(
+       ExtensionManagementFactory::GetForBrowserContext(profile_)
+           ->GetProviders());
+@@ -194,7 +229,7 @@ void ChromeExtensionSystem::Shared::RegisterManagementPolicyProviders() {
  }
  
  void ChromeExtensionSystem::Shared::InitInstallGates() {

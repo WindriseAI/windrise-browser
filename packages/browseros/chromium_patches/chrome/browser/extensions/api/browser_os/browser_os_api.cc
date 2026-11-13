@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..17a829c61f
+index 000000000..bc8835d27
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,732 @@
+@@ -0,0 +1,726 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -27,7 +27,6 @@ index 0000000000..17a829c61f
 +#include "base/values.h"
 +#include "base/version_info/version_info.h"
 +#include "chrome/browser/browser_process.h"
-+#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "chrome/browser/browseros/metrics/browseros_metrics.h"
@@ -58,9 +57,9 @@ index 0000000000..17a829c61f
 +#include "components/tabs/public/tab_interface.h"
 +#include "content/public/browser/web_contents.h"
 +#include "chrome/browser/extensions/extension_tab_util.h"
++#include "chrome/browser/extensions/windrise_extension_protection.h"
 +#include "ui/base/l10n/l10n_util.h"
 +#include "extensions/common/extension.h"
-+#include "extensions/common/mojom/manifest.mojom.h"
 +#include "ui/gfx/range/range.h"
 +#include "ui/shell_dialogs/selected_file_info.h"
 +
@@ -111,21 +110,9 @@ index 0000000000..17a829c61f
 +  return found;
 +}
 +
-+// 风桥 N6/N7/N11 三个接口会改用户的标签分组 / 往浏览器里塞数据，只许我们自己的
-+// 扩展调：--load-extension 载入的（风桥启动浏览器时挂上的那一个）、组件扩展、
-+// 或 BrowserOS 目录里登记的扩展。browserOS 权限本身没有 allowlist（任何声明了
-+// 该权限的扩展都能拿到），所以这里必须再校验一次。
++// Product-only APIs require the fixed identity and authentic signed resources.
 +bool IsWindriseCaller(const extensions::Extension* extension) {
-+  if (!extension) {
-+    return false;
-+  }
-+  switch (extension->location()) {
-+    case extensions::mojom::ManifestLocation::kCommandLine:
-+    case extensions::mojom::ManifestLocation::kComponent:
-+      return true;
-+    default:
-+      return browseros::IsActiveBrowserOSExtension(extension->id());
-+  }
++  return extensions::IsVerifiedWindriseExtension(extension);
 +}
 +
 +// 扩展推来的图标只收 PNG，宽高各不超过 256：先看 IHDR 再交给解码器，
@@ -205,6 +192,10 @@ index 0000000000..17a829c61f
 +  // Security: only allow modifying browseros.* prefs
 +  if (!params->name.starts_with("browseros.")) {
 +    return RespondNow(Error("Only browseros.* preferences can be modified"));
++  }
++  if (params->name.starts_with("browseros.windrise.") &&
++      !IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
 +  }
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -442,6 +433,9 @@ index 0000000000..17a829c61f
 +// Bridges chrome.browserOS.setAddressBarSlot to the tab-scoped page action
 +// controller. State is kept per tab, so switching tabs preserves each slot.
 +ExtensionFunction::ResponseAction BrowserOSSetAddressBarSlotFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<browser_os::SetAddressBarSlot::Params> params =
 +      browser_os::SetAddressBarSlot::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
