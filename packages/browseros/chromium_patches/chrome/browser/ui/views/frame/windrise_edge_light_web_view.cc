@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_web_view.cc b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.cc
 new file mode 100644
-index 0000000000..6e16fefbe7
+index 0000000000000000000000000000000000000000..8ea6f36f6926998722febab111e5bd1463f92024
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.cc
-@@ -0,0 +1,119 @@
+@@ -0,0 +1,131 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -40,6 +40,18 @@ index 0000000000..6e16fefbe7
 +
 +WindriseEdgeLightWebView::~WindriseEdgeLightWebView() {
 +  SetWebContents(nullptr);
++}
++
++void WindriseEdgeLightWebView::Revoke() {
++  shown_ = false;
++  SetVisible(false);
++  if (web_contents()) {
++    web_contents()->WasHidden();
++    // WebView detaches its native view and destroys its owned WebContents.
++    SetWebContents(nullptr);
++  }
++  contents_prepared_ = false;
++  loaded_url_ = GURL();
 +}
 +
 +void WindriseEdgeLightWebView::SetShown(bool shown, const GURL& url) {

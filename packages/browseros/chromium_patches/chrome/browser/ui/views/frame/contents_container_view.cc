@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626..d6ece6952 100644
+index 413b2f626db33f5c834d0e184786626bdea0e8b2..90d18d27cfed0f5f434c66dcbdab0e8f925f9150 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -4,12 +4,17 @@
@@ -41,7 +41,7 @@ index 413b2f626..d6ece6952 100644
  #include "chrome/browser/ui/views/frame/multi_contents_view_mini_toolbar.h"
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/frame/tab_modal_dialog_host.h"
-@@ -156,6 +170,36 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -156,6 +170,39 @@
              .Build());
    }
  
@@ -74,11 +74,14 @@ index 413b2f626..d6ece6952 100644
 +    ai_pulse_subscription_ = ai_state->AddPulseObserver(base::BindRepeating(
 +        &ContentsContainerView::OnAiPulse, base::Unretained(this)));
 +  }
++  assistant_authority_subscription_ =
++      extensions::AddWindriseAssistantAuthorityObserver(base::BindRepeating(
++          &ContentsContainerView::SyncEdgeLightWebLayer, base::Unretained(this)));
 +
    mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
        browser_view, contents_view_));
  
-@@ -166,9 +210,20 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -166,9 +213,21 @@
        AddChildView(std::make_unique<ContentsCaptureBorderView>(mini_toolbar_));
  
    view_bounds_observer_.Observe(contents_view_);
@@ -88,6 +91,7 @@ index 413b2f626..d6ece6952 100644
  ContentsContainerView::~ContentsContainerView() {
 +  ai_state_subscription_ = {};
 +  ai_pulse_subscription_ = {};
++  assistant_authority_subscription_ = {};
 +  edge_light_prefs_.RemoveAll();
 +  edge_light_web_view_ = nullptr;
 +  if (edge_light_view_) {
@@ -99,7 +103,7 @@ index 413b2f626..d6ece6952 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +359,53 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +363,53 @@
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -154,7 +158,7 @@ index 413b2f626..d6ece6952 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +416,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +420,9 @@
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -164,10 +168,11 @@ index 413b2f626..d6ece6952 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +442,84 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +446,85 @@
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
+-  }
 +    UpdateEdgeLight();
 +  }
 +}
@@ -183,7 +188,7 @@ index 413b2f626..d6ece6952 100644
 +void ContentsContainerView::SyncEdgeLight() {
 +  if (!edge_light_view_) {
 +    return;
-   }
++  }
 +  browseros::windrise::AiWindowState* ai_state =
 +      browseros::windrise::AiWindowState::From(browser_view_->browser());
 +  content::WebContents* web_contents = contents_view_->web_contents();
@@ -222,15 +227,16 @@ index 413b2f626..d6ece6952 100644
 +  if (!edge_light_web_view_ || !edge_light_view_) {
 +    return;
 +  }
-+  bool want = edge_light_mode_ == "layer" && edge_light_view_->IsActive();
-+  if (want) {
-+    Profile* profile = browser_view_->GetProfile();
-+    const std::string& id = profile->GetPrefs()->GetString(
-+        browseros::prefs::kWindriseEdgeLightExtensionId);
-+    auto* registry = extensions::ExtensionRegistry::Get(profile);
-+    const auto* extension = registry->enabled_extensions().GetByID(id);
-+    want = extensions::IsVerifiedWindriseExtension(extension);
++  Profile* profile = browser_view_->GetProfile();
++  const std::string& id = profile->GetPrefs()->GetString(
++      browseros::prefs::kWindriseEdgeLightExtensionId);
++  auto* registry = extensions::ExtensionRegistry::Get(profile);
++  const auto* extension = registry->enabled_extensions().GetByID(id);
++  if (!extensions::IsAuthorizedWindriseExtension(extension)) {
++    edge_light_web_view_->Revoke();
++    return;
 +  }
++  const bool want = edge_light_mode_ == "layer" && edge_light_view_->IsActive();
 +  if (want == edge_light_web_view_->shown()) {
 +    return;
 +  }
@@ -249,10 +255,13 @@ index 413b2f626..d6ece6952 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +715,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
-                                        non_devtools_contents_bounds);
-   }
- 
+@@ -534,6 +717,19 @@
+     // |glic_border_| should not be seen over devtools.
+     layouts.child_layouts.emplace_back(glic_border_.get(),
+                                        glic_border_->GetVisible(),
++                                       non_devtools_contents_bounds);
++  }
++
 +  if (edge_light_view_) {
 +    // 风桥 N10 / N11 计时器：只计时、不绘制，一直不可见（独立层另算，见下）。
 +    layouts.child_layouts.emplace_back(edge_light_view_.get(),
@@ -263,9 +272,6 @@ index 413b2f626..d6ece6952 100644
 +    // 风桥 N11 独立层：同一个位置（网页区，外扩 0），在光效层上面。
 +    layouts.child_layouts.emplace_back(edge_light_web_view_.get(),
 +                                       edge_light_web_view_->shown(),
-+                                       non_devtools_contents_bounds);
-+  }
-+
-   // The content scrim view should cover the entire contents bounds.
-   CHECK(contents_scrim_view_);
-   layouts.child_layouts.emplace_back(contents_scrim_view_.get(),
+                                        non_devtools_contents_bounds);
+   }
+ 

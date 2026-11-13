@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 000000000..bc8835d27
+index 0000000000000000000000000000000000000000..ea33d5345c76cadb47e38e58dbfd31a9bbf3e51b
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 @@ -0,0 +1,726 @@
@@ -112,7 +112,7 @@ index 000000000..bc8835d27
 +
 +// Product-only APIs require the fixed identity and authentic signed resources.
 +bool IsWindriseCaller(const extensions::Extension* extension) {
-+  return extensions::IsVerifiedWindriseExtension(extension);
++  return extensions::IsAuthorizedWindriseExtension(extension);
 +}
 +
 +// 扩展推来的图标只收 PNG，宽高各不超过 256：先看 IHDR 再交给解码器，
