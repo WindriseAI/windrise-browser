@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
 new file mode 100644
-index 0000000000..454ddf6ad2
+index 0000000000..25c3700432
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,39 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -14,6 +14,7 @@ index 0000000000..454ddf6ad2
 +#include "base/memory/raw_ptr.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
++#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 +#include "ui/views/layout/box_layout_view.h"
 +
 +class BrowserWindowInterface;
