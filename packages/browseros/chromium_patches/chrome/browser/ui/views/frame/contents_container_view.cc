@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..578e40cfd4 100644
+index 413b2f626d..7e49e8b1fb 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
-@@ -4,12 +4,15 @@
+@@ -4,12 +4,16 @@
  
  #include "chrome/browser/ui/views/frame/contents_container_view.h"
  
@@ -11,6 +11,7 @@ index 413b2f626d..578e40cfd4 100644
  #include <optional>
  #include <utility>
  
++#include "base/functional/bind.h"
  #include "base/i18n/rtl.h"
  #include "chrome/browser/actor/ui/actor_overlay_web_view.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
@@ -18,7 +19,7 @@ index 413b2f626d..578e40cfd4 100644
  #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
  #include "chrome/browser/enterprise/data_protection/data_protection_overlay_view.h"
  #include "chrome/browser/glic/browser_ui/context_sharing_border_view.h"
-@@ -20,11 +23,13 @@
+@@ -20,11 +24,13 @@
  #include "chrome/browser/ui/read_anything/read_anything_immersive_overlay_view.h"
  #include "chrome/browser/ui/ui_features.h"
  #include "chrome/browser/ui/view_ids.h"
@@ -32,7 +33,7 @@ index 413b2f626d..578e40cfd4 100644
  #include "chrome/browser/ui/views/frame/multi_contents_view_mini_toolbar.h"
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/frame/tab_modal_dialog_host.h"
-@@ -156,6 +161,23 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -156,6 +162,23 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
              .Build());
    }
  
@@ -56,7 +57,7 @@ index 413b2f626d..578e40cfd4 100644
    mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
        browser_view, contents_view_));
  
-@@ -166,9 +188,18 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -166,9 +189,18 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
        AddChildView(std::make_unique<ContentsCaptureBorderView>(mini_toolbar_));
  
    view_bounds_observer_.Observe(contents_view_);
@@ -75,7 +76,7 @@ index 413b2f626d..578e40cfd4 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +335,47 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +336,47 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -124,7 +125,7 @@ index 413b2f626d..578e40cfd4 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +386,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +387,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -134,7 +135,7 @@ index 413b2f626d..578e40cfd4 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,9 +412,41 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,9 +413,41 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -176,7 +177,7 @@ index 413b2f626d..578e40cfd4 100644
  void ContentsContainerView::SetContentsResizingStrategy(
      const DevToolsContentsResizingStrategy& strategy) {
    if (strategy_.Equals(strategy)) {
-@@ -537,6 +640,15 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +641,15 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  

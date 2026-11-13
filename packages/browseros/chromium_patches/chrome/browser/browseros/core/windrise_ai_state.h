@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000000..d74f8aed28
+index 0000000000..5be3198c72
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,117 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -109,11 +109,10 @@ index 0000000000..d74f8aed28
 +      base::RepeatingCallback<void(const AiPulse&)> callback);
 +
 + private:
-+  explicit AiWindowState(BrowserWindowInterface* browser);
++  AiWindowState();
 +
 +  void NotifyIfChanged(bool changed);
 +
-+  raw_ptr<BrowserWindowInterface> browser_;
 +  AiState state_;
 +  base::RepeatingClosureList observers_;
 +  base::RepeatingCallbackList<void(const AiPulse&)> pulse_observers_;

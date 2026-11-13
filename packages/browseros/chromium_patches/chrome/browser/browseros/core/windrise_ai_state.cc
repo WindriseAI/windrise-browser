@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.cc b/chrome/browser/browseros/core/windrise_ai_state.cc
 new file mode 100644
-index 0000000000..caa79e50cf
+index 0000000000..0e484758fc
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.cc
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,212 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -76,8 +76,7 @@ index 0000000000..caa79e50cf
 +  return std::ranges::contains(GetAiGroups(), group);
 +}
 +
-+AiWindowState::AiWindowState(BrowserWindowInterface* browser)
-+    : browser_(browser) {}
++AiWindowState::AiWindowState() = default;
 +
 +AiWindowState::~AiWindowState() {
 +  if (state_.ai_group) {
@@ -104,7 +103,7 @@ index 0000000000..caa79e50cf
 +  ++entry.refs;
 +  if (!entry.state) {
 +    // 构造函数是私有的，make_unique 访问不了，这里在成员函数里直接 new。
-+    entry.state.reset(new AiWindowState(browser));
++    entry.state.reset(new AiWindowState());
 +  }
 +  return entry.state.get();
 +}

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.h b/chrome/browser/ui/views/frame/windrise_edge_light_view.h
 new file mode 100644
-index 0000000000..b3af49f3ab
+index 0000000000..09706d70b6
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.h
-@@ -0,0 +1,183 @@
+@@ -0,0 +1,182 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -152,7 +152,6 @@ index 0000000000..b3af49f3ab
 +  base::TimeTicks pulse_time_;
 +  float pulse_age_ = -1.0f;
 +  std::optional<float> ripple_source_s_;
-+  std::optional<std::pair<float, float>> pending_pulse_point_;
 +
 +  gfx::RoundedCornersF corner_radii_;
 +  browseros::windrise::EdgePerimeter perimeter_;
