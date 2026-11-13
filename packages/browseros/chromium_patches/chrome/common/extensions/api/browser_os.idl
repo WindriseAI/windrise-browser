@@ -55,55 +55,55 @@ index 0000000000..64f7a1603a
 +    DOMString? text;
 +  };
 +
-+  // 一家已连接的 AI（N7 卡片 / 面板用）。
++  // A connected AI (used by the N7 card and panel).
 +  dictionary AiConnection {
-+    // 显示名（Claude、豆包……）。
++    // Display name (for example Claude).
 +    DOMString name;
 +
-+    // 16x16 以内的 PNG，base64 编码。空字符串表示没有图标。
++    // PNG of at most 16x16, base64 encoded. Empty string means no icon.
 +    DOMString? iconPng;
 +
-+    // 上次调用距今多少分钟。负数表示不显示时间。
++    // Minutes since the last call. Negative means no time is shown.
 +    long? lastActiveMinutes;
 +  };
 +
-+  // Options for setAiTabs（N6 上下分段）。
++  // Options for setAiTabs (N6 sectioned tab list).
 +  dictionary SetAiTabsOptions {
-+    // 这个 AI 当前拥有的任一标签（用来定位窗口）。
++    // Any tab currently owned by the AI (used to locate the window).
 +    long tabId;
 +
-+    // AI 名，浏览器用它写段标题「<AI 名> 正在操作」。
++    // AI name; the browser uses it in the section title.
 +    DOMString aiName;
 +
-+    // 属于这个 AI 的标签 id。空数组表示这一段现在没有标签。
++    // Tab ids that belong to this AI. An empty array clears the section.
 +    long[] tabIds;
 +  };
 +
-+  // Options for setConnectedAis（N7）。
++  // Options for setConnectedAis (N7).
 +  dictionary SetConnectedAisOptions {
-+    // 窗口里的任一标签（用来定位窗口）。
++    // Any tab in the window (used to locate the window).
 +    long tabId;
 +
-+    // 已连接的 AI 列表，顺序就是面板里的行序。
++    // Connected AIs; the order is the row order in the panel.
 +    AiConnection[] connections;
 +  };
 +
-+  // Options for setAiActivity（N11 边缘光效）。
++  // Options for setAiActivity (N11 edge light).
 +  dictionary SetAiActivityOptions {
-+    // 正在被 AI 操作的标签。
++    // The tab the AI is operating on.
 +    long tabId;
 +
-+    // true = 开始画光效，false = 淡出。
++    // true starts the edge light, false fades it out.
 +    boolean active;
 +  };
 +
-+  // Options for pulseAiActivity（N11 边缘光效：AI 每做一个动作一次）。
++  // Options for pulseAiActivity (N11 edge light, one pulse per action).
 +  dictionary PulseAiActivityOptions {
-+    // 做动作的标签。
++    // The tab that performed the action.
 +    long tabId;
 +
-+    // 动作位置，网页里的逻辑像素坐标（相对网页区左上角），两个都给才算；
-+    // 省略时脉冲不带位置，整圈一起亮。
++    // Action position in logical page pixels (relative to the top-left of
++    // the web contents). Pass both or neither; without a position the pulse
 +    double? x;
 +    double? y;
 +  };
@@ -206,22 +206,22 @@ index 0000000000..64f7a1603a
 +        DOMString message,
 +        ShowInfoBarCallback callback);
 +
-+    // 风桥 N6：告诉浏览器哪些标签属于当前 AI，浏览器把这些标签收成侧边栏
-+    // 最下面的一段，段标题是「<AI 名> 正在操作」。
++    // Windrise N6: tells the browser which tabs belong to the current AI.
++    // The browser groups them into the last section of the side panel.
 +    static void setAiTabs(SetAiTabsOptions options, optional VoidCallback callback);
 +
-+    // 风桥 N7：左下「已连接 N 个 AI」卡片与面板的数据。
++    // Windrise N7: data for the bottom-left connected-AI card and panel.
 +    static void setConnectedAis(
 +        SetConnectedAisOptions options,
 +        optional VoidCallback callback);
 +
-+    // 风桥 N11：开关某个标签的 AI 操作光效。
++    // Windrise N11: turns the AI operation edge light on or off for a tab.
 +    static void setAiActivity(
 +        SetAiActivityOptions options,
 +        optional VoidCallback callback);
 +
-+    // 风桥 N11：AI 每做一个动作（点击、输入、翻页、滚动）调一次，边缘光效
-+    // 按脉冲包络亮一下。标签没在被操作（没开 setAiActivity）时忽略。
++    // Windrise N11: called once per AI action (click, typing, navigation,
++    // scroll) so the edge light pulses. Ignored unless setAiActivity is on.
 +    static void pulseAiActivity(
 +        PulseAiActivityOptions options,
 +        optional VoidCallback callback);
@@ -246,8 +246,8 @@ index 0000000000..64f7a1603a
 +    // owns what "grid mode" looks like; the browser only reports the click.
 +    static void onGridButtonClicked();
 +
-+    // 风桥 N7：面板底部按钮被点了。|action| 是 "open_app"、"grid" 或
-+    // "settings"。
++    // Windrise N7: a panel footer button was clicked. |action| is "open_app",
++    // "grid" or "settings".
 +    static void onAiPanelAction(DOMString action);
 +  };
 +};
