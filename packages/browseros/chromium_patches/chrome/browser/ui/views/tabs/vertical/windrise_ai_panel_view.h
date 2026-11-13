@@ -14,7 +14,7 @@ index 0000000000..454ddf6ad2
 +#include "base/memory/raw_ptr.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
-+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
++#include "ui/views/layout/box_layout_view.h"
 +
 +class BrowserWindowInterface;
 +
@@ -37,7 +37,7 @@ index 0000000000..454ddf6ad2
 +  void NotifyAction(const char* action);
 +
 +  raw_ptr<BrowserWindowInterface> browser_ = nullptr;
-+  raw_ptr<views::View> rows_container_ = nullptr;
++  raw_ptr<views::BoxLayoutView> rows_container_ = nullptr;
 +  base::CallbackListSubscription state_subscription_;
 +};
 +
