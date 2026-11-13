@@ -44,7 +44,6 @@ index e88955ec6c..bb1f5a3772 100644
 +    "//extensions/common",
 +    "//skia",
 +    "//ui/base",
-+    "//ui/base:l10n",
 +    "//ui/base/metadata",
 +    "//ui/base/mojom",
 +    "//ui/color",

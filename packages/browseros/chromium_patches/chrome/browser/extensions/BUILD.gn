@@ -40,7 +40,6 @@ index aa70420..fbf8b44 100644
 +      "//chrome/browser/browseros/core:ai_state",
 +      "//chrome/browser/browseros/core:prefs",
 +      "//chrome/browser/browseros/metrics",
-+      "//ui/base/l10n",
        "//components/media_device_salt",
        "//components/navigation_interception",
        "//components/net_log",
