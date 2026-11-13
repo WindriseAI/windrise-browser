@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.cc b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
 new file mode 100644
-index 0000000000..fe3edb3012
+index 0000000000..4d4c54be2a
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
-@@ -0,0 +1,925 @@
+@@ -0,0 +1,932 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -306,6 +306,13 @@ index 0000000000..fe3edb3012
 +  views::View::AddedToWidget();
 +  // 要求显示时本层还没进 widget（没有合成器）：这里补一次。
 +  ApplyWantedState();
++  // 动画进行中被挪出 / 挪回 widget（RemovedFromWidget 摘掉了观察者）：接着走。
++  if (phase_ == Phase::kRampingUp || phase_ == Phase::kRampingDown) {
++    phase_start_pending_ = true;
++    appear_from_ = appear_;
++    corner_from_ = corner_progress_;
++    ObserveCompositor();
++  }
 +}
 +
 +void WindriseEdgeLightView::RemovedFromWidget() {
