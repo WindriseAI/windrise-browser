@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..6ca6efa48b
+index 0000000000..f1fc0dbd8e
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,320 @@
+@@ -0,0 +1,294 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -84,23 +84,6 @@ index 0000000000..6ca6efa48b
 +     "browseros.windrise.theme.light.ai_card_background_bottom",
 +     "browseros.windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
 +     0xE2E6EA},
-+    // 来自 native/silver_wave.sksl 第四版：雾 (0.690,0.722,0.757)、晕
-+    // (0.549,0.588,0.631)→(0.957,0.965,0.973)、芯 (0.478,0.522,0.573)→白。
-+    {ThemeToken::kSilverWaveWash,
-+     "browseros.windrise.theme.light.silver_wave_wash",
-+     "browseros.windrise.theme.dark.silver_wave_wash", 0xB0B8C1, 0xB0B8C1},
-+    {ThemeToken::kSilverWaveSoftDeep,
-+     "browseros.windrise.theme.light.silver_wave_soft_deep",
-+     "browseros.windrise.theme.dark.silver_wave_soft_deep", 0x8C96A1, 0x8C96A1},
-+    {ThemeToken::kSilverWaveSoftBright,
-+     "browseros.windrise.theme.light.silver_wave_soft_bright",
-+     "browseros.windrise.theme.dark.silver_wave_soft_bright", 0xF4F6F8, 0xF4F6F8},
-+    {ThemeToken::kSilverWaveCoreDeep,
-+     "browseros.windrise.theme.light.silver_wave_core_deep",
-+     "browseros.windrise.theme.dark.silver_wave_core_deep", 0x7A8592, 0x7A8592},
-+    {ThemeToken::kSilverWaveCoreBright,
-+     "browseros.windrise.theme.light.silver_wave_core_bright",
-+     "browseros.windrise.theme.dark.silver_wave_core_bright", 0xFFFFFF, 0xFFFFFF},
 +};
 +
 +// 布局默认值来自 browser-theme-v2.md 第 3 节与内部页样式表（圆角 s/m/l）。
@@ -170,23 +153,14 @@ index 0000000000..6ca6efa48b
 +     "browseros.windrise.layout.ai_panel_row_height", 35},
 +    {LayoutMetric::kAiPanelButtonHeight,
 +     "browseros.windrise.layout.ai_panel_button_height", 36},
-+    // N10 / N11：窗口圆角取 Windows 11 的 8；银浪外扩 24、往里最多 44、往外最多
-+    // 16，起 420ms、收 200ms（review-animations：系统响应要快收），开场那一道
-+    // 900ms（方案 N11 细节）。
++    // N10：窗口圆角取 Windows 11 的 8；AI 操作时网页区四角 12 -> 36，300ms
++    // （方案 N10，11-13 用户确认）。
 +    {LayoutMetric::kWindowCornerRadius,
 +     "browseros.windrise.layout.window_corner_radius", 8},
-+    {LayoutMetric::kSilverWaveSpread,
-+     "browseros.windrise.layout.silver_wave_spread", 24},
-+    {LayoutMetric::kSilverWaveInwardMax,
-+     "browseros.windrise.layout.silver_wave_inward_max", 44},
-+    {LayoutMetric::kSilverWaveOutwardMax,
-+     "browseros.windrise.layout.silver_wave_outward_max", 16},
-+    {LayoutMetric::kSilverWaveFadeInMs,
-+     "browseros.windrise.layout.silver_wave_fade_in_ms", 420},
-+    {LayoutMetric::kSilverWaveFadeOutMs,
-+     "browseros.windrise.layout.silver_wave_fade_out_ms", 200},
-+    {LayoutMetric::kSilverWaveIntroMs,
-+     "browseros.windrise.layout.silver_wave_intro_ms", 900},
++    {LayoutMetric::kWebContentsRadiusAi,
++     "browseros.windrise.layout.web_contents_radius_ai", 36},
++    {LayoutMetric::kWebContentsRadiusAiMs,
++     "browseros.windrise.layout.web_contents_radius_ai_ms", 300},
 +};
 +
 +namespace {

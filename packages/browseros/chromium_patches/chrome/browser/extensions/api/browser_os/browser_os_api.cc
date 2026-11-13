@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..859aabf524
+index 0000000000..dd2a61f13b
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,677 @@
+@@ -0,0 +1,709 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -11,6 +11,7 @@ index 0000000000..859aabf524
 +#include "chrome/browser/extensions/api/browser_os/browser_os_api.h"
 +
 +#include <algorithm>
++#include <cmath>
 +#include <cstring>
 +#include <memory>
 +#include <optional>
@@ -676,6 +677,37 @@ index 0000000000..859aabf524
 +    return RespondNow(Error("No browser window state"));
 +  }
 +  ai_state->SetActivity(params->options.tab_id, params->options.active);
++  return RespondNow(NoArguments());
++}
++
++ExtensionFunction::ResponseAction BrowserOSPulseAiActivityFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  std::optional<browser_os::PulseAiActivity::Params> params =
++      browser_os::PulseAiActivity::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  BrowserWindowInterface* browser =
++      FindBrowserForTabId(profile, params->options.tab_id);
++  if (!browser) {
++    return RespondNow(
++        Error(base::StringPrintf("No tab with id: %d", params->options.tab_id)));
++  }
++  browseros::windrise::AiWindowState* ai_state =
++      browseros::windrise::AiWindowState::From(browser);
++  if (!ai_state) {
++    return RespondNow(Error("No browser window state"));
++  }
++  // 位置两个都给、且是有限数才算；其余当作没给（整圈一起亮），不报错。
++  std::optional<std::pair<float, float>> point;
++  if (params->options.x && params->options.y &&
++      std::isfinite(*params->options.x) && std::isfinite(*params->options.y)) {
++    point = std::make_pair(static_cast<float>(*params->options.x),
++                           static_cast<float>(*params->options.y));
++  }
++  ai_state->PulseActivity(params->options.tab_id, point);
 +  return RespondNow(NoArguments());
 +}
 +

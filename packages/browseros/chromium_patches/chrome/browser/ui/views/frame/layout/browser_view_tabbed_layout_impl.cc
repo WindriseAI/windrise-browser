@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a6..b9daa15 100644
+index b1ea4a69f4..3ad551ca6b 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -19,7 +19,7 @@ index b1ea4a6..b9daa15 100644
  
  // Maximum portion of the window a "size-restricted" contents-height side panel
  // can take up. This is not the only limit on side panel size.
-@@ -1586,11 +1587,20 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
+@@ -1586,11 +1587,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
  
  void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
      const BrowserLayoutParams& params) {
@@ -32,6 +32,8 @@ index b1ea4a6..b9daa15 100644
 +  // browseros.windrise.layout.web_contents_radius，默认 12），四边缝 0；全屏 /
 +  // 网页全屏时圆角回 0。下两角跟窗口自身的圆角（Windows 11 由系统裁），所以
 +  // 这里只在下边沿用上游逻辑给一个 leading corner。
++  // 这是「基准」半径；AI 操作时 12 -> 36 的过渡（逐角，300ms）叠加在
++  // ContentsContainerView 里，不在这里改。
 +  gfx::RoundedCornersF content_corners;
 +  const bool vertical_and_windowed =
 +      layout_data_->tab_strip_type == TabStripType::kVertical &&
@@ -45,7 +47,7 @@ index b1ea4a6..b9daa15 100644
        // Note that this will set a lower leading corner on the multi contents
        // view even if there's a shadow box, but since the curve is effectively
        // the same this will not produce a visual bug.
-@@ -1602,8 +1612,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1602,8 +1614,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
          content_corners.set_lower_left(radius);
        }
      }

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.cc b/chrome/browser/browseros/core/windrise_ai_state.cc
 new file mode 100644
-index 0000000000..71f2445158
+index 0000000000..caa79e50cf
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.cc
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,213 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -178,6 +178,20 @@ index 0000000000..71f2445158
 +  NotifyIfChanged(true);
 +}
 +
++void AiWindowState::PulseActivity(
++    int tab_id,
++    std::optional<std::pair<float, float>> point) {
++  AiPulse pulse;
++  pulse.tab_id = tab_id;
++  pulse.has_point = point.has_value();
++  if (point) {
++    pulse.x = point->first;
++    pulse.y = point->second;
++  }
++  pulse.time = base::TimeTicks::Now();
++  pulse_observers_.Notify(pulse);
++}
++
 +bool AiWindowState::IsAiTab(int tab_id) const {
 +  return HasTabId(state_.ai_tab_ids, tab_id);
 +}
@@ -189,6 +203,11 @@ index 0000000000..71f2445158
 +base::CallbackListSubscription AiWindowState::AddObserver(
 +    base::RepeatingClosure callback) {
 +  return observers_.Add(std::move(callback));
++}
++
++base::CallbackListSubscription AiWindowState::AddPulseObserver(
++    base::RepeatingCallback<void(const AiPulse&)> callback) {
++  return pulse_observers_.Add(std::move(callback));
 +}
 +
 +void AiWindowState::NotifyIfChanged(bool changed) {

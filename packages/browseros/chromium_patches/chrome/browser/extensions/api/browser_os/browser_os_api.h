@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.h b/chrome/browser/extensions/api/browser_os/browser_os_api.h
 new file mode 100644
-index 0000000..1325e56
+index 0000000000..169ee371b8
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.h
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,188 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -172,6 +172,19 @@ index 0000000..1325e56
 +
 + protected:
 +  ~BrowserOSSetAiActivityFunction() override = default;
++
++  ResponseAction Run() override;
++};
++
++class BrowserOSPulseAiActivityFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.pulseAiActivity",
++                             BROWSER_OS_PULSEAIACTIVITY)
++
++  BrowserOSPulseAiActivityFunction() = default;
++
++ protected:
++  ~BrowserOSPulseAiActivityFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
-index 268324dce9..365fe51fb6 100644
+index 268324dce9..11d1cd994c 100644
 --- a/chrome/browser/ui/views/frame/BUILD.gn
 +++ b/chrome/browser/ui/views/frame/BUILD.gn
 @@ -553,6 +553,10 @@ source_set("vertical_tab_strip_region_view") {
@@ -21,7 +21,18 @@ index 268324dce9..365fe51fb6 100644
      "//chrome/browser/ui/web_applications",
      "//ui/base/dragdrop:types",
      "//ui/compositor",
-@@ -3026,6 +3031,8 @@ source_set("browser_view_tabbed_layout_impl") {
+@@ -1635,7 +1640,10 @@ source_set("multi_contents_background_view_impl") {
+   public_deps = [ ":multi_contents_background_view" ]
+   deps = [
+     ":themed_background",
++    # 风桥 N10：单窗口态背景视图用 kColorWindriseWebContentsGap 填窗口底色。
++    "//chrome/browser/ui/color:color_headers",
+     "//ui/base/metadata",
++    "//ui/color",
+     "//ui/compositor",
+     "//ui/gfx/geometry",
+   ]
+@@ -3026,6 +3034,8 @@ source_set("browser_view_tabbed_layout_impl") {
      "//build:buildflag_header_h",
      "//chrome/browser/ui:layout_constants",
      "//chrome/browser/ui:ui_features",
@@ -30,20 +41,22 @@ index 268324dce9..365fe51fb6 100644
      "//chrome/browser/ui/browser_window",
      "//chrome/browser/ui/color:color_headers",
      "//chrome/browser/ui/immersive:immersive_mode_controller",
-@@ -3142,7 +3149,11 @@ source_set("contents_container_view") {
+@@ -3142,7 +3152,13 @@ source_set("contents_container_view") {
  }
  
  source_set("contents_container_view_impl") {
 -  sources = [ "contents_container_view.cc" ]
 +  sources = [
 +    "contents_container_view.cc",
-+    "windrise_silver_wave_view.cc",
-+    "windrise_silver_wave_view.h",
++    "windrise_edge_light_model.cc",
++    "windrise_edge_light_model.h",
++    "windrise_edge_light_view.cc",
++    "windrise_edge_light_view.h",
 +  ]
    public_deps = [ ":contents_container_view" ]
    deps = [
      ":browser_view_header",
-@@ -3155,11 +3166,16 @@ source_set("contents_container_view_impl") {
+@@ -3155,9 +3171,13 @@ source_set("contents_container_view_impl") {
      ":top_container_view",
      "//base",
      "//base:i18n",
@@ -56,11 +69,8 @@ index 268324dce9..365fe51fb6 100644
 +    "//chrome/browser/extensions",
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
-+    "//chrome/browser/glic/resources:browser_resources",
      "//chrome/browser/glic/browser_ui:glow_controller",
-     "//chrome/browser/ui:browser_element_identifiers",
-     "//chrome/browser/ui:ui_features",
-@@ -3171,9 +3187,13 @@ source_set("contents_container_view_impl") {
+@@ -3171,11 +3191,17 @@ source_set("contents_container_view_impl") {
      "//chrome/common:chrome_features",
      "//components/search",
      "//content/public/browser",
@@ -73,4 +83,8 @@ index 268324dce9..365fe51fb6 100644
 +    "//ui/gfx/animation",
      "//ui/gfx/geometry",
      "//ui/views",
++    # 风桥 N11 边缘光效：CopyFromSurface 的结果类型在 viz 里。
++    "//components/viz/common",
    ]
+ }
+ 

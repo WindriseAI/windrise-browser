@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000..82e575f
+index 0000000000..64f7a1603a
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,247 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -88,13 +88,24 @@ index 0000000..82e575f
 +    AiConnection[] connections;
 +  };
 +
-+  // Options for setAiActivity（N11 银色海浪）。
++  // Options for setAiActivity（N11 边缘光效）。
 +  dictionary SetAiActivityOptions {
 +    // 正在被 AI 操作的标签。
 +    long tabId;
 +
 +    // true = 开始画光效，false = 淡出。
 +    boolean active;
++  };
++
++  // Options for pulseAiActivity（N11 边缘光效：AI 每做一个动作一次）。
++  dictionary PulseAiActivityOptions {
++    // 做动作的标签。
++    long tabId;
++
++    // 动作位置，网页里的逻辑像素坐标（相对网页区左上角），两个都给才算；
++    // 省略时脉冲不带位置，整圈一起亮。
++    double? x;
++    double? y;
 +  };
 +
 +  // Settings-related types
@@ -207,6 +218,12 @@ index 0000000..82e575f
 +    // 风桥 N11：开关某个标签的 AI 操作光效。
 +    static void setAiActivity(
 +        SetAiActivityOptions options,
++        optional VoidCallback callback);
++
++    // 风桥 N11：AI 每做一个动作（点击、输入、翻页、滚动）调一次，边缘光效
++    // 按脉冲包络亮一下。标签没在被操作（没开 setAiActivity）时忽略。
++    static void pulseAiActivity(
++        PulseAiActivityOptions options,
 +        optional VoidCallback callback);
 +
 +    // Shows, updates or hides the generic address bar slot for a tab.

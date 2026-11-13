@@ -436,7 +436,6 @@ features:
   cdp-fixes:
     description: "fix: chrome devtools protocol fixes"
     files:
-      - chrome/browser/extensions/api/debugger/debugger_api.cc
       - content/browser/devtools/protocol/target_handler.cc
 
   side-panel-fixes:

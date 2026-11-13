@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..9808ac3818
+index 0000000000..152111334e
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,184 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -58,15 +58,9 @@ index 0000000000..9808ac3818
 +  kAiPanelButtonBackground,  // 面板按钮底（白玻璃的平涂近似）
 +  kAiCardBackgroundTop,      // 卡片底：B 版银色玻璃渐变的上端（#F1F3F5）
 +  kAiCardBackgroundBottom,   // 卡片底：渐变的下端（#E2E6EA）
-+  // N11 银色海浪（取值来自 native/silver_wave.sksl 第四版里的常量）
-+  kSilverWaveWash,        // 雾：浅银灰
-+  kSilverWaveSoftDeep,    // 晕的暗处（深银）
-+  kSilverWaveSoftBright,  // 晕的亮处
-+  kSilverWaveCoreDeep,    // 芯的暗处
-+  kSilverWaveCoreBright,  // 芯的亮处
 +};
 +inline constexpr size_t kThemeTokenCount =
-+    static_cast<size_t>(ThemeToken::kSilverWaveCoreBright) + 1;
++    static_cast<size_t>(ThemeToken::kAiCardBackgroundBottom) + 1;
 +
 +// 布局数值 token（像素）。
 +enum class LayoutMetric {
@@ -108,15 +102,13 @@ index 0000000000..9808ac3818
 +  kAiPanelButtonHeight,    // 面板按钮高
 +  // N10 / N11
 +  kWindowCornerRadius,       // 窗口圆角（Windows 11 系统裁出来的那 8px）
-+  kSilverWaveSpread,         // 银浪层向网页区外扩的距离（外溢辉光）
-+  kSilverWaveInwardMax,      // 银浪往里羽化的最大宽度
-+  kSilverWaveOutwardMax,     // 银浪往外的最大宽度
-+  kSilverWaveFadeInMs,       // 起：亮起时长
-+  kSilverWaveFadeOutMs,      // 收：淡出时长
-+  kSilverWaveIntroMs,        // 开场那一道沿边跑一圈的时长
++  // AI 操作时网页区四角的过渡目标半径（N10，11-13 定 12 -> 36）与时长。边缘光
++  // 效（N11）的外沿贴着这个动画值，不另有自己的圆角数值。
++  kWebContentsRadiusAi,
++  kWebContentsRadiusAiMs,
 +};
 +inline constexpr size_t kLayoutMetricCount =
-+    static_cast<size_t>(LayoutMetric::kSilverWaveIntroMs) + 1;
++    static_cast<size_t>(LayoutMetric::kWebContentsRadiusAiMs) + 1;
 +
 +// 颜色 token 的偏好名与编译期默认值。
 +struct ThemeColorSpec {

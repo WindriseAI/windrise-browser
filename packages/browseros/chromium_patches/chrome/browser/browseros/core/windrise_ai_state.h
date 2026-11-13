@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000000..d628b569bf
+index 0000000000..d74f8aed28
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,118 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -18,6 +18,7 @@ index 0000000000..d628b569bf
 +#include "base/callback_list.h"
 +#include "base/functional/callback.h"
 +#include "base/memory/raw_ptr.h"
++#include "base/time/time.h"
 +
 +#include "components/tab_groups/tab_group_id.h"
 +
@@ -26,7 +27,8 @@ index 0000000000..d628b569bf
 +// 扩展推给浏览器的 AI 运行状态，按浏览器窗口保存。三个消费点：
 +// - N6 侧边栏上下分段：哪些标签是 AI 的（ai_tab_ids）与当前 AI 名；
 +// - N7 左下「已连接 N 个 AI」卡片与面板：connections；
-+// - N11 银色海浪：哪些标签正在被 AI 操作（active_tab_ids）。
++// - N11 边缘光效：哪些标签正在被 AI 操作（active_tab_ids），以及 AI 每个动作
++//   一次的脉冲（PulseActivity，不进 AiState：脉冲是一次性事件，不是状态）。
 +//
 +// 生命周期：窗口里的视图用 Attach()/Detach() 成对登记（引用计数），最后一个视图
 +// 走掉时整条记录连同数据一起删。扩展接口只读 Get()，视图层只听 AddObserver()，
@@ -66,6 +68,16 @@ index 0000000000..d628b569bf
 +  static bool Contains(const tab_groups::TabGroupId& group);
 +};
 +
++// AI 的一次动作（点击、输入、翻页、滚动）。位置是网页里的坐标（逻辑像素，
++// 相对网页区左上角），扩展没给就 has_point = false。
++struct AiPulse {
++  int tab_id = 0;
++  bool has_point = false;
++  float x = 0.0f;
++  float y = 0.0f;
++  base::TimeTicks time;
++};
++
 +class AiWindowState {
 + public:
 +  // 取已有记录；窗口里还没有视图登记时返回 nullptr。
@@ -83,12 +95,18 @@ index 0000000000..d628b569bf
 +  void SetAiGroup(std::optional<tab_groups::TabGroupId> group);
 +  void SetConnections(std::vector<AiConnection> connections);
 +  void SetActivity(int tab_id, bool active);
++  // 扩展每个 AI 动作调一次。只通知脉冲观察者，不改状态；某个标签没在被操作时
++  // 观察者自己忽略。
++  void PulseActivity(int tab_id, std::optional<std::pair<float, float>> point);
 +
 +  const AiState& state() const { return state_; }
 +  bool IsAiTab(int tab_id) const;
 +  bool IsActive(int tab_id) const;
 +
 +  base::CallbackListSubscription AddObserver(base::RepeatingClosure callback);
++  // 脉冲观察者：回调里带载荷，和上面「状态变了」的无参观察者分开。
++  base::CallbackListSubscription AddPulseObserver(
++      base::RepeatingCallback<void(const AiPulse&)> callback);
 +
 + private:
 +  explicit AiWindowState(BrowserWindowInterface* browser);
@@ -98,6 +116,7 @@ index 0000000000..d628b569bf
 +  raw_ptr<BrowserWindowInterface> browser_;
 +  AiState state_;
 +  base::RepeatingClosureList observers_;
++  base::RepeatingCallbackList<void(const AiPulse&)> pulse_observers_;
 +};
 +
 +}  // namespace browseros::windrise
