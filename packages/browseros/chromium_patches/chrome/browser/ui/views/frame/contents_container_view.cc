@@ -99,7 +99,7 @@ index 413b2f626..d6ece6952 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +359,53 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +359,62 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -111,6 +111,15 @@ index 413b2f626..d6ece6952 100644
 +  if (edge_light_web_view_) {
 +    // 独立层的圆角同上（和 ActorOverlayWebView 一样用 holder 的原生圆角）。
 +    edge_light_web_view_->SetCornerRadii(content_rounded_corners);
++    // 光本身由扩展页画：全屏、devtools 停靠、分屏切换时它该用的角跟着变，
++    // 换一下独立层地址的查询串（只有变了才重新加载，AI 过渡的每一帧不会触发）。
++    if (edge_light_web_view_->shown()) {
++      const GURL url = EdgeLightWebLayerUrl();
++      content::WebContents* layer = edge_light_web_view_->web_contents();
++      if (url.is_valid() && layer && layer->GetVisibleURL() != url) {
++        edge_light_web_view_->SetShown(true, url);
++      }
++    }
 +  }
  }
  
@@ -154,7 +163,7 @@ index 413b2f626..d6ece6952 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +416,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +425,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -164,7 +173,7 @@ index 413b2f626..d6ece6952 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +442,84 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +451,121 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -212,8 +221,45 @@ index 413b2f626..d6ece6952 100644
 +                   [](char c) { return c >= 'a' && c <= 'p'; })) {
 +    return GURL();
 +  }
++  // 光由扩展页自己画、原生只裁剪，所以把光走线该用的四角带给它（放查询串，
++  // #native&w= 不变，旧扩展照旧认得）：r0 = 平时的角，r1 = AI 操作时要到的角。
++  // devtools 停靠侧、新标签页 footer 下边的角两者都是 0（同 SetBorderRoundedCornersFrom
++  // 对网页区的裁剪）；全屏（F11、HTML 元素全屏）、分屏不做 36，r1 = r0
++  // （编译当天清单 §7 第 4 项）。
++  const bool devtools = devtools_web_view_ && devtools_web_view_->GetVisible();
++  const bool footer =
++      new_tab_footer_view_ && new_tab_footer_view_->GetVisible();
++  const DevToolsDockedPlacement dock = current_devtools_docked_placement_;
++  const bool flat_ul = devtools && dock == DevToolsDockedPlacement::kLeft;
++  const bool flat_ur = devtools && dock == DevToolsDockedPlacement::kRight;
++  const bool flat_lr =
++      footer || (devtools && (dock == DevToolsDockedPlacement::kBottom ||
++                              dock == DevToolsDockedPlacement::kRight));
++  const bool flat_ll =
++      footer || (devtools && (dock == DevToolsDockedPlacement::kBottom ||
++                              dock == DevToolsDockedPlacement::kLeft));
++  const auto corners = [&](float ul, float ur, float lr, float ll) {
++    const auto px = [](bool flat, float v) {
++      return base::NumberToString(flat ? 0 : static_cast<int>(v + 0.5f));
++    };
++    return px(flat_ul, ul) + "," + px(flat_ur, ur) + "," + px(flat_lr, lr) +
++           "," + px(flat_ll, ll);
++  };
++  const gfx::RoundedCornersF& base_radii = rounded_corner_radii_;
++  const std::string r0 =
++      corners(base_radii.upper_left(), base_radii.upper_right(),
++              base_radii.lower_right(), base_radii.lower_left());
++  content::WebContents* web_contents = contents_view_->web_contents();
++  const bool ai_corners = !base_radii.IsEmpty() && !is_in_split_ &&
++                          !browser_view_->IsFullscreen() &&
++                          !(web_contents && web_contents->IsFullscreen());
++  const float ai = static_cast<float>(
++      browseros::windrise::GetLayoutMetrics().Get(
++          browseros::windrise::LayoutMetric::kWebContentsRadiusAi));
++  const std::string r1 = ai_corners ? corners(ai, ai, ai, ai) : r0;
 +  // 地址只由扩展 id 拼：路径固定，调用方改不了它指向哪。
-+  return GURL("chrome-extension://" + id + "/edge-light/frame.html#native&w=" +
++  return GURL("chrome-extension://" + id + "/edge-light/frame.html?r0=" + r0 +
++              "&r1=" + r1 + "#native&w=" +
 +              base::NumberToString(extensions::ExtensionTabUtil::GetWindowId(
 +                  browser_view_->browser())));
 +}
@@ -249,7 +295,7 @@ index 413b2f626..d6ece6952 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +715,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +761,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  

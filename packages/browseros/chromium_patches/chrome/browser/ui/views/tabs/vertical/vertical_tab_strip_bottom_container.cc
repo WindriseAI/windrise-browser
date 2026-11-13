@@ -13,7 +13,7 @@ index 64150f8..6629f0e 100644
  #include "chrome/browser/ui/tabs/vertical_tab_strip_state_controller.h"
  #include "chrome/browser/ui/views/frame/browser_view.h"
  #include "chrome/browser/ui/views/tabs/shared/new_tab_button.h"
-@@ -89,10 +91,25 @@ void VerticalTabStripBottomContainer::UpdateButtonStyles(bool collapsed) {
+@@ -89,10 +91,34 @@ void VerticalTabStripBottomContainer::UpdateButtonStyles(bool collapsed) {
    auto orientation = collapsed ? views::LayoutOrientation::kVertical
                                 : views::LayoutOrientation::kHorizontal;
  
@@ -27,6 +27,14 @@ index 64150f8..6629f0e 100644
 +          ? GetLayoutConstant(LayoutConstant::kVerticalTabStripNewTabButtonSize)
 +          : metrics.Get(LayoutMetric::kNewTabButtonHeight);
 +  new_tab_button_->SetMinSize(gfx::Size(0, new_tab_height));
++  // 展开态：横向排、交叉轴不拉伸，高度取首选尺寸 36（甲06 / 乙02），宽度由下面的
++  // flex 规则铺满标签列；收起态回上游的首选尺寸（32 见方图标按钮）。
++  if (collapsed) {
++    new_tab_button_->SetPreferredSize(std::nullopt);
++  } else {
++    new_tab_button_->SetPreferredSize(
++        gfx::Size(new_tab_height, new_tab_height));
++  }
 +  new_tab_button_->SetCornerRadius(
 +      static_cast<float>(metrics.Get(LayoutMetric::kTabRadius)));
 +  new_tab_button_->SetBackgroundColorId(kColorWindriseTileBackground);
@@ -35,13 +43,12 @@ index 64150f8..6629f0e 100644
 +
    // Setting button's layout based on collapsed state
    SetOrientation(orientation);
--  SetCrossAxisAlignment(collapsed ? views::LayoutAlignment::kStretch
--                                  : views::LayoutAlignment::kStart);
-+  SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+   SetCrossAxisAlignment(collapsed ? views::LayoutAlignment::kStretch
+                                   : views::LayoutAlignment::kStart);
  
    new_tab_button_->SetProperty(
        views::kFlexBehaviorKey,
-@@ -102,9 +119,10 @@ void VerticalTabStripBottomContainer::UpdateButtonStyles(bool collapsed) {
+@@ -102,9 +128,10 @@ void VerticalTabStripBottomContainer::UpdateButtonStyles(bool collapsed) {
                      : views::MaximumFlexSizeRule::kUnbounded,
            false, views::MinimumFlexSizeRule::kPreferred));
  

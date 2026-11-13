@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resour
 index f478ceca5c..9003c7e903 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,95 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,102 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -22,8 +22,15 @@ index f478ceca5c..9003c7e903 100644
 + *
 + * html / body 两条规则对所有内部页共用；--color-sys-* 由 ColorMixer 补丁
 + * （windrise_color_mixer.cc）从同一组偏好值给出，这里写的是同值兜底。
++ *
++ * 暗色分支等于亮色（已定事项 丙11）：选择器用 html:not(#wr-tokens)（一个 id 级的
++ * 特异度，任何 html 都匹配），压过上游 html[webui-refresh-2026]、html[dark] 和主题
++ * 色表在暗色下给 html 的同名变量；再加 color-scheme: light，滚动条、表单控件也走亮色。
++ * 第三包深色设置页「黑字压深灰卡片」（V6）就是暗色下卡片底被更高特异度的规则换掉、
++ * 字仍是这里的墨色造成的。
 + */
-+html:where(*) {
++html:not(#wr-tokens) {
++  color-scheme: light;
 +  --wr-text: #0E1116;
 +  --wr-text-2: #4A515C;
 +  --wr-line: #C9CED5;
