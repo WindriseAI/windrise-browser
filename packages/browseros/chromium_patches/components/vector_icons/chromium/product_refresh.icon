@@ -1,8 +1,8 @@
 diff --git a/components/vector_icons/chromium/product_refresh.icon b/components/vector_icons/chromium/product_refresh.icon
-index 9551dab..71b7d9c 100644
+index 9551dab..8ef0d89 100644
 --- a/components/vector_icons/chromium/product_refresh.icon
 +++ b/components/vector_icons/chromium/product_refresh.icon
-@@ -3,77 +3,447 @@
+@@ -3,77 +3,446 @@
  // found in the LICENSE file.
  
  CANVAS_DIMENSIONS, 24,
@@ -14,7 +14,6 @@ index 9551dab..71b7d9c 100644
 -CUBIC_TO, 18, 8.68, 15.31, 5.99, 12, 5.99,
 -CUBIC_TO, 8.69, 5.99, 6, 8.68, 6, 11.99,
 -CUBIC_TO, 6, 15.31, 8.69, 17.99, 12, 17.99,
-+PATH_COLOR_ARGB, 0xFF, 0x14, 0x17, 0x1C,
 +MOVE_TO, 17.54f, 9.86f,
 +LINE_TO, 17.42f, 9.59f,
 +LINE_TO, 17.28f, 9.33f,
