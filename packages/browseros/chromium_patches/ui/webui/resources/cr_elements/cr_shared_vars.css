@@ -1,8 +1,8 @@
 diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
-index f478cec..5054f8c 100644
+index f478ceca5c..9003c7e903 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,89 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,95 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -23,7 +23,7 @@ index f478cec..5054f8c 100644
 + * html / body 两条规则对所有内部页共用；--color-sys-* 由 ColorMixer 补丁
 + * （windrise_color_mixer.cc）从同一组偏好值给出，这里写的是同值兜底。
 + */
-+html {
++html:where(*) {
 +  --wr-text: #0E1116;
 +  --wr-text-2: #4A515C;
 +  --wr-line: #C9CED5;
@@ -38,14 +38,19 @@ index f478cec..5054f8c 100644
 +    linear-gradient(135deg, #D5DADF, #AEB6BF 42%, #C3CAD1 72%, #EDEFF1);
 +
 +  /* 蓝色整组改墨色：强调色只有墨色（internal-style-v1 第 1 节） */
-+  --google-blue-50-rgb: 232, 235, 238; --google-blue-100-rgb: 221, 225, 229;
-+  --google-blue-300-rgb: 60, 67, 77; --google-blue-400-rgb: 60, 67, 77;
-+  --google-blue-500-rgb: 14, 17, 22; --google-blue-600-rgb: 14, 17, 22;
-+  --google-blue-700-rgb: 14, 17, 22; --google-blue-800-rgb: 14, 17, 22; --google-blue-900-rgb: 14, 17, 22;
++  --google-blue-50-rgb: 232, 235, 238;
++  --google-blue-100-rgb: 221, 225, 229;
++  --google-blue-300-rgb: 60, 67, 77;
++  --google-blue-400-rgb: 60, 67, 77;
++  --google-blue-500-rgb: 14, 17, 22;
++  --google-blue-600-rgb: 14, 17, 22;
++  --google-blue-700-rgb: 14, 17, 22;
++  --google-blue-800-rgb: 14, 17, 22;
++  --google-blue-900-rgb: 14, 17, 22;
 +
 +  /* ColorMixer 的系统色（同值兜底） */
 +  --color-sys-primary: #0E1116;
-+  --color-sys-on-primary: #FFFFFF;
++  --color-sys-on-primary: #FFF;
 +  --color-sys-tonal-container: #E8EBEE;
 +  --color-sys-on-tonal-container: #0E1116;
 +  --color-sys-surface: transparent;
@@ -63,7 +68,7 @@ index f478cec..5054f8c 100644
 +  --color-secondary-foreground: #4A515C;
 +  --color-link-foreground-default: #0E1116;
 +  --color-checkbox-foreground-checked: #0E1116;
-+  --color-toggle-button-thumb-on: #FFFFFF;
++  --color-toggle-button-thumb-on: #FFF;
 +  --color-toggle-button-track-on: #0E1116;
 +  --color-webui-card-background: rgb(255 255 255 / .74);
 +  --color-toolbar-background: transparent;
@@ -86,8 +91,9 @@ index f478cec..5054f8c 100644
 +  --cr-hover-background-color: rgb(20 23 28 / .06);
 +  --cr-toolbar-height: 56px;
 +
-+  font-family: "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
++  font-family: 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
 +}
++
 +body {
 +  background: var(--wr-page-bg) fixed !important;
 +  color: var(--wr-text);
