@@ -1,13 +1,14 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.h b/chrome/browser/ui/views/frame/contents_container_view.h
-index e3ae9d104d..899377dd57 100644
+index e3ae9d104db2d7e03712a6f0dbc3c4c2f34af0d8..bceff72ce6ebcaba389ff73376a11915ceebbf41 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.h
 +++ b/chrome/browser/ui/views/frame/contents_container_view.h
 @@ -7,22 +7,33 @@
  
  #include <memory>
  #include <optional>
+-
 +#include <string>
- 
++
 +#include "base/callback_list.h"
  #include "base/memory/raw_ptr.h"
  #include "base/scoped_observation.h"
@@ -36,7 +37,7 @@ index e3ae9d104d..899377dd57 100644
  class ActorOverlayWebView;
  class ReadAnythingImmersiveOverlayView;
  
-@@ -154,6 +165,27 @@ class ContentsContainerView : public views::View,
+@@ -154,6 +165,27 @@
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
@@ -64,7 +65,7 @@ index e3ae9d104d..899377dd57 100644
    // views::View:
    void ChildVisibilityChanged(View* child) override;
    void Layout(PassKey) override;
-@@ -169,6 +201,19 @@ class ContentsContainerView : public views::View,
+@@ -169,6 +201,20 @@
    bool is_in_split_ = false;
  
    raw_ptr<BrowserView> browser_view_ = nullptr;
@@ -72,6 +73,7 @@ index e3ae9d104d..899377dd57 100644
 +  raw_ptr<WindriseEdgeLightView> edge_light_view_ = nullptr;
 +  base::CallbackListSubscription ai_state_subscription_;
 +  base::CallbackListSubscription ai_pulse_subscription_;
++  base::CallbackListSubscription assistant_authority_subscription_;
 +  // N10：AI 操作时网页角过渡进度（0 = 基准，1 = 36）与最近一次应用的有效圆角。
 +  float ai_corner_progress_ = 0.0f;
 +  gfx::RoundedCornersF last_effective_radii_;

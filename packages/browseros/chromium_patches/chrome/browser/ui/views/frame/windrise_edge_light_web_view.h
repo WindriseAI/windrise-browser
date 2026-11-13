@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h
 new file mode 100644
-index 0000000000..a166e6a020
+index 0000000000000000000000000000000000000000..367a3e827da3e75b03e54aebef8b5a2d145ad321
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_web_view.h
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,68 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -50,6 +50,8 @@ index 0000000000..a166e6a020
 +  // url 变了（扩展换了 / 重装换了 id）就重新加载。
 +  void SetShown(bool shown, const GURL& url);
 +  bool shown() const { return shown_; }
++  // Drop the owned WebContents and its compositor surface on authority loss.
++  void Revoke();
 +
 +  // 和网页区同一组四角半径（含 N10 的 AI 过渡）。
 +  void SetCornerRadii(const gfx::RoundedCornersF& radii);
