@@ -191,8 +191,8 @@ index 0000000000..f1fc0dbd8e
 +}
 +
 +Snapshot& GetSnapshot() {
-+  static base::NoDestructor<Snapshot> snapshot(MakeDefaultSnapshot());
-+  return *snapshot;
++  static Snapshot snapshot = MakeDefaultSnapshot();
++  return snapshot;
 +}
 +
 +}  // namespace
