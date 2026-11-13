@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/BUILD.gn b/chrome/browser/extensions/BUILD.gn
-index aa70420..fbf8b44 100644
+index aa70420081..3757ee2714 100644
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
 @@ -353,6 +353,12 @@ source_set("extensions") {
@@ -30,7 +30,7 @@ index aa70420..fbf8b44 100644
        "api/chrome_device_permissions_prompt.h",
        "api/enterprise_reporting_private/conversion_utils.cc",
        "api/enterprise_reporting_private/conversion_utils.h",
-@@ -1062,6 +1076,13 @@ source_set("extensions") {
+@@ -1062,6 +1076,12 @@ source_set("extensions") {
        "//components/language/core/common",
        "//components/language/core/language_model",
        "//components/live_caption:constants",
