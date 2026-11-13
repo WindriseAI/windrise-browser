@@ -2,7 +2,7 @@ diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.cc b/chrome/
 new file mode 100644
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,53 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +//
@@ -14,6 +14,7 @@ new file mode 100644
 +
 +#include "chrome/browser/ui/views/frame/windrise_edge_light_view.h"
 +
++#include "content/public/browser/gpu_data_manager.h"
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +
 +WindriseEdgeLightView::WindriseEdgeLightView() = default;
