@@ -44,7 +44,7 @@ index 0000000000..b387fc3113
 +          base::Unretained(this))),
 +      browser_(browser) {
 +  SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
-+  SetTooltipText(GetText());
++  SetTooltipText(std::u16string(GetText()));
 +  SetDefaultBackgroundColorId(kColorWindriseTileBackground);
 +  UpdateIconsWithStandardColors(kGridViewIcon);
 +  ApplyStyleFromPrefs();
