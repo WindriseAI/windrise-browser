@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..7e49e8b1fb 100644
+index 413b2f626d..2afe0d4860 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
-@@ -4,12 +4,16 @@
+@@ -4,12 +4,17 @@
  
  #include "chrome/browser/ui/views/frame/contents_container_view.h"
  
@@ -14,12 +14,13 @@ index 413b2f626d..7e49e8b1fb 100644
 +#include "base/functional/bind.h"
  #include "base/i18n/rtl.h"
  #include "chrome/browser/actor/ui/actor_overlay_web_view.h"
++#include "chrome/browser/browseros/core/browseros_prefs.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
  #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
  #include "chrome/browser/enterprise/data_protection/data_protection_overlay_view.h"
  #include "chrome/browser/glic/browser_ui/context_sharing_border_view.h"
-@@ -20,11 +24,13 @@
+@@ -20,11 +25,18 @@
  #include "chrome/browser/ui/read_anything/read_anything_immersive_overlay_view.h"
  #include "chrome/browser/ui/ui_features.h"
  #include "chrome/browser/ui/view_ids.h"
@@ -30,10 +31,15 @@ index 413b2f626d..7e49e8b1fb 100644
  #include "chrome/browser/ui/views/frame/contents_separator.h"
  #include "chrome/browser/ui/views/frame/contents_web_view.h"
 +#include "chrome/browser/ui/views/frame/windrise_edge_light_view.h"
++#include "chrome/browser/ui/views/frame/windrise_edge_light_web_view.h"
++#include "base/strings/string_number_conversions.h"
++#include "chrome/browser/profiles/profile.h"
++#include "components/prefs/pref_service.h"
++#include "url/gurl.h"
  #include "chrome/browser/ui/views/frame/multi_contents_view_mini_toolbar.h"
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/frame/tab_modal_dialog_host.h"
-@@ -156,6 +162,23 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -156,6 +168,36 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
              .Build());
    }
  
@@ -43,6 +49,19 @@ index 413b2f626d..7e49e8b1fb 100644
 +  edge_light_view_->SetCanProcessEventsWithinSubtree(false);
 +  edge_light_view_->SetCornerProgressCallback(base::BindRepeating(
 +      &ContentsContainerView::OnAiCornerProgress, base::Unretained(this)));
++  // 风桥 N11 独立层：和光效层同一个位置、在它上面；平时不建网页视图（第一次显示才建）。
++  edge_light_web_view_ = AddChildView(
++      std::make_unique<WindriseEdgeLightWebView>(browser_view->browser()));
++  // 光效画在哪由偏好定，扩展经 browserOS.setEdgeLightMode 写；改了立刻生效。
++  edge_light_prefs_.Init(browser_view->GetProfile()->GetPrefs());
++  edge_light_prefs_.Add(
++      browseros::prefs::kWindriseEdgeLightMode,
++      base::BindRepeating(&ContentsContainerView::ApplyEdgeLightMode,
++                          base::Unretained(this)));
++  edge_light_prefs_.Add(
++      browseros::prefs::kWindriseEdgeLightExtensionId,
++      base::BindRepeating(&ContentsContainerView::ApplyEdgeLightMode,
++                          base::Unretained(this)));
 +  // 析构时 BrowserView 的成员可能已经先拆掉了，所以这里把窗口指针存下来，
 +  // 析构只用它做 Detach 的键。
 +  windrise_ai_window_ = browser_view->browser();
@@ -57,16 +76,18 @@ index 413b2f626d..7e49e8b1fb 100644
    mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
        browser_view, contents_view_));
  
-@@ -166,9 +189,18 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
+@@ -166,9 +208,20 @@ ContentsContainerView::ContentsContainerView(BrowserView* browser_view)
        AddChildView(std::make_unique<ContentsCaptureBorderView>(mini_toolbar_));
  
    view_bounds_observer_.Observe(contents_view_);
-+  UpdateEdgeLight();
++  ApplyEdgeLightMode();
  }
  
  ContentsContainerView::~ContentsContainerView() {
 +  ai_state_subscription_ = {};
 +  ai_pulse_subscription_ = {};
++  edge_light_prefs_.RemoveAll();
++  edge_light_web_view_ = nullptr;
 +  if (edge_light_view_) {
 +    // 子视图在基类析构里才删，回调不能再指向已析构的本类。
 +    edge_light_view_->SetCornerProgressCallback({});
@@ -76,7 +97,7 @@ index 413b2f626d..7e49e8b1fb 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +336,47 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +357,53 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -84,6 +105,10 @@ index 413b2f626d..7e49e8b1fb 100644
 +  if (edge_light_view_) {
 +    // 光的外沿贴着网页角：同一组数（含 N10 的 AI 过渡）。
 +    edge_light_view_->SetCornerRadii(content_rounded_corners);
++  }
++  if (edge_light_web_view_) {
++    // 独立层的圆角同上（和 ActorOverlayWebView 一样用 holder 的原生圆角）。
++    edge_light_web_view_->SetCornerRadii(content_rounded_corners);
 +  }
  }
  
@@ -116,6 +141,8 @@ index 413b2f626d..7e49e8b1fb 100644
 +
 +void ContentsContainerView::OnAiCornerProgress(float progress) {
 +  ai_corner_progress_ = progress;
++  // 光效层每帧回调一次（淡出结束回到 0 时一定回调）：独立层的显示 / 隐藏跟着它。
++  SyncEdgeLightWebLayer();
 +  if (GetEffectiveRoundedCorners() == last_effective_radii_) {
 +    return;
 +  }
@@ -125,7 +152,7 @@ index 413b2f626d..7e49e8b1fb 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +387,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +414,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -135,14 +162,14 @@ index 413b2f626d..7e49e8b1fb 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,9 +413,41 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +440,77 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
 +    UpdateEdgeLight();
-   }
- }
- 
++  }
++}
++
 +void ContentsContainerView::UpdateEdgeLight() {
 +  if (!edge_light_view_) {
 +    return;
@@ -154,7 +181,7 @@ index 413b2f626d..7e49e8b1fb 100644
 +void ContentsContainerView::SyncEdgeLight() {
 +  if (!edge_light_view_) {
 +    return;
-+  }
+   }
 +  browseros::windrise::AiWindowState* ai_state =
 +      browseros::windrise::AiWindowState::From(browser_view_->browser());
 +  content::WebContents* web_contents = contents_view_->web_contents();
@@ -162,6 +189,44 @@ index 413b2f626d..7e49e8b1fb 100644
 +      web_contents ? extensions::ExtensionTabUtil::GetTabId(web_contents) : 0;
 +  edge_light_view_->SetWebContents(web_contents);
 +  edge_light_view_->SetShowing(ai_state && tab_id && ai_state->IsActive(tab_id));
++  SyncEdgeLightWebLayer();
++}
++
++void ContentsContainerView::ApplyEdgeLightMode() {
++  const std::string mode = browser_view_->GetProfile()->GetPrefs()->GetString(
++      browseros::prefs::kWindriseEdgeLightMode);
++  // 只有 page / layer 两种（原生 Skia 画法已摘除，别的值都按 page）。
++  // 两种模式下 edge_light_view_ 都照常计时（N10 网页角 12 -> 36、IsActive），它本身不画。
++  edge_light_mode_ = mode == "layer" ? "layer" : "page";
++  UpdateEdgeLight();
++}
++
++GURL ContentsContainerView::EdgeLightWebLayerUrl() const {
++  const std::string id = browser_view_->GetProfile()->GetPrefs()->GetString(
++      browseros::prefs::kWindriseEdgeLightExtensionId);
++  // 扩展 id：32 个 a-p 小写字母（和 crx_file::id_util::IdIsValid 同一规则）。
++  if (id.size() != 32 ||
++      !std::all_of(id.begin(), id.end(),
++                   [](char c) { return c >= 'a' && c <= 'p'; })) {
++    return GURL();
++  }
++  // 地址只由扩展 id 拼：路径固定，调用方改不了它指向哪。
++  return GURL("chrome-extension://" + id + "/edge-light/frame.html#native&w=" +
++              base::NumberToString(extensions::ExtensionTabUtil::GetWindowId(
++                  browser_view_->browser())));
++}
++
++void ContentsContainerView::SyncEdgeLightWebLayer() {
++  if (!edge_light_web_view_ || !edge_light_view_) {
++    return;
++  }
++  const bool want =
++      edge_light_mode_ == "layer" && edge_light_view_->IsActive();
++  if (want == edge_light_web_view_->shown()) {
++    return;
++  }
++  edge_light_web_view_->SetShown(want, want ? EdgeLightWebLayerUrl() : GURL());
++  InvalidateLayout();
 +}
 +
 +void ContentsContainerView::OnAiPulse(
@@ -172,21 +237,23 @@ index 413b2f626d..7e49e8b1fb 100644
 +    return;
 +  }
 +  edge_light_view_->Pulse(pulse);
-+}
-+
+ }
+ 
  void ContentsContainerView::SetContentsResizingStrategy(
-     const DevToolsContentsResizingStrategy& strategy) {
-   if (strategy_.Equals(strategy)) {
-@@ -537,6 +641,15 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +706,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  
 +  if (edge_light_view_) {
-+    // 风桥 N11：层 = 网页区（外扩 0），和 glic 边框同一个挂点。可见性由光效层自己
-+    // 管（淡出结束才隐藏），这里不能用 IsShowing()：开始淡出那一刻它就变 false，
-+    // 会把 400ms 的淡出直接砍掉。
++    // 风桥 N10 / N11 计时器：只计时、不绘制，一直不可见（独立层另算，见下）。
 +    layouts.child_layouts.emplace_back(edge_light_view_.get(),
-+                                       edge_light_view_->IsActive(),
++                                       /*visible=*/false,
++                                       non_devtools_contents_bounds);
++  }
++  if (edge_light_web_view_) {
++    // 风桥 N11 独立层：同一个位置（网页区，外扩 0），在光效层上面。
++    layouts.child_layouts.emplace_back(edge_light_web_view_.get(),
++                                       edge_light_web_view_->shown(),
 +                                       non_devtools_contents_bounds);
 +  }
 +

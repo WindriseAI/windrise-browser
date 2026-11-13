@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..dd2a61f13b
+index 0000000000..17a829c61f
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,709 @@
+@@ -0,0 +1,732 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -28,6 +28,7 @@ index 0000000000..dd2a61f13b
 +#include "base/version_info/version_info.h"
 +#include "chrome/browser/browser_process.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
++#include "chrome/browser/browseros/core/browseros_prefs.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "chrome/browser/browseros/metrics/browseros_metrics.h"
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
@@ -677,6 +678,28 @@ index 0000000000..dd2a61f13b
 +    return RespondNow(Error("No browser window state"));
 +  }
 +  ai_state->SetActivity(params->options.tab_id, params->options.active);
++  return RespondNow(NoArguments());
++}
++
++ExtensionFunction::ResponseAction BrowserOSSetEdgeLightModeFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  std::optional<browser_os::SetEdgeLightMode::Params> params =
++      browser_os::SetEdgeLightMode::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++  // 只有 page / layer 两种；原生 Skia 画法已摘除（11-13），收到 skia 按 page 处理。
++  const std::string& requested = params->options.mode;
++  if (requested != "page" && requested != "layer" && requested != "skia") {
++    return RespondNow(Error("mode must be page or layer"));
++  }
++  const std::string mode = requested == "layer" ? "layer" : "page";
++  // 独立层加载的就是调这个函数的扩展自己的 edge-light/frame.html：扩展 id 一起记下，
++  // 地址不由调用方传（不能让它指到别处）。
++  PrefService* prefs = Profile::FromBrowserContext(browser_context())->GetPrefs();
++  prefs->SetString(browseros::prefs::kWindriseEdgeLightExtensionId,
++                   extension()->id());
++  prefs->SetString(browseros::prefs::kWindriseEdgeLightMode, mode);
 +  return RespondNow(NoArguments());
 +}
 +

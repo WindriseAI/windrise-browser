@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.h b/chrome/browser/extensions/api/browser_os/browser_os_api.h
 new file mode 100644
-index 0000000000..169ee371b8
+index 0000000000..07b0e3fad7
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.h
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,201 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -172,6 +172,19 @@ index 0000000000..169ee371b8
 +
 + protected:
 +  ~BrowserOSSetAiActivityFunction() override = default;
++
++  ResponseAction Run() override;
++};
++
++class BrowserOSSetEdgeLightModeFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.setEdgeLightMode",
++                             BROWSER_OS_SETEDGELIGHTMODE)
++
++  BrowserOSSetEdgeLightModeFunction() = default;
++
++ protected:
++  ~BrowserOSSetEdgeLightModeFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};

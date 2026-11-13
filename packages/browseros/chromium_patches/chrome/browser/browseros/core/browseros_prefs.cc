@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.cc b/chrome/browser/browseros/core/browseros_prefs.cc
 new file mode 100644
-index 0000000000..0e63bd0465
+index 0000000000..6fbb28686d
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.cc
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,114 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -37,6 +37,9 @@ index 0000000000..0e63bd0465
 +  // default. BrowserOS keeps stock focus behaviour.
 +  registry->RegisterBooleanPref(prefs::kAutomationNeverStealsFocus,
 +                                IsBrowserClawProduct());
++  // 风桥 N11：光效画在哪（page / layer），扩展经 setEdgeLightMode 写。
++  registry->RegisterStringPref(prefs::kWindriseEdgeLightMode, "page");
++  registry->RegisterStringPref(prefs::kWindriseEdgeLightExtensionId, "");
 +
 +  // 风桥外观数值（颜色、圆角、尺寸）：偏好即外观，运行时改不用重编。
 +  windrise::RegisterProfilePrefs(registry);

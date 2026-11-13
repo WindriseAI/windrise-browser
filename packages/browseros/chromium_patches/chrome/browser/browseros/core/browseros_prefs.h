@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.h b/chrome/browser/browseros/core/browseros_prefs.h
 new file mode 100644
-index 0000000000..056e03af66
+index 0000000000..973c7faab1
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,132 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -69,6 +69,20 @@ index 0000000000..056e03af66
 +// BrowserHandler. Default: true for BrowserClaw, false for BrowserOS.
 +inline constexpr char kAutomationNeverStealsFocus[] =
 +    "browseros.automation_never_steals_focus";
++
++// String: where the Windrise AI edge light (N11) is drawn.
++//   "page"  - the Windrise extension draws it inside the page (default);
++//             the browser only animates the N10 web-contents corners.
++//   "layer" - a transparent, input-less web view over the web contents loads
++//             the extension's edge-light/frame.html (same drawing code).
++// Any other value is treated as "page" (the native Skia drawing was removed).
++// Written by the Windrise extension through browserOS.setEdgeLightMode.
++inline constexpr char kWindriseEdgeLightMode[] =
++    "browseros.windrise.edge_light_mode";
++// String: id of the extension that last set kWindriseEdgeLightMode; the
++// "layer" web view loads chrome-extension://<id>/edge-light/frame.html.
++inline constexpr char kWindriseEdgeLightExtensionId[] =
++    "browseros.windrise.edge_light_extension_id";
 +
 +}  // namespace prefs
 +

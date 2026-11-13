@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
-index 268324dce9..11d1cd994c 100644
+index 268324dce9..8ab55647ce 100644
 --- a/chrome/browser/ui/views/frame/BUILD.gn
 +++ b/chrome/browser/ui/views/frame/BUILD.gn
 @@ -553,6 +553,10 @@ source_set("vertical_tab_strip_region_view") {
@@ -41,22 +41,33 @@ index 268324dce9..11d1cd994c 100644
      "//chrome/browser/ui/browser_window",
      "//chrome/browser/ui/color:color_headers",
      "//chrome/browser/ui/immersive:immersive_mode_controller",
-@@ -3142,7 +3152,13 @@ source_set("contents_container_view") {
+@@ -3135,14 +3145,24 @@ source_set("contents_container_view") {
+     ":tab_modal_dialog_host",
+     "//base",
+     "//chrome/browser/devtools:devtools_contents_resizing_strategy",
++    # 风桥 N11 独立层：头文件里有 PrefChangeRegistrar 和 GURL 成员 / 返回值。
++    "//components/prefs",
+     "//ui/base/metadata",
+     "//ui/gfx/geometry",
+     "//ui/views",
++    "//url",
+   ]
  }
  
  source_set("contents_container_view_impl") {
 -  sources = [ "contents_container_view.cc" ]
 +  sources = [
 +    "contents_container_view.cc",
-+    "windrise_edge_light_model.cc",
-+    "windrise_edge_light_model.h",
++    # 风桥 N11：windrise_edge_light_model.{h,cc}（原生 Skia 画法）已摘出编译，补丁文件留作备用。
 +    "windrise_edge_light_view.cc",
 +    "windrise_edge_light_view.h",
++    "windrise_edge_light_web_view.cc",
++    "windrise_edge_light_web_view.h",
 +  ]
    public_deps = [ ":contents_container_view" ]
    deps = [
      ":browser_view_header",
-@@ -3155,9 +3171,13 @@ source_set("contents_container_view_impl") {
+@@ -3155,9 +3175,13 @@ source_set("contents_container_view_impl") {
      ":top_container_view",
      "//base",
      "//base:i18n",
@@ -70,7 +81,7 @@ index 268324dce9..11d1cd994c 100644
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
      "//chrome/browser/glic/browser_ui:glow_controller",
-@@ -3171,11 +3191,17 @@ source_set("contents_container_view_impl") {
+@@ -3171,12 +3195,29 @@ source_set("contents_container_view_impl") {
      "//chrome/common:chrome_features",
      "//components/search",
      "//content/public/browser",
@@ -85,6 +96,18 @@ index 268324dce9..11d1cd994c 100644
      "//ui/views",
 +    # 风桥 N11 边缘光效：CopyFromSurface 的结果类型在 viz 里。
 +    "//components/viz/common",
++    # 风桥 N11 独立层（windrise_edge_light_web_view）：偏好、扩展身份、网页视图、原生窗口不接输入。
++    "//chrome/browser/browseros/core:prefs",
++    "//chrome/browser/profiles:profile",
++    "//components/prefs",
++    "//extensions/browser",
++    "//extensions/common:mojom",
++    "//ui/views/controls/webview",
++    "//url",
    ]
++  if (use_aura) {
++    deps += [ "//ui/aura" ]
++  }
  }
  
+ source_set("multi_contents_view") {

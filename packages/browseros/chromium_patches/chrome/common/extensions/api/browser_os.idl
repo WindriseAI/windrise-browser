@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..64f7a1603a
+index 0000000000..9c55e5aa27
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,247 @@
+@@ -0,0 +1,262 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -95,6 +95,15 @@ index 0000000000..64f7a1603a
 +
 +    // true starts the edge light, false fades it out.
 +    boolean active;
++  };
++
++  // Options for setEdgeLightMode (N11: where the edge light is drawn).
++  dictionary SetEdgeLightModeOptions {
++    // "page": the extension draws it inside the page (default).
++    // "layer": a transparent, input-less web view over the web contents loads
++    // the calling extension's edge-light/frame.html.
++    // "skia" is accepted for older callers and treated as "page".
++    DOMString mode;
 +  };
 +
 +  // Options for pulseAiActivity (N11 edge light, one pulse per action).
@@ -218,6 +227,12 @@ index 0000000000..64f7a1603a
 +    // Windrise N11: turns the AI operation edge light on or off for a tab.
 +    static void setAiActivity(
 +        SetAiActivityOptions options,
++        optional VoidCallback callback);
++
++    // Windrise N11: chooses where the edge light is drawn. Stored in a
++    // profile pref; takes effect on the next frame of every window.
++    static void setEdgeLightMode(
++        SetEdgeLightModeOptions options,
 +        optional VoidCallback callback);
 +
 +    // Windrise N11: called once per AI action (click, typing, navigation,
