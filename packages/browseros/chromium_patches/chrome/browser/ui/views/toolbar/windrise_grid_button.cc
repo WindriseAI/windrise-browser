@@ -46,7 +46,7 @@ index 0000000000..b387fc3113
 +  SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
 +  SetTooltipText(std::u16string(GetText()));
 +  SetDefaultBackgroundColorId(kColorWindriseTileBackground);
-+  UpdateIconsWithStandardColors(kGridViewIcon);
++  SetVectorIcon(kGridViewIcon);
 +  ApplyStyleFromPrefs();
 +  // 格子模式是普通浏览窗口的功能；弹窗 / 应用窗口的工具栏不放这个按钮。
 +  SetVisible(browser_ && browser_->GetType() == BrowserWindowInterface::TYPE_NORMAL);
