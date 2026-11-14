@@ -1,8 +1,17 @@
 import type { AXNode } from './ax-types'
+import { type CursorHit, type CursorHitInput, cursorHit } from './cursor-hits'
 import type { DocumentId, FrameId, RefMap } from './refs'
 import { INTERACTIVE_ROLES, ROOT_ROLES, SKIP_ROLES, VALUE_ROLES } from './roles'
 
 const IFRAME_ROLES: ReadonlySet<string> = new Set(['Iframe', 'iframe'])
+
+/** Unnamed containers a cursor hit may replace, so the line says how the element behaves. */
+const PROMOTABLE_ROLES: Readonly<Record<string, true>> = {
+  generic: true,
+  group: true,
+  none: true,
+  presentation: true,
+}
 
 export interface IframeStitch {
   /** The iframe element, used to resolve its child frameId for stitching. */
@@ -23,8 +32,8 @@ export interface RenderOptions {
   refs: RefMap
   frameId?: FrameId
   documentId?: DocumentId
-  /** backendNodeId → reasons, from the DOM cursor-augmentation pass. */
-  cursorHits?: Map<number, string[]>
+  /** backendDOMNodeId → hit, from the DOM cursor-augmentation pass. */
+  cursorHits?: Map<number, CursorHitInput>
   /** Extra indent levels to prepend (used when splicing a child frame under its iframe line). */
   baseDepth?: number
 }
@@ -45,13 +54,11 @@ export function renderSnapshot(
     const node = byId.get(nodeId)
     if (!node) return
 
-    const role = node.ignored ? undefined : strVal(node.role)
+    const hit = hitFor(node, opts)
+    const role = promoteRole(node.ignored ? undefined : strVal(node.role), hit)
     const name = strVal(node.name)
-    const isCursorHit =
-      node.backendDOMNodeId !== undefined &&
-      (opts.cursorHits?.has(node.backendDOMNodeId) ?? false)
 
-    if (isDropped(role, name, isCursorHit)) {
+    if (isDropped(role, name, hit)) {
       for (const childId of node.childIds ?? []) visit(childId, depth)
       return
     }
@@ -70,7 +77,7 @@ export function renderSnapshot(
       return
     }
 
-    lines.push(formatLine(node, role as string, name, base + depth, opts))
+    lines.push(formatLine(node, role as string, name, base + depth, opts, hit))
     for (const childId of node.childIds ?? []) visit(childId, depth + 1)
   }
 
@@ -88,15 +95,34 @@ function entryNodeIds(nodes: AXNode[]): string[] {
   return nodes[0] ? [nodes[0].nodeId] : []
 }
 
+function hitFor(node: AXNode, opts: RenderOptions): CursorHit | undefined {
+  if (node.backendDOMNodeId === undefined) return undefined
+  return cursorHit(opts.cursorHits?.get(node.backendDOMNodeId))
+}
+
+/**
+ * An ignored node has no role, so a cursor hit supplies the one the renderer would otherwise
+ * drop it for. The same applies to an unnamed generic wrapper, where `- generic [ref=e5]` says
+ * nothing about whether the element can be clicked.
+ */
+function promoteRole(
+  role: string | undefined,
+  hit: CursorHit | undefined,
+): string | undefined {
+  if (!hit?.kind) return role
+  if (!role) return hit.kind
+  return PROMOTABLE_ROLES[role] === true ? hit.kind : role
+}
+
 function isDropped(
   role: string | undefined,
   name: string,
-  isCursorHit: boolean,
+  hit: CursorHit | undefined,
 ): boolean {
   if (!role) return true
   if (SKIP_ROLES.has(role) || ROOT_ROLES.has(role)) return true
   // Unnamed generic containers carry no meaning unless they're cursor-interactive.
-  if ((role === 'generic' || role === 'group') && !name && !isCursorHit) {
+  if ((role === 'generic' || role === 'group') && !name && !hit) {
     return true
   }
   return false
@@ -108,6 +134,7 @@ function formatLine(
   name: string,
   depth: number,
   opts: RenderOptions,
+  hit: CursorHit | undefined,
 ): string {
   let line = `${'  '.repeat(depth)}- ${role}`
   if (name) line += ` ${JSON.stringify(name)}`
@@ -115,13 +142,12 @@ function formatLine(
   for (const state of formatStates(node)) line += ` [${state}]`
 
   const backendNodeId = node.backendDOMNodeId
-  const cursorReasons =
-    backendNodeId !== undefined
-      ? opts.cursorHits?.get(backendNodeId)
-      : undefined
+  // Only nodes that already have an interactive role or a cursor hit earn a ref. Promoted
+  // kinds alone do not qualify: `image` and `icon` are real accessibility roles too, and a
+  // ref on every plain <img> would flood the snapshot.
   const actionable =
     backendNodeId !== undefined &&
-    (INTERACTIVE_ROLES.has(role) || cursorReasons !== undefined)
+    (INTERACTIVE_ROLES.has(role) || hit !== undefined)
 
   if (actionable) {
     const ref = opts.refs.mint({
@@ -133,7 +159,10 @@ function formatLine(
     })
     line += ` [ref=${ref}]`
   }
-  if (cursorReasons !== undefined) line += ' [cursor=pointer]'
+  if (hit !== undefined) line += ' [cursor=pointer]'
+
+  // A synthetic prompt name only fills a gap; a real accessible name stays in quotes.
+  if (hit?.hint && !name) line += ` (hint: ${hit.hint})`
 
   if (VALUE_ROLES.has(role)) {
     const value = strVal(node.value)

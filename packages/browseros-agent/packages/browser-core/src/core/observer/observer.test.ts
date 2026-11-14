@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import type { ProtocolApi } from '@browseros/cdp-protocol/protocol-api'
 import type { PageManager } from '../pages'
 import type { AXNode } from '../snapshot/ax-types'
+import type { CursorHit } from '../snapshot/cursor-hits'
 import type { FrameRegistry } from './frames'
 import { Observer } from './observer'
 
@@ -31,6 +32,7 @@ interface StubState {
   childNodes?: AXNode[]
   failAxTree?: boolean
   onFrameTreeRead?: () => void
+  cursorHits?: Map<number, CursorHit>
 }
 
 function stubObserverHarness(state: StubState): Observer {
@@ -75,9 +77,12 @@ function stubObserverHarness(state: StubState): Observer {
       },
     },
     DOM: {
-      describeNode: async () => ({
-        node: { contentDocument: { frameId: 'child' } },
-      }),
+      describeNode: async ({ objectId }: { objectId?: string } = {}) => {
+        if (objectId?.startsWith('hit-')) {
+          return { node: { backendNodeId: Number(objectId.slice(4)) } }
+        }
+        return { node: { contentDocument: { frameId: 'child' } } }
+      },
     },
     Accessibility: {
       getFullAXTree: async ({ frameId }: { frameId?: string } = {}) => {
@@ -88,7 +93,25 @@ function stubObserverHarness(state: StubState): Observer {
       },
     },
     Runtime: {
-      evaluate: async () => ({ result: { value: [] } }),
+      evaluate: async (
+        { expression }: { expression: string } = {
+          expression: '',
+        },
+      ) => {
+        if (!state.cursorHits) return { result: { value: [] } }
+        const tagged = /data-__bcid="(\d+)"/.exec(expression)
+        if (tagged) return { result: { objectId: `hit-${tagged[1]}` } }
+        return {
+          result: {
+            value: [...state.cursorHits.entries()].map(
+              ([backendNodeId, hit]) => ({
+                marker: String(backendNodeId),
+                ...hit,
+              }),
+            ),
+          },
+        }
+      },
     },
   } as unknown as ProtocolApi
 
@@ -239,6 +262,39 @@ describe('Observer stable refs', () => {
         '- button "Outer" [ref=e1]',
         '- iframe',
         '  - button "Inner" [ref=e2]',
+      ].join('\n'),
+    )
+  })
+
+  test('renders a clickable the accessibility tree ignores', async () => {
+    const state = {
+      loaderId: 'loader-1',
+      url: 'https://example.com/',
+      nodes: [
+        ax('1', 'RootWebArea', { children: ['2', '3'] }),
+        ax('2', 'generic', {
+          ignored: true,
+          backendDOMNodeId: 7,
+          children: ['4'],
+        }),
+        ax('4', 'StaticText', { name: name('Dismiss') }),
+        ax('3', 'button', { name: name('Save'), backendDOMNodeId: 8 }),
+      ],
+      cursorHits: new Map<number, CursorHit>([
+        [
+          7,
+          { reasons: ['cursor:pointer'], kind: 'clickable', hint: 'Dismiss' },
+        ],
+      ]),
+    }
+    const observer = stubObserverHarness(state)
+
+    const snapshot = await observer.snapshot()
+
+    expect(snapshot.text).toBe(
+      [
+        '- clickable [ref=e1] [cursor=pointer] (hint: Dismiss)',
+        '- button "Save" [ref=e2]',
       ].join('\n'),
     )
   })

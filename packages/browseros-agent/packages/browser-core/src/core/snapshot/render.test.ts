@@ -183,4 +183,81 @@ describe('renderSnapshot', () => {
     })
     expect(out.text).toBe('- generic [ref=e1] [cursor=pointer]')
   })
+
+  test('keeps an ignored node that the cursor scan found', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', {
+        ignored: true,
+        backendDOMNodeId: 21,
+        children: ['3'],
+      }),
+      ax('3', 'StaticText', { name: name('Open menu') }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [21, { reasons: ['cursor:pointer', 'onclick'], kind: 'clickable' }],
+      ]),
+    })
+    expect(out.text).toBe('- clickable [ref=e1] [cursor=pointer]')
+  })
+
+  test('still drops an ignored node no cursor hit covers', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', { ignored: true, backendDOMNodeId: 21 }),
+    ]
+    expect(renderSnapshot(nodes, { refs: new RefMap() }).text).toBe('')
+  })
+
+  test('gives a nameless hit a synthetic hint after its state', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', {
+        ignored: true,
+        backendDOMNodeId: 31,
+        properties: [
+          { name: 'disabled', value: { type: 'boolean', value: true } },
+        ],
+      }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [31, { reasons: ['onclick'], kind: 'clickable', hint: 'Close' }],
+      ]),
+    })
+    expect(out.text).toBe(
+      '- clickable [disabled] [ref=e1] [cursor=pointer] (hint: Close)',
+    )
+  })
+
+  test('keeps the accessible name instead of the synthetic hint', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'button', { name: name('Save'), backendDOMNodeId: 41 }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [41, { reasons: ['cursor:pointer'], hint: 'Save button' }],
+      ]),
+    })
+    expect(out.text).toBe('- button "Save" [ref=e1] [cursor=pointer]')
+  })
+
+  test('promotes an unnamed generic role when the scan names a kind', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', { backendDOMNodeId: 51 }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [51, { reasons: ['tabindex'], kind: 'clickable', hint: 'Tab' }],
+      ]),
+    })
+    expect(out.text).toBe('- clickable [ref=e1] [cursor=pointer] (hint: Tab)')
+  })
 })

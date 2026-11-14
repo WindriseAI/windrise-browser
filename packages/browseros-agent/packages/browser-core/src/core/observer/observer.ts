@@ -1,6 +1,7 @@
 import type { ProtocolApi } from '@browseros/cdp-protocol/protocol-api'
 import type { FrameId } from '../connection'
 import type { PageManager } from '../pages'
+import type { CursorHit } from '../snapshot/cursor-hits'
 import { diffSnapshotObservations, type SnapshotDiff } from '../snapshot/diff'
 import { type DocumentId, RefMap } from '../snapshot/refs'
 import { renderSnapshot } from '../snapshot/render'
@@ -127,7 +128,7 @@ export class Observer {
     )
     const nodes = await fetchAxTree(session, axParams)
     const cursorHits = await findCursorHits(session).catch(
-      () => new Map<number, string[]>(),
+      () => new Map<number, CursorHit>(),
     )
     const documentId = await this.stableDocumentIdForFrame(
       rootSession,

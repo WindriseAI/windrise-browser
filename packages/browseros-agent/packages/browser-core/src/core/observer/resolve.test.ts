@@ -88,4 +88,51 @@ describe('resolveRefEntry', () => {
       ),
     ).rejects.toThrow(/Stale ref/)
   })
+
+  for (const role of ['clickable', 'image', 'icon']) {
+    test(`does not re-query a promoted ${role} by role and name`, async () => {
+      const refs = new RefMap()
+      // A same-name accessibility node is a different element, not a replacement target.
+      const ref = refs.mint({ backendNodeId: 10, role, name: 'Open' })
+      const entry = refs.get(ref)!
+      const session = stubSession({
+        live: new Set([99]),
+        axTree: [
+          {
+            nodeId: 'root',
+            role: { type: 'role', value: 'RootWebArea' },
+            childIds: ['replacement'],
+          },
+          {
+            nodeId: 'replacement',
+            role: { type: 'role', value: role },
+            name: { type: 'computedString', value: 'Open' },
+            backendDOMNodeId: 99,
+          },
+        ],
+      })
+      await expect(resolveRefEntry(session, entry)).rejects.toThrow(/Stale ref e1/)
+      expect(entry.backendNodeId).toBe(10)
+    })
+  }
+
+  test('still re-queries a real control role after the node moves', async () => {
+    const refs = new RefMap()
+    const ref = refs.mint({ backendNodeId: 10, role: 'button', name: 'Go' })
+    const resolved = await resolveRefEntry(
+      stubSession({
+        live: new Set([12]),
+        axTree: [
+          {
+            nodeId: 'root',
+            role: { type: 'role', value: 'RootWebArea' },
+            childIds: ['b'],
+          },
+          axButton('b', 'Go', 12),
+        ],
+      }),
+      refs.get(ref) as never,
+    )
+    expect(resolved.backendNodeId).toBe(12)
+  })
 })
