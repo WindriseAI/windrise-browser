@@ -261,3 +261,89 @@ describe('renderSnapshot', () => {
     expect(out.text).toBe('- clickable [ref=e1] [cursor=pointer] (hint: Tab)')
   })
 })
+
+describe('payment field visibility (upstream 6e65fb395)', () => {
+  const field = (id: string, label: string, value: string): AXNode =>
+    ax(id, 'textbox', { name: name(label), value: { type: 'string', value } })
+  const render = (nodes: AXNode[]) =>
+    renderSnapshot(nodes, { refs: new RefMap() }).text
+
+  test('masks card numbers and named security codes without hiding unrelated numbers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['6', '7'] }),
+      ax('6', 'form', { children: ['2'] }),
+      field('2', 'Card number', '4111 1111 1111 1111'),
+      ax('7', 'form', { children: ['3', '4', '5'] }),
+      field('3', 'CVC', '123'),
+      field('4', 'Quantity', '123'),
+      field('5', 'Order number', '4111111111111112'),
+    ])
+    expect(text).toContain('"Card number": "•••• 1111"')
+    expect(text).not.toContain('4111 1111 1111 1111')
+    expect(text).toContain('"CVC": "•••"')
+    expect(text).toContain('"Quantity": "123"')
+    expect(text).toContain('"Order number": "4111111111111112"')
+  })
+
+  test('hides short numbers in the nearest card form regardless of language', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '6'] }),
+      ax('2', 'form', { children: ['3', '4', '5', '8', '9'] }),
+      field('3', 'Numéro de carte', '4111 1111 1111 1111'),
+      field('4', '安全码', '123'),
+      field('5', 'Mois', '12'),
+      field('8', 'Expiry', '1229'),
+      field('9', 'Cardholder', 'Alice Example'),
+      ax('6', 'form', { children: ['7'] }),
+      field('7', 'Quantity', '123'),
+    ])
+    expect(text).toContain('"安全码": "•••"')
+    expect(text).toContain('"Expiry": "•••"')
+    expect(text).toContain('"Mois": "12"')
+    expect(text).toContain('"Cardholder": "Alice Example"')
+    expect(text).toContain('"Quantity": "123"')
+  })
+
+  test('uses the document scope for formless card fields through ignored shadow wrappers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '5'] }),
+      ax('2', 'generic', { ignored: true, children: ['3', '4'] }),
+      field('3', 'Card', '4111-1111-1111-1111'),
+      field('4', 'Code', '9876'),
+      field('5', 'Quantity', '123'),
+    ])
+    expect(text).toContain('"Card": "•••• 1111"')
+    expect(text).toContain('"Code": "•••"')
+    expect(text).toContain('"Quantity": "•••"')
+  })
+
+  test('masks a child frame independently without changing a sibling document', () => {
+    const parent = render([
+      ax('1', 'RootWebArea', { children: ['2', '3'] }),
+      field('2', 'Quantity', '123'),
+      ax('3', 'Iframe', { backendDOMNodeId: 3 }),
+    ])
+    const child = renderSnapshot([
+      ax('10', 'RootWebArea', { children: ['11', '12'] }),
+      field('11', 'Card', '4111111111111111'),
+      field('12', 'Code', '123'),
+    ], { refs: new RefMap(), frameId: 'child', baseDepth: 1 }).text
+    expect(parent).toContain('"Quantity": "123"')
+    expect(child).toContain('  - textbox "Card": "•••• 1111"')
+    expect(child).toContain('  - textbox "Code": "•••"')
+  })
+
+  test('keeps upstream boundaries for six digit codes, slash dates and non-card long numbers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '3', '4', '5'] }),
+      field('2', 'CVV', '123456'),
+      field('3', 'Date', '12/29'),
+      field('4', 'Order', '4111111111111112'),
+      field('5', 'Tracking', '12345678901234567890'),
+    ])
+    expect(text).toContain('"CVV": "123456"')
+    expect(text).toContain('"Date": "12/29"')
+    expect(text).toContain('"Order": "4111111111111112"')
+    expect(text).toContain('"Tracking": "12345678901234567890"')
+  })
+})

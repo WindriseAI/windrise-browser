@@ -130,6 +130,36 @@ function stubObserverHarness(state: StubState): Observer {
   return new Observer(pages, frames, 1)
 }
 
+test('snapshot and diff mask child-frame card values through ignored AX wrappers', async () => {
+  const state: StubState = {
+    loaderId: 'main-loader',
+    childLoaderId: 'child-loader',
+    url: 'http://localhost/card-mask',
+    nodes: [
+      ax('1', 'RootWebArea', { children: ['2', '3'] }),
+      ax('2', 'textbox', { name: name('Quantity'), value: { type: 'string', value: '123' } }),
+      ax('3', 'Iframe', { backendDOMNodeId: 3 }),
+    ],
+    childNodes: [
+      ax('10', 'RootWebArea', { children: ['11'] }),
+      ax('11', 'form', { children: ['12'] }),
+      ax('12', 'generic', { ignored: true, children: ['13', '14'] }),
+      ax('13', 'textbox', { name: name('Card'), value: { type: 'string', value: '4111111111111111' } }),
+      ax('14', 'textbox', { name: name('Code'), value: { type: 'string', value: '123' } }),
+    ],
+  }
+  const observer = stubObserverHarness(state)
+  const snapshot = await observer.snapshot()
+  expect(snapshot.text).toContain('- textbox "Quantity": "123"')
+  expect(snapshot.text).toContain('    - textbox "Card": "•••• 1111"')
+  expect(snapshot.text).toContain('    - textbox "Code": "•••"')
+  expect(snapshot.text).not.toContain('4111111111111111')
+  state.childNodes![3].value = { type: 'string', value: '5555555555554444' }
+  const diff = await observer.diff()
+  expect(diff.text).toContain('•••• 4444')
+  expect(diff.text).not.toContain('5555555555554444')
+})
+
 describe('Observer stable refs', () => {
   test('diff keeps unchanged same-document nodes matched after insertion', async () => {
     const state = {
