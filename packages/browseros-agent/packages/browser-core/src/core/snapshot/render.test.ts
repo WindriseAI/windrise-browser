@@ -347,3 +347,35 @@ describe('payment field visibility (upstream 6e65fb395)', () => {
     expect(text).toContain('"Tracking": "12345678901234567890"')
   })
 })
+
+describe('separated expiry values in card forms', () => {
+  test('masks only expiry-labelled month/year values in an identified card form', () => {
+    const fields = [
+      ['Expiry', '12/29', '•••'],
+      ['Expiration date', '12 / 29', '•••'],
+      ['Valid thru', '12-29', '•••'],
+      ['MM/YYYY', '12/2029', '•••'],
+      ['有效期', '01/29', '•••'],
+      ['Expiry', '13/29', '13/29'],
+      ['Expiry', '12/29/2026', '12/29/2026'],
+      ['Delivery date', '12/29', '12/29'],
+      ['Ratio', '12/2029', '12/2029'],
+      ['Expiry', '12/2', '12/2'],
+    ]
+    const nodes = [
+      ax('root', 'RootWebArea', { children: ['card-form', 'other-form'] }),
+      ax('card-form', 'form', { children: ['card', ...fields.map((_, i) => `f${i}`)] }),
+      ax('card', 'textbox', { name: name('Card'), value: { type: 'string', value: '4111111111111111' } }),
+      ...fields.map(([label, value], i) => ax(`f${i}`, 'textbox', {
+        name: name(label), value: { type: 'string', value },
+      })),
+      ax('other-form', 'form', { children: ['outside'] }),
+      ax('outside', 'textbox', { name: name('Outside expiry'), value: { type: 'string', value: '12/29' } }),
+    ]
+    const lines = renderSnapshot(nodes, { refs: new RefMap() }).text.split('\n')
+    for (let i = 0; i < fields.length; i++) {
+      expect(lines[i + 2]).toBe(`  - textbox ${JSON.stringify(fields[i][0])}: ${JSON.stringify(fields[i][2])}`)
+    }
+    expect(lines[lines.length - 1]).toBe('  - textbox "Outside expiry": "12/29"')
+  })
+})

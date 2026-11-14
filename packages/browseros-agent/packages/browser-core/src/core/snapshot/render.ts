@@ -178,6 +178,13 @@ function formatLine(
 // Port of BrowserOS 6e65fb395 snapshot/render.rs. Password values are already
 // masked by the browser's AX tree; card fields are ordinary text inputs.
 function visibleValue(name: string, value: string, inCardForm: boolean): string {
+  // Local extension: require both the card scope and an expiry field label,
+  // so unrelated dates and ratios in the same form stay visible.
+  if (inCardForm &&
+      /(?:expiry|expiration|expires|\bexp\.?\b|valid\s*(?:thru|through|until)|mm\s*[/\-]\s*yy(?:yy)?|有效期|到期)/i.test(name) &&
+      /^\s*(?:0?[1-9]|1[0-2])\s*[/\-]\s*(?:[0-9]{2}|[0-9]{4})\s*$/.test(value)) {
+    return '•••'
+  }
   const digits = digitRun(value)
   if (digits === undefined) return value
   if (isCardNumber(digits)) return `•••• ${digits.slice(-4)}`
