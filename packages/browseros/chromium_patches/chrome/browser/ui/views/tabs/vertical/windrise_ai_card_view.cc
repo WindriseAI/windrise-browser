@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..107da295cb
+index 0000000000..b016f47811
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,554 @@
+@@ -0,0 +1,568 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -23,6 +23,8 @@ index 0000000000..107da295cb
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/browser/ui/views/frame/browser_view.h"
++#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 +#include "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "extensions/browser/event_router.h"
@@ -525,18 +527,30 @@ index 0000000000..107da295cb
 +    }
 +    return;
 +  }
++  // 先锁住悬停展开的当前状态，再弹面板（面板关掉时在 OnWidgetDestroyed 里放开）。
++  if (BrowserView* browser_view =
++          BrowserView::GetBrowserViewForBrowser(browser_.get())) {
++    if (browser_view->tab_strip_view()) {
++      expand_on_hover_lock_ =
++          browser_view->tab_strip_view()->GetExpandOnHoverLock(
++              ExpandOnHoverLockType::kKeepCurrentState);
++    }
++  }
 +  auto* panel = new WindriseAiPanelView(browser_.get());
 +  panel_ = panel;
 +  SchedulePaint();
 +  panel->ShowAtAnchor(this, collapsed_);
 +  if (panel->GetWidget()) {
 +    panel_observation_.Observe(panel->GetWidget());
++  } else {
++    expand_on_hover_lock_.reset();  // 面板没建出来：不留着锁。
 +  }
 +}
 +
 +void WindriseAiCardView::OnWidgetDestroyed(views::Widget* widget) {
 +  panel_observation_.Reset();
 +  panel_ = nullptr;
++  expand_on_hover_lock_.reset();
 +  SchedulePaint();
 +}
 +
