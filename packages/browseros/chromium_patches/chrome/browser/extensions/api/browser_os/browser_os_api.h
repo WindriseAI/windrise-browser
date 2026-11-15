@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..07b0e3fad7
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.h
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,220 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -11,6 +11,9 @@ index 0000000000..07b0e3fad7
 +#ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSER_OS_BROWSER_OS_API_H_
 +#define CHROME_BROWSER_EXTENSIONS_API_BROWSER_OS_BROWSER_OS_API_H_
 +
++#include <string>
++
++#include "base/callback_list.h"
 +#include "extensions/browser/extension_function.h"
 +#include "ui/shell_dialogs/select_file_dialog.h"
 +
@@ -200,6 +203,22 @@ index 0000000000..07b0e3fad7
 +  ~BrowserOSPulseAiActivityFunction() override = default;
 +
 +  ResponseAction Run() override;
++};
++
++class BrowserOSGetDefaultSearchEngineFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("browserOS.getDefaultSearchEngine",
++                             BROWSER_OS_GETDEFAULTSEARCHENGINE)
++
++ protected:
++  ~BrowserOSGetDefaultSearchEngineFunction() override = default;
++  ResponseAction Run() override;
++
++ private:
++  ResponseValue BuildResponse();
++  void OnLoaded();
++  std::string query_;
++  base::CallbackListSubscription loaded_subscription_;
 +};
 +
 +}  // namespace extensions::api

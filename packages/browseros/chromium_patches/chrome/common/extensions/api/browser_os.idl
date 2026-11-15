@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..52fc024f41
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,263 @@
+@@ -0,0 +1,276 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -146,7 +146,20 @@ index 0000000000..52fc024f41
 +  // Callback for showInfoBar.
 +  callback ShowInfoBarCallback = void(boolean shown);
 +
++  // Snapshot of this profile's current provider; query is expanded by Chromium.
++  dictionary DefaultSearchEngine {
++    DOMString name;
++    DOMString iconUrl;
++    DOMString searchUrl;
++  };
++  callback GetDefaultSearchEngineCallback = void(DefaultSearchEngine engine);
++
 +  interface Functions {
++    // Read-only. Never changes the profile's provider or starts navigation.
++    static void getDefaultSearchEngine(
++        DOMString query,
++        GetDefaultSearchEngineCallback callback);
++
 +    // Settings API functions - compatible with chrome.settingsPrivate
 +    // Gets a specific preference value
 +    // |name|: The preference name (e.g., "nxtscape.default_provider").

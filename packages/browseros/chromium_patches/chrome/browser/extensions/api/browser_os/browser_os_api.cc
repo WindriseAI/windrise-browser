@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..ea33d5345c
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,726 @@
+@@ -0,0 +1,776 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -20,6 +20,7 @@ index 0000000000..ea33d5345c
 +
 +#include "base/base64.h"
 +#include "base/files/file_util.h"
++#include "base/functional/bind.h"
 +#include "base/logging.h"
 +#include "base/strings/stringprintf.h"
 +#include "base/strings/utf_string_conversions.h"
@@ -33,6 +34,7 @@ index 0000000000..ea33d5345c
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
 +#include "chrome/browser/platform_util.h"
 +#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/search_engines/template_url_service_factory.h"
 +#include "chrome/browser/ui/actions/chrome_action_id.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface_iterator.h"
@@ -51,6 +53,9 @@ index 0000000000..ea33d5345c
 +#include "components/infobars/core/infobar_delegate.h"
 +#include "components/infobars/core/simple_alert_infobar_delegate.h"
 +#include "components/prefs/pref_service.h"
++#include "components/search_engines/template_url.h"
++#include "components/search_engines/template_url_service.h"
++#include "components/search_engines/util.h"
 +#include "components/tab_groups/tab_group_color.h"
 +#include "components/tab_groups/tab_group_visual_data.h"
 +#include "components/tabs/public/tab_group.h"
@@ -726,6 +731,51 @@ index 0000000000..ea33d5345c
 +  }
 +  ai_state->PulseActivity(params->options.tab_id, point);
 +  return RespondNow(NoArguments());
++}
++
++ExtensionFunction::ResponseAction BrowserOSGetDefaultSearchEngineFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  auto params = browser_os::GetDefaultSearchEngine::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++  query_ = std::move(params->query);
++  auto* service = TemplateURLServiceFactory::GetForProfile(
++      Profile::FromBrowserContext(browser_context()));
++  if (!service) {
++    return RespondNow(Error("Search provider unavailable"));
++  }
++  service->Load();
++  if (service->loaded()) {
++    return RespondNow(BuildResponse());
++  }
++  loaded_subscription_ = service->RegisterOnLoadedCallback(base::BindOnce(
++      &BrowserOSGetDefaultSearchEngineFunction::OnLoaded, this));
++  return RespondLater();
++}
++
++void BrowserOSGetDefaultSearchEngineFunction::OnLoaded() {
++  Respond(BuildResponse());
++}
++
++ExtensionFunction::ResponseValue
++BrowserOSGetDefaultSearchEngineFunction::BuildResponse() {
++  auto* service = TemplateURLServiceFactory::GetForProfile(
++      Profile::FromBrowserContext(browser_context()));
++  const TemplateURL* provider = service ? service->GetDefaultSearchProvider() : nullptr;
++  if (!provider || !provider->url_ref().SupportsReplacement(service->search_terms_data())) {
++    return Error("Search provider unavailable");
++  }
++  const GURL url = GetDefaultSearchURLForSearchTerms(service, base::UTF8ToUTF16(query_));
++  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
++    return Error("Search URL unavailable");
++  }
++  browser_os::DefaultSearchEngine result;
++  result.name = base::UTF16ToUTF8(provider->short_name());
++  result.icon_url = provider->favicon_url().SchemeIsHTTPOrHTTPS()
++                        ? provider->favicon_url().spec() : std::string();
++  result.search_url = url.spec();
++  return ArgumentList(browser_os::GetDefaultSearchEngine::Results::Create(result));
 +}
 +
 +}  // namespace api
