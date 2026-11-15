@@ -575,6 +575,8 @@ features:
       - "chrome/browser/ui/views/tabs/common/dragged_tabs_container.cc"
       - "chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc"
       - "chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.h"
+      - "chrome/browser/ui/views/frame/contents_web_view.cc"
+      - "chrome/browser/ui/views/frame/contents_web_view.h"
       - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc"
       - "ui/views/controls/menu/menu_controller.cc"
       - "ui/views/controls/menu/menu_controller.h"
