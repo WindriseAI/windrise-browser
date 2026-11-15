@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..7b6f53417c
+index 0000000000..8d78b5b024
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,480 @@
+@@ -0,0 +1,547 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -54,6 +54,11 @@ index 0000000000..7b6f53417c
 +// chrome.browserOS.onAiPanelAction（见 browser_os.idl）。
 +constexpr char kPanelActionEventName[] = "browserOS.onAiPanelAction";
 +
++// 动效-1115 N2：每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
++constexpr base::TimeDelta kContentFadeDuration = base::Milliseconds(180);
++// 不知道目标宽度时，旧组淡到这个进度就开始淡入新组（保证两组有重叠）。
++constexpr double kFadeInFallbackProgress = 0.5;
++
 +gfx::ImageSkia DecodeIcon(const std::string& png) {
 +  if (png.empty()) {
 +    return gfx::ImageSkia();
@@ -73,9 +78,12 @@ index 0000000000..7b6f53417c
 +    : views::Button(base::BindRepeating(&WindriseAiCardView::ShowPanel,
 +                                        base::Unretained(this))),
 +      browser_(browser),
-+      fade_animation_(base::Milliseconds(90),
-+                      gfx::LinearAnimation::kDefaultFrameRate,
-+                      this) {
++      fade_out_animation_(kContentFadeDuration,
++                          gfx::LinearAnimation::kDefaultFrameRate,
++                          this),
++      fade_in_animation_(kContentFadeDuration,
++                         gfx::LinearAnimation::kDefaultFrameRate,
++                         this) {
 +  SetAccessibleName(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
 +  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +  SetTooltipText(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_OPEN_APP));
@@ -127,32 +135,45 @@ index 0000000000..7b6f53417c
 +    return;
 +  }
 +  collapsed_ = collapsed;
++  const size_t entering = GroupIndex(collapsed_);
++  const size_t leaving = GroupIndex(!collapsed_);
 +  if (!gfx::Animation::ShouldRenderRichAnimation() || !GetWidget()) {
 +    // 减少动态效果 / 还没进窗口：直接换（原行为）。
-+    fade_animation_.Stop();
-+    fade_phase_ = FadePhase::kIdle;
++    fade_out_animation_.Stop();
++    fade_in_animation_.Stop();
++    fade_in_pending_ = false;
++    group_opacity_[entering] = 1.0f;
++    group_opacity_[leaving] = 0.0f;
 +    ClearContentLayers();
-+    SwapShownContent();
++    RebuildFromState();
++    PreferredSizeChanged();
++    SchedulePaint();
 +    return;
 +  }
-+  switch (fade_phase_) {
-+    case FadePhase::kIdle:
-+      StartFadePhase(FadePhase::kOut, 1.0f);
-+      break;
-+    case FadePhase::kOut:
-+      // 还在淡出：接着淡，换内容那一刻按最新的 collapsed_ 换（来回点了偶数次
-+      // 就是原内容淡出再淡回）。
-+      break;
-+    case FadePhase::kIn:
-+      // 新内容淡入到一半目标又变了：从它当前的透明度接着淡出，不跳。
-+      StartFadePhase(FadePhase::kOut, content_opacity_);
-+      break;
-+  }
++  // LinearAnimation::Stop() 只发 AnimationCanceled（这里没覆写，什么都不做）。
++  fade_out_animation_.Stop();
++  fade_in_animation_.Stop();
++  // 两组都从各自当前的透明度起步（被打断时就是从正在显示的值接着走）。
++  group_from_[leaving] = group_opacity_[leaving];
++  group_from_[entering] = group_opacity_[entering];
++  fade_start_width_ = width();
++  // 两组都要在场：先排版、建层并设好透明度，再开始走。
++  fade_in_pending_ = true;
++  RebuildFromState();
++  ApplyGroupOpacity(false);
++  ApplyGroupOpacity(true);
++  // 旧的一组立刻淡出。Start() 不会清进度（第一帧 Step 前 GetCurrentValue()
++  // 还是上一次的值），先归零，免得时间兜底误判成「已过一半」。
++  fade_out_animation_.SetCurrentValue(0.0);
++  fade_out_animation_.Start();
++  // 新的一组：已经在屏幕上（来回切被打断）就直接接着淡入；否则等宽度过中点。
++  MaybeStartFadeIn(/*force=*/group_opacity_[entering] > 0.0f);
 +}
 +
-+std::vector<views::View*> WindriseAiCardView::ContentViews() const {
++std::vector<views::View*> WindriseAiCardView::GroupViews(
++    bool collapsed_group) const {
 +  std::vector<views::View*> views;
-+  if (shown_collapsed_) {
++  if (collapsed_group) {
 +    views = {mark_.get(), count_label_.get()};
 +  } else {
 +    views = {text_.get(), gear_.get()};
@@ -163,9 +184,15 @@ index 0000000000..7b6f53417c
 +  return views;
 +}
 +
-+void WindriseAiCardView::SetContentOpacity(float opacity) {
-+  content_opacity_ = opacity;
-+  for (views::View* view : ContentViews()) {
++bool WindriseAiCardView::GroupShown(bool collapsed_group) const {
++  // 目标那一组总在；另一组只在交叉淡还没淡完时在。
++  return collapsed_group == collapsed_ ||
++         group_opacity_[GroupIndex(collapsed_group)] > 0.0f;
++}
++
++void WindriseAiCardView::ApplyGroupOpacity(bool collapsed_group) {
++  const float opacity = group_opacity_[GroupIndex(collapsed_group)];
++  for (views::View* view : GroupViews(collapsed_group)) {
 +    if (!view->GetVisible()) {
 +      continue;
 +    }
@@ -179,63 +206,81 @@ index 0000000000..7b6f53417c
 +}
 +
 +void WindriseAiCardView::ClearContentLayers() {
-+  content_opacity_ = 1.0f;
-+  std::vector<views::View*> all = {mark_.get(), count_label_.get(),
-+                                   text_.get(), gear_.get()};
-+  for (views::ImageView* icon : ai_icons_) {
-+    all.push_back(icon);
-+  }
-+  for (views::View* view : all) {
-+    if (view->layer()) {
-+      view->DestroyLayer();
++  for (bool collapsed_group : {false, true}) {
++    for (views::View* view : GroupViews(collapsed_group)) {
++      if (view->layer()) {
++        view->DestroyLayer();
++      }
 +    }
 +  }
 +}
 +
-+void WindriseAiCardView::StartFadePhase(FadePhase phase, float from_opacity) {
-+  fade_phase_ = phase;
-+  fade_from_ = from_opacity;
-+  // LinearAnimation::Stop() 只会发 AnimationCanceled（这里没覆写，什么都不做）。
-+  fade_animation_.Stop();
-+  SetContentOpacity(from_opacity);
-+  fade_animation_.Start();
++bool WindriseAiCardView::FadeInGateReached() const {
++  const int target = settled_width_[GroupIndex(collapsed_)];
++  if (target <= 0 || target == fade_start_width_) {
++    return false;  // 不知道目标宽度 / 宽度不变：交给时间兜底。
++  }
++  const int mid = (fade_start_width_ + target) / 2;
++  return target > fade_start_width_ ? width() >= mid : width() <= mid;
 +}
 +
-+void WindriseAiCardView::SwapShownContent() {
-+  shown_collapsed_ = collapsed_;
++void WindriseAiCardView::MaybeStartFadeIn(bool force) {
++  if (!fade_in_pending_) {
++    return;
++  }
++  const bool by_time = !fade_out_animation_.is_animating() ||
++                       fade_out_animation_.GetCurrentValue() >=
++                           kFadeInFallbackProgress;
++  if (!force && !by_time && !FadeInGateReached()) {
++    return;
++  }
++  fade_in_pending_ = false;
++  fade_in_animation_.SetCurrentValue(0.0);
++  fade_in_animation_.Start();
++}
++
++void WindriseAiCardView::FinishFadeIfDone() {
++  if (fade_in_pending_ || fade_out_animation_.is_animating() ||
++      fade_in_animation_.is_animating()) {
++    return;
++  }
++  group_opacity_[GroupIndex(collapsed_)] = 1.0f;
++  group_opacity_[GroupIndex(!collapsed_)] = 0.0f;
++  ClearContentLayers();
 +  RebuildFromState();
-+  PreferredSizeChanged();
 +  SchedulePaint();
 +}
 +
 +void WindriseAiCardView::AnimationProgressed(const gfx::Animation* animation) {
-+  if (animation != &fade_animation_) {
++  if (animation != &fade_out_animation_ && animation != &fade_in_animation_) {
 +    views::Button::AnimationProgressed(animation);
-+    return;
-+  }
-+  if (fade_phase_ == FadePhase::kIdle) {
 +    return;
 +  }
 +  const float e = static_cast<float>(gfx::Tween::CalculateValue(
 +      gfx::Tween::WINDRISE_EASE_OUT, animation->GetCurrentValue()));
-+  SetContentOpacity(fade_phase_ == FadePhase::kOut
-+                        ? fade_from_ * (1.0f - e)
-+                        : fade_from_ + (1.0f - fade_from_) * e);
++  if (animation == &fade_out_animation_) {
++    const size_t leaving = GroupIndex(!collapsed_);
++    group_opacity_[leaving] = group_from_[leaving] * (1.0f - e);
++    ApplyGroupOpacity(!collapsed_);
++    MaybeStartFadeIn(/*force=*/false);
++  } else {
++    const size_t entering = GroupIndex(collapsed_);
++    group_opacity_[entering] =
++        group_from_[entering] + (1.0f - group_from_[entering]) * e;
++    ApplyGroupOpacity(collapsed_);
++  }
 +}
 +
 +void WindriseAiCardView::AnimationEnded(const gfx::Animation* animation) {
-+  if (animation != &fade_animation_) {
++  if (animation != &fade_out_animation_ && animation != &fade_in_animation_) {
 +    views::Button::AnimationEnded(animation);
 +    return;
 +  }
-+  if (fade_phase_ == FadePhase::kOut) {
-+    ClearContentLayers();
-+    SwapShownContent();
-+    StartFadePhase(FadePhase::kIn, 0.0f);
-+    return;
++  if (animation == &fade_out_animation_) {
++    // 旧组淡完时新组还在等：不再等，立刻开始（兜底；正常在一半时已经开始）。
++    MaybeStartFadeIn(/*force=*/true);
 +  }
-+  fade_phase_ = FadePhase::kIdle;
-+  ClearContentLayers();
++  FinishFadeIfDone();
 +}
 +
 +void WindriseAiCardView::OnAiStateChanged() {
@@ -274,16 +319,18 @@ index 0000000000..7b6f53417c
 +  }
 +  count_label_->SetText(base::FormatNumber(static_cast<int>(count)));
 +
-+  mark_->SetVisible(shown_collapsed_);
-+  count_label_->SetVisible(shown_collapsed_);
-+  text_->SetVisible(!shown_collapsed_);
-+  gear_->SetVisible(!shown_collapsed_);
++  const bool show_collapsed = GroupShown(true);
++  const bool show_expanded = GroupShown(false);
++  mark_->SetVisible(show_collapsed);
++  count_label_->SetVisible(show_collapsed);
++  text_->SetVisible(show_expanded);
++  gear_->SetVisible(show_expanded);
 +
 +  const int icon_size =
 +      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardIconSize);
 +  for (size_t i = 0; i < ai_icons_.size(); ++i) {
 +    views::ImageView* icon = ai_icons_[i];
-+    const bool visible = !shown_collapsed_ && ai_state && i < count &&
++    const bool visible = show_expanded && ai_state && i < count &&
 +                         !ai_state->connections[i].icon_png.empty();
 +    icon->SetVisible(visible);
 +    if (!visible) {
@@ -315,33 +362,52 @@ index 0000000000..7b6f53417c
 +
 +void WindriseAiCardView::Layout(PassKey pass_key) {
 +  LayoutSuperclass<views::Button>(this);
-+  const browseros::windrise::LayoutMetrics& metrics =
-+      browseros::windrise::GetLayoutMetrics();
-+  const int icon_size = metrics.Get(LayoutMetric::kAiCardIconSize);
-+  const int gear_size = metrics.Get(LayoutMetric::kTopButtonIconSize);
-+  const int left = shown_collapsed_ ? 8 : metrics.Get(LayoutMetric::kAiCardPaddingLeft);
-+  const int right = 12;
 +  const int center_y = height() / 2;
-+
-+  int x = left;
-+  if (shown_collapsed_) {
-+    mark_->SetBounds(x, center_y - icon_size / 2, icon_size, icon_size);
-+    x += icon_size + 2;
-+    count_label_->SetBounds(
-+        x, center_y - count_label_->GetPreferredSize().height() / 2,
-+        width() - x - right, count_label_->GetPreferredSize().height());
-+    // 收起时不画标志与文字。
++  // 交叉淡期间两组同时在场，各排各的（互不挤位置）。
++  if (GroupShown(true)) {
++    LayoutCollapsedGroup(center_y);
++  } else {
++    mark_->SetBounds(0, 0, 0, 0);
++    count_label_->SetBounds(0, 0, 0, 0);
++  }
++  if (GroupShown(false)) {
++    LayoutExpandedGroup(center_y);
++  } else {
 +    text_->SetBounds(0, 0, 0, 0);
 +    gear_->SetBounds(0, 0, 0, 0);
 +    for (views::ImageView* icon : ai_icons_) {
 +      icon->SetBounds(0, 0, 0, 0);
 +    }
-+    return;
 +  }
++  // 动效-1115 N2：稳定时记下这种状态的宽度，下次切换用来判「宽度过中点」；
++  // 交叉淡进行中（侧栏宽度每帧在变、每帧都会排版）看一眼要不要开始淡入新组。
++  if (!fade_out_animation_.is_animating() &&
++      !fade_in_animation_.is_animating() && !fade_in_pending_) {
++    settled_width_[GroupIndex(collapsed_)] = width();
++  } else {
++    MaybeStartFadeIn(/*force=*/false);
++  }
++}
 +
-+  mark_->SetBounds(0, 0, 0, 0);
-+  count_label_->SetBounds(0, 0, 0, 0);
++void WindriseAiCardView::LayoutCollapsedGroup(int center_y) {
++  const int icon_size = browseros::windrise::GetLayoutMetrics().Get(
++      LayoutMetric::kAiCardIconSize);
++  const int right = 12;
++  int x = 8;
++  mark_->SetBounds(x, center_y - icon_size / 2, icon_size, icon_size);
++  x += icon_size + 2;
++  const int count_height = count_label_->GetPreferredSize().height();
++  count_label_->SetBounds(x, center_y - count_height / 2,
++                          std::max(0, width() - x - right), count_height);
++}
 +
++void WindriseAiCardView::LayoutExpandedGroup(int center_y) {
++  const browseros::windrise::LayoutMetrics& metrics =
++      browseros::windrise::GetLayoutMetrics();
++  const int icon_size = metrics.Get(LayoutMetric::kAiCardIconSize);
++  const int gear_size = metrics.Get(LayoutMetric::kTopButtonIconSize);
++  const int right = 12;
++  int x = metrics.Get(LayoutMetric::kAiCardPaddingLeft);
 +  size_t shown = 0;
 +  for (views::ImageView* icon : ai_icons_) {
 +    if (!icon->GetVisible()) {
@@ -355,7 +421,8 @@ index 0000000000..7b6f53417c
 +    x += 8;  // 标志与文字之间再留 8（方案第 6 行：2 → 10）。
 +  }
 +  const int text_height = text_->GetPreferredSize().height();
-+  text_->SetBounds(x, center_y - text_height / 2, std::max(0, width() - x - right - gear_size - 6),
++  text_->SetBounds(x, center_y - text_height / 2,
++                   std::max(0, width() - x - right - gear_size - 6),
 +                   text_height);
 +  gear_->SetBounds(width() - right - gear_size, center_y - gear_size / 2,
 +                   gear_size, gear_size);
