@@ -2,7 +2,7 @@ diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metr
 index 4bcc6c1f81..587a940536 100644
 --- a/tools/metrics/histograms/metadata/extensions/enums.xml
 +++ b/tools/metrics/histograms/metadata/extensions/enums.xml
-@@ -2952,6 +2952,39 @@ Called by update_extension_histograms.py.-->
+@@ -2952,6 +2952,40 @@ Called by update_extension_histograms.py.-->
    <int value="1991" label="AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS"/>
    <int value="1992" label="EXPERIMENTALAIDATA_GETAPCSNAPSHOT"/>
    <int value="1993" label="EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION"/>
@@ -39,10 +39,11 @@ index 4bcc6c1f81..587a940536 100644
 +  <int value="2024" label="BROWSER_OS_SETAIACTIVITY"/>
 +  <int value="2025" label="BROWSER_OS_PULSEAIACTIVITY"/>
 +  <int value="2026" label="BROWSER_OS_SETEDGELIGHTMODE"/>
++  <int value="2027" label="BROWSER_OS_GETDEFAULTSEARCHENGINE"/>
  </enum>
  
  <!-- LINT.ThenChange(//extensions/browser/extension_function_histogram_value.h:HistogramValue) -->
-@@ -3353,6 +3386,7 @@ Called by update_extension_permission.py.-->
+@@ -3353,6 +3387,7 @@ Called by update_extension_permission.py.-->
    <int value="273" label="kPublicSuffix"/>
    <int value="274" label="kEnterpriseWebrtc"/>
    <int value="275" label="kMimeTypesHandlerPdf"/>

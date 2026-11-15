@@ -562,3 +562,9 @@ features:
       - "chrome/common/extensions/api/browser_os.idl"
       - "extensions/browser/extension_function_histogram_value.h"
       - "tools/metrics/histograms/metadata/extensions/enums.xml"
+
+  windrise-default-search:
+    description: "feat: fixed Google fallback and current profile search provider API (BR12)"
+    files:
+      - "components/search_engines/template_url_prepopulate_data_resolver.cc"
+      - "components/search_engines/default_search_manager_unittest.cc"

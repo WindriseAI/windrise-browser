@@ -29,7 +29,7 @@
 | **6 ColorMixer** | C++通用插槽 | `chrome_color_mixers.cc` / `browseros_prefs.cc` | 原生颜色/偏好局部编译并链接 | 读 profile 9个亮暗偏好键；改偏好触发重算或新窗口生效 | 补丁回放通过，运行未测 |
 | **7 隐藏上游AI/新标签页** | C++固定入口/插件 | `browseros_extension_loader.cc` / `component_loader.cc` | 局部编译并链接 | 插件实现新标签页（搜索/常用网站/闪办/省时间/额度） | 补丁回放通过，运行未测 |
 | **8 关独立更新** | C++固定项 | `winsparkle_glue.cc` / `version_updater_basic.cc` / `sparkle_glue.mm` | 更新模块局部编译并链接 | 禁用浏览器自身检查与安装，由主程序统一更新 | 补丁回放通过，运行未测 |
-| **9 默认搜索Google** | C++固定项 | `template_url_prepopulate_data_resolver.cc` / `default_search_manager.cc` | 搜索组件局部编译并链接 | 首次默认 Google，保留用户后续偏好 | 补丁回放通过，运行未测 |
+| **9 默认搜索Google（BR12）** | C++固定项 / 只读API | `template_url_prepopulate_data_resolver.cc` / `browser_os_api.cc/.h` / `browser_os.idl` | 搜索组件与扩展API局部编译并链接 | 首次兜底固定 Google；用户、扩展和策略优先级照旧；新标签页按当前默认引擎取名称、图标和 Chromium 展开的搜索地址 | 已补实现和回归用例，编译及真窗口待排队 |
 | **10 首次导入页** | C++固定入口/插件 | `startup_browser_creator.cc` / `importer_list.cc` | 启动与导入接口局部编译并链接 | 插件引导页询问书签/密码导入，不替用户擅自同意 | 补丁回放通过，运行未测 |
 | **11 折叠宽度与首字素** | C++通用插槽 | `tab_view.cc` / `vertical_tab_strip_region_view.cc` | 标签布局局部编译并链接 | 真实字体字素测量；中文首字/英文首字母大写/空标题取域名 | 补丁回放通过，运行未测 |
 | **12 内部页统一风格** | C++插槽与字体 | `chrome_typography_provider.cc` / `neterror.css` | 字体与资源局部编译并链接 | HarmonyOS Sans SC 原样私有加载；安全警告页红底与文案不动 | 补丁回放通过，运行未测 |

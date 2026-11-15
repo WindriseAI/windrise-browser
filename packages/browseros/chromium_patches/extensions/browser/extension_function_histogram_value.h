@@ -2,7 +2,7 @@ diff --git a/extensions/browser/extension_function_histogram_value.h b/extension
 index f90a2d4359..da58ec6e05 100644
 --- a/extensions/browser/extension_function_histogram_value.h
 +++ b/extensions/browser/extension_function_histogram_value.h
-@@ -2056,8 +2056,43 @@ enum HistogramValue {
+@@ -2056,8 +2056,44 @@ enum HistogramValue {
    AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS = 1991,
    EXPERIMENTALAIDATA_GETAPCSNAPSHOT = 1992,
    EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION = 1993,
@@ -43,6 +43,7 @@ index f90a2d4359..da58ec6e05 100644
 +  BROWSER_OS_SETAIACTIVITY = 2024,
 +  BROWSER_OS_PULSEAIACTIVITY = 2025,
 +  BROWSER_OS_SETEDGELIGHTMODE = 2026,
++  BROWSER_OS_GETDEFAULTSEARCHENGINE = 2027,
    ENUM_BOUNDARY
  };
  // LINT.ThenChange(/tools/metrics/histograms/metadata/extensions/enums.xml:ExtensionFunctions)
