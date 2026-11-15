@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..8d78b5b024
+index 0000000000..107da295cb
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,547 @@
+@@ -0,0 +1,554 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -56,8 +56,10 @@ index 0000000000..8d78b5b024
 +
 +// 动效-1115 N2：每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
 +constexpr base::TimeDelta kContentFadeDuration = base::Milliseconds(180);
-+// 不知道目标宽度时，旧组淡到这个进度就开始淡入新组（保证两组有重叠）。
-+constexpr double kFadeInFallbackProgress = 0.5;
++// 旧组透明度降到这个值时，新组无论如何都开始淡入（兜底，保证两组有重叠）。
++// 不按时间兜底：T0 前段很陡，旧组在 1/3 时长时已经接近 0，按时间等会留空档
++// （补录 R1：展开 / 首次收起时卡片有约 33ms 近乎全空，见盘点 8.14）。
++constexpr float kFadeInStartOpacity = 0.5f;
 +
 +gfx::ImageSkia DecodeIcon(const std::string& png) {
 +  if (png.empty()) {
@@ -217,8 +219,13 @@ index 0000000000..8d78b5b024
 +
 +bool WindriseAiCardView::FadeInGateReached() const {
 +  const int target = settled_width_[GroupIndex(collapsed_)];
-+  if (target <= 0 || target == fade_start_width_) {
-+    return false;  // 不知道目标宽度 / 宽度不变：交给时间兜底。
++  if (target <= 0) {
++    return false;  // 不知道目标宽度：交给透明度兜底。
++  }
++  if (target == fade_start_width_) {
++    // 卡片在切换开始时已经是目标宽度（展开时侧栏先一步把卡片排到全宽）：
++    // 没有「过中点」可等，直接开始。
++    return true;
 +  }
 +  const int mid = (fade_start_width_ + target) / 2;
 +  return target > fade_start_width_ ? width() >= mid : width() <= mid;
@@ -228,10 +235,10 @@ index 0000000000..8d78b5b024
 +  if (!fade_in_pending_) {
 +    return;
 +  }
-+  const bool by_time = !fade_out_animation_.is_animating() ||
-+                       fade_out_animation_.GetCurrentValue() >=
-+                           kFadeInFallbackProgress;
-+  if (!force && !by_time && !FadeInGateReached()) {
++  const bool old_faded =
++      !fade_out_animation_.is_animating() ||
++      group_opacity_[GroupIndex(!collapsed_)] <= kFadeInStartOpacity;
++  if (!force && !old_faded && !FadeInGateReached()) {
 +    return;
 +  }
 +  fade_in_pending_ = false;
@@ -277,7 +284,7 @@ index 0000000000..8d78b5b024
 +    return;
 +  }
 +  if (animation == &fade_out_animation_) {
-+    // 旧组淡完时新组还在等：不再等，立刻开始（兜底；正常在一半时已经开始）。
++    // 旧组淡完时新组还在等：不再等，立刻开始（兜底；正常早就开始了）。
 +    MaybeStartFadeIn(/*force=*/true);
 +  }
 +  FinishFadeIfDone();
