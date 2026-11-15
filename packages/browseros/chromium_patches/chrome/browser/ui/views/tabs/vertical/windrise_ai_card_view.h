@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..f4df2e8162
+index 0000000000..8458db2d5e
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,119 @@
+@@ -0,0 +1,125 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -28,6 +28,7 @@ index 0000000000..f4df2e8162
 +#include "ui/views/widget/widget_observer.h"
 +
 +class BrowserWindowInterface;
++class ExpandOnHoverLock;
 +class WindriseAiPanelView;
 +
 +// 竖向标签栏左下角「已连接 N 个 AI」卡片（方案 N7，B 版银色玻璃）。
@@ -96,6 +97,11 @@ index 0000000000..f4df2e8162
 +
 +  raw_ptr<BrowserWindowInterface> browser_ = nullptr;
 +  raw_ptr<WindriseAiPanelView> panel_ = nullptr;
++  // 面板开着时锁住竖向标签栏「悬停展开」的当前状态（同上游菜单 / 气泡的做法，
++  // ExpandOnHoverLockType::kKeepCurrentState）：否则收起态点卡片时悬停浮出会
++  // 在面板出现后再展开 / 先缩回再展开，挂在卡片上的面板跟着横移
++  // （补录 证据-动效-浏览器-04-补录/S3，见盘点 8.15）。
++  std::unique_ptr<ExpandOnHoverLock> expand_on_hover_lock_;
 +
 +  raw_ptr<views::ImageView> mark_ = nullptr;
 +  raw_ptr<views::Label> count_label_ = nullptr;
