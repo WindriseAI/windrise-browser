@@ -183,4 +183,199 @@ describe('renderSnapshot', () => {
     })
     expect(out.text).toBe('- generic [ref=e1] [cursor=pointer]')
   })
+
+  test('keeps an ignored node that the cursor scan found', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', {
+        ignored: true,
+        backendDOMNodeId: 21,
+        children: ['3'],
+      }),
+      ax('3', 'StaticText', { name: name('Open menu') }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [21, { reasons: ['cursor:pointer', 'onclick'], kind: 'clickable' }],
+      ]),
+    })
+    expect(out.text).toBe('- clickable [ref=e1] [cursor=pointer]')
+  })
+
+  test('still drops an ignored node no cursor hit covers', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', { ignored: true, backendDOMNodeId: 21 }),
+    ]
+    expect(renderSnapshot(nodes, { refs: new RefMap() }).text).toBe('')
+  })
+
+  test('gives a nameless hit a synthetic hint after its state', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', {
+        ignored: true,
+        backendDOMNodeId: 31,
+        properties: [
+          { name: 'disabled', value: { type: 'boolean', value: true } },
+        ],
+      }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [31, { reasons: ['onclick'], kind: 'clickable', hint: 'Close' }],
+      ]),
+    })
+    expect(out.text).toBe(
+      '- clickable [disabled] [ref=e1] [cursor=pointer] (hint: Close)',
+    )
+  })
+
+  test('keeps the accessible name instead of the synthetic hint', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'button', { name: name('Save'), backendDOMNodeId: 41 }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [41, { reasons: ['cursor:pointer'], hint: 'Save button' }],
+      ]),
+    })
+    expect(out.text).toBe('- button "Save" [ref=e1] [cursor=pointer]')
+  })
+
+  test('promotes an unnamed generic role when the scan names a kind', () => {
+    const nodes: AXNode[] = [
+      ax('1', 'RootWebArea', { children: ['2'] }),
+      ax('2', 'generic', { backendDOMNodeId: 51 }),
+    ]
+    const out = renderSnapshot(nodes, {
+      refs: new RefMap(),
+      cursorHits: new Map([
+        [51, { reasons: ['tabindex'], kind: 'clickable', hint: 'Tab' }],
+      ]),
+    })
+    expect(out.text).toBe('- clickable [ref=e1] [cursor=pointer] (hint: Tab)')
+  })
+})
+
+describe('payment field visibility (upstream 6e65fb395)', () => {
+  const field = (id: string, label: string, value: string): AXNode =>
+    ax(id, 'textbox', { name: name(label), value: { type: 'string', value } })
+  const render = (nodes: AXNode[]) =>
+    renderSnapshot(nodes, { refs: new RefMap() }).text
+
+  test('masks card numbers and named security codes without hiding unrelated numbers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['6', '7'] }),
+      ax('6', 'form', { children: ['2'] }),
+      field('2', 'Card number', '4111 1111 1111 1111'),
+      ax('7', 'form', { children: ['3', '4', '5'] }),
+      field('3', 'CVC', '123'),
+      field('4', 'Quantity', '123'),
+      field('5', 'Order number', '4111111111111112'),
+    ])
+    expect(text).toContain('"Card number": "•••• 1111"')
+    expect(text).not.toContain('4111 1111 1111 1111')
+    expect(text).toContain('"CVC": "•••"')
+    expect(text).toContain('"Quantity": "123"')
+    expect(text).toContain('"Order number": "4111111111111112"')
+  })
+
+  test('hides short numbers in the nearest card form regardless of language', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '6'] }),
+      ax('2', 'form', { children: ['3', '4', '5', '8', '9'] }),
+      field('3', 'Numéro de carte', '4111 1111 1111 1111'),
+      field('4', '安全码', '123'),
+      field('5', 'Mois', '12'),
+      field('8', 'Expiry', '1229'),
+      field('9', 'Cardholder', 'Alice Example'),
+      ax('6', 'form', { children: ['7'] }),
+      field('7', 'Quantity', '123'),
+    ])
+    expect(text).toContain('"安全码": "•••"')
+    expect(text).toContain('"Expiry": "•••"')
+    expect(text).toContain('"Mois": "12"')
+    expect(text).toContain('"Cardholder": "Alice Example"')
+    expect(text).toContain('"Quantity": "123"')
+  })
+
+  test('uses the document scope for formless card fields through ignored shadow wrappers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '5'] }),
+      ax('2', 'generic', { ignored: true, children: ['3', '4'] }),
+      field('3', 'Card', '4111-1111-1111-1111'),
+      field('4', 'Code', '9876'),
+      field('5', 'Quantity', '123'),
+    ])
+    expect(text).toContain('"Card": "•••• 1111"')
+    expect(text).toContain('"Code": "•••"')
+    expect(text).toContain('"Quantity": "•••"')
+  })
+
+  test('masks a child frame independently without changing a sibling document', () => {
+    const parent = render([
+      ax('1', 'RootWebArea', { children: ['2', '3'] }),
+      field('2', 'Quantity', '123'),
+      ax('3', 'Iframe', { backendDOMNodeId: 3 }),
+    ])
+    const child = renderSnapshot([
+      ax('10', 'RootWebArea', { children: ['11', '12'] }),
+      field('11', 'Card', '4111111111111111'),
+      field('12', 'Code', '123'),
+    ], { refs: new RefMap(), frameId: 'child', baseDepth: 1 }).text
+    expect(parent).toContain('"Quantity": "123"')
+    expect(child).toContain('  - textbox "Card": "•••• 1111"')
+    expect(child).toContain('  - textbox "Code": "•••"')
+  })
+
+  test('keeps upstream boundaries for six digit codes, slash dates and non-card long numbers', () => {
+    const text = render([
+      ax('1', 'RootWebArea', { children: ['2', '3', '4', '5'] }),
+      field('2', 'CVV', '123456'),
+      field('3', 'Date', '12/29'),
+      field('4', 'Order', '4111111111111112'),
+      field('5', 'Tracking', '12345678901234567890'),
+    ])
+    expect(text).toContain('"CVV": "123456"')
+    expect(text).toContain('"Date": "12/29"')
+    expect(text).toContain('"Order": "4111111111111112"')
+    expect(text).toContain('"Tracking": "12345678901234567890"')
+  })
+})
+
+describe('separated expiry values in card forms', () => {
+  test('masks only expiry-labelled month/year values in an identified card form', () => {
+    const fields = [
+      ['Expiry', '12/29', '•••'],
+      ['Expiration date', '12 / 29', '•••'],
+      ['Valid thru', '12-29', '•••'],
+      ['MM/YYYY', '12/2029', '•••'],
+      ['有效期', '01/29', '•••'],
+      ['Expiry', '13/29', '13/29'],
+      ['Expiry', '12/29/2026', '12/29/2026'],
+      ['Delivery date', '12/29', '12/29'],
+      ['Ratio', '12/2029', '12/2029'],
+      ['Expiry', '12/2', '12/2'],
+    ]
+    const nodes = [
+      ax('root', 'RootWebArea', { children: ['card-form', 'other-form'] }),
+      ax('card-form', 'form', { children: ['card', ...fields.map((_, i) => `f${i}`)] }),
+      ax('card', 'textbox', { name: name('Card'), value: { type: 'string', value: '4111111111111111' } }),
+      ...fields.map(([label, value], i) => ax(`f${i}`, 'textbox', {
+        name: name(label), value: { type: 'string', value },
+      })),
+      ax('other-form', 'form', { children: ['outside'] }),
+      ax('outside', 'textbox', { name: name('Outside expiry'), value: { type: 'string', value: '12/29' } }),
+    ]
+    const lines = renderSnapshot(nodes, { refs: new RefMap() }).text.split('\n')
+    for (let i = 0; i < fields.length; i++) {
+      expect(lines[i + 2]).toBe(`  - textbox ${JSON.stringify(fields[i][0])}: ${JSON.stringify(fields[i][2])}`)
+    }
+    expect(lines[lines.length - 1]).toBe('  - textbox "Outside expiry": "12/29"')
+  })
 })

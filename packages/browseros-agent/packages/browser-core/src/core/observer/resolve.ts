@@ -1,5 +1,6 @@
 import type { ProtocolApi } from '@browseros/cdp-protocol/protocol-api'
 import type { AXNode } from '../snapshot/ax-types'
+import { PROMOTED_ROLES } from '../snapshot/cursor-hits'
 import type { RefEntry } from '../snapshot/refs'
 import { ROOT_ROLES } from '../snapshot/roles'
 import { fetchAxTree } from './ax-tree'
@@ -24,14 +25,23 @@ export async function resolveRefEntry(
     return { session, backendNodeId: entry.backendNodeId }
   }
 
-  const fresh = findByRoleNameNth(await fetchAxTree(session, axParams), entry)
-  if (fresh === undefined) {
-    throw new Error(
-      `Stale ref ${entry.ref} (${entry.role} "${entry.name}"); take a new snapshot.`,
-    )
+  // A promoted kind has no matching accessibility node, so the re-query below would match
+  // some other element that happens to share the role and name. Report the ref as stale and
+  // let the caller take a new snapshot instead.
+  if (PROMOTED_ROLES[entry.role] === true) {
+    throw staleError(entry)
   }
+
+  const fresh = findByRoleNameNth(await fetchAxTree(session, axParams), entry)
+  if (fresh === undefined) throw staleError(entry)
   entry.backendNodeId = fresh
   return { session, backendNodeId: fresh }
+}
+
+function staleError(entry: RefEntry): Error {
+  return new Error(
+    `Stale ref ${entry.ref} (${entry.role} "${entry.name}"); take a new snapshot.`,
+  )
 }
 
 async function isLive(
