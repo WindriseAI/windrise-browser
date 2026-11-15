@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..127ddeb36a
+index 0000000000..b0deeb15ae
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,105 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -18,6 +18,9 @@ index 0000000000..127ddeb36a
 +#include "base/scoped_observation.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
++#include "ui/gfx/animation/linear_animation.h"
++#include "ui/gfx/image/image_skia.h"
++#include "ui/views/animation/animation_delegate_views.h"
 +#include "ui/views/controls/button/button.h"
 +#include "ui/views/controls/image_view.h"
 +#include "ui/views/controls/label.h"
@@ -32,7 +35,8 @@ index 0000000000..127ddeb36a
 +// AI 标志 / 齿轮；点卡片向右上方浮出 WindriseAiPanelView。收起（折叠标签栏）
 +// 时只剩风桥标志 + 数字。
 +class WindriseAiCardView : public views::Button,
-+                            public views::WidgetObserver {
++                            public views::WidgetObserver,
++                            public views::AnimationDelegateViews {
 +  METADATA_HEADER(WindriseAiCardView, views::Button)
 + public:
 +  explicit WindriseAiCardView(BrowserWindowInterface* browser);
@@ -56,6 +60,11 @@ index 0000000000..127ddeb36a
 +  // views::WidgetObserver:
 +  void OnWidgetDestroyed(views::Widget* widget) override;
 +
++  // views::AnimationDelegateViews (motion-1115 N2: collapsed/expanded content
++  // crossfade):
++  void AnimationProgressed(const gfx::Animation* animation) override;
++  void AnimationEnded(const gfx::Animation* animation) override;
++
 + protected:
 +  // views::Button:
 +  void StateChanged(ButtonState old_state) override;
@@ -64,6 +73,15 @@ index 0000000000..127ddeb36a
 +  void OnAiStateChanged();
 +  void RebuildFromState();
 +  void ShowPanel();
++
++  // 动效-1115 N2：折叠态 ⇄ 展开态内容的交叉淡（共 180ms：旧内容 90ms 淡出 →
++  // 换内容 → 新内容 90ms 淡入，曲线 T0）。减少动态 / 不在窗口里时直接换。
++  enum class FadePhase { kIdle, kOut, kIn };
++  std::vector<views::View*> ContentViews() const;
++  void SetContentOpacity(float opacity);
++  void ClearContentLayers();
++  void StartFadePhase(FadePhase phase, float from_opacity);
++  void SwapShownContent();
 +
 +  raw_ptr<BrowserWindowInterface> browser_ = nullptr;
 +  raw_ptr<WindriseAiPanelView> panel_ = nullptr;
@@ -77,7 +95,17 @@ index 0000000000..127ddeb36a
 +  base::CallbackListSubscription state_subscription_;
 +  base::ScopedObservation<views::Widget, views::WidgetObserver>
 +      panel_observation_{this};
++  // 目标状态（侧栏收没收）。
 +  bool collapsed_ = false;
++  // 正在显示的是哪一组内容（交叉淡换内容那一刻才跟上 collapsed_）；
++  // RebuildFromState / Layout 按它排。
++  bool shown_collapsed_ = false;
++  FadePhase fade_phase_ = FadePhase::kIdle;
++  float fade_from_ = 1.0f;
++  float content_opacity_ = 1.0f;
++  gfx::LinearAnimation fade_animation_;
++  // AI 图标只在 AI 状态变化时解码一次（动效-1115 N2：切换时不再解 PNG）。
++  std::vector<gfx::ImageSkia> decoded_icons_;
 +};
 +
 +#endif  // CHROME_BROWSER_UI_VIEWS_TABS_VERTICAL_WINDRISE_AI_CARD_VIEW_H_
