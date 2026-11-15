@@ -568,3 +568,19 @@ features:
     files:
       - "components/search_engines/template_url_prepopulate_data_resolver.cc"
       - "components/search_engines/default_search_manager_unittest.cc"
+
+  windrise-motion-1115:
+    description: "feat: Windrise motion tokens (gfx::Tween WINDRISE_EASE_OUT, 120/180/240) for tab strip, side panel, tabs, bubbles, menus, bookmark bar"
+    files:
+      - "ui/gfx/animation/tween.h"
+      - "ui/gfx/animation/tween.cc"
+      - "chrome/browser/ui/views/animations/tab_strip_animations.cc"
+      - "chrome/browser/ui/views/animations/side_panel_animations.cc"
+      - "chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc"
+      - "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+      - "chrome/browser/ui/views/tabs/common/dragged_tabs_container.cc"
+      - "chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc"
+      - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc"
+      - "ui/views/controls/menu/menu_controller.cc"
+      - "ui/views/controls/menu/menu_controller.h"
+      - "ui/views/controls/menu/menu_host.cc"

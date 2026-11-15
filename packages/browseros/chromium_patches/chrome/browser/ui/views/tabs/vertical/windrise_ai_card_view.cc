@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..e6f2ef845f
+index 0000000000..c03e2fd1bf
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,359 @@
+@@ -0,0 +1,476 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -33,6 +33,8 @@ index 0000000000..e6f2ef845f
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +#include "ui/color/color_variant.h"
 +#include "ui/compositor/layer.h"
++#include "ui/gfx/animation/animation.h"
++#include "ui/gfx/animation/tween.h"
 +#include "ui/gfx/canvas.h"
 +#include "ui/gfx/codec/png_codec.h"
 +#include "ui/gfx/geometry/skia_conversions.h"
@@ -70,7 +72,11 @@ index 0000000000..e6f2ef845f
 +WindriseAiCardView::WindriseAiCardView(BrowserWindowInterface* browser)
 +    : views::Button(base::BindRepeating(&WindriseAiCardView::ShowPanel,
 +                                        base::Unretained(this))),
-+      browser_(browser) {
++      views::AnimationDelegateViews(this),
++      browser_(browser),
++      fade_animation_(base::Milliseconds(90),
++                      gfx::LinearAnimation::kDefaultFrameRate,
++                      this) {
 +  SetAccessibleName(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
 +  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +  SetTooltipText(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_OPEN_APP));
@@ -122,12 +128,123 @@ index 0000000000..e6f2ef845f
 +    return;
 +  }
 +  collapsed_ = collapsed;
++  if (!gfx::Animation::ShouldRenderRichAnimation() || !GetWidget()) {
++    // 减少动态效果 / 还没进窗口：直接换（原行为）。
++    fade_animation_.Stop();
++    fade_phase_ = FadePhase::kIdle;
++    ClearContentLayers();
++    SwapShownContent();
++    return;
++  }
++  switch (fade_phase_) {
++    case FadePhase::kIdle:
++      StartFadePhase(FadePhase::kOut, 1.0f);
++      break;
++    case FadePhase::kOut:
++      // 还在淡出：接着淡，换内容那一刻按最新的 collapsed_ 换（来回点了偶数次
++      // 就是原内容淡出再淡回）。
++      break;
++    case FadePhase::kIn:
++      // 新内容淡入到一半目标又变了：从它当前的透明度接着淡出，不跳。
++      StartFadePhase(FadePhase::kOut, content_opacity_);
++      break;
++  }
++}
++
++std::vector<views::View*> WindriseAiCardView::ContentViews() const {
++  std::vector<views::View*> views;
++  if (shown_collapsed_) {
++    views = {mark_.get(), count_label_.get()};
++  } else {
++    views = {text_.get(), gear_.get()};
++    for (views::ImageView* icon : ai_icons_) {
++      views.push_back(icon);
++    }
++  }
++  return views;
++}
++
++void WindriseAiCardView::SetContentOpacity(float opacity) {
++  content_opacity_ = opacity;
++  for (views::View* view : ContentViews()) {
++    if (!view->GetVisible()) {
++      continue;
++    }
++    if (!view->layer()) {
++      // 只在交叉淡期间给子视图单独一层（结束就拆掉，平时照旧画在卡片层里）。
++      view->SetPaintToLayer();
++      view->layer()->SetFillsBoundsOpaquely(false);
++    }
++    view->layer()->SetOpacity(opacity);
++  }
++}
++
++void WindriseAiCardView::ClearContentLayers() {
++  content_opacity_ = 1.0f;
++  std::vector<views::View*> all = {mark_.get(), count_label_.get(),
++                                   text_.get(), gear_.get()};
++  for (views::ImageView* icon : ai_icons_) {
++    all.push_back(icon);
++  }
++  for (views::View* view : all) {
++    if (view->layer()) {
++      view->DestroyLayer();
++    }
++  }
++}
++
++void WindriseAiCardView::StartFadePhase(FadePhase phase, float from_opacity) {
++  fade_phase_ = phase;
++  fade_from_ = from_opacity;
++  // LinearAnimation::Stop() 只会发 AnimationCanceled（这里没覆写，什么都不做）。
++  fade_animation_.Stop();
++  SetContentOpacity(from_opacity);
++  fade_animation_.Start();
++}
++
++void WindriseAiCardView::SwapShownContent() {
++  shown_collapsed_ = collapsed_;
 +  RebuildFromState();
 +  PreferredSizeChanged();
 +  SchedulePaint();
 +}
 +
++void WindriseAiCardView::AnimationProgressed(const gfx::Animation* animation) {
++  if (animation != &fade_animation_ || fade_phase_ == FadePhase::kIdle) {
++    return;
++  }
++  const float e = static_cast<float>(gfx::Tween::CalculateValue(
++      gfx::Tween::WINDRISE_EASE_OUT, animation->GetCurrentValue()));
++  SetContentOpacity(fade_phase_ == FadePhase::kOut
++                        ? fade_from_ * (1.0f - e)
++                        : fade_from_ + (1.0f - fade_from_) * e);
++}
++
++void WindriseAiCardView::AnimationEnded(const gfx::Animation* animation) {
++  if (animation != &fade_animation_) {
++    return;
++  }
++  if (fade_phase_ == FadePhase::kOut) {
++    ClearContentLayers();
++    SwapShownContent();
++    StartFadePhase(FadePhase::kIn, 0.0f);
++    return;
++  }
++  fade_phase_ = FadePhase::kIdle;
++  ClearContentLayers();
++}
++
 +void WindriseAiCardView::OnAiStateChanged() {
++  // AI 图标只在这里解码（RebuildFromState 在交叉淡换内容时也会调，不再解 PNG）。
++  browseros::windrise::AiWindowState* window_state =
++      browseros::windrise::AiWindowState::From(browser_.get());
++  decoded_icons_.clear();
++  if (window_state) {
++    const auto& connections = window_state->state().connections;
++    for (size_t i = 0; i < connections.size() && i < kMaxShownAiIcons; ++i) {
++      decoded_icons_.push_back(DecodeIcon(connections[i].icon_png));
++    }
++  }
 +  RebuildFromState();
 +  PreferredSizeChanged();
 +  SchedulePaint();
@@ -153,23 +270,23 @@ index 0000000000..e6f2ef845f
 +  }
 +  count_label_->SetText(base::FormatNumber(static_cast<int>(count)));
 +
-+  mark_->SetVisible(collapsed_);
-+  count_label_->SetVisible(collapsed_);
-+  text_->SetVisible(!collapsed_);
-+  gear_->SetVisible(!collapsed_);
++  mark_->SetVisible(shown_collapsed_);
++  count_label_->SetVisible(shown_collapsed_);
++  text_->SetVisible(!shown_collapsed_);
++  gear_->SetVisible(!shown_collapsed_);
 +
 +  const int icon_size =
 +      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardIconSize);
 +  for (size_t i = 0; i < ai_icons_.size(); ++i) {
 +    views::ImageView* icon = ai_icons_[i];
-+    const bool visible = !collapsed_ && ai_state && i < count &&
++    const bool visible = !shown_collapsed_ && ai_state && i < count &&
 +                         !ai_state->connections[i].icon_png.empty();
 +    icon->SetVisible(visible);
 +    if (!visible) {
 +      continue;
 +    }
-+    icon->SetImage(
-+        ui::ImageModel::FromImageSkia(DecodeIcon(ai_state->connections[i].icon_png)));
++    icon->SetImage(ui::ImageModel::FromImageSkia(
++        i < decoded_icons_.size() ? decoded_icons_[i] : gfx::ImageSkia()));
 +    icon->SetImageSize(gfx::Size(icon_size, icon_size));
 +    // 16 见方白底圆角 4 的小方块（方案第 6 行）。
 +    icon->SetBackground(views::CreateRoundedRectBackground(
@@ -198,12 +315,12 @@ index 0000000000..e6f2ef845f
 +      browseros::windrise::GetLayoutMetrics();
 +  const int icon_size = metrics.Get(LayoutMetric::kAiCardIconSize);
 +  const int gear_size = metrics.Get(LayoutMetric::kTopButtonIconSize);
-+  const int left = collapsed_ ? 8 : metrics.Get(LayoutMetric::kAiCardPaddingLeft);
++  const int left = shown_collapsed_ ? 8 : metrics.Get(LayoutMetric::kAiCardPaddingLeft);
 +  const int right = 12;
 +  const int center_y = height() / 2;
 +
 +  int x = left;
-+  if (collapsed_) {
++  if (shown_collapsed_) {
 +    mark_->SetBounds(x, center_y - icon_size / 2, icon_size, icon_size);
 +    x += icon_size + 2;
 +    count_label_->SetBounds(
