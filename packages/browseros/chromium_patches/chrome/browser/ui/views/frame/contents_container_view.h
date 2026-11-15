@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.h b/chrome/browser/ui/views/frame/contents_container_view.h
-index e3ae9d104d..bceff72ce6 100644
+index e3ae9d104d..c8b3b2bd58 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.h
 +++ b/chrome/browser/ui/views/frame/contents_container_view.h
 @@ -7,22 +7,33 @@
@@ -36,7 +36,7 @@ index e3ae9d104d..bceff72ce6 100644
  class ActorOverlayWebView;
  class ReadAnythingImmersiveOverlayView;
  
-@@ -154,6 +165,27 @@ class ContentsContainerView : public views::View,
+@@ -154,6 +165,32 @@ class ContentsContainerView : public views::View,
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
@@ -49,7 +49,12 @@ index e3ae9d104d..bceff72ce6 100644
 +  // 光效画在哪（偏好 browseros.windrise.edge_light_mode）：page / layer。
 +  void ApplyEdgeLightMode();
 +  // 独立层（mode = layer）跟着光效层的可见性（含淡出）显示 / 隐藏。
++  // SyncEdgeLightWebLayer：重新查授权后同步（授权 / 偏好变化时调）；
++  // SyncEdgeLightWebLayerShown：只比布尔值（逐帧、布局里调，不做授权 IO）。
 +  void SyncEdgeLightWebLayer();
++  void SyncEdgeLightWebLayerShown();
++  // 查一次助手扩展授权，不授权就销毁独立层；结果记在 edge_light_denied_。
++  bool RefreshEdgeLightAuthorization();
 +  // 独立层加载的地址：chrome-extension://<扩展 id>/edge-light/frame.html#native&w=<窗口 id>；
 +  // 扩展没登记时无效。
 +  GURL EdgeLightWebLayerUrl() const;
@@ -64,7 +69,7 @@ index e3ae9d104d..bceff72ce6 100644
    // views::View:
    void ChildVisibilityChanged(View* child) override;
    void Layout(PassKey) override;
-@@ -169,6 +201,20 @@ class ContentsContainerView : public views::View,
+@@ -169,6 +206,22 @@ class ContentsContainerView : public views::View,
    bool is_in_split_ = false;
  
    raw_ptr<BrowserView> browser_view_ = nullptr;
@@ -81,6 +86,8 @@ index e3ae9d104d..bceff72ce6 100644
 +  // 风桥 N11 独立层：透明、不接输入的网页视图，加载扩展的 edge-light/frame.html。
 +  raw_ptr<WindriseEdgeLightWebView> edge_light_web_view_ = nullptr;
 +  std::string edge_light_mode_;
++  // 最近一次授权检查被拒（动效-1115 N7：被拒后不逐帧重查）。
++  bool edge_light_denied_ = false;
 +  PrefChangeRegistrar edge_light_prefs_;
  
    // An invisible view used to anchor tab toasts to the top of the contents

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..f2016e127b 100644
+index 413b2f626d..c2e4cbbfeb 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -4,12 +4,17 @@
@@ -103,7 +103,7 @@ index 413b2f626d..f2016e127b 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +363,62 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +363,63 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -157,7 +157,8 @@ index 413b2f626d..f2016e127b 100644
 +void ContentsContainerView::OnAiCornerProgress(float progress) {
 +  ai_corner_progress_ = progress;
 +  // 光效层每帧回调一次（淡出结束回到 0 时一定回调）：独立层的显示 / 隐藏跟着它。
-+  SyncEdgeLightWebLayer();
++  // 逐帧只走不带授权 IO 的那一半（动效-1115 N7）。
++  SyncEdgeLightWebLayerShown();
 +  if (GetEffectiveRoundedCorners() == last_effective_radii_) {
 +    return;
 +  }
@@ -167,7 +168,7 @@ index 413b2f626d..f2016e127b 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +429,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +430,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -177,7 +178,7 @@ index 413b2f626d..f2016e127b 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +455,122 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +456,149 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -204,7 +205,8 @@ index 413b2f626d..f2016e127b 100644
 +      web_contents ? extensions::ExtensionTabUtil::GetTabId(web_contents) : 0;
 +  edge_light_view_->SetWebContents(web_contents);
 +  edge_light_view_->SetShowing(ai_state && tab_id && ai_state->IsActive(tab_id));
-+  SyncEdgeLightWebLayer();
++  // Layout() 每次都会走到这里：同样只走不带授权 IO 的那一半。
++  SyncEdgeLightWebLayerShown();
 +}
 +
 +void ContentsContainerView::ApplyEdgeLightMode() {
@@ -214,6 +216,8 @@ index 413b2f626d..f2016e127b 100644
 +  // 两种模式下 edge_light_view_ 都照常计时（N10 网页角 12 -> 36、IsActive），它本身不画。
 +  edge_light_mode_ = mode == "layer" ? "layer" : "page";
 +  UpdateEdgeLight();
++  // 模式 / 扩展 id 变了：重新判一次授权（原来由逐帧检查顺带做）。
++  SyncEdgeLightWebLayer();
 +}
 +
 +GURL ContentsContainerView::EdgeLightWebLayerUrl() const {
@@ -268,21 +272,45 @@ index 413b2f626d..f2016e127b 100644
 +                  browser_view_->browser())));
 +}
 +
-+void ContentsContainerView::SyncEdgeLightWebLayer() {
-+  if (!edge_light_web_view_ || !edge_light_view_) {
-+    return;
-+  }
++bool ContentsContainerView::RefreshEdgeLightAuthorization() {
++  // 动效-1115 N7：授权检查可能在 UI 线程上阻塞读文件（第一次校验扩展 /
++  // 未授权时 PollAuthority 读租约），所以只在这里做，不进逐帧路径。
 +  Profile* profile = browser_view_->GetProfile();
 +  const std::string& id = profile->GetPrefs()->GetString(
 +      browseros::prefs::kWindriseEdgeLightExtensionId);
 +  auto* registry = extensions::ExtensionRegistry::Get(profile);
 +  const auto* extension = registry->enabled_extensions().GetByID(id);
-+  if (!extensions::IsAuthorizedWindriseExtension(extension)) {
++  edge_light_denied_ = !extensions::IsAuthorizedWindriseExtension(extension);
++  if (edge_light_denied_) {
 +    edge_light_web_view_->Revoke();
++  }
++  return !edge_light_denied_;
++}
++
++void ContentsContainerView::SyncEdgeLightWebLayer() {
++  // 授权变化（AddWindriseAssistantAuthorityObserver）/ 扩展 id、模式偏好变化时调：
++  // 重新查一次授权，不授权就立刻销毁独立层（同 6604638d2 的行为）。
++  if (!edge_light_web_view_ || !edge_light_view_) {
++    return;
++  }
++  if (!RefreshEdgeLightAuthorization()) {
++    return;
++  }
++  SyncEdgeLightWebLayerShown();
++}
++
++void ContentsContainerView::SyncEdgeLightWebLayerShown() {
++  // 逐帧（OnAiCornerProgress）和每次布局都会调：这里只比布尔值，不做授权 IO。
++  // 只有「要从隐藏变成显示」的那一下才查一次授权；被拒后不再逐帧重查，
++  // 等授权观察者 / 偏好变化走 SyncEdgeLightWebLayer() 重新判。
++  if (!edge_light_web_view_ || !edge_light_view_) {
 +    return;
 +  }
 +  const bool want = edge_light_mode_ == "layer" && edge_light_view_->IsActive();
 +  if (want == edge_light_web_view_->shown()) {
++    return;
++  }
++  if (want && (edge_light_denied_ || !RefreshEdgeLightAuthorization())) {
 +    return;
 +  }
 +  edge_light_web_view_->SetShown(want, want ? EdgeLightWebLayerUrl() : GURL());
@@ -300,7 +328,7 @@ index 413b2f626d..f2016e127b 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +766,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +794,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  

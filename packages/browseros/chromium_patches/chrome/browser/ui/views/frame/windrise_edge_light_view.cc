@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.cc b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
 new file mode 100644
-index 0000000000..44e1b06ce2
+index 0000000000..355abee38c
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,213 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +//
@@ -22,7 +22,7 @@ index 0000000000..44e1b06ce2
 +
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +#include "ui/gfx/animation/animation.h"
-+#include "ui/gfx/geometry/cubic_bezier.h"
++#include "ui/gfx/animation/tween.h"
 +#include "ui/views/widget/widget.h"
 +
 +namespace {
@@ -32,8 +32,10 @@ index 0000000000..44e1b06ce2
 +constexpr double kRampDownSeconds = 0.400;
 +
 +float Ease(float x) {
-+  return static_cast<float>(
-+      gfx::CubicBezier(0.23, 1.0, 0.32, 1.0).Solve(std::clamp(x, 0.0f, 1.0f)));
++  // 动效-1115 N7：不再每帧新建 CubicBezier，改用 T0（gfx::Tween::WINDRISE_EASE_OUT，
++  // 内部是同一条 CubicBezier(0.23, 1, 0.32, 1) 的静态实例），算出来的值逐位相同。
++  return static_cast<float>(gfx::Tween::CalculateValue(
++      gfx::Tween::WINDRISE_EASE_OUT, std::clamp(x, 0.0f, 1.0f)));
 +}
 +
 +float Lerp(float a, float b, float t) {
