@@ -1,5 +1,5 @@
 diff --git a/ui/views/bubble/bubble_dialog_delegate_view.h b/ui/views/bubble/bubble_dialog_delegate_view.h
-index c63a5501d9..062162b5b3 100644
+index c63a5501d9..9e70b00730 100644
 --- a/ui/views/bubble/bubble_dialog_delegate_view.h
 +++ b/ui/views/bubble/bubble_dialog_delegate_view.h
 @@ -64,6 +64,7 @@ class ExtensionInstallDialogView;
@@ -10,7 +10,33 @@ index c63a5501d9..062162b5b3 100644
  class GlobalErrorBubbleView;
  class HomePageUndoBubble;
  class MediaDialogView;
-@@ -921,6 +922,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public View,
+@@ -510,6 +511,17 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
+   bool accept_events() const { return accept_events_; }
+   void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
+ 
++  // Windrise motion-1115 (N3/N4): every bubble gets the shared open / close
++  // animation (open 240ms: opacity 0->1 + scale 0.96->1 from the anchor side;
++  // close 180ms: opacity only; curve gfx::Tween::WINDRISE_EASE_OUT). Bubbles
++  // that run their own fade (the tab hover card) keep upstream's default.
++  bool windrise_use_default_visibility_animation() const {
++    return windrise_use_default_visibility_animation_;
++  }
++  void set_windrise_use_default_visibility_animation(bool use_default) {
++    windrise_use_default_visibility_animation_ = use_default;
++  }
++
+   // Whether the bubble accepts drag and drop.
+   bool accept_drag_drop() const { return accept_drag_drop_; }
+   void set_accept_drag_drop(bool accept_drag_drop) {
+@@ -774,6 +786,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
+   mutable std::optional<gfx::Rect> anchor_rect_;
+ 
+   bool accept_events_ = true;
++  bool windrise_use_default_visibility_animation_ = false;
+   bool accept_drag_drop_ = true;
+   gfx::NativeView parent_window_ = gfx::NativeView();
+ 
+@@ -921,6 +934,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public View,
    friend class ::ProfileMenuViewBase;
    friend class ::RemoveSuggestionBubbleDialogDelegateView;
    friend class ::StoragePressureBubbleView;
