@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..e5169169da
+index 0000000000..b38e2af5dd
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,107 @@
+@@ -0,0 +1,118 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -62,8 +62,8 @@ index 0000000000..e5169169da
 +  void OnWidgetDestroyed(views::Widget* widget) override;
 +
 +  // views::AnimationDelegateViews（经 views::Button 继承；motion-1115 N2：折叠 /
-+  // 展开内容交叉淡。不是 fade_animation_ 的回调原样交给 views::Button，
-+  // 保持 Button 自己悬停动画的行为）：
++  // 展开内容交叉淡。不是 fade_out_animation_ / fade_in_animation_ 的回调原样交给
++  // views::Button，保持 Button 自己悬停动画的行为）：
 +  void AnimationProgressed(const gfx::Animation* animation) override;
 +  void AnimationEnded(const gfx::Animation* animation) override;
 +
@@ -76,14 +76,22 @@ index 0000000000..e5169169da
 +  void RebuildFromState();
 +  void ShowPanel();
 +
-+  // 动效-1115 N2：折叠态 ⇄ 展开态内容的交叉淡（共 180ms：旧内容 90ms 淡出 →
-+  // 换内容 → 新内容 90ms 淡入，曲线 T0）。减少动态 / 不在窗口里时直接换。
-+  enum class FadePhase { kIdle, kOut, kIn };
-+  std::vector<views::View*> ContentViews() const;
-+  void SetContentOpacity(float opacity);
++  // 动效-1115 N2（审查 P4 改）：折叠态 ⇄ 展开态内容真正的交叉淡。两组内容
++  // 同时在场、各自一层：旧的一组立刻按 T0 淡出 180ms；新的一组等卡片宽度走过
++  // 新旧宽度的中点再按 T0 淡入 180ms（还不知道目标宽度、或宽度不变时，旧组淡到
++  // 一半就开始淡入），两组之间不留空档。被打断：两组都从当前透明度接着走。
++  // 减少动态 / 不在窗口里：直接换。
++  // 组下标：0 = 展开态（文字 / 齿轮 / AI 标志），1 = 折叠态（风桥标志 + 数字）。
++  static size_t GroupIndex(bool collapsed_group) { return collapsed_group ? 1 : 0; }
++  std::vector<views::View*> GroupViews(bool collapsed_group) const;
++  bool GroupShown(bool collapsed_group) const;
++  void ApplyGroupOpacity(bool collapsed_group);
 +  void ClearContentLayers();
-+  void StartFadePhase(FadePhase phase, float from_opacity);
-+  void SwapShownContent();
++  void MaybeStartFadeIn(bool force);
++  bool FadeInGateReached() const;
++  void FinishFadeIfDone();
++  void LayoutExpandedGroup(int center_y);
++  void LayoutCollapsedGroup(int center_y);
 +
 +  raw_ptr<BrowserWindowInterface> browser_ = nullptr;
 +  raw_ptr<WindriseAiPanelView> panel_ = nullptr;
@@ -99,13 +107,16 @@ index 0000000000..e5169169da
 +      panel_observation_{this};
 +  // 目标状态（侧栏收没收）。
 +  bool collapsed_ = false;
-+  // 正在显示的是哪一组内容（交叉淡换内容那一刻才跟上 collapsed_）；
-+  // RebuildFromState / Layout 按它排。
-+  bool shown_collapsed_ = false;
-+  FadePhase fade_phase_ = FadePhase::kIdle;
-+  float fade_from_ = 1.0f;
-+  float content_opacity_ = 1.0f;
-+  gfx::LinearAnimation fade_animation_;
++  // 两组内容当前的透明度和这一段淡入 / 淡出的起点（下标见 GroupIndex）。
++  float group_opacity_[2] = {1.0f, 0.0f};
++  float group_from_[2] = {1.0f, 0.0f};
++  // 新的一组在等「宽度过中点」才开始淡入。
++  bool fade_in_pending_ = false;
++  // 这次切换开始时卡片的宽度；两种状态稳定时各自量到的宽度（0 = 还没量到）。
++  int fade_start_width_ = 0;
++  int settled_width_[2] = {0, 0};
++  gfx::LinearAnimation fade_out_animation_;
++  gfx::LinearAnimation fade_in_animation_;
 +  // AI 图标只在 AI 状态变化时解码一次（动效-1115 N2：切换时不再解 PNG）。
 +  std::vector<gfx::ImageSkia> decoded_icons_;
 +};
