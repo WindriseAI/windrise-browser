@@ -93,6 +93,16 @@ FAMILIES: dict[str, tuple[str, tuple[int, ...]]] = {
              (16, 24, 32, 48, 256)),
 }
 
+# Native renders for the Chromium theme's 22 dp slots (product_logo_name_22*,
+# product_logo_22_mono) at 100 % and 200 %: 22 from the bolded 24 vector, 44
+# from the 48 vector of the B6 export, instead of resampling the 24/48 finals.
+# They serve exact 22/44 requests only and never become the nearest source for
+# other sizes, so every other slot keeps its current pixels.
+EXACT_ONLY: dict[str, tuple[int, ...]] = {
+    "icon": (22, 44),
+    "mark": (22, 44),
+}
+
 # (relative path, pixel size, brand family) — mirrors the shipped file list.
 PNG_TARGETS: tuple[tuple[str, int, str], ...] = (
     ("chromeos/chrome_app_icon_192.png", 192, "icon"),
@@ -213,7 +223,7 @@ class BrandArt:
         if cached is not None:
             return cached
         pattern, sizes = FAMILIES[family]
-        if size not in sizes:
+        if size not in sizes and size not in EXACT_ONLY[family]:
             raise SystemExit(f"the B6 export has no {family} render at {size} px")
         path = self.brand_dir / pattern.format(size=size)
         if not path.is_file():
@@ -237,7 +247,10 @@ class BrandArt:
         self, family: str, size: int
     ) -> tuple[Image.Image, bytes | None]:
         """Image for one output size, plus PNG bytes when it is a 定稿 render."""
-        source = self._source_size(size, FAMILIES[family][1])
+        if size in EXACT_ONLY[family]:
+            source = size
+        else:
+            source = self._source_size(size, FAMILIES[family][1])
         raw, image = self.final(family, source)
         if source == size:
             return image, raw
