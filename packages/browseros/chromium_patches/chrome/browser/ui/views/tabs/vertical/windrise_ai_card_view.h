@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..b38e2af5dd
+index 0000000000..f4df2e8162
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,119 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -78,8 +78,9 @@ index 0000000000..b38e2af5dd
 +
 +  // 动效-1115 N2（审查 P4 改）：折叠态 ⇄ 展开态内容真正的交叉淡。两组内容
 +  // 同时在场、各自一层：旧的一组立刻按 T0 淡出 180ms；新的一组等卡片宽度走过
-+  // 新旧宽度的中点再按 T0 淡入 180ms（还不知道目标宽度、或宽度不变时，旧组淡到
-+  // 一半就开始淡入），两组之间不留空档。被打断：两组都从当前透明度接着走。
++  // 新旧宽度的中点（切换开始时已是目标宽度就立刻）再按 T0 淡入 180ms；无论如何
++  // 旧组透明度降到 0.5 时新组一定已经开始，两组之间不留空档。被打断：两组都从
++  // 当前透明度接着走。
 +  // 减少动态 / 不在窗口里：直接换。
 +  // 组下标：0 = 展开态（文字 / 齿轮 / AI 标志），1 = 折叠态（风桥标志 + 数字）。
 +  static size_t GroupIndex(bool collapsed_group) { return collapsed_group ? 1 : 0; }
