@@ -1,0 +1,112 @@
+diff --git a/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc b/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc
+index 18a885d04d..9cfc024cb8 100644
+--- a/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc
++++ b/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc
+@@ -108,6 +108,9 @@
+ #include "ui/events/types/event_type.h"
+ #include "ui/gfx/animation/slide_animation.h"
+ #include "ui/gfx/canvas.h"
++#include "ui/gfx/geometry/transform.h"
++#include "ui/gfx/animation/tween.h"
++#include "ui/compositor/layer.h"
+ #include "ui/gfx/favicon_size.h"
+ #include "ui/gfx/geometry/insets.h"
+ #include "ui/gfx/geometry/rect.h"
+@@ -389,6 +392,10 @@ BookmarkBarView::BookmarkBarView(
+   SetProperty(views::kElementIdentifierKey, kBookmarkBarElementId);
+ 
+   size_animation_.Reset(1);
++  // Windrise motion-1115 N8: state change 180ms on cubic-bezier(.23, 1, .32, 1)
++  // (upstream: SlideAnimation default 120ms EASE_OUT, animating the height).
++  size_animation_.SetSlideDuration(base::Milliseconds(180));
++  size_animation_.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
+   if (!gfx::Animation::ShouldRenderRichAnimation()) {
+     animations_enabled = false;
+   }
+@@ -464,8 +471,20 @@ void BookmarkBarView::SetBookmarkBarState(
+     } else {
+       size_animation_.Hide();
+     }
++    // Windrise N8: showing takes the full height right away (one reflow of
++    // the web contents), then the bar fades in inside it.
++    if (WindriseHasHeight() != windrise_has_height_) {
++      windrise_has_height_ = WindriseHasHeight();
++      if (browser_view_) {
++        browser_view_->ToolbarSizeChanged(false);
++      }
++    }
++    UpdateWindriseReveal();
+   } else {
+     size_animation_.Reset(state == BookmarkBar::SHOW ? 1 : 0);
++    // Windrise N8: no animation -> no reveal layer, height follows the state.
++    UpdateWindriseReveal();
++    windrise_has_height_ = WindriseHasHeight();
+     if (!animations_enabled) {
+       AnimationEnded(&size_animation_);
+     }
+@@ -631,11 +650,38 @@ gfx::Size BookmarkBarView::CalculatePreferredSize(
+     const views::SizeBounds& available_size) const {
+   gfx::Size prefsize;
+   int preferred_height = GetLayoutConstant(LayoutConstant::kBookmarkBarHeight);
+-  prefsize.set_height(
+-      static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
++  // Windrise N8: no per-frame height (that re-laid out the whole window and
++  // resized the web contents every frame). Full height while showing or while
++  // still fading out; 0 once fully hidden.
++  prefsize.set_height(WindriseHasHeight() ? preferred_height : 0);
+   return prefsize;
+ }
+ 
++bool BookmarkBarView::WindriseHasHeight() const {
++  return size_animation_.IsShowing() || size_animation_.GetCurrentValue() > 0;
++}
++
++void BookmarkBarView::UpdateWindriseReveal() {
++  const bool animating = size_animation_.is_animating();
++  if (!animating) {
++    if (layer()) {
++      DestroyLayer();
++    }
++    return;
++  }
++  if (!layer()) {
++    // Own layer only while fading (destroyed at the end).
++    SetPaintToLayer();
++    layer()->SetFillsBoundsOpaquely(false);
++  }
++  // value: 0 = hidden, 1 = shown (already eased by WINDRISE_EASE_OUT).
++  const double value = size_animation_.GetCurrentValue();
++  layer()->SetOpacity(static_cast<float>(value));
++  gfx::Transform transform;
++  transform.Translate(0, -4.0 * (1.0 - value));
++  layer()->SetTransform(transform);
++}
++
+ gfx::Size BookmarkBarView::GetMinimumSize() const {
+   // The minimum width of the bookmark bar should at least contain the overflow
+   // button, by which one can access all the Bookmark Bar items, and the "All
+@@ -1117,13 +1163,21 @@ void BookmarkBarView::AddedToWidget() {
+ }
+ 
+ void BookmarkBarView::AnimationProgressed(const gfx::Animation* animation) {
+-  // |browser_view_| can be null during tests.
+-  if (browser_view_) {
+-    browser_view_->ToolbarSizeChanged(true);
++  // Windrise N8: per frame only the bar's layer opacity / transform changes;
++  // the window is re-laid out only when the height steps.
++  UpdateWindriseReveal();
++  if (WindriseHasHeight() != windrise_has_height_) {
++    windrise_has_height_ = WindriseHasHeight();
++    // |browser_view_| can be null during tests.
++    if (browser_view_) {
++      browser_view_->ToolbarSizeChanged(false);
++    }
+   }
+ }
+ 
+ void BookmarkBarView::AnimationEnded(const gfx::Animation* animation) {
++  UpdateWindriseReveal();
++  windrise_has_height_ = WindriseHasHeight();
+   // |browser_view_| can be null during tests.
+   if (browser_view_) {
+     browser_view_->ToolbarSizeChanged(false);
