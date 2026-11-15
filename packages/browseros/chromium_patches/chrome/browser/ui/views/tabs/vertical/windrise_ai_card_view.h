@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..b0deeb15ae
+index 0000000000..e5169169da
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,107 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -34,9 +34,10 @@ index 0000000000..b0deeb15ae
 +// 数据全部来自扩展：browserOS.setConnectedAis 推连接列表，卡片只显示数量 /
 +// AI 标志 / 齿轮；点卡片向右上方浮出 WindriseAiPanelView。收起（折叠标签栏）
 +// 时只剩风桥标志 + 数字。
++// views::Button 本身已是 AnimationDelegateViews（ui/views/controls/button/button.h），
++// 这里不再重复继承（重复继承在 158 上编不过：this → AnimationDelegate 二义）。
 +class WindriseAiCardView : public views::Button,
-+                            public views::WidgetObserver,
-+                            public views::AnimationDelegateViews {
++                            public views::WidgetObserver {
 +  METADATA_HEADER(WindriseAiCardView, views::Button)
 + public:
 +  explicit WindriseAiCardView(BrowserWindowInterface* browser);
@@ -60,8 +61,9 @@ index 0000000000..b0deeb15ae
 +  // views::WidgetObserver:
 +  void OnWidgetDestroyed(views::Widget* widget) override;
 +
-+  // views::AnimationDelegateViews (motion-1115 N2: collapsed/expanded content
-+  // crossfade):
++  // views::AnimationDelegateViews（经 views::Button 继承；motion-1115 N2：折叠 /
++  // 展开内容交叉淡。不是 fade_animation_ 的回调原样交给 views::Button，
++  // 保持 Button 自己悬停动画的行为）：
 +  void AnimationProgressed(const gfx::Animation* animation) override;
 +  void AnimationEnded(const gfx::Animation* animation) override;
 +

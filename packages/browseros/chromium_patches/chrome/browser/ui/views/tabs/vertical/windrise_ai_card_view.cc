@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..c03e2fd1bf
+index 0000000000..7b6f53417c
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,476 @@
+@@ -0,0 +1,480 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -72,7 +72,6 @@ index 0000000000..c03e2fd1bf
 +WindriseAiCardView::WindriseAiCardView(BrowserWindowInterface* browser)
 +    : views::Button(base::BindRepeating(&WindriseAiCardView::ShowPanel,
 +                                        base::Unretained(this))),
-+      views::AnimationDelegateViews(this),
 +      browser_(browser),
 +      fade_animation_(base::Milliseconds(90),
 +                      gfx::LinearAnimation::kDefaultFrameRate,
@@ -210,7 +209,11 @@ index 0000000000..c03e2fd1bf
 +}
 +
 +void WindriseAiCardView::AnimationProgressed(const gfx::Animation* animation) {
-+  if (animation != &fade_animation_ || fade_phase_ == FadePhase::kIdle) {
++  if (animation != &fade_animation_) {
++    views::Button::AnimationProgressed(animation);
++    return;
++  }
++  if (fade_phase_ == FadePhase::kIdle) {
 +    return;
 +  }
 +  const float e = static_cast<float>(gfx::Tween::CalculateValue(
@@ -222,6 +225,7 @@ index 0000000000..c03e2fd1bf
 +
 +void WindriseAiCardView::AnimationEnded(const gfx::Animation* animation) {
 +  if (animation != &fade_animation_) {
++    views::Button::AnimationEnded(animation);
 +    return;
 +  }
 +  if (fade_phase_ == FadePhase::kOut) {
