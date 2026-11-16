@@ -144,6 +144,37 @@ resources. Ordinary local `--preset release` still cleans and provisions source.
 Deeper flag semantics — `--skip`, `--from`, `--gn-arg`, `modules:` profiles,
 ephemeral runners — live in [`docs/build-cli.md`](docs/build-cli.md).
 
+### Release upload preflight and artifact summary
+
+A release build whose executed plan contains `upload` checks its public download
+base and published resource pins before running the pipeline, including when
+`BROWSEROS_DEFER_R2_UPLOAD=1` only writes a receipt for later publication.
+`R2_CDN_BASE_URL` must be a nonempty HTTPS URL without credentials, query,
+fragment, whitespace or backslashes. A CDN path prefix is allowed. Errors name
+the variable without printing its value; the legacy HTTP fallback cannot pass.
+
+Published resources require exact `BROWSEROS_SERVER_RESOURCE_VERSION` and
+`ONBOARDING_RESOURCE_VERSION` values using the existing component version rules
+(`MAJOR.MINOR.PATCH`); empty values and `latest` stop the release. BrowserClaw
+uses its own `BROWSERCLAW_SERVER_RESOURCE_VERSION`. Windrise does not require an
+upstream extension pin. Source resource builds use the frozen prepared-resource
+manifest instead of these published-download overrides; their two component
+versions are checked before a receipt is generated or uploaded.
+
+Debug builds, `--no-upload`/`--skip upload`, and independent resource preparation
+keep their existing resource selection behavior. This preflight neither contacts
+the CDN nor changes resource download protocols or signing steps.
+
+After successful packaging, the build summary names the macOS architectures
+produced by this invocation. A single-architecture batch explicitly lists the
+missing separate arm64/x64 artifact; the first release requires both batches.
+This warning does not prohibit staged registration or claim that an earlier
+batch has been verified. Packaging without the platform's production signing
+step also prints an intermediate-artifact warning; final signing and, on macOS,
+notarization must still be verified through the existing release process.
+The optional macOS passkey-profile fallback is unchanged.
+
+
 ### Windows browser component ZIP
 
 `package_windows` also creates
@@ -170,6 +201,15 @@ Metadata fields are `name`, `format` (`zip`), `platform` (`win32`), `arch`
 (`x86`, `x64`, or `arm64`, read from the PE header), `version` (Chromium's
 `chrome/VERSION`, not the semantic filename version), `buildId`
 (`sha256-<ZIP digest>`), `size` (raw ZIP bytes), and `sha256` (lowercase hex).
+The sidecar also records `component_versions`, including `server` and
+`app-onboard` for Windrise (product-owned names for BrowserClaw). Published
+builds record the selected pins; source builds record the frozen manifest's
+versions. In local published builds, `null` retains the existing latest selector
+and is not a frozen release version. The release receipt records the same
+component versions even when Windrise has no upstream extension pin. Compare
+these fields with the frozen release inputs and the final bundled resource
+metadata before distribution; these records alone do not verify package contents.
+
 Release registration must preserve the independent browser `version`/`buildId`
 and use this ZIP's size/hash under `browser`; add the final URL through the
 existing manifest publication/signing flow. The adjacent JSON is local

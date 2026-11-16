@@ -25,9 +25,11 @@ from ...lib.r2 import (
     get_release_json,
     upload_file_to_r2,
 )
-from ...release.prepared_resources import (
-    PreparedResourcesManifest,
-    load_prepared_resources,
+from ...lib.release_preflight import (
+    bundled_resource_versions,
+    require_exact_resource_versions,
+    require_release_upload_config,
+    source_resource_manifest,
 )
 from ...release.components import normalize_component_version
 from ...products.resource_sources import source_resources_for_product
@@ -42,24 +44,6 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _source_manifest(ctx: Context) -> PreparedResourcesManifest:
-    manifest = ctx.artifact_registry.get("prepared_resources")
-    if not isinstance(manifest, PreparedResourcesManifest):
-        prepared = getattr(ctx, "prepared_resources", None)
-        if not isinstance(prepared, Path):
-            raise ValueError("Source release metadata requires prepared resources")
-        manifest = load_prepared_resources(prepared)
-    if manifest.product != ctx.product.id:
-        raise ValueError("Prepared-resource product does not match release metadata")
-    if manifest.source_sha != ctx.source_sha:
-        raise ValueError("Prepared-resource source SHA does not match release metadata")
-    if manifest.browser_version != ctx.get_semantic_version():
-        raise ValueError(
-            "Prepared-resource browser version does not match release metadata"
-        )
-    return manifest
-
-
 def _release_provenance(ctx: Context) -> dict[str, object]:
     provenance: dict[str, object] = {
         "source_sha": os.environ.get(
@@ -68,20 +52,15 @@ def _release_provenance(ctx: Context) -> dict[str, object]:
     }
     if getattr(ctx, "resource_mode", "published") == "published":
         source = source_resources_for_product(ctx.product.id)
-        server_version = (
-            ctx.env.browseros_server_resource_version
-            if ctx.product.id == "browseros"
-            else ctx.env.browserclaw_server_resource_version
-        )
-        component_versions = {
-            source.server_component: server_version,
-            source.extension_component: ctx.env.bundled_product_extension_version,
-            source.onboarding_component: ctx.env.onboarding_resource_version,
-        }
-        if all(component_versions.values()):
+        component_versions = bundled_resource_versions(ctx)
+        if ctx.env.bundled_product_extension_version:
+            component_versions[source.extension_component] = (
+                ctx.env.bundled_product_extension_version
+            )
+        if any(component_versions.values()):
             provenance["component_versions"] = component_versions
     if getattr(ctx, "resource_mode", "published") == "source":
-        manifest = _source_manifest(ctx)
+        manifest = source_resource_manifest(ctx)
         provenance = {
             "source_sha": manifest.source_sha,
             "parent_sha": manifest.parent_sha,
@@ -116,7 +95,11 @@ class UploadModule(Step):
     requires = []
     description = "Upload build artifacts to Cloudflare R2"
 
+    def preflight(self, ctx: Context) -> None:
+        require_release_upload_config(ctx)
+
     def validate(self, ctx: Context) -> None:
+        require_release_upload_config(ctx)
         # Family nightlies persist the complete receipt in Actions first and
         # publish it only after both signed builds and the state merge pass.
         if os.environ.get("BROWSEROS_DEFER_R2_UPLOAD") == "1":
@@ -158,6 +141,9 @@ def generate_release_json(
     platform: str,
 ) -> Dict:
     """Generate release metadata for one platform."""
+    require_release_upload_config(ctx)
+    if ctx.build_type == "release" and ctx.resource_mode == "source":
+        require_exact_resource_versions(ctx)
     env = ctx.env
 
     release_data = {
@@ -384,6 +370,9 @@ def upload_release_artifacts(
     extra_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Tuple[bool, Optional[Dict]]:
     """Upload release artifacts and their metadata to R2."""
+    require_release_upload_config(ctx)
+    if ctx.build_type == "release" and ctx.resource_mode == "source":
+        require_exact_resource_versions(ctx)
     deferred = os.environ.get("BROWSEROS_DEFER_R2_UPLOAD") == "1"
     if not deferred and not BOTO3_AVAILABLE:
         log_warning("boto3 not installed. Skipping R2 upload.")

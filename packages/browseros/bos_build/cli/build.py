@@ -15,6 +15,7 @@ from ..core.checkout_lock import CheckoutLockError, ChromiumCheckoutLock
 from ..core.products import get_product_descriptor
 from ..lib.paths import get_package_root
 from ..lib.versions import load_semantic_version
+from ..lib.release_preflight import require_release_upload_config
 from ..core.pipeline import validate_pipeline, show_available_modules
 from ..core.planner import (
     Profile,
@@ -463,6 +464,9 @@ def _execute_runs(
     # per-step static checks) for EVERY arch before any run starts — a
     # misconfigured second arch must not surface after hours of arch one.
     try:
+        for run_ctx, run_steps in runs:
+            if "upload" in run_steps:
+                require_release_upload_config(run_ctx)
         validate_resume_before_execution(runs)
         for run_ctx, run_steps in runs:
             preflight(run_steps, ctx=run_ctx)
@@ -528,6 +532,33 @@ def _execute_runs(
             raise typer.Exit(1)
         except KeyboardInterrupt:
             raise typer.Exit(130)
+
+    mac_architectures = sorted({
+        ctx.architecture for ctx, steps in runs if "package_macos" in steps
+    })
+    if mac_architectures:
+        log_info(f"macOS artifacts produced this invocation: {', '.join(mac_architectures)}")
+        missing = sorted({"arm64", "x64"} - set(mac_architectures))
+        if missing:
+            log_warning(
+                f"macOS: this invocation only produced {', '.join(mac_architectures)}; "
+                f"missing separate artifacts: {', '.join(missing)}. "
+                "The first release requires both arm64 and x64; check the other batch before publishing."
+            )
+        else:
+            log_info("macOS: both arm64 and x64 artifacts were produced this invocation.")
+
+    for ctx, steps in runs:
+        if "package_windows" in steps and "sign_windows" not in steps:
+            log_warning(
+                f"Windows {ctx.architecture}: this is an intermediate artifact without "
+                "production signing in this invocation; do not distribute it as a final release."
+            )
+        if "package_macos" in steps and "sign_macos" not in steps:
+            log_warning(
+                f"macOS {ctx.architecture}: this is an intermediate artifact with temporary "
+                "or no signing; production signing/notarization was not run in this invocation."
+            )
 
 
 def _display_only_runs() -> List[Tuple[Context, List[str]]]:

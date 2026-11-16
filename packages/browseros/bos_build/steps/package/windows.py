@@ -23,6 +23,7 @@ from ...lib.browser_directory_zip import (
     executable_arch,
     sha256_file,
 )
+from ...lib.release_preflight import bundled_resource_versions
 
 
 @step("mini_installer", phase="sign", platforms=("windows",), optional=True)
@@ -199,6 +200,7 @@ class WindowsPackageModule(Step):
         metadata_path = zip_path.with_suffix(zip_path.suffix + ".json")
         pending_zip = zip_path.with_suffix(zip_path.suffix + ".tmp")
         pending_metadata = metadata_path.with_suffix(metadata_path.suffix + ".tmp")
+        resource_versions = bundled_resource_versions(ctx)
         try:
             with zipfile.ZipFile(pending_zip, "w", zipfile.ZIP_DEFLATED) as archive:
                 for path, relative in files:
@@ -213,6 +215,7 @@ class WindowsPackageModule(Step):
                 "buildId": f"sha256-{digest}",
                 "size": pending_zip.stat().st_size,
                 "sha256": digest,
+                "component_versions": resource_versions,
             }
             pending_metadata.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
             pending_zip.replace(zip_path)
