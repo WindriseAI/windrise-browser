@@ -144,6 +144,52 @@ resources. Ordinary local `--preset release` still cleans and provisions source.
 Deeper flag semantics — `--skip`, `--from`, `--gn-arg`, `modules:` profiles,
 ephemeral runners — live in [`docs/build-cli.md`](docs/build-cli.md).
 
+### Windows browser component ZIP
+
+`package_windows` also creates
+`<artifact-prefix>_v<semantic-version>_<arch>_browser_directory.zip` and its
+adjacent `.zip.json` metadata. Existing `_installer.exe` and `_installer.zip`
+names and contents remain unchanged. Only the directory ZIP is a Bridge
+browser component asset.
+
+The ZIP has `chrome.exe` at its root, alongside the actual four-part Chromium
+version directory and all runtime files. It consumes the installer's
+`gen/chrome/installer/mini_installer/mini_installer/temp_installer_archive/Chrome-bin`
+tree, assembled by Chromium's `create_installer_archive.py` from `chrome.release`
+and build options. It preserves bundled extensions, server resources and policy
+files selected there, without maintaining another DLL list. Missing staging,
+version mismatches, profile data, links, a stale staged `chrome.exe`, or a PE
+architecture different from the build target stop packaging.
+
+In signed builds this runs **after** `sign_windows`: sign browser/server
+executables, rebuild the installer tree, sign mini_installer, then package.
+Unsigned builds also produce this ZIP; its existence is not evidence of signing.
+The existing signing implementation is unchanged.
+
+Metadata fields are `name`, `format` (`zip`), `platform` (`win32`), `arch`
+(`x86`, `x64`, or `arm64`, read from the PE header), `version` (Chromium's
+`chrome/VERSION`, not the semantic filename version), `buildId`
+(`sha256-<ZIP digest>`), `size` (raw ZIP bytes), and `sha256` (lowercase hex).
+Release registration must preserve the independent browser `version`/`buildId`
+and use this ZIP's size/hash under `browser`; add the final URL through the
+existing manifest publication/signing flow. The adjacent JSON is local
+registration input; the existing upload step does not upload this sidecar.
+
+From `packages/browseros`, inspect an existing ZIP without extracting, launching,
+or modifying it (Python 3.12+, standard library only):
+
+```bash
+python bos_build/lib/browser_directory_zip.py path/to/browser_directory.zip
+```
+
+The command reads `<ZIP>.json` by default (`--metadata PATH` overrides), checks
+supported executable placement, version/chrome.dll, profile exclusions,
+Windows path collisions, PE architecture, metadata size/hash/buildId and all
+member CRCs. It accepts both root `chrome.exe` and `Application/chrome.exe`.
+Missing/invalid metadata or ZIP contents exit with status 1. Release validation
+must also compare an isolated extraction to the installer's runtime tree and
+prove browser startup and the reported version in the unified test run.
+
 ## Release a browser
 
 Full releases are dispatch-only. By default Neo builds Linux x64 and arm64;
