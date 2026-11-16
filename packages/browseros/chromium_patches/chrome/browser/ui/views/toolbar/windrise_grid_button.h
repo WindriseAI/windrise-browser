@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.h b/chrome/browser/ui/views/toolbar/windrise_grid_button.h
 new file mode 100644
-index 0000000000..429b72667f
+index 0000000000..1b8830193b
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.h
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,61 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -11,8 +11,11 @@ index 0000000000..429b72667f
 +#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_WINDRISE_GRID_BUTTON_H_
 +
 +#include "base/memory/raw_ptr.h"
++#include "base/scoped_observation.h"
 +#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
++#include "ui/views/widget/widget.h"
++#include "ui/views/widget/widget_observer.h"
 +
 +class BrowserWindowInterface;
 +
@@ -21,7 +24,10 @@ index 0000000000..429b72667f
 +// 与 browseros.windrise.theme.* 偏好取，改偏好并在运行时重绘即可，不用重编。
 +// 点击时不自己做任何事，只把 browserOS.onGridButtonClicked 广播给扩展，
 +// 由扩展开格子模式（同地址栏插槽 browserOS.onAddressBarSlotClicked 的做法）。
-+class WindriseGridButton : public ToolbarButton {
++// 窄窗（窗口宽 < 900，和侧栏自动收起同一个阈值 browseros::windrise::
++// IsNarrowWindow）时收成只剩图标的 32 见方圆钮，宽回来恢复「图标 + 格子」；
++// 提示和读屏名字一直是「格子」。切换不做动画（拖窗口边是连续操作）。
++class WindriseGridButton : public ToolbarButton, public views::WidgetObserver {
 +  METADATA_HEADER(WindriseGridButton, ToolbarButton)
 +
 + public:
@@ -32,6 +38,13 @@ index 0000000000..429b72667f
 +
 +  // views::View:
 +  void OnThemeChanged() override;
++  void AddedToWidget() override;
++  void RemovedFromWidget() override;
++
++  // views::WidgetObserver:
++  void OnWidgetBoundsChanged(views::Widget* widget,
++                             const gfx::Rect& new_bounds) override;
++  void OnWidgetDestroying(views::Widget* widget) override;
 +
 +  // ToolbarButton:
 +  int GetRoundedCornerRadius() const override;
@@ -41,8 +54,14 @@ index 0000000000..429b72667f
 +  void ApplyStyleFromPrefs();
 +
 +  void NotifyExtensionGridClicked();
++  // 按窗口宽判断要不要收成只剩图标；变了才重排。
++  void UpdateCompact(int window_width);
 +
 +  raw_ptr<BrowserWindowInterface> browser_;
++  // 窄窗：只剩图标。
++  bool compact_ = false;
++  base::ScopedObservation<views::Widget, views::WidgetObserver>
++      widget_observation_{this};
 +};
 +
 +#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_WINDRISE_GRID_BUTTON_H_

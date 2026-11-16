@@ -1,17 +1,18 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e75c..cc546e45dd 100644
+index 338178e75c..7668588e29 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-@@ -17,6 +17,8 @@
+@@ -17,6 +17,9 @@
  #include "base/metrics/user_metrics_action.h"
  #include "base/numerics/safe_conversions.h"
  #include "base/time/time.h"
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
++#include "chrome/browser/browseros/core/windrise_theme.h"
 +#include "chrome/browser/profiles/profile.h"
  #include "chrome/browser/ui/actions/chrome_action_id.h"
  #include "chrome/browser/ui/animation/browser_animation_controller.h"
  #include "chrome/browser/ui/animation/browser_animation_types.h"
-@@ -54,6 +56,9 @@
+@@ -54,6 +57,9 @@
  #include "chrome/browser/ui/views/tabs/organizer/organizer_panel_view.h"
  #include "chrome/browser/ui/views/tabs/shared/drop_arrow.h"
  #include "chrome/browser/ui/views/tabs/vertical/top_container_button.h"
@@ -21,7 +22,7 @@ index 338178e75c..cc546e45dd 100644
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_focus_swipe_controller.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.h"
-@@ -190,6 +195,60 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -190,6 +196,60 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
                LayoutConstant::kVerticalTabStripCollapsedVerticalPadding),
            region_horizontal_padding, 0, region_horizontal_padding));
  
@@ -82,7 +83,7 @@ index 338178e75c..cc546e45dd 100644
    gemini_button_ =
        content_area_view_->AddChildView(std::make_unique<views::View>());
  
-@@ -231,9 +290,22 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -231,9 +291,22 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
    }
  
    SetNotifyEnterExitOnChild(true);
@@ -105,7 +106,7 @@ index 338178e75c..cc546e45dd 100644
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -409,6 +481,40 @@ void VerticalTabStripRegionView::AddedToWidget() {
+@@ -409,6 +482,37 @@ void VerticalTabStripRegionView::AddedToWidget() {
    if (GetFocusManager()) {
      GetFocusManager()->AddFocusChangeListener(&focus_listener_);
    }
@@ -127,17 +128,14 @@ index 338178e75c..cc546e45dd 100644
 +
 +void VerticalTabStripRegionView::UpdateWindriseNarrowWindow(int window_width) {
 +  // 风桥 L11（丙12）：窗口宽 < 900 时侧栏自动收起，但不写用户偏好；宽回来
-+  // 以后恢复用户自己的选择（状态控制器里做）。进出各留一点回差（< 900 进，
-+  // >= 920 出），拖窗口边在 900 附近来回时侧栏不来回开合。
-+  constexpr int kNarrowEnterWidth = 900;
-+  constexpr int kNarrowExitWidth = 920;
++  // 以后恢复用户自己的选择（状态控制器里做）。阈值和回差（< 900 进，>= 920
++  // 出）与工具栏格子按钮收成图标共用一份：browseros::windrise::IsNarrowWindow。
 +  // 标签条还没接上时先不判断（收起请求会落空），接上时 AddTabStripView 再调。
 +  if (window_width <= 0 || !tab_strip_view()) {
 +    return;
 +  }
-+  const bool narrow = windrise_narrow_window_
-+                          ? window_width < kNarrowExitWidth
-+                          : window_width < kNarrowEnterWidth;
++  const bool narrow = browseros::windrise::IsNarrowWindow(
++      window_width, windrise_narrow_window_);
 +  if (narrow == windrise_narrow_window_) {
 +    return;
 +  }
@@ -146,7 +144,7 @@ index 338178e75c..cc546e45dd 100644
  }
  
  void VerticalTabStripRegionView::RemovedFromWidget() {
-@@ -885,7 +991,13 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -885,7 +989,13 @@ void VerticalTabStripRegionView::AddTabStripView(
    std::optional<size_t> separator_index =
        content_parent->GetIndexOf(top_button_separator_);
    CHECK(separator_index.has_value());
@@ -161,7 +159,7 @@ index 338178e75c..cc546e45dd 100644
  
    // Pre-set the animation values to the appropriate state.
    auto* const animation_controller =
-@@ -907,6 +1019,12 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -907,6 +1017,12 @@ void VerticalTabStripRegionView::AddTabStripView(
                base::Unretained(this)));
  
    OnCollapseStateChanged(state_controller_->GetCollapseState());
@@ -174,7 +172,7 @@ index 338178e75c..cc546e45dd 100644
  }
  
  std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
-@@ -916,6 +1034,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
+@@ -916,6 +1032,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
    omnibox_tab_helper_observation_.Reset();
    ResetExpandOnHoverTimers();
    is_expanded_on_hover_ = false;
@@ -184,7 +182,7 @@ index 338178e75c..cc546e45dd 100644
    return BaseTabStripRegionView::RemoveTabStripView(view);
  }
  
-@@ -934,6 +1055,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
+@@ -934,6 +1053,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
    if (tab_strip_view()) {
      tab_strip_view()->SetCollapsedState(collapsed);
    }
@@ -194,7 +192,7 @@ index 338178e75c..cc546e45dd 100644
  
    if ((state == tabs::VerticalTabStripCollapseState::kCollapsing) ||
        (state == tabs::VerticalTabStripCollapseState::kExpanded &&
-@@ -1242,5 +1366,14 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1364,14 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

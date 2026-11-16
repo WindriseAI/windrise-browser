@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..d3c214ac38
+index 0000000000..f54b5c0fbb
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,200 @@
+@@ -0,0 +1,211 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -163,6 +163,17 @@ index 0000000000..d3c214ac38
 +// 范围 0.1–0.9，默认 0.4。
 +inline constexpr char kAiSectionRatioPref[] =
 +    "browseros.windrise.layout.ai_section_ratio";
++
++// 窄窗（丙12 / 方案「窄窗」行：窗口宽 < 900 时侧栏自动收起、格子按钮收成只剩
++// 图标）。两处共用这一个阈值：竖向侧栏（VerticalTabStripRegionView）和工具栏
++// 格子按钮（WindriseGridButton）。进出各留一点回差（< 900 进，>= 920 出），拖
++// 窗口边在 900 附近来回时不来回切换。`was_narrow` = 上一次的判断结果。
++inline constexpr int kNarrowWindowEnterWidth = 900;
++inline constexpr int kNarrowWindowExitWidth = 920;
++constexpr bool IsNarrowWindow(int window_width, bool was_narrow) {
++  return was_narrow ? window_width < kNarrowWindowExitWidth
++                    : window_width < kNarrowWindowEnterWidth;
++}
 +
 +// 注册风桥外观偏好（颜色 + 布局）。由 browseros::RegisterProfilePrefs 调用。
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
