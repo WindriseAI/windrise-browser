@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_constants.h b/chrome/browser/browseros/core/browseros_constants.h
 new file mode 100644
-index 0000000000000..e7b9a3a608cde
+index 0000000000000..c4e0bc478ab9b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_constants.h
-@@ -0,0 +1,255 @@
+@@ -0,0 +1,261 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -27,11 +27,6 @@ index 0000000000000..e7b9a3a608cde
 +      kDisableUrlOverrides);
 +}
 +
-+inline constexpr char kBrowserOSConfigUrl[] =
-+    "https://cdn.browseros.com/extensions/extensions.json";
-+inline constexpr char kBrowserOSAlphaConfigUrl[] =
-+    "https://cdn.browseros.com/extensions/extensions.alpha.json";
-+
 +inline constexpr char kAgentExtensionId[] = "bflpfmnmnokmjhmgnolecpppdbdophmk";
 +
 +inline constexpr char kBugReporterExtensionId[] =
@@ -39,11 +34,6 @@ index 0000000000000..e7b9a3a608cde
 +
 +inline constexpr char kBrowserClawExtensionId[] =
 +    "pjimfkbpehlcllblajnpfamdfjhhlgkc";
-+
-+inline constexpr char kBrowserOSUpdateUrl[] =
-+    "https://cdn.browseros.com/extensions/update-manifest.xml";
-+inline constexpr char kBrowserOSAlphaUpdateUrl[] =
-+    "https://cdn.browseros.com/extensions/update-manifest.alpha.xml";
 +
 +inline constexpr char kBrowserOSHost[] = "browseros";
 +
@@ -68,7 +58,6 @@ index 0000000000000..e7b9a3a608cde
 +};
 +
 +inline constexpr BrowserOSExtensionInfo kBrowserOSExtensions[] = {
-+    {kBugReporterExtensionId, true, false, BrowserOSExtensionProduct::kAll},
 +    {kBrowserClawExtensionId, false, false,
 +     BrowserOSExtensionProduct::kBrowserClaw},
 +};
@@ -78,6 +67,7 @@ index 0000000000000..e7b9a3a608cde
 +// exposes them, but maintenance still finds and uninstalls them by ID.
 +inline constexpr const char* kRetiredBrowserOSExtensionIds[] = {
 +    kAgentExtensionId,
++    kBugReporterExtensionId,
 +};
 +
 +inline constexpr size_t kRetiredBrowserOSExtensionsCount =
@@ -96,6 +86,22 @@ index 0000000000000..e7b9a3a608cde
 +      return IsBrowserClawProduct();
 +    case BrowserOSExtensionProduct::kAll:
 +      return true;
++  }
++  return false;
++}
++
++// Bundled product extensions are replaced by the application package. Include
++// retired IDs so an old installed or pending copy cannot update before cleanup.
++inline bool IsBrowserOSExtensionUpdateDisabled(const std::string& extension_id) {
++  for (const auto& info : kBrowserOSExtensions) {
++    if (extension_id == info.id) {
++      return true;
++    }
++  }
++  for (const char* id : kRetiredBrowserOSExtensionIds) {
++    if (extension_id == id) {
++      return true;
++    }
 +  }
 +  return false;
 +}

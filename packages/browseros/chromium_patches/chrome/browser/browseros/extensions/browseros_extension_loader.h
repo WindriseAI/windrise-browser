@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/extensions/browseros_extension_loader.h b/chrome/browser/browseros/extensions/browseros_extension_loader.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..d552dedddb9ef13569fc18b00b604e04728e3d2f
+index 0000000000000000000000000000000000000000..3ae50227291e4765a2250b0cd9d8c693b04ede92
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.h
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,129 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -49,7 +49,7 @@ index 0000000000000000000000000000000000000000..d552dedddb9ef13569fc18b00b604e04
 +  BrowserOSExtensionLoader& operator=(const BrowserOSExtensionLoader&) = delete;
 +
 +  // UI-sequence callers join the existing operation. A false result is
-+  // recoverable: another call retries local publication or remote recovery.
++  // recoverable: another call retries local publication.
 +  // The profile must be the browsing profile, not the onboarding picker.
 +  static void EnsurePrimaryExtensionReady(Profile* profile,
 +                                          ReadyCallback callback);
@@ -62,8 +62,6 @@ index 0000000000000000000000000000000000000000..d552dedddb9ef13569fc18b00b604e04
 +  // finishes after the timer. Initial installs/recovery use normal policy.
 +  static UpdateInstallPolicy GetUpdateInstallPolicy(Profile* profile,
 +                                                    const std::string& id);
-+  void CheckForUpdates();
-+  void SetConfigUrl(const GURL& url);
 +
 + protected:
 +  ~BrowserOSExtensionLoader() override;
@@ -83,7 +81,6 @@ index 0000000000000000000000000000000000000000..d552dedddb9ef13569fc18b00b604e04
 +  bool NeedsLocalInstall(const std::string& id) const;
 +  base::DictValue BuildDesiredPrefs() const;
 +  void PublishUpdates();
-+  void OnRemoteConfigLoaded(base::DictValue prefs);
 +  void OnReadinessTimeout();
 +  void RestorePrimaryExtension();
 +  void MaintainInstalledExtensions();
@@ -106,17 +103,14 @@ index 0000000000000000000000000000000000000000..d552dedddb9ef13569fc18b00b604e04
 +  void OnProfileWillBeDestroyed(Profile* profile) override;
 +
 +  raw_ptr<Profile> profile_;
-+  GURL config_url_;
 +  const std::string primary_id_;
 +  base::FilePath bundled_crx_base_path_;
 +  base::DictValue bundled_prefs_;
-+  base::DictValue remote_prefs_;
 +  // Failed packages remain in bundled_prefs_ for an explicit local Retry.
 +  std::set<std::string> failed_bundles_;
 +  bool started_ = false;
 +  bool local_discovery_complete_ = false;
 +  bool waiting_for_ready_ = false;
-+  bool remote_requested_ = false;
 +  bool maintenance_started_ = false;
 +  std::vector<ReadyCallback> ready_callbacks_;
 +  base::OneShotTimer readiness_timer_;

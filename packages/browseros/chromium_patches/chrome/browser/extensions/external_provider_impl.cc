@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/external_provider_impl.cc b/chrome/browser/extensions/external_provider_impl.cc
-index 1cf32e1b816acb5316337a7303fd905929d3335b..68a031926ecf1d78dd1b871715a136c7f6d45d4e 100644
+index ba8b69a1b094c86d659991b5f2d73bede372ae13..7793e5ccc3e2e8ae0886641df4d94648808222ef 100644
 --- a/chrome/browser/extensions/external_provider_impl.cc
 +++ b/chrome/browser/extensions/external_provider_impl.cc
 @@ -32,6 +32,8 @@
@@ -11,7 +11,7 @@ index 1cf32e1b816acb5316337a7303fd905929d3335b..68a031926ecf1d78dd1b871715a136c7
  #include "chrome/browser/extensions/extension_management.h"
  #include "chrome/browser/extensions/extension_migrator.h"
  #include "chrome/browser/extensions/external_component_loader.h"
-@@ -541,7 +543,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
+@@ -549,7 +551,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
        }
        external_file_extensions->emplace_back(
            extension_id, version, path, crx_location_, creation_flags,
@@ -20,38 +20,24 @@ index 1cf32e1b816acb5316337a7303fd905929d3335b..68a031926ecf1d78dd1b871715a136c7
      } else {                       // if (external_update_url)
        CHECK(external_update_url);  // Checking of keys above ensures this.
        if (download_location_ == ManifestLocation::kInvalidLocation) {
-@@ -959,6 +961,66 @@ void ExternalProviderImpl::CreateExternalProviders(
+@@ -967,6 +969,52 @@ void ExternalProviderImpl::CreateExternalProviders(
      provider_list->push_back(std::move(initial_external_extensions_provider));
    }
  #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 +
-+  // Add BrowserOS external extension loader
-+  // This loader supports both bundled CRX files (for immediate install) and
-+  // remote configuration (for updates). Bundled extensions are tried first.
++  // Bundled product extensions load only from the application package.
 +  auto browseros_loader =
 +      base::MakeRefCounted<browseros::BrowserOSExtensionLoader>(profile);
-+
-+  // Allow custom config URL via command line
-+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-+          browseros::kExtensionsUrl)) {
-+    std::string config_url =
-+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-+            browseros::kExtensionsUrl);
-+    GURL url(config_url);
-+    if (url.is_valid()) {
-+      browseros_loader->SetConfigUrl(url);
-+    }
-+  }
 +
 +  // Allow disabling via command line flag if needed
 +  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
 +          browseros::kDisableExtensions)) {
-+    // Use kExternalComponent for all BrowserOS extensions - higher privilege
-+    // level, consistent location for both bundled CRX and remote URL installs.
++    // Keep the existing privileged local CRX install location. This provider
++    // cannot accept remote update URLs.
 +    auto browseros_provider = std::make_unique<ExternalProviderImpl>(
 +        service, browseros_loader, profile,
 +        ManifestLocation::kExternalComponent,  // CRX location (bundled)
-+        ManifestLocation::kExternalComponent,  // Download location (remote)
++        ManifestLocation::kInvalidLocation,  // No remote downloads.
 +        Extension::WAS_INSTALLED_BY_DEFAULT);
 +    browseros_provider->set_auto_acknowledge(true);
 +    browseros_provider->set_allow_updates(true);

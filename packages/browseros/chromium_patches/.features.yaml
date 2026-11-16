@@ -192,7 +192,7 @@ features:
       - "tools/metrics/actions/actions.xml"
       - "chrome/browser/ui/extensions/extension_side_panel_utils.cc"
   ota-updater:
-    description: "feat: extensions ota updater"
+    description: "feat: local bundled product extensions"
     files:
       - chrome/browser/browseros/bundled_extensions/
       - chrome/browser/browseros/extensions/
@@ -437,7 +437,6 @@ features:
   misc:
     description: "chore: miscellaneous patches"
     files:
-      - chrome/browser/ui/profiles/profile_error_dialog.cc
       - chrome/browser/ui/startup/infobar_utils.cc
       - extensions/browser/process_manager.cc
       - extensions/browser/process_manager.h

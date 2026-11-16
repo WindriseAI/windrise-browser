@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/extensions/browseros_extension_loader.cc b/chrome/browser/browseros/extensions/browseros_extension_loader.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a4116659ae3eb7e
+index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff8606c8d3a4f
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.cc
-@@ -0,0 +1,648 @@
+@@ -0,0 +1,553 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -13,18 +13,15 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +#include <optional>
 +#include <utility>
 +
-+#include "base/feature_list.h"
 +#include "base/functional/bind.h"
 +#include "base/json/values_util.h"
 +#include "base/logging.h"
 +#include "base/supports_user_data.h"
 +#include "base/task/single_thread_task_runner.h"
 +#include "base/version.h"
-+#include "chrome/browser/browser_features.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
 +#include "chrome/browser/extensions/external_provider_impl.h"
-+#include "chrome/browser/extensions/updater/extension_updater.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "components/prefs/scoped_user_pref_update.h"
 +#include "content/public/browser/browser_thread.h"
@@ -33,7 +30,6 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +#include "extensions/browser/extension_prefs.h"
 +#include "extensions/browser/extension_registrar.h"
 +#include "extensions/browser/extensions_browser_client.h"
-+#include "extensions/browser/pending_extension_manager.h"
 +#include "extensions/common/extension.h"
 +
 +namespace browseros {
@@ -64,15 +60,9 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +
 +BrowserOSExtensionLoader::BrowserOSExtensionLoader(Profile* profile)
 +    : profile_(profile),
-+      config_url_(
-+          base::FeatureList::IsEnabled(features::kBrowserOsAlphaFeatures)
-+              ? kBrowserOSAlphaConfigUrl
-+              : kBrowserOSConfigUrl),
-+      // BrowserOS no longer ships an agent extension. Keep the onboarding
-+      // readiness gate bound to the remaining shipped extension instead of
-+      // waiting for one that cannot install.
-+      primary_id_(IsBrowserClawProduct() ? kBrowserClawExtensionId
-+                                         : kBugReporterExtensionId),
++      // Windrise's assistant is loaded separately from its signed local
++      // directory. Only the BrowserClaw product has a catalog primary.
++      primary_id_(IsBrowserClawProduct() ? kBrowserClawExtensionId : ""),
 +      installer_(std::make_unique<BrowserOSExtensionInstaller>()),
 +      maintainer_(std::make_unique<BrowserOSExtensionMaintainer>(profile)) {
 +  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -103,10 +93,6 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +    return;
 +  }
 +  reference->loader->EnsureReady(std::move(callback));
-+}
-+
-+void BrowserOSExtensionLoader::SetConfigUrl(const GURL& url) {
-+  config_url_ = url;
 +}
 +
 +// static
@@ -171,7 +157,7 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +      }
 +      const auto* local = bundled_prefs_.FindDict(id);
 +      if (!local || failed_bundles_.contains(id)) {
-+        update->Remove(id);  // Remote recovery must never start a grace period.
++        update->Remove(id);  // Missing or failed bundles cannot start grace.
 +      } else {
 +        record->Set(kGraceVersion,
 +                    *local->FindString(
@@ -239,7 +225,7 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +}
 +
 +void BrowserOSExtensionLoader::OnInstallGraceExpired() {
-+  extensions::ExtensionUpdater::CheckParams params;
++  std::vector<std::string> ids;
 +  {
 +    ScopedDictPrefUpdate update(profile_->GetPrefs(),
 +                                prefs::kExtensionInstallGrace);
@@ -250,7 +236,7 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +                 : std::nullopt;
 +      if (deadline && *deadline <= base::Time::Now() &&
 +          !record->FindBool(kGraceReleased).value_or(false)) {
-+        params.ids.push_back(id);
++        ids.push_back(id);
 +        // Keep the release policy until READY reports a different version.
 +        // A background installer may still be unpacking and therefore absent
 +        // from DelayedInstallManager when this one-time timer fires.
@@ -258,23 +244,14 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +      }
 +    }
 +  }
-+  // Release downloaded updates through all Chromium gates, even when cockpit
++  // Release previously staged updates through all Chromium gates, even when
 +  // pages keep the extension busy. This does not bypass imports or safety
 +  // gates. The persisted deadline, not process uptime, decides when activation
 +  // resumes.
-+  for (const auto& id : params.ids) {
++  for (const auto& id : ids) {
 +    extensions::DelayedInstallManager::Get(profile_)
 +        ->FinishDelayedInstallationIfReady(id, /*install_immediately=*/true);
 +    LOG(INFO) << "browseros: Bundled extension grace expired for " << id;
-+  }
-+  if (!params.ids.empty()) {
-+    auto* updater = extensions::ExtensionUpdater::Get(profile_);
-+    if (updater && updater->enabled()) {
-+      params.install_immediately = true;
-+      params.fetch_priority = extensions::DownloadFetchPriority::kForeground;
-+      updater->CheckNow(std::move(params));
-+    }
-+    CheckForUpdates();
 +  }
 +  ScheduleInstallGraceExpiry();
 +}
@@ -314,16 +291,8 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +  if (waiting_for_ready_) {
 +    return;
 +  }
-+  // Only a new attempt resets failed local metadata. Calls during an attempt
-+  // join its observation, timeout and install; they cannot queue another CRX.
-+  const auto* pending =
-+      extensions::PendingExtensionManager::Get(profile_)->GetById(primary_id_);
-+  // Failed downloads retain a URL pending record. Chromium will reject a
-+  // same-source local file while that record exists, so Retry must reannounce
-+  // the URL to the updater rather than silently waiting on an unqueued file.
-+  if (!pending || pending->update_url().is_empty()) {
-+    failed_bundles_.erase(primary_id_);
-+  }
++  // An explicit retry republishes the bundled CRX, never a remote URL.
++  failed_bundles_.erase(primary_id_);
 +  BeginReadiness();
 +  if (!started_) {
 +    StartLoading();
@@ -383,6 +352,9 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +  if (!profile_ || !local_discovery_complete_) {
 +    return false;
 +  }
++  if (primary_id_.empty()) {
++    return true;
++  }
 +  return extensions::ExtensionRegistry::Get(profile_)
 +             ->ready_extensions()
 +             .Contains(primary_id_) &&
@@ -394,24 +366,9 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +  auto* registry = extensions::ExtensionRegistry::Get(profile_);
 +  for (const std::string& id : GetActiveBrowserOSExtensionIds()) {
 +    const auto* local = bundled_prefs_.FindDict(id);
-+    const auto* remote = remote_prefs_.FindDict(id);
-+    if (NeedsLocalInstall(id)) {
++    if (local && (!failed_bundles_.contains(id) ||
++                  registry->GetInstalledExtension(id))) {
 +      prefs.Set(id, local->Clone());
-+    } else if (remote) {
-+      prefs.Set(id, remote->Clone());
-+    } else if (local && !failed_bundles_.contains(id)) {
-+      prefs.Set(id, local->Clone());
-+    } else if (registry->GetInstalledExtension(id)) {
-+      // Retain installed active extensions when bundle metadata is absent.
-+      // Omitting them would make external-provider orphan cleanup uninstall
-+      // them. Chromium skips URL installs for an already installed extension.
-+      base::DictValue retained;
-+      retained.Set(
-+          extensions::ExternalProviderImpl::kExternalUpdateUrl,
-+          base::FeatureList::IsEnabled(features::kBrowserOsAlphaFeatures)
-+              ? kBrowserOSAlphaUpdateUrl
-+              : kBrowserOSUpdateUrl);
-+      prefs.Set(id, std::move(retained));
 +    }
 +  }
 +  return prefs;
@@ -422,11 +379,9 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +    return;
 +  }
 +  waiting_for_ready_ = true;
-+  remote_requested_ = false;
 +  if (!install_observation_.IsObserving()) {
-+    // Secondary local installs can finish after the primary is READY. Track
-+    // their failures throughout maintenance so a bad bundle can fall back to
-+    // the remote provider instead of being retried forever.
++    // Secondary local installs can finish after the primary is READY. Keep
++    // observing failures so only an explicit retry republishes a bad bundle.
 +    install_observation_.Observe(
 +        extensions::ExtensionsBrowserClient::Get()->GetInstallTracker(
 +            profile_));
@@ -482,11 +437,8 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +    FinishReadiness(true);
 +    return;
 +  }
-+  if (!HasUsableLocalPrimary() && !remote_requested_) {
-+    // Config fetches never delay LoadFinished. Only the absence of a usable
-+    // local primary permits recovery before READY; all other network work is
-+    // background maintenance after a successful registry result.
-+    CheckForUpdates();
++  if (!HasUsableLocalPrimary()) {
++    FinishReadiness(false);
 +  }
 +}
 +
@@ -498,48 +450,12 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +  }
 +}
 +
-+void BrowserOSExtensionLoader::CheckForUpdates() {
-+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-+  if (!profile_ || !local_discovery_complete_ || remote_requested_ ||
-+      (!maintenance_started_ && !waiting_for_ready_) ||
-+      (waiting_for_ready_ && HasUsableLocalPrimary())) {
-+    return;
-+  }
-+  remote_requested_ = true;
-+  maintainer_->CheckForUpdates(
-+      config_url_,
-+      base::BindOnce(&BrowserOSExtensionLoader::OnRemoteConfigLoaded,
-+                     weak_ptr_factory_.GetWeakPtr()));
-+}
-+
-+void BrowserOSExtensionLoader::OnRemoteConfigLoaded(base::DictValue prefs) {
-+  // Preserve the last valid remote entry when a config is partial. Neither
-+  // network failure nor a missing config member revokes product ownership.
-+  for (auto [id, pref] : prefs) {
-+    remote_prefs_.Set(id, pref.Clone());
-+  }
-+  if (waiting_for_ready_ && !HasUsableLocalPrimary() &&
-+      !remote_prefs_.contains(primary_id_)) {
-+    FinishReadiness(false);
-+    return;
-+  }
-+  PublishUpdates();
-+  if (maintenance_started_ && !waiting_for_ready_) {
-+    // OnUpdated already asks Chromium's updater to check both pending and
-+    // installed extensions. Do not enqueue a second CheckNow here. Installed
-+    // extensions use their manifest URL and only accept a newer version.
-+    remote_requested_ = false;
-+  }
-+}
-+
 +void BrowserOSExtensionLoader::FinishReadiness(bool ready) {
 +  if (!waiting_for_ready_) {
 +    return;
 +  }
 +  waiting_for_ready_ = false;
 +  readiness_timer_.Stop();
-+  maintainer_->Cancel();
-+  remote_requested_ = false;
 +  LOG(INFO) << "browseros: Primary extension readiness "
 +            << (ready ? "READY" : "failed; retry available");
 +  auto callbacks = std::move(ready_callbacks_);
@@ -565,10 +481,8 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +  if (!profile_ || waiting_for_ready_) {
 +    return;
 +  }
-+  // Keep local housekeeping independent of network success. The coordinator
-+  // schedules both halves; the helper cannot initiate an overlapping install.
++  // Retire old upstream extensions and keep local product extensions enabled.
 +  maintainer_->MaintainInstalledExtensions();
-+  CheckForUpdates();
 +}
 +
 +void BrowserOSExtensionLoader::OnReadinessTimeout() {
@@ -604,19 +518,10 @@ index 0000000000000000000000000000000000000000..c7fb41d2ca313acc489b49396a411665
 +    ScopedDictPrefUpdate update(profile_->GetPrefs(),
 +                                prefs::kExtensionInstallGrace);
 +    update->Remove(extension_id);
-+  } else if (extension_id == primary_id_) {
-+    FinishReadiness(false);
-+    return;
 +  }
-+  // The failed pending record is removed by a posted installer callback.
-+  // Recovery fetches metadata asynchronously before publishing the URL, so
-+  // that stale file record cannot suppress the subsequent provider update.
-+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-+      FROM_HERE,
-+      base::BindOnce(waiting_for_ready_
-+                         ? &BrowserOSExtensionLoader::AdvanceReadiness
-+                         : &BrowserOSExtensionLoader::CheckForUpdates,
-+                     weak_ptr_factory_.GetWeakPtr()));
++  if (extension_id == primary_id_) {
++    FinishReadiness(false);
++  }
 +}
 +
 +void BrowserOSExtensionLoader::OnShutdown(
