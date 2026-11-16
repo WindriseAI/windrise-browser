@@ -1,0 +1,15 @@
+diff --git a/chrome/browser/resources/extensions/toolbar.css b/chrome/browser/resources/extensions/toolbar.css
+index 881317e1cfe24b05aedba9fc3f4d54d33a35276f..2f74482c1c7c26dff1247595049b15e795df27cf 100644
+--- a/chrome/browser/resources/extensions/toolbar.css
++++ b/chrome/browser/resources/extensions/toolbar.css
+@@ -78,6 +78,10 @@ cr-toolbar {
+   --cr-toolbar-field-max-width: var(--cr-toolbar-center-basis);
+   --cr-toolbar-field-width: 100%;
+   --cr-toolbar-header-white-space: nowrap;
++  /* Windrise N12④：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
++  --wr-toolbar-left-flex: 0 0 266px;
++  --wr-toolbar-field-justify: start;
++  --wr-toolbar-field-gap: 25px;
+ }
+ 
+ cr-toolbar[narrow] picture[slot='product-logo'] {

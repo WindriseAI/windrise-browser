@@ -1,0 +1,15 @@
+diff --git a/chrome/browser/resources/history/history_toolbar.css b/chrome/browser/resources/history/history_toolbar.css
+index eca7f5ca22ac4f7a7d71065c543ec18bc2121f1e..c2351bd4f6abaf4165d37d6b18e0d581b9cd66bd 100644
+--- a/chrome/browser/resources/history/history_toolbar.css
++++ b/chrome/browser/resources/history/history_toolbar.css
+@@ -20,6 +20,10 @@ cr-toolbar {
+   --cr-toolbar-center-basis: var(--cluster-max-width);
+   --cr-toolbar-left-spacer-width: var(--side-bar-width);
+   --cr-toolbar-field-margin: var(--side-bar-width);
++  /* Windrise N12④：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
++  --wr-toolbar-left-flex: 0 0 266px;
++  --wr-toolbar-field-justify: start;
++  --wr-toolbar-field-gap: 25px;
+   flex: 1;
+ }
+ 

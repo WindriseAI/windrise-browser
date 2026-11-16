@@ -1,0 +1,23 @@
+diff --git a/ui/webui/resources/BUILD.gn b/ui/webui/resources/BUILD.gn
+index ebebce61a325e6a967d198167c5152d54564c208..180b873e4e1a19ef15480cc699b1ae8a33f8aefb 100644
+--- a/ui/webui/resources/BUILD.gn
++++ b/ui/webui/resources/BUILD.gn
+@@ -32,6 +32,18 @@ generate_grd("build_grd") {
+     ]
+   }
+ 
++  # Windrise: HarmonyOS Sans SC for every WebUI page (font decided 11-06, all
++  # platforms). The files are copied in unmodified by bos_build's resources step
++  # (copy_resources.yaml, "Windrise HarmonyOS Sans SC Fonts"): not subset, not
++  # renamed, not converted. The license must ship with the fonts; the About page
++  # shows it from chrome://resources/harmonyos_sans/LICENSE.txt.
++  input_files += [
++    "harmonyos_sans/HarmonyOS_Sans_SC_Bold.ttf",
++    "harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf",
++    "harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf",
++    "harmonyos_sans/LICENSE.txt",
++  ]
++
+   public_deps = [
+     "cr_components/commerce:build_grdp",
+     "cr_elements:build_grdp",

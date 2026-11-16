@@ -1,8 +1,8 @@
 diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
-index f478ceca5c..930f15f0fb 100644
+index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..701bc66a5505ce2b9cb34b56c21f654a77c8b226 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,102 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,107 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -28,6 +28,11 @@ index f478ceca5c..930f15f0fb 100644
 + * 色表在暗色下给 html 的同名变量；再加 color-scheme: light，滚动条、表单控件也走亮色。
 + * 第三包深色设置页「黑字压深灰卡片」（V6）就是暗色下卡片底被更高特异度的规则换掉、
 + * 字仍是这里的墨色造成的。
++ *
++ * 取值与 run-1112/browser-design/native/cr_shared_vars.windrise.css（11-13 修好的那份）
++ * 逐条相同；11-16 补进的是 --wr-page-bg（反差小、过渡长，方案 N12⑤）。和那份只差写法：
++ * 选择器 html:not(#wr-tokens) 加 color-scheme: light（丙11），以及为过 stylelint 的
++ * 拆行、#FFF、单引号、规则间空行（b62ebd4a3，编译错 B2）。
 + */
 +html:not(#wr-tokens) {
 +  color-scheme: light;
@@ -39,10 +44,10 @@ index f478ceca5c..930f15f0fb 100644
 +  --wr-accent: #0E1116;
 +  --wr-card: rgb(255 255 255 / .74);
 +  --wr-page-bg:
-+    radial-gradient(42% 38% at 84% 8%, rgb(255 255 255 / .9), rgb(255 255 255 / 0) 70%),
-+    radial-gradient(36% 44% at 0% 58%, rgb(98 108 120 / .55), rgb(98 108 120 / 0) 72%),
-+    radial-gradient(50% 30% at 60% 100%, rgb(255 255 255 / .8), rgb(255 255 255 / 0) 72%),
-+    linear-gradient(135deg, #D5DADF, #AEB6BF 42%, #C3CAD1 72%, #EDEFF1);
++    radial-gradient(70% 60% at 84% 6%, rgb(255 255 255 / .5), rgb(255 255 255 / 0) 85%),
++    radial-gradient(75% 85% at 0% 60%, rgb(98 108 120 / .18), rgb(98 108 120 / 0) 85%),
++    radial-gradient(80% 50% at 60% 100%, rgb(255 255 255 / .45), rgb(255 255 255 / 0) 85%),
++    linear-gradient(135deg, #D6DBE0, #C0C7CE 45%, #CBD1D7 75%, #E3E6E9);
 +
 +  /* 蓝色整组改墨色：强调色只有墨色（internal-style-v1 第 1 节） */
 +  --google-blue-50-rgb: 232, 235, 238;

@@ -1,16 +1,81 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.css b/chrome/browser/resources/settings/about_page/about_page.css
-index 2987e61a89e98daf3271f9b5af84b3aa7424ea2a..822cc4e181741c44cf0db3c8d3600294e0274620 100644
+index 2987e61a89e98daf3271f9b5af84b3aa7424ea2a..0127fc5b83f65c6319ead4a1065d871f7080c269 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.css
 +++ b/chrome/browser/resources/settings/about_page/about_page.css
-@@ -15,10 +15,7 @@
+@@ -15,10 +15,74 @@
  
  .info-sections {
    padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
--}
--
++  line-height: 1.8;
+ }
+ 
 -.info-section {
 -  margin-bottom: 12px;
-+  line-height: 1.8;
++/* 字体声明：一行 13px 小字（用户 11-06「写一行小小字儿就行」；电脑端定稿「字体声明 13」），
++ * 点开后协议全文在下面展开。样子和动效照电脑端 tokens.css / components.css 的折叠组件
++ * （.wr-disclosure）：行尾小箭头 180ms 转向（电脑端那份动的是 margin，这里换成 transform）；正文进场 240ms（上移 6px + 淡入 + .98 缩放），
++ * 收起 180ms；曲线 cubic-bezier(.23, 1, .32, 1)。只动 opacity / transform。 */
++#fontLicense {
++  align-items: center;
++  display: inline-flex;
++  font-size: 13px;
++  gap: 6px;
++  text-decoration: none;
++}
++
++#fontLicense:hover {
++  text-decoration: underline;
++}
++
++#fontLicense::after {
++  border-bottom: 1.5px solid currentColor;
++  border-right: 1.5px solid currentColor;
++  content: '';
++  height: 6px;
++  transform: translateY(-2px) rotate(45deg);
++  transition: transform 180ms cubic-bezier(.23, 1, .32, 1);
++  width: 6px;
++}
++
++#fontLicense[aria-expanded='true']::after {
++  transform: translateY(2px) rotate(225deg);
++}
++
++#fontLicenseText {
++  color: var(--cr-secondary-text-color);
++  font-family: inherit;
++  font-size: 12px;
++  line-height: 1.6;
++  margin: 8px 0 0;
++  max-height: 240px;
++  opacity: 1;
++  overflow-y: auto;
++  transform: none;
++  transform-origin: top left;
++  transition: opacity 240ms cubic-bezier(.23, 1, .32, 1),
++      transform 240ms cubic-bezier(.23, 1, .32, 1),
++      display 240ms allow-discrete;
++  white-space: pre-wrap;
++
++  @starting-style {
++    opacity: 0;
++    transform: translateY(6px) scale(.98);
++  }
++}
++
++#fontLicenseText[hidden] {
++  opacity: 0;
++  transform: translateY(6px) scale(.98);
++  transition-duration: 180ms;
++}
++
++/* 减少动态效果：直接到终态（电脑端已定第 33 条） */
++@media (prefers-reduced-motion: reduce) {
++  #fontLicense::after,
++  #fontLicenseText,
++  #fontLicenseText[hidden] {
++    transition: none;
++  }
  }
  
  .product-title {

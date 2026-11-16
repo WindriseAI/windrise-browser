@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.html.ts b/chrome/browser/resources/settings/about_page/about_page.html.ts
-index b9ac4e634f..0422d8122a 100644
+index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e61683582b 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.html.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.html.ts
 @@ -13,7 +13,7 @@ export function getHtml(this: SettingsAboutPageElement) {
@@ -36,7 +36,16 @@ index b9ac4e634f..0422d8122a 100644
        </div>
        <cr-icon-button class="subpage-arrow"
            ?hidden="${!this.promoteUpdaterStatus_.actionable}"
-@@ -108,7 +97,6 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -91,6 +80,8 @@ export function getHtml(this: SettingsAboutPageElement) {
+ </if>
+   <cr-link-row class="hr" id="help" @click="${this.onHelpClick_}"
+       label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
++  <cr-link-row class="hr" id="sourceCode" @click="${this.onSourceCodeClick_}"
++      label="$i18n{aboutSourceCode}" external></cr-link-row>
+ <if expr="_google_chrome">
+   <cr-link-row class="hr" id="reportIssue" @click="${this.onReportIssueClick_}"
+       ?hidden="${!this.feedbackAllowedPref_?.value}"
+@@ -108,10 +99,19 @@ export function getHtml(this: SettingsAboutPageElement) {
  <settings-section>
    <div class="info-sections">
      <div class="info-section">
@@ -44,3 +53,16 @@ index b9ac4e634f..0422d8122a 100644
        <div class="secondary">$i18n{aboutProductCopyright}</div>
      </div>
  
++    <div class="info-section">
++      <a class="secondary" id="fontLicense" href="#" role="button"
++          aria-expanded="${this.showFontLicense_}"
++          @click="${this.onFontLicenseClick_}">$i18n{aboutFontLicense}</a>
++      ${this.fontLicenseText_ ? html`
++        <pre id="fontLicenseText" ?hidden="${!this.showFontLicense_}"
++            >${this.fontLicenseText_}</pre>
++      ` : ''}
++    </div>
++
+     <div class="info-section">
+       <div class="secondary">$i18nRaw{aboutProductLicense}</div>
+     </div>
