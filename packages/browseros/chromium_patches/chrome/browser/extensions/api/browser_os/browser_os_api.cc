@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..9f5ed21c45
+index 0000000000..eb807041a6
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,789 @@
+@@ -0,0 +1,795 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -689,7 +689,13 @@ index 0000000000..9f5ed21c45
 +  if (!ai_state) {
 +    return RespondNow(Error("No browser window state"));
 +  }
-+  ai_state->SetActivity(params->options.tab_id, params->options.active);
++  // 和 setAiTabs 使用完全相同的名字口径。
++  std::optional<std::u16string> ai_name;
++  if (params->options.ai_name) {
++    ai_name = base::UTF8ToUTF16(params->options.ai_name->substr(0, 64));
++  }
++  ai_state->SetActivity(params->options.tab_id, params->options.active,
++                        std::move(ai_name));
 +  return RespondNow(NoArguments());
 +}
 +

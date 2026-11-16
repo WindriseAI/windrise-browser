@@ -1,9 +1,9 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..52fc024f41
+index 0000000000..301d0eab70
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,280 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -95,6 +95,10 @@ index 0000000000..52fc024f41
 +
 +    // true starts the edge light, false fades it out.
 +    boolean active;
++
++    // Same name as setAiTabs. Omitted: legacy latest-AI attribution and
++    // tab-wide stop; provided: start/stop only this AI's activity on the tab.
++    DOMString? aiName;
 +  };
 +
 +  // Options for setEdgeLightMode (N11: where the edge light is drawn).

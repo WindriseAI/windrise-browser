@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..43be13181f
+index 0000000000..9e5bbcfd4c
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,278 @@
+@@ -0,0 +1,285 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -16,6 +16,7 @@ index 0000000000..43be13181f
 +#include <vector>
 +
 +#include "base/callback_list.h"
++#include "base/functional/callback.h"
 +#include "base/memory/raw_ptr.h"
 +#include "base/memory/weak_ptr.h"
 +#include "base/scoped_multi_source_observation.h"
@@ -24,6 +25,7 @@ index 0000000000..43be13181f
 +#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 +#include "components/tabs/public/tab_interface.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
++#include "ui/base/mojom/menu_source_type.mojom-forward.h"
 +#include "ui/gfx/animation/animation_delegate.h"
 +#include "ui/gfx/animation/linear_animation.h"
 +#include "ui/views/animation/animation_delegate_views.h"
@@ -57,7 +59,8 @@ index 0000000000..43be13181f
 +// （kScaleToMinimum）由 FlexLayout 把剩下的给它。
 +//
 +// 这一段里的标签不是上游 TabView，是对模型里那些标签的代理行：点一下切过去、
-+// 中键或「×」关掉。上游标签的拖动、右键菜单、悬停卡、声音指示这一段没有。
++// 中键或「×」关掉，右键复用上段的完整标签菜单。上游标签的拖动、悬停卡、声音
++// 指示这一段没有。
 +class WindriseAiSectionView : public views::View,
 +                              public TabStripModelObserver,
 +                              public views::ViewObserver,
@@ -65,9 +68,12 @@ index 0000000000..43be13181f
 +  METADATA_HEADER(WindriseAiSectionView, views::View)
 +
 + public:
++  using ShowTabContextMenuCallback = base::RepeatingCallback<void(
++      tabs::TabHandle, const gfx::Point&, ui::mojom::MenuSourceType)>;
 +  WindriseAiSectionView(BrowserWindowInterface* browser,
 +                        TabStripModel* tab_strip_model,
-+                        PrefService* prefs);
++                        PrefService* prefs,
++                        ShowTabContextMenuCallback show_tab_context_menu);
 +  WindriseAiSectionView(const WindriseAiSectionView&) = delete;
 +  WindriseAiSectionView& operator=(const WindriseAiSectionView&) = delete;
 +  ~WindriseAiSectionView() override;
@@ -237,6 +243,7 @@ index 0000000000..43be13181f
 +  raw_ptr<BrowserWindowInterface> browser_;
 +  raw_ptr<TabStripModel> tab_strip_model_;
 +  raw_ptr<PrefService> prefs_;
++  const ShowTabContextMenuCallback show_tab_context_menu_;
 +  base::CallbackListSubscription ai_state_subscription_;
 +
 +  raw_ptr<views::View> tab_strip_ = nullptr;

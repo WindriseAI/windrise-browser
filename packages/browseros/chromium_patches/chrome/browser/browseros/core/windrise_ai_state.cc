@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.cc b/chrome/browser/browseros/core/windrise_ai_state.cc
 new file mode 100644
-index 0000000000..6a9bffc18d
+index 0000000000..a005fc1538
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.cc
-@@ -0,0 +1,251 @@
+@@ -0,0 +1,282 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -208,11 +208,35 @@ index 0000000000..6a9bffc18d
 +  NotifyIfChanged(true);
 +}
 +
-+void AiWindowState::SetActivity(int tab_id, bool active) {
-+  if (HasTabId(state_.active_tab_ids, tab_id) == active) {
-+    return;
++void AiWindowState::SetActivity(
++    int tab_id,
++    bool active,
++    std::optional<std::u16string> ai_name) {
++  if (active) {
++    const bool present = std::ranges::any_of(
++        activities_, [&](const Activity& activity) {
++          return activity.tab_id == tab_id && activity.ai_name == ai_name;
++        });
++    if (present) {
++      return;
++    }
++    activities_.push_back({tab_id, std::move(ai_name)});
++  } else {
++    // 旧调用的 off 仍清掉整个标签；具名 off 不影响同页上别的 AI。
++    const size_t removed = std::erase_if(
++        activities_, [&](const Activity& activity) {
++          return activity.tab_id == tab_id &&
++                 (!ai_name || activity.ai_name == ai_name);
++        });
++    if (removed == 0) {
++      return;
++    }
 +  }
-+  SetTabId(&state_.active_tab_ids, tab_id, active);
++  const bool tab_active = std::ranges::any_of(
++      activities_, [tab_id](const Activity& activity) {
++        return activity.tab_id == tab_id;
++      });
++  SetTabId(&state_.active_tab_ids, tab_id, tab_active);
 +  NotifyIfChanged(true);
 +}
 +
@@ -236,6 +260,13 @@ index 0000000000..6a9bffc18d
 +
 +bool AiWindowState::IsActive(int tab_id) const {
 +  return HasTabId(state_.active_tab_ids, tab_id);
++}
++
++bool AiWindowState::IsOperating(const std::u16string& ai_name) const {
++  return std::ranges::any_of(activities_, [&](const Activity& activity) {
++    return activity.ai_name ? *activity.ai_name == ai_name
++                            : state_.active_ai_name == ai_name;
++  });
 +}
 +
 +base::CallbackListSubscription AiWindowState::AddObserver(

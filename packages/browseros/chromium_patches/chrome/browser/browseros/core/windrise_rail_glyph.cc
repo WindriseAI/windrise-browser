@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_rail_glyph.cc b/chrome/browser/browseros/core/windrise_rail_glyph.cc
 new file mode 100644
-index 0000000000..ac31d7b27a
+index 0000000000..b66ae61f6e
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_rail_glyph.cc
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,72 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -11,7 +11,7 @@ index 0000000000..ac31d7b27a
 +
 +#include "base/i18n/char_iterator.h"
 +#include "base/strings/utf_string_conversion_utils.h"
-+#include "base/strings/utf_string_conversions.h"
++#include "components/url_formatter/url_formatter.h"
 +#include "third_party/icu/source/common/unicode/uchar.h"
 +#include "third_party/icu/source/common/unicode/uscript.h"
 +
@@ -69,7 +69,10 @@ index 0000000000..ac31d7b27a
 +  if (host.starts_with("www.")) {
 +    host.remove_prefix(4);
 +  }
-+  return RailGlyphForTitle(base::UTF8ToUTF16(host));
++  // 这里只取一个字作标签缩写，不展示或判断网址。先还原 IDN，避免把 xn--
++  // 的 X 当作缩写；地址栏等完整网址仍走上游带防仿冒检查的显示规则。
++  return RailGlyphForTitle(
++      url_formatter::UnsafeIDNToUnicodeWithDetails(host).result);
 +}
 +
 +}  // namespace browseros::windrise

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e75c..9843a6828a 100644
+index 338178e75c..cc546e45dd 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 @@ -17,6 +17,8 @@
@@ -21,7 +21,7 @@ index 338178e75c..9843a6828a 100644
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_focus_swipe_controller.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.h"
-@@ -190,6 +195,45 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -190,6 +195,60 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
                LayoutConstant::kVerticalTabStripCollapsedVerticalPadding),
            region_horizontal_padding, 0, region_horizontal_padding));
  
@@ -50,7 +50,22 @@ index 338178e75c..9843a6828a 100644
 +  ai_section_view_ = content_area_view_->AddChildViewAt(
 +      std::make_unique<WindriseAiSectionView>(
 +          browser_view->browser(), browser_view->browser()->GetTabStripModel(),
-+          browser_view->browser()->GetProfile()->GetPrefs()),
++          browser_view->browser()->GetProfile()->GetPrefs(),
++          base::BindRepeating(
++              [](VerticalTabStripRegionView* region, tabs::TabHandle tab,
++                 const gfx::Point& point,
++                 ui::mojom::MenuSourceType source_type) {
++                if (!tab.Get() || !region->root_node_) {
++                  return;
++                }
++                TabCollectionNode* node =
++                    region->root_node_->GetNodeForHandle(tab);
++                if (node && node->GetController()) {
++                  node->GetController()->ShowTabContextMenu(node, point,
++                                                            source_type);
++                }
++              },
++              base::Unretained(this))),
 +      *content_area_view_->GetIndexOf(ai_card_view_));
 +  ai_section_view_->SetProperty(
 +      views::kFlexBehaviorKey,
@@ -67,37 +82,30 @@ index 338178e75c..9843a6828a 100644
    gemini_button_ =
        content_area_view_->AddChildView(std::make_unique<views::View>());
  
-@@ -231,9 +275,29 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -231,9 +290,22 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
    }
  
    SetNotifyEnterExitOnChild(true);
 +  // 158 用 top_button_separator_ 的 SetInactiveColorId() 处理非激活态
 +  // 颜色（见本文件构造函数与 ours 中的写法），不再需要 UpdateColors()。
-+  if (tab_strip_model()) {
-+    tab_strip_model()->AddObserver(this);
-+    UpdateAIWorkspaceExpansion(tab_strip_model()->GetActiveTab());
-+  }
-+  // N6：扩展推来 AI 段（哪些标签是 AI 的）后，重新算一次「保持展开」。
++  // N6：AI 组归属改变时重新排上段；不因为当前标签属于 AI 而撑开侧栏。
 +  // 析构时 BrowserView 的成员可能已经先拆掉，所以把窗口指针存下来供 Detach 用。
 +  windrise_ai_window_ = browser_view->browser();
 +  if (browseros::windrise::AiWindowState* ai_state =
 +          browseros::windrise::AiWindowState::Attach(windrise_ai_window_)) {
 +    ai_state_subscription_ = ai_state->AddObserver(base::BindRepeating(
-+        &VerticalTabStripRegionView::UpdateAIWorkspaceExpansionFromState,
++        &VerticalTabStripRegionView::OnWindriseAiStateChanged,
 +        base::Unretained(this)));
 +  }
  }
  
  VerticalTabStripRegionView::~VerticalTabStripRegionView() {
-+  if (tab_strip_model()) {
-+    tab_strip_model()->RemoveObserver(this);
-+  }
 +  ai_state_subscription_ = {};
 +  browseros::windrise::AiWindowState::Detach(windrise_ai_window_);
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -409,6 +473,40 @@ void VerticalTabStripRegionView::AddedToWidget() {
+@@ -409,6 +481,40 @@ void VerticalTabStripRegionView::AddedToWidget() {
    if (GetFocusManager()) {
      GetFocusManager()->AddFocusChangeListener(&focus_listener_);
    }
@@ -138,7 +146,7 @@ index 338178e75c..9843a6828a 100644
  }
  
  void VerticalTabStripRegionView::RemovedFromWidget() {
-@@ -885,7 +983,13 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -885,7 +991,13 @@ void VerticalTabStripRegionView::AddTabStripView(
    std::optional<size_t> separator_index =
        content_parent->GetIndexOf(top_button_separator_);
    CHECK(separator_index.has_value());
@@ -153,7 +161,7 @@ index 338178e75c..9843a6828a 100644
  
    // Pre-set the animation values to the appropriate state.
    auto* const animation_controller =
-@@ -907,6 +1011,12 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -907,6 +1019,12 @@ void VerticalTabStripRegionView::AddTabStripView(
                base::Unretained(this)));
  
    OnCollapseStateChanged(state_controller_->GetCollapseState());
@@ -166,7 +174,7 @@ index 338178e75c..9843a6828a 100644
  }
  
  std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
-@@ -916,6 +1026,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
+@@ -916,6 +1034,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
    omnibox_tab_helper_observation_.Reset();
    ResetExpandOnHoverTimers();
    is_expanded_on_hover_ = false;
@@ -176,7 +184,7 @@ index 338178e75c..9843a6828a 100644
    return BaseTabStripRegionView::RemoveTabStripView(view);
  }
  
-@@ -934,6 +1047,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
+@@ -934,6 +1055,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
    if (tab_strip_view()) {
      tab_strip_view()->SetCollapsedState(collapsed);
    }
@@ -186,73 +194,17 @@ index 338178e75c..9843a6828a 100644
  
    if ((state == tabs::VerticalTabStripCollapseState::kCollapsing) ||
        (state == tabs::VerticalTabStripCollapseState::kExpanded &&
-@@ -1231,6 +1347,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
- void VerticalTabStripRegionView::OnActiveTabChanged(
-     const tabs::TabInterface* active_tab) {
-   BaseTabStripRegionView::OnActiveTabChanged(active_tab);
-+  UpdateAIWorkspaceExpansion(active_tab);
-   omnibox_tab_helper_observation_.Reset();
- 
-   if (active_tab) {
-@@ -1242,5 +1359,62 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1366,14 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  
-+void VerticalTabStripRegionView::OnTabGroupChanged(
-+    const TabGroupChange&) {
-+  UpdateAIWorkspaceExpansion(tab_strip_model()
-+                                 ? tab_strip_model()->GetActiveTab()
-+                                 : nullptr);
-+}
-+
-+void VerticalTabStripRegionView::UpdateAIWorkspaceExpansion(
-+    const tabs::TabInterface* active_tab) {
-+  ai_workspace_group_subscription_ = base::CallbackListSubscription();
-+
-+  bool keep_expanded = false;
-+  if (active_tab && tab_strip_model() && tab_strip_model()->group_model()) {
-+    const std::optional<tab_groups::TabGroupId> group_id =
-+        active_tab->GetGroup();
-+    if (group_id) {
-+      TabGroup* const group =
-+          tab_strip_model()->group_model()->GetTabGroup(*group_id);
-+      if (group) {
-+        // 风桥 N6：AI 的组只认 browserOS.setAiTabs 建的（AiGroups），不再按
-+        // 组标题以「AI 」开头猜。
-+        keep_expanded = browseros::windrise::AiGroups::Contains(*group_id);
-+        ai_workspace_group_subscription_ =
-+            group->RegisterOnVisualDataChanged(base::BindRepeating(
-+                &VerticalTabStripRegionView::OnAIWorkspaceGroupVisualDataChanged,
-+                base::Unretained(this)));
-+      }
-+    }
-+  }
-+
-+  if (keep_expanded && !ai_workspace_lock_) {
-+    ai_workspace_lock_ =
-+        GetExpandOnHoverLock(ExpandOnHoverLockType::kKeepExpanded);
-+  } else if (!keep_expanded) {
-+    ai_workspace_lock_.reset();
-+  }
-+  UpdateExpandOnHoverState();
-+}
-+
-+void VerticalTabStripRegionView::UpdateAIWorkspaceExpansionFromState() {
++void VerticalTabStripRegionView::OnWindriseAiStateChanged() {
 +  // AI 组变了：上段要重新排一次，把新的 AI 组藏起来、清掉的组放回来。
 +  if (tab_strip_view()) {
 +    if (views::View* unpinned = tab_strip_view()->GetUnpinnedTabsContainer()) {
 +      unpinned->InvalidateLayout();
 +    }
 +  }
-+  UpdateAIWorkspaceExpansion(tab_strip_model()
-+                                 ? tab_strip_model()->GetActiveTab()
-+                                 : nullptr);
-+}
-+
-+void VerticalTabStripRegionView::OnAIWorkspaceGroupVisualDataChanged() {
-+  UpdateAIWorkspaceExpansion(tab_strip_model()
-+                                 ? tab_strip_model()->GetActiveTab()
-+                                 : nullptr);
 +}
 +
  BEGIN_METADATA(VerticalTabStripRegionView)
