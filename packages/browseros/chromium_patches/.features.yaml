@@ -616,7 +616,7 @@ features:
       - "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"
 
   windrise-browser-ai-section-1116:
-    description: "feat: vertical tab strip AI section (N6, user 11-05) - AI tabs in a bottom-anchored lower section, bottom-up order and reversed wheel, one collapsible combo row per AI (setAiTabs keyed by aiName), splitter shown only when the two sections collide and draggable with the ratio remembered; collapsed-only hover card style; literal rail glyph rule (first Han, else first Latin letter uppercased, else first character, else host); narrow window (< 900) auto-collapse without writing the user preference (L11)"
+    description: "feat: vertical tab strip AI section (N6, user 11-05) - AI tabs in a bottom-anchored lower section with bottom-up order and normal wheel direction (user R189 superseded the reversed wheel of R186), one collapsible combo row per AI (setAiTabs keyed by aiName), splitter shown only when the two sections collide, draggable to set the AI section maximum share (user 18:19) with the ratio remembered; collapsed-only hover card style; literal rail glyph rule (first Han, else first Latin letter uppercased, else first character, else host); narrow window (< 900) auto-collapse without writing the user preference (L11)"
     files:
       - "chrome/browser/browseros/core/windrise_ai_state.h"
       - "chrome/browser/browseros/core/windrise_ai_state.cc"

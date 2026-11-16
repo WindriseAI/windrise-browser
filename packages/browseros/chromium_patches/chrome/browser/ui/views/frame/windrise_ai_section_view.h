@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..f472ea7b68
+index 0000000000..8c5f6c2111
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,213 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -38,11 +38,12 @@ index 0000000000..f472ea7b68
 +// 下段——AI 的标签。
 +//
 +// - 人的标签在上段（上游 TabStripView，从上往下排、正常滚动）；AI 的标签在
-+//   这一段，贴着底部、从下往上排，滚轮方向和上段相反。
++//   这一段，贴着底部、从下往上排。滚轮方向和上段相同（用户 18:15「算了，AI区
++//   不单独滚动了，就正常滚动」取代了 18:12 的「反过来滚滚轮」）。
 +// - 每个 AI 一组「组合页」（组名 = AI 名，数据来自 browserOS.setAiTabs），默认
 +//   收起成一行，点开才把这个 AI 的全部标签展开出来（往上展开，点的那一行不动）。
 +// - 两段之间的分隔条：两段没碰到时不显示；放不下（碰到）时才淡入。用户可以
-+//   上下拖动分配两段的高度，松手位置按比例记在偏好里。
++//   上下拖动，设定 AI 段最多占多高（用户 18:19），松手位置按比例记在偏好里。
 +// - 收起态（70 宽）：组合页一行是「AI 标志 + 标签数」，标签一行是「图标 +
 +//   一个字」，和上段标签、左下卡片同构。
 +//
@@ -129,7 +130,7 @@ index 0000000000..f472ea7b68
 +  struct Allocation {
 +    int natural = 0;     // 这一段全放下要多高（分隔条那一条 + 内容）
 +    int target = 0;      // 这一刻应该多高
-+    int min_height = 0;  // 碰到时最少多高
++    int min_height = 0;  // 碰到时最少多高（也不比「上段用剩下的」少）
 +    int max_height = 0;  // 碰到时最多多高（上段要留出它的最小高）
 +    int available = 0;   // 两段一共能用多高
 +    bool colliding = false;

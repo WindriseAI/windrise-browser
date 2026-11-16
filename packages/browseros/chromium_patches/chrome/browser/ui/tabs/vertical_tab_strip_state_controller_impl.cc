@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
-index 4eb9220..399b69c 100644
+index 4eb9220..f40df30 100644
 --- a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
 +++ b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
 @@ -12,6 +12,7 @@
@@ -48,7 +48,17 @@ index 4eb9220..399b69c 100644
    if (restored_state_collapsed.has_value()) {
      SetCollapsed(restored_state_collapsed.value());
    }
-@@ -294,6 +319,16 @@ void VerticalTabStripStateControllerImpl::OnExpandOnHoverEnabledChanged() {
+@@ -192,6 +217,9 @@ VerticalTabStripStateControllerImpl::GetCollapseState() const {
+ }
+ 
+ void VerticalTabStripStateControllerImpl::RequestCollapse(bool collapse) {
++  // 风桥 L11：之后任何一次展开 / 收起请求（用户点的）都不再是那次自动收起。
++  // 自动收起自己也走这里，它在调用之后才把这个标记立起来。
++  windrise_auto_collapse_pending_ = false;
+   if (!delegate_) {
+     return;
+   }
+@@ -294,6 +322,16 @@ void VerticalTabStripStateControllerImpl::OnExpandOnHoverEnabledChanged() {
  
  void VerticalTabStripStateControllerImpl::SetCollapsed(bool collapsed) {
    if (state_.collapsed != collapsed) {
@@ -65,7 +75,7 @@ index 4eb9220..399b69c 100644
      state_.collapsed = collapsed;
      NotifyCollapseChanged();
      if (auto* browser_element_views =
-@@ -325,8 +360,9 @@ void VerticalTabStripStateControllerImpl::OnLockDestroyed() {
+@@ -325,8 +363,9 @@ void VerticalTabStripStateControllerImpl::OnLockDestroyed() {
  
  void VerticalTabStripStateControllerImpl::UpdateSessionService() {
    if (session_service_ && !browser_collection_observation_.IsObserving()) {
@@ -77,7 +87,7 @@ index 4eb9220..399b69c 100644
      session_service_->AddWindowExtraData(
          session_id_, kUncollapsedWidthKey,
          base::NumberToString(state_.uncollapsed_width));
-@@ -336,12 +372,41 @@ void VerticalTabStripStateControllerImpl::UpdateSessionService() {
+@@ -336,12 +375,43 @@ void VerticalTabStripStateControllerImpl::UpdateSessionService() {
  void VerticalTabStripStateControllerImpl::UpdatePrefService() {
    if (pref_service_) {
      pref_service_->SetBoolean(prefs::kVerticalTabsCollapsedState,
@@ -103,8 +113,10 @@ index 4eb9220..399b69c 100644
 +    windrise_user_collapsed_ = state_.collapsed;
 +    windrise_narrow_window_ = true;
 +    if (!state_.collapsed) {
-+      windrise_auto_collapse_pending_ = true;
 +      RequestCollapse(true);
++      // 收起动画落地（SetCollapsed）时认出是这次自动收起。减少动态效果时可能
++      // 在 RequestCollapse 里就同步落地了，那就不用再等。
++      windrise_auto_collapse_pending_ = !state_.collapsed;
 +    }
 +    return;
 +  }

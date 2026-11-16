@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..5a05309e59
+index 0000000000..489de31b62
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1191 @@
+@@ -0,0 +1,1205 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -87,6 +87,11 @@ index 0000000000..5a05309e59
 +constexpr double kDefaultRatio = 0.4;
 +constexpr double kMinRatio = 0.1;
 +constexpr double kMaxRatio = 0.9;
++// 滚轮方向。用户 11-05 18:12 先说过 AI 段「反过来滚滚轮」（R186），18:15 改口
++// 「算了，AI区不单独滚动了，就正常滚动。」（R189，产品需求清单记 R186 已被它
++// 取代）。所以这里照 R189：和上段同一个方向（+1）。协调人如果裁定要反向，
++// 只改这一个数为 -1。
++constexpr int kWheelDirection = 1;
 +
 +// 动效（review-animations 十条见交付稿第五节）。曲线都是 WINDRISE_EASE_OUT
 +// （.23, 1, .32, 1）；减少动态效果时 RichAnimationDuration 给 0，直接到位。
@@ -605,11 +610,18 @@ index 0000000000..5a05309e59
 +    allocation.target = allocation.natural;
 +    return allocation;
 +  }
-+  const int desired =
++  // 碰到时：用户拖出来的比例是「AI 段最多占多高」（用户 11-05 18:19「分割条
++  // 拖动就是设定 AI 区最多占多高」）。但上段用不满它那一份时，多出来的给下段，
++  // 不在「+」下面留一块空白：下限是「两段可用高 − 上段要的高」。
++  const int fill_floor =
++      std::max(allocation.min_height,
++               allocation.available - HumanPreferredHeight());
++  allocation.min_height = std::min(fill_floor, allocation.max_height);
++  const int cap =
 +      splitter + base::ClampRound(StoredRatio() *
 +                                  std::max(0, allocation.available - splitter));
 +  allocation.target =
-+      std::clamp(desired, allocation.min_height, allocation.max_height);
++      std::clamp(cap, allocation.min_height, allocation.max_height);
 +  return allocation;
 +}
 +
@@ -966,9 +978,10 @@ index 0000000000..5a05309e59
 +  if (MaxScrollOffset() <= 0 || event.y_offset() == 0) {
 +    return false;
 +  }
-+  // 上段：滚轮往下，内容往上走（看下面的）。这一段反过来：滚轮往下，内容往下
-+  // 走，露出上面（更晚开的）标签。y_offset 往下滚是负数。
-+  SetScrollOffset(scroll_offset_ - event.y_offset());
++  // 和上段同一个方向（R189「就正常滚动」）：滚轮往下，内容往上走，露出下沿
++  // 以下的；滚轮往上，露出上面（更晚开的）标签。y_offset 往下滚是负数；
++  // scroll_offset_ 是藏在下沿以下的高度。
++  SetScrollOffset(scroll_offset_ + kWheelDirection * event.y_offset());
 +  return true;
 +}
 +
@@ -979,12 +992,13 @@ index 0000000000..5a05309e59
 +      event->y_offset() == 0) {
 +    return;
 +  }
-+  SetScrollOffset(scroll_offset_ - base::ClampRound(event->y_offset()));
++  SetScrollOffset(scroll_offset_ +
++                  kWheelDirection * base::ClampRound(event->y_offset()));
 +  event->SetHandled();
 +}
 +
 +void WindriseAiSectionView::OnGestureEvent(ui::GestureEvent* event) {
-+  // 触屏拖动是直接操作：手指往下拖，内容跟着往下走（露出上面的），不反向。
++  // 触屏拖动是直接操作：手指往下拖，内容跟着往下走（露出上面的）。
 +  switch (event->type()) {
 +    case ui::EventType::kGestureScrollBegin:
 +      if (MaxScrollOffset() > 0) {
