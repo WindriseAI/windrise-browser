@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..4f6c289e66
+index 0000000000..da9d6ee25b
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,503 @@
+@@ -0,0 +1,510 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -47,6 +47,7 @@ index 0000000000..4f6c289e66
 +#include "ui/views/border.h"
 +#include "ui/views/bubble/bubble_border.h"
 +#include "ui/views/controls/button/label_button.h"
++#include "ui/views/controls/focus_ring.h"
 +#include "ui/views/controls/highlight_path_generator.h"
 +#include "ui/views/controls/label.h"
 +#include "ui/views/controls/separator.h"
@@ -187,6 +188,11 @@ index 0000000000..4f6c289e66
 +    }
 +    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +    SetInstallFocusRingOnFocus(true);
++    // 焦点环用墨色（Windrise 配色里 kColorSysStateFocusRing = 主文字色），不用
++    // 上游默认的蓝色强调色（已定 甲04：界面不出现彩色）。
++    if (views::FocusRing* ring = views::FocusRing::Get(this)) {
++      ring->SetColorId(ui::kColorSysStateFocusRing);
++    }
 +    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
 +                                                  radius_);
 +    // 按下缩放走自己的层（只动 transform，不重排、不重画）。
@@ -314,16 +320,16 @@ index 0000000000..4f6c289e66
 +  AddChildView(std::move(separator));
 +
 +  // 底部文字行：「打开风桥」「闪办广场」靠左，「设置」靠右（L7 ③、两张帧）。
-+  // 线到字顶 10：文字按钮自带上内边 4，所以这一行上边距 10 - 4；左右、下面各
-+  // 伸出按钮自带的内边，字和上面的内容在同一条竖线上，底边距仍是面板内边。
++  // 线到字顶 10：文字按钮自带上内边 4，所以这一行上边距 10 - 4；左右各伸出
++  // 按钮自带的内边 6，字和上面的内容在同一条竖线上。
 +  auto* footer = AddChildView(std::make_unique<views::BoxLayoutView>());
 +  footer->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
 +  footer->SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kStart);
 +  footer->SetBetweenChildSpacing(kFooterTextGap - 2 * kTextButtonInsetH);
 +  footer->SetProperty(
 +      views::kMarginsKey,
-+      gfx::Insets::TLBR(kSectionGap - kTextButtonInsetV, -kTextButtonInsetH,
-+                        -kTextButtonInsetV, -kTextButtonInsetH));
++      gfx::Insets::TLBR(kSectionGap - kTextButtonInsetV, -kTextButtonInsetH, 0,
++                        -kTextButtonInsetH));
 +
 +  const auto make_text_button = [this](int string_id, const char* action) {
 +    return std::make_unique<PanelButton>(
@@ -355,9 +361,10 @@ index 0000000000..4f6c289e66
 +  caption->SetFontList(
 +      SizedFont(caption->font_list(), kCaptionSize, /*medium=*/false));
 +  // 小字和「闪办广场」左对齐，紧贴上一行（按钮自带下内边 4，这里收回 2）。
-+  caption->SetProperty(
-+      views::kMarginsKey,
-+      gfx::Insets::TLBR(-2, kTextButtonInsetH, kTextButtonInsetV, 0));
++  // 小字的宽会算进这一列的宽：英文用短的 Coming soon，中英文三项加小字都在
++  // 196 + 12 以内（交付稿 3.1 甲47 那一行有算式）。
++  caption->SetProperty(views::kMarginsKey,
++                       gfx::Insets::TLBR(-2, kTextButtonInsetH, 0, 0));
 +  // 名字和说明已经由按钮读出，小字本身不再单独读一遍。
 +  caption->GetViewAccessibility().SetIsIgnored(true);
 +

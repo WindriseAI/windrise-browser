@@ -1,5 +1,5 @@
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index b9d0f60014..4472d54b4c 100644
+index b9d0f60014..344617b9c1 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
 @@ -9412,6 +9412,51 @@ Keep your key file in a safe place. You will need it to create new versions of y
@@ -48,8 +48,8 @@ index b9d0f60014..4472d54b4c 100644
 +      <message name="IDS_WINDRISE_AI_PANEL_OPEN_APP" desc="Windrise: text link at the bottom of the AI panel that opens the Windrise desktop app (short form; Windrise Bridge)">
 +        Bridge
 +      </message>
-+      <message name="IDS_WINDRISE_AI_GALLERY_SOON" desc="Windrise: small note under the Gallery link in the AI panel; the full Gallery is not available yet">
-+        Full version coming soon
++      <message name="IDS_WINDRISE_AI_GALLERY_SOON" desc="Windrise: small note under the Gallery link in the AI panel; the full Gallery is not available yet. Keep it short: the footer row is about 200 px wide.">
++        Coming soon
 +      </message>
        <message name="IDS_READ_LATER_MENU_UNREAD_HEADER" desc="Header for section of unread Read later items.">
          Unread
