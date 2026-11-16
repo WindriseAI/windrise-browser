@@ -27,14 +27,13 @@ the B6 brand export, so the build never reads a directory outside the repo:
   their own pixel grid and must not be scaled up, so only the 256 vector is
   checked in.
 
-Windows ``.ico`` and macOS ``.icns`` are assembled here from those same finals:
-``win/chromium.ico``/``app_list.ico``/``incognito.ico`` carry the 定稿 ICO frame
-set (16/24/32/48/64/128/256) and ``mac/*.icns`` the 定稿 ICNS element set
-(ic07/ic08/ic09/ic10/ic11/ic12/ic13/ic14). Every frame is a pre-rendered 定稿
-size, so the assembled containers are pixel-identical to ``windrise-browser.ico``
-and ``windrise-browser.icns`` while staying inside the PNG/SVG-only brand-src
-contract. The brand masters are already rasterized, so this script needs no SVG
-renderer and stays reproducible with Pillow only.
+Windows ``win/chromium.ico`` is copied byte-for-byte from the checked-in
+``brand-src/windrise-browser.ico`` final. Its PNG frames use different compressed
+bytes from the standalone PNG finals; rebuilding the container would change the
+approved file even though its decoded pixels match. ``--check`` compares this
+ICO's raw bytes as well. The other application ICOs are assembled from the
+16/24/32/48/64/128/256 PNG finals, and macOS ICNS files use the final element set
+(ic07/ic08/ic09/ic10/ic11/ic12/ic13/ic14). No SVG renderer is needed.
 
 macOS ``Assets.car`` is an Apple asset catalog that only ``actool`` (macOS +
 Xcode) can compile, so regenerate it on a Mac from the ``Assets.xcassets`` PNGs
@@ -341,13 +340,14 @@ def _image_signature(image: Image.Image) -> tuple:
 
 
 def _content_signature(path: Path) -> tuple:
-    """Decoded content of one icon, so hosted-toolchain zlib differences
-    (PNG byte streams) do not count as a mismatch."""
+    """Compare Chromium's final ICO bytes and other icons' decoded content."""
     if path.suffix == ".png":
         with Image.open(path) as image:
             return ("png", _image_signature(image))
 
     if path.suffix == ".ico":
+        if path.name == "chromium.ico":
+            return ("ico-final", path.read_bytes())
         with Image.open(path) as image:
             frames = []
             for size in sorted(image.info["sizes"]):
@@ -472,7 +472,11 @@ def generate(brand_dir: Path, destination: Path) -> list[Path]:
 
     for relative, sizes in ICO_TARGETS:
         target = destination / relative
-        _write_ico({size: art.blob("icon", size) for size in sizes}, target)
+        if relative == "win/chromium.ico":
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((brand_dir / "windrise-browser.ico").read_bytes())
+        else:
+            _write_ico({size: art.blob("icon", size) for size in sizes}, target)
         written.append(target)
 
     for relative, sizes in DOC_ICO_TARGETS:
