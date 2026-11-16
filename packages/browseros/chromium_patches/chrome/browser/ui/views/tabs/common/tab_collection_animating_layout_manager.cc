@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc b/chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc
-index b2158e2ccc..c48ab0fc9a 100644
+index b2158e2ccc..560e144871 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.cc
-@@ -94,12 +94,41 @@ bool TabCollectionAnimatingLayoutManager::Delegate::ShouldAnimateLayout() {
+@@ -94,12 +94,48 @@ bool TabCollectionAnimatingLayoutManager::Delegate::ShouldAnimateLayout() {
    return true;
  }
  
@@ -29,11 +29,18 @@ index b2158e2ccc..c48ab0fc9a 100644
 +// stall falls before the motion and the whole 180ms curve plays in one go.
 +// The hold ends on the first on-time frame (one frame later than before on a
 +// normal machine) or kWindriseMaxHold after Show(), whichever comes first.
-+// Curve, duration and reduced motion are unchanged.
++// Tab drags do not hold (the strip must follow the pointer). Curve, duration
++// and reduced motion are unchanged.
++//
++// "Late" and "one frame" follow the machine's usual frame interval (median of
++// recent ticks): late = more than 1.5 usual frames and more than 25ms, so a
++// machine that steadily runs at, say, 30-40fps stays time based instead of
++// being slowed down by the guard.
 +constexpr base::TimeDelta kWindriseHitchGap = base::Microseconds(25000);
 +constexpr base::TimeDelta kWindriseResumeStep = base::Microseconds(16667);
 +constexpr base::TimeDelta kWindriseMaxHold = base::Milliseconds(100);
 +constexpr int kWindriseMaxStretch = 2;
++constexpr size_t kWindriseMinIntervals = 5;
 +
  TabCollectionAnimatingLayoutManager::AnimationCoordinator::AnimationCoordinator(
      views::View& view)
@@ -46,18 +53,19 @@ index b2158e2ccc..c48ab0fc9a 100644
  }
  
  TabCollectionAnimatingLayoutManager::AnimationCoordinator::
-@@ -154,8 +183,9 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::
+@@ -154,8 +190,10 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::
      }
      animation_.Reset(0.0);
      animation_.SetSlideDuration(
 -        gfx::Animation::RichAnimationDuration(base::Milliseconds(200)));
 +        gfx::Animation::RichAnimationDuration(base::Milliseconds(kWindriseTabLayoutMs)));
      animation_.Show();
-+    WindriseOnRunStarted(0.0, /*from_start=*/true);
++    WindriseOnRunStarted(
++        0.0, /*from_start=*/!requesting_manager->delegate_->IsDragging());
    } else {
      // We are still early in the animation. Simply update the starting offset
      // and re-baseline all active managers to `current_offset_`. The animation
-@@ -168,7 +198,9 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::
+@@ -168,7 +206,9 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::
        }
      }
      if (!animation_.is_animating()) {
@@ -67,7 +75,7 @@ index b2158e2ccc..c48ab0fc9a 100644
      }
    }
  }
-@@ -197,10 +229,11 @@ TabCollectionAnimatingLayoutManager::AnimationCoordinator::GetCurrentProgress()
+@@ -197,10 +237,11 @@ TabCollectionAnimatingLayoutManager::AnimationCoordinator::GetCurrentProgress()
  
  void TabCollectionAnimatingLayoutManager::AnimationCoordinator::
      AnimationProgressed(const gfx::Animation* animation) {
@@ -81,7 +89,7 @@ index b2158e2ccc..c48ab0fc9a 100644
    for (TabCollectionAnimatingLayoutManager* manager : managers_) {
      if (manager->is_animating_) {
        manager->OnAnimationProgressed();
-@@ -227,6 +260,74 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::AnimationEnded(
+@@ -227,6 +268,95 @@ void TabCollectionAnimatingLayoutManager::AnimationCoordinator::AnimationEnded(
    }
  }
  
@@ -116,10 +124,20 @@ index b2158e2ccc..c48ab0fc9a 100644
 +  windrise_last_step_ = now;
 +  const bool first_tick = windrise_first_tick_;
 +  windrise_first_tick_ = false;
++  // The first tick of a run measures time since Show(), not a frame interval.
++  const base::TimeDelta frame = WindriseFrameInterval();
++  const base::TimeDelta hitch_gap = std::max(kWindriseHitchGap, frame * 1.5);
++  const bool late = step > hitch_gap;
++  if (!first_tick) {
++    windrise_intervals_[windrise_interval_next_] = step;
++    windrise_interval_next_ =
++        (windrise_interval_next_ + 1) % windrise_intervals_.size();
++    windrise_interval_count_ =
++        std::min(windrise_interval_count_ + 1, windrise_intervals_.size());
++  }
 +
 +  if (windrise_holding_) {
-+    if ((first_tick || step > kWindriseHitchGap) &&
-+        now < windrise_hold_until_) {
++    if ((first_tick || late) && now < windrise_hold_until_) {
 +      // Still at the start: restart the clock from this frame. Nothing has
 +      // moved, so current_offset_ stays equal to starting_offset_, the same
 +      // "no progress shown yet" state upstream has before its first frame.
@@ -135,12 +153,11 @@ index b2158e2ccc..c48ab0fc9a 100644
 +  }
 +
 +  double linear = windrise_linear_ + step / windrise_run_duration_;
-+  if (step > kWindriseHitchGap &&
-+      now - windrise_run_start_ <
-+          windrise_run_duration_ * kWindriseMaxStretch) {
-+    // Pull the animation clock back so this step only shows one frame of
-+    // progress; the following steps continue from here on time.
-+    linear = windrise_linear_ + kWindriseResumeStep / windrise_run_duration_;
++  if (late && now - windrise_run_start_ <
++                  windrise_run_duration_ * kWindriseMaxStretch) {
++    // Pull the animation clock back so this step only shows one usual frame
++    // of progress; the following steps continue from here on time.
++    linear = windrise_linear_ + frame / windrise_run_duration_;
 +    if (linear < 1.0) {
 +      animation_.SetCurrentValue(linear);
 +      value = windrise_value_from_ +
@@ -151,6 +168,18 @@ index b2158e2ccc..c48ab0fc9a 100644
 +  }
 +  windrise_linear_ = std::min(linear, 1.0);
 +  return value;
++}
++
++base::TimeDelta TabCollectionAnimatingLayoutManager::AnimationCoordinator::
++    WindriseFrameInterval() const {
++  if (windrise_interval_count_ < kWindriseMinIntervals) {
++    return kWindriseResumeStep;
++  }
++  std::array<base::TimeDelta, 15> sorted = windrise_intervals_;
++  auto middle = sorted.begin() + windrise_interval_count_ / 2;
++  std::nth_element(sorted.begin(), middle,
++                   sorted.begin() + windrise_interval_count_);
++  return *middle;
 +}
 +
  bool TabCollectionAnimatingLayoutManager::AnimationCoordinator::
