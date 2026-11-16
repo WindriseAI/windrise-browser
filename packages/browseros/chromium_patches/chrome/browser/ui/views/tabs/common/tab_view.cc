@@ -1,83 +1,42 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_view.cc b/chrome/browser/ui/views/tabs/common/tab_view.cc
-index 7ad4897a75..a5b975e9bb 100644
+index 7ad4897a75..36ffccc804 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_view.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_view.cc
-@@ -6,12 +6,17 @@
+@@ -6,12 +6,15 @@
  
  #include <optional>
  #include <string>
 +#include <string_view>
  
  #include "base/functional/callback_helpers.h"
-+#include "base/i18n/char_iterator.h"
  #include "base/metrics/histogram_functions.h"
  #include "base/metrics/user_metrics.h"
  #include "base/metrics/user_metrics_action.h"
-+#include "base/strings/utf_string_conversion_utils.h"
-+#include "base/strings/utf_string_conversions.h"
  #include "base/time/time.h"
++#include "chrome/browser/browseros/core/windrise_rail_glyph.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
  #include "chrome/browser/dictation/dictation_keyed_service.h"
  #include "chrome/browser/glic/browser_ui/tab_underline_controller.h"
  #include "chrome/browser/glic/browser_ui/tab_underline_view.h"
-@@ -65,6 +70,7 @@
- #include "components/tabs/public/tab_collection_types.h"
- #include "components/tabs/public/tab_interface.h"
- #include "content/public/browser/navigation_controller.h"
-+#include "third_party/icu/source/common/unicode/uchar.h"
- #include "third_party/skia/include/core/SkPath.h"
- #include "third_party/skia/include/core/SkPathBuilder.h"
- #include "third_party/skia/include/core/SkRRect.h"
-@@ -101,6 +107,48 @@
+@@ -101,6 +104,17 @@
  namespace {
  constexpr int kFocusRingInset = 0.0f;
  
-+// 风桥 theme-v2 §4：折叠窄条上每个标签露出的那一个字。
-+// 按码点走（不按 UTF-16 单元），增补平面的汉字、emoji 不会被切成半个代理对。
-+// 取第一个「字母类」字符（Unicode 的 L* 类）：中文即第一个汉字，英文取首字母
-+// 再转大写，假名、韩文、西里尔、希腊等同理（无大小写的文字原样）。前面的
-+// emoji、标点、空格、「(3) 」这类未读数都跳过。一个字母都没有时取第一个数字。
-+std::u16string FirstRailGlyphIn(std::u16string_view text) {
-+  std::optional<base_icu::UChar32> first_digit;
-+  for (base::i18n::UTF16CharIterator it(text); !it.end(); it.Advance()) {
-+    const base_icu::UChar32 c = it.get();
-+    if (u_isalpha(c)) {
-+      std::u16string glyph;
-+      base::WriteUnicodeCharacter(u_toupper(c), &glyph);
-+      return glyph;
-+    }
-+    if (!first_digit && u_isdigit(c)) {
-+      first_digit = c;
-+    }
-+  }
-+  std::u16string glyph;
-+  if (first_digit) {
-+    base::WriteUnicodeCharacter(*first_digit, &glyph);
-+  }
-+  return glyph;
-+}
-+
-+// 标题里取不到（空标题、正在加载还没有标题、全是 emoji / 符号）就取域名
-+// （去掉开头的 www.）的第一个字母或数字；也取不到（about:blank 等）就空着，
-+// 窄条上只显示图标，图标位置不变。
++// 风桥 theme-v2 §4：折叠窄条上每个标签露出的那一个字。取字规则（汉字 → 英文
++// 字母大写 → 标题第一个字符 → 域名）在 browseros/core/windrise_rail_glyph.h，
++// 和侧栏下段的 AI 组合页共用。正在加载、还没有标题时（标题栏显示「加载中」，
++// 不取它）直接按域名取。
 +std::u16string RailGlyphFor(const tabs::TabData& data) {
-+  if (!data.should_render_loading_title) {
-+    std::u16string glyph = FirstRailGlyphIn(data.title);
-+    if (!glyph.empty()) {
-+      return glyph;
-+    }
-+  }
-+  std::string_view host = data.visible_url.host();
-+  if (host.starts_with("www.")) {
-+    host.remove_prefix(4);
-+  }
-+  return FirstRailGlyphIn(base::ASCIIToUTF16(host));
++  return browseros::windrise::RailGlyphFor(
++      data.should_render_loading_title ? std::u16string_view()
++                                       : std::u16string_view(data.title),
++      data.visible_url.host());
 +}
 +
  class TabHighlightPathGenerator : public views::HighlightPathGenerator {
   public:
    explicit TabHighlightPathGenerator(TabView* tab_view) : tab_view_(tab_view) {}
-@@ -366,6 +414,22 @@ TabView::TabView(TabCollectionNode* collection_node)
+@@ -366,6 +380,22 @@ TabView::TabView(TabCollectionNode* collection_node)
    }
  
    title_->SetProperty(views::kElementIdentifierKey, kVerticalTabTitleElementId);
@@ -100,7 +59,7 @@ index 7ad4897a75..a5b975e9bb 100644
    SetProperty(views::kElementIdentifierKey, kTabElementId);
    // Layout manager must be set after child views are created because the
    // vertical layout stores pointers to those children.
-@@ -1209,6 +1273,7 @@ void TabView::UpdateTabData(const tabs::TabData& data) {
+@@ -1209,6 +1239,7 @@ void TabView::UpdateTabData(const tabs::TabData& data) {
    icon_->SetAttention(TabIcon::AttentionType::kTabWantsAttentionStatus,
                        tab_data_.needs_attention);
    UpdateTitle(tab_data_.title, tab_data_.should_render_loading_title);
@@ -108,7 +67,7 @@ index 7ad4897a75..a5b975e9bb 100644
    alert_indicator_->TransitionToAlertState(tab_data_.alert_state);
    SetHoverCardDataFrom(tab_data_);
  }
-@@ -1229,6 +1294,35 @@ void TabView::UpdateTitle(std::u16string title,
+@@ -1229,6 +1260,35 @@ void TabView::UpdateTitle(std::u16string title,
    title_->SetText(title);
  }
  
@@ -144,7 +103,7 @@ index 7ad4897a75..a5b975e9bb 100644
  void TabView::UpdateBorder() {
    if (orientation_ == TabStripOrientation::kHorizontal) {
      SetBorder(views::CreateEmptyBorder(tab_styling()->GetContentsInsets()));
-@@ -1260,6 +1354,11 @@ void TabView::UpdateColors() {
+@@ -1260,6 +1320,11 @@ void TabView::UpdateColors() {
    }
    TabStyle::TabColors colors = tab_styling()->CalculateTargetColors();
    title_->SetEnabledColor(colors.foreground_color);

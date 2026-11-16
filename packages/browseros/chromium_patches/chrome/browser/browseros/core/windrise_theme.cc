@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..9cc3cf4ecc
+index 0000000000..4b214a3250
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,309 @@
+@@ -0,0 +1,312 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -138,6 +138,8 @@ index 0000000000..9cc3cf4ecc
 +     "browseros.windrise.layout.ai_section_header_height", 28},
 +    {LayoutMetric::kAiSectionHeaderFontSize,
 +     "browseros.windrise.layout.ai_section_header_font_size", 14},
++    {LayoutMetric::kAiSplitterHeight,
++     "browseros.windrise.layout.ai_splitter_height", 12},
 +    // N7 卡片与面板：theme-v2 第 5 节（收起 44 高圆角 10；面板圆角 12）。
 +    {LayoutMetric::kAiCardHeight, "browseros.windrise.layout.ai_card_height", 44},
 +    {LayoutMetric::kAiCardRadius, "browseros.windrise.layout.ai_card_radius", 10},
@@ -220,6 +222,7 @@ index 0000000000..9cc3cf4ecc
 +  for (const LayoutMetricSpec& spec : kLayoutMetricSpecs) {
 +    registry->RegisterIntegerPref(spec.pref, spec.value);
 +  }
++  registry->RegisterDoublePref(kAiSectionRatioPref, 0.4);
 +}
 +
 +bool LoadFromPrefs(const PrefService& prefs) {

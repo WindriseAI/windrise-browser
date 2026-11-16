@@ -1,15 +1,16 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.cc b/chrome/browser/browseros/core/windrise_ai_state.cc
 new file mode 100644
-index 0000000000..0e484758fc
+index 0000000000..6a9bffc18d
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.cc
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,251 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/browseros/core/windrise_ai_state.h"
 +
 +#include <algorithm>
++#include <iterator>
 +#include <map>
 +#include <vector>
 +#include <memory>
@@ -79,8 +80,10 @@ index 0000000000..0e484758fc
 +AiWindowState::AiWindowState() = default;
 +
 +AiWindowState::~AiWindowState() {
-+  if (state_.ai_group) {
-+    AiGroups::Remove(*state_.ai_group);
++  for (const AiSection& section : state_.sections) {
++    if (section.group) {
++      AiGroups::Remove(*section.group);
++    }
 +  }
 +}
 +
@@ -123,29 +126,65 @@ index 0000000000..0e484758fc
 +  }
 +}
 +
-+void AiWindowState::SetAiTabs(std::u16string ai_name,
-+                              std::vector<int> tab_ids) {
-+  const bool changed = state_.active_ai_name != ai_name ||
-+                       state_.ai_tab_ids != tab_ids;
-+  if (!changed) {
++void AiWindowState::SetAiSection(
++    std::u16string ai_name,
++    std::vector<int> tab_ids,
++    std::optional<tab_groups::TabGroupId> group) {
++  auto it = std::ranges::find(state_.sections, ai_name, &AiSection::name);
++  if (tab_ids.empty()) {
++    // 清掉这个 AI 的一段；别的 AI 不动。
++    if (it == state_.sections.end()) {
++      return;
++    }
++    if (it->group) {
++      AiGroups::Remove(*it->group);
++    }
++    state_.sections.erase(it);
++    if (state_.active_ai_name == ai_name) {
++      state_.active_ai_name =
++          state_.sections.empty() ? std::u16string() : state_.sections.back().name;
++    }
++    RebuildAiTabIds();
++    NotifyIfChanged(true);
 +    return;
 +  }
++
++  if (it != state_.sections.end() && it->tab_ids == tab_ids &&
++      it->group == group && state_.active_ai_name == ai_name) {
++    return;
++  }
++  if (it == state_.sections.end()) {
++    // 新来的 AI 排在最后 = 侧栏下段里最上面一组（下段从下往上排）。
++    state_.sections.push_back(AiSection{ai_name, {}, std::nullopt});
++    it = std::prev(state_.sections.end());
++  }
++  if (it->group != group) {
++    if (it->group) {
++      AiGroups::Remove(*it->group);
++    }
++    if (group) {
++      AiGroups::Add(*group);
++    }
++  }
++  it->tab_ids = std::move(tab_ids);
++  it->group = group;
 +  state_.active_ai_name = std::move(ai_name);
-+  state_.ai_tab_ids = std::move(tab_ids);
++  RebuildAiTabIds();
 +  NotifyIfChanged(true);
 +}
 +
-+void AiWindowState::SetAiGroup(std::optional<tab_groups::TabGroupId> group) {
-+  if (state_.ai_group == group) {
-+    return;
-+  }
-+  // 窗口各自一个 AI 组：换组 / 清空时把旧组从进程级集合里摘掉。
-+  if (state_.ai_group) {
-+    AiGroups::Remove(*state_.ai_group);
-+  }
-+  state_.ai_group = group;
-+  if (group) {
-+    AiGroups::Add(*group);
++const AiSection* AiWindowState::FindSection(
++    const std::u16string& ai_name) const {
++  const auto it = std::ranges::find(state_.sections, ai_name, &AiSection::name);
++  return it == state_.sections.end() ? nullptr : &*it;
++}
++
++void AiWindowState::RebuildAiTabIds() {
++  state_.ai_tab_ids.clear();
++  for (const AiSection& section : state_.sections) {
++    for (int tab_id : section.tab_ids) {
++      SetTabId(&state_.ai_tab_ids, tab_id, true);
++    }
 +  }
 +}
 +

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
-index 4eb9220..ae497de 100644
+index 4eb9220..399b69c 100644
 --- a/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
 +++ b/chrome/browser/ui/tabs/vertical_tab_strip_state_controller_impl.cc
 @@ -12,6 +12,7 @@
@@ -48,3 +48,75 @@ index 4eb9220..ae497de 100644
    if (restored_state_collapsed.has_value()) {
      SetCollapsed(restored_state_collapsed.value());
    }
+@@ -294,6 +319,16 @@ void VerticalTabStripStateControllerImpl::OnExpandOnHoverEnabledChanged() {
+ 
+ void VerticalTabStripStateControllerImpl::SetCollapsed(bool collapsed) {
+   if (state_.collapsed != collapsed) {
++    if (windrise_narrow_window_) {
++      if (windrise_auto_collapse_pending_ && collapsed) {
++        // 窄窗自动收起落地：不算用户的选择。
++        windrise_auto_collapse_pending_ = false;
++      } else {
++        // 窄着的时候用户自己点了展开 / 收起：这是用户的新选择。
++        windrise_auto_collapse_pending_ = false;
++        windrise_user_collapsed_ = collapsed;
++      }
++    }
+     state_.collapsed = collapsed;
+     NotifyCollapseChanged();
+     if (auto* browser_element_views =
+@@ -325,8 +360,9 @@ void VerticalTabStripStateControllerImpl::OnLockDestroyed() {
+ 
+ void VerticalTabStripStateControllerImpl::UpdateSessionService() {
+   if (session_service_ && !browser_collection_observation_.IsObserving()) {
+-    session_service_->AddWindowExtraData(session_id_, kCollapsedKey,
+-                                         base::ToString(state_.collapsed));
++    session_service_->AddWindowExtraData(
++        session_id_, kCollapsedKey,
++        base::ToString(GetWindrisePersistedCollapsed()));
+     session_service_->AddWindowExtraData(
+         session_id_, kUncollapsedWidthKey,
+         base::NumberToString(state_.uncollapsed_width));
+@@ -336,12 +372,41 @@ void VerticalTabStripStateControllerImpl::UpdateSessionService() {
+ void VerticalTabStripStateControllerImpl::UpdatePrefService() {
+   if (pref_service_) {
+     pref_service_->SetBoolean(prefs::kVerticalTabsCollapsedState,
+-                              state_.collapsed);
++                              GetWindrisePersistedCollapsed());
+     pref_service_->SetInteger(prefs::kVerticalTabsUncollapsedWidth,
+                               state_.uncollapsed_width);
+   }
+ }
+ 
++bool VerticalTabStripStateControllerImpl::GetWindrisePersistedCollapsed()
++    const {
++  return windrise_narrow_window_ ? windrise_user_collapsed_ : state_.collapsed;
++}
++
++void VerticalTabStripStateControllerImpl::SetWindriseNarrowWindow(
++    bool narrow) {
++  if (windrise_narrow_window_ == narrow) {
++    return;
++  }
++  if (narrow) {
++    // 进窄窗：记下用户此刻的选择，再自动收起（走侧栏原有的收起动画）。
++    windrise_user_collapsed_ = state_.collapsed;
++    windrise_narrow_window_ = true;
++    if (!state_.collapsed) {
++      windrise_auto_collapse_pending_ = true;
++      RequestCollapse(true);
++    }
++    return;
++  }
++  // 宽回来：先退出窄窗状态，再恢复用户自己的选择；恢复时写进偏好的就是用户
++  // 原来的值。
++  windrise_narrow_window_ = false;
++  windrise_auto_collapse_pending_ = false;
++  if (state_.collapsed != windrise_user_collapsed_) {
++    RequestCollapse(windrise_user_collapsed_);
++  }
++}
++
+ void VerticalTabStripStateControllerImpl::UpdateCollapseActionItem() {
+   const bool is_collapsed =
+       GetCollapseState() != VerticalTabStripCollapseState::kExpanded;

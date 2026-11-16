@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..ea33d5345c
+index 0000000000..9f5ed21c45
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,776 @@
+@@ -0,0 +1,789 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -502,10 +502,10 @@ index 0000000000..ea33d5345c
 +  return RespondNow(NoArguments());
 +}
 +
-+// 风桥 N6：哪些标签是当前 AI 的。浏览器把这些标签收成一个标签组，组标题就是
-+// 侧边栏那一段的段标题（「<AI 名> 正在操作」），组排到最下面 = 下面那一段。
-+// 组本身由扩展推的列表决定；浏览器只动这一个组（记在 AiState::ai_group），
-+// 不碰用户自己的组与固定标签。
++// 风桥 N6：哪些标签是某个 AI 的。每个 AI 一个标签组，组名就是 AI 名；侧边栏
++// 下段把每个组画成一个可展开的「组合页」（WindriseAiSectionView），上段不画它们。
++// 按 aiName 区分：同一个 AI 再调一次是整组替换，tabIds 传空数组只清这个 AI 的
++// 一组，不影响别的 AI。浏览器只动这些 AI 组，不碰用户自己的组与固定标签。
 +ExtensionFunction::ResponseAction BrowserOSSetAiTabsFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
@@ -549,11 +549,17 @@ index 0000000000..ea33d5345c
 +  std::ranges::sort(indices);
 +  indices.erase(std::unique(indices.begin(), indices.end()), indices.end());
 +
++  // 名字只用于显示和区分 AI，截到 64 字节内（同 setConnectedAis）。
++  const std::u16string ai_name =
++      base::UTF8ToUTF16(params->options.ai_name.substr(0, 64));
++  const browseros::windrise::AiSection* existing =
++      ai_state->FindSection(ai_name);
++  // 这个 AI 上一次建的组；用户可能已经把它关了。
++  std::optional<::tab_groups::TabGroupId> group_id =
++      existing ? existing->group : std::nullopt;
++
 +  if (tab_strip_model->SupportsTabGroups()) {
 +    TabGroupModel* group_model = tab_strip_model->group_model();
-+    // 本窗口上一次建的 AI 组；用户可能已经把它关了。
-+    std::optional<::tab_groups::TabGroupId> group_id =
-+        ai_state->state().ai_group;
 +    if (group_id && !group_model->ContainsTabGroup(*group_id)) {
 +      group_id = std::nullopt;
 +    }
@@ -568,42 +574,49 @@ index 0000000000..ea33d5345c
 +
 +    if (!indices.empty()) {
 +      // 组里的成员必须正好是扩展给的这些；不一样就把旧组拆了重建，不改
-+      // 不属于 AI 的标签。
++      // 不属于这个 AI 的标签。
++      bool created = false;
 +      if (group_id && list_group_indices(*group_id) != indices) {
 +        tab_strip_model->RemoveFromGroup(list_group_indices(*group_id));
++        browseros::windrise::AiGroups::Remove(*group_id);
 +        group_id = std::nullopt;
 +      }
 +      if (!group_id) {
 +        group_id = tab_strip_model->AddToNewGroup(indices);
++        created = true;
 +      }
-+      // 先登记成 AI 组再改标题：组头在 OnDataChanged 里按「是不是 AI 组」选样式。
-+      ai_state->SetAiGroup(group_id);
++      // 先登记成 AI 组再改标题：组头在 OnDataChanged 里按「是不是 AI 组」选样式，
++      // 竖向标签条上段也按它把这个组藏起来。
++      browseros::windrise::AiGroups::Add(*group_id);
 +      tab_strip_model->ChangeTabGroupVisuals(
-+          *group_id,
-+          ::tab_groups::TabGroupVisualData(
-+              l10n_util::GetStringFUTF16(
-+                  IDS_WINDRISE_AI_OPERATING,
-+                  base::UTF8ToUTF16(params->options.ai_name)),
-+              ::tab_groups::TabGroupColorId::kGrey));
-+      // 排到最后 = 侧边栏最下面那一段。MoveGroupTo 要的是组首标签的目标下标，
-+      // 不是 count()。
-+      const gfx::Range range = group_model->GetTabGroup(*group_id)->ListTabs();
-+      const int target =
-+          tab_strip_model->count() - static_cast<int>(range.length());
-+      if (static_cast<int>(range.start()) != target) {
-+        tab_strip_model->MoveGroupTo(*group_id, target);
++          *group_id, ::tab_groups::TabGroupVisualData(
++                         ai_name, ::tab_groups::TabGroupColorId::kGrey));
++      // 新建（或重建）的组排到最后：AI 组都在用户标签后面，横向标签条里也是。
++      // 已有的组不再挪，免得每推一次就把各 AI 的先后打乱。MoveGroupTo 要的是
++      // 组首标签的目标下标，不是 count()。
++      if (created) {
++        const gfx::Range range =
++            group_model->GetTabGroup(*group_id)->ListTabs();
++        const int target =
++            tab_strip_model->count() - static_cast<int>(range.length());
++        if (static_cast<int>(range.start()) != target) {
++          tab_strip_model->MoveGroupTo(*group_id, target);
++        }
 +      }
-+    } else {
-+      // 清空：把 AI 组拆回普通标签（只拆我们建的那一个）。
-+      if (group_id) {
-+        tab_strip_model->RemoveFromGroup(list_group_indices(*group_id));
-+      }
-+      ai_state->SetAiGroup(std::nullopt);
++    } else if (group_id) {
++      // 清空：把这个 AI 的组拆回普通标签（只拆我们建的那一个）。
++      tab_strip_model->RemoveFromGroup(list_group_indices(*group_id));
++      group_id = std::nullopt;
 +    }
++  } else {
++    group_id = std::nullopt;
 +  }
 +
-+  ai_state->SetAiTabs(base::UTF8ToUTF16(params->options.ai_name),
-+                      params->options.tab_ids);
++  // 固定标签不进组；全是固定标签时 indices 为空、没有组，这一段也就不显示。
++  ai_state->SetAiSection(ai_name,
++                         indices.empty() ? std::vector<int>()
++                                         : params->options.tab_ids,
++                         group_id);
 +  return RespondNow(NoArguments());
 +}
 +

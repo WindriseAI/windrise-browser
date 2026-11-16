@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/BUILD.gn b/chrome/browser/browseros/core/BUILD.gn
 new file mode 100644
-index 0000000000..66ebac5c95
+index 0000000000..9bdb66e763
 --- /dev/null
 +++ b/chrome/browser/browseros/core/BUILD.gn
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,130 @@
 +# Copyright 2024 The Chromium Authors
 +# Use of this source code is governed by a BSD-style license that can be
 +# found in the LICENSE file.
@@ -69,6 +69,21 @@ index 0000000000..66ebac5c95
 +    "//components/pref_registry",
 +    "//components/prefs",
 +    "//skia",
++  ]
++}
++
++# 侧栏收起时标签露出的那一个字（theme-v2 §4）。竖向标签和侧栏下段的 AI 组合页
++# 共用，单独成 target，免得 theme 带上 ICU。
++source_set("rail_glyph") {
++  sources = [
++    "windrise_rail_glyph.cc",
++    "windrise_rail_glyph.h",
++  ]
++
++  deps = [
++    "//base",
++    "//base:i18n",
++    "//third_party/icu",
 +  ]
 +}
 +

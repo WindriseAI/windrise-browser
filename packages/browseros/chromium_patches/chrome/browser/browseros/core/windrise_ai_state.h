@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000000..5be3198c72
+index 0000000000..74ace12dfe
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,133 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -43,23 +43,33 @@ index 0000000000..5be3198c72
 +  int last_active_minutes = 0;
 +};
 +
++// N6：侧边栏下段里的一个 AI。每个 AI 一组（组名 = AI 名），由
++// browserOS.setAiTabs 按 aiName 建立 / 整组替换 / 传空数组清掉；不同 AI 互不影响。
++struct AiSection {
++  std::u16string name;
++  // 扩展声明属于这个 AI 的标签（ExtensionTabUtil::GetTabId 的口径）。
++  std::vector<int> tab_ids;
++  // 这个 AI 在标签条模型里对应的标签组（固定标签不进组，所以可能比 tab_ids 少）。
++  std::optional<tab_groups::TabGroupId> group;
++};
++
 +struct AiState {
-+  // 「<AI 名> 正在操作」里的那个名字；空 = 没有 AI 在操作。
++  // 最近一次推了非空标签列表的 AI 名；空 = 没有 AI 在用标签。
 +  std::u16string active_ai_name;
 +  // N7 面板里的行。
 +  std::vector<AiConnection> connections;
-+  // 扩展声明属于 AI 的标签（ExtensionTabUtil::GetTabId 的口径）。
++  // 所有 AI 的标签（各段 tab_ids 的并集）。
 +  std::vector<int> ai_tab_ids;
 +  // 正在被 AI 操作的标签。
 +  std::vector<int> active_tab_ids;
-+  // 本窗口里「AI 那一段」对应的标签组（由 setAiTabs 建立）。
-+  std::optional<tab_groups::TabGroupId> ai_group;
++  // 下段里的各个 AI，按第一次出现的先后排（侧栏里先来的在最下面）。
++  std::vector<AiSection> sections;
 +};
 +
-+// 侧边栏「AI 那一段」对应的标签组。分组本身由扩展推的标签列表决定（见
-+// browserOS.setAiTabs），浏览器只记下哪几个组是 AI 的，供标签组标题按段标题
-+// 配色（kColorWindriseSectionHeaderText）渲染。按窗口会变，但组 id 全进程唯一，
-+// 所以放在一个进程级集合里，跨窗口当前也都只有一组。
++// 侧边栏下段各个 AI 对应的标签组。分组本身由扩展推的标签列表决定（见
++// browserOS.setAiTabs），浏览器只记下哪几个组是 AI 的：竖向标签条在上段里不画
++// 这些组（由下段 WindriseAiSectionView 画），横向标签条里组头按段标题配色。
++// 组 id 全进程唯一，所以放在一个进程级集合里，各窗口各 AI 的组都在里面。
 +class AiGroups {
 + public:
 +  static void Set(std::vector<tab_groups::TabGroupId> groups);
@@ -91,8 +101,12 @@ index 0000000000..5be3198c72
 +  ~AiWindowState();
 +
 +  // 扩展接口的写入点。值没变时不通知。
-+  void SetAiTabs(std::u16string ai_name, std::vector<int> tab_ids);
-+  void SetAiGroup(std::optional<tab_groups::TabGroupId> group);
++  // setAiTabs：按 AI 名建立 / 替换这个 AI 的一段；tab_ids 为空就删掉这一段。
++  // group 是接口层在标签条模型里给它建好的组（没有可建的就传 nullopt）。
++  void SetAiSection(std::u16string ai_name,
++                    std::vector<int> tab_ids,
++                    std::optional<tab_groups::TabGroupId> group);
++  const AiSection* FindSection(const std::u16string& ai_name) const;
 +  void SetConnections(std::vector<AiConnection> connections);
 +  void SetActivity(int tab_id, bool active);
 +  // 扩展每个 AI 动作调一次。只通知脉冲观察者，不改状态；某个标签没在被操作时
@@ -112,6 +126,8 @@ index 0000000000..5be3198c72
 +  AiWindowState();
 +
 +  void NotifyIfChanged(bool changed);
++  // sections 变了以后重算 ai_tab_ids（并集）。
++  void RebuildAiTabIds();
 +
 +  AiState state_;
 +  base::RepeatingClosureList observers_;

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..eb3df88fa6
+index 0000000000..73a6dc529b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,198 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -91,6 +91,7 @@ index 0000000000..eb3df88fa6
 +  // N6 上下分段
 +  kAiSectionHeaderHeight,   // 段标题行高
 +  kAiSectionHeaderFontSize, // 段标题字号
++  kAiSplitterHeight,        // 两段之间分隔条那一条的高（拖动热区；没碰到时透明）
 +  // N7 左下「已连接 N 个 AI」卡片与面板
 +  kAiCardHeight,           // 卡片高
 +  kAiCardRadius,           // 卡片圆角
@@ -155,6 +156,11 @@ index 0000000000..eb3df88fa6
 +    return value[static_cast<size_t>(metric)];
 +  }
 +};
++
++// N6：侧栏两段碰到时，下段（AI）占两段可用高的比例。用户拖分隔条松手时写，
++// 范围 0.1–0.9，默认 0.4。
++inline constexpr char kAiSectionRatioPref[] =
++    "browseros.windrise.layout.ai_section_ratio";
 +
 +// 注册风桥外观偏好（颜色 + 布局）。由 browseros::RegisterProfilePrefs 调用。
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
