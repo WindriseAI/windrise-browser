@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..9b8d9a47af
+index 0000000000..ab4d3e5047
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,494 @@
+@@ -0,0 +1,500 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -91,13 +91,17 @@ index 0000000000..9b8d9a47af
 +// 的 10 / 20）。
 +constexpr SkAlpha kHoverInkAlpha = 10;
 +constexpr SkAlpha kPressedInkAlpha = 20;
-+// 按下缩到 .97（emil-design-eng「Buttons must feel responsive」）。按下快、
-+// 松开稍慢（review-animations 第 9 条：按 / 松不对称）；曲线 WINDRISE_EASE_OUT，
++// 按下缩到 .97、120ms（emil-design-eng「Buttons must feel responsive」；
++// design-language.md 按钮三态「按下 scale(.97) 120ms」）。松开稍慢 160ms
++// （review-animations 第 9 条：按 / 松不对称）；曲线 WINDRISE_EASE_OUT =
++// cubic-bezier(.23,1,.32,1)，
 +// 合成器逐帧推进（120Hz 屏 120 帧，已定 甲52）；中途松开从当前值反向，不跳。
 +// 系统关了动画（Windows「显示动画」= 减少动态效果）时一帧到位，颜色反馈照旧。
 +constexpr float kPressedScale = 0.97f;
-+constexpr base::TimeDelta kPressDuration = base::Milliseconds(100);
++constexpr base::TimeDelta kPressDuration = base::Milliseconds(120);
 +constexpr base::TimeDelta kReleaseDuration = base::Milliseconds(160);
++// 不可用：整颗按钮 45% 不透明（design-language.md 按钮三态「禁用 45% 不透明」）。
++constexpr float kDisabledOpacity = 0.45f;
 +
 +int Metric(LayoutMetric metric) {
 +  return browseros::windrise::GetLayoutMetrics().Get(metric);
@@ -152,7 +156,7 @@ index 0000000000..9b8d9a47af
 +// 面板里的两种按钮：kFilled =「接一个 AI」白底宽按钮；kText = 底部文字行。
 +// 反馈（emil-design-eng：可按的东西都要有按下反馈，不加别的动效）：悬停叠
 +// 墨色 4%；按下叠 8% 并缩到 .97；键盘焦点走系统焦点环（形状同底的圆角）。
-+// 不可用（闪办广场，完整版即将上线）时不画悬停 / 按下底，字用次要色。
++// 不可用（闪办广场，完整版即将上线）时不画悬停 / 按下底、不缩放，整颗 45%。
 +class PanelButton : public views::LabelButton {
 +  METADATA_HEADER(PanelButton, views::LabelButton)
 +
@@ -168,8 +172,9 @@ index 0000000000..9b8d9a47af
 +        SizedFont(label()->font_list(), kTextSize, /*medium=*/filled));
 +    SetEnabledTextColors(
 +        ui::ColorVariant(kColorTabForegroundActiveFrameActive));
++    // 不可用时字色不换，整颗按钮降到 45%（见 StateChanged）。
 +    SetTextColor(views::Button::STATE_DISABLED,
-+                 ui::ColorVariant(kColorTabForegroundInactiveFrameActive));
++                 ui::ColorVariant(kColorTabForegroundActiveFrameActive));
 +    radius_ = filled ? kConnectButtonRadius : kTextButtonRadius;
 +    if (filled) {
 +      SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -195,6 +200,7 @@ index 0000000000..9b8d9a47af
 +  // views::Button:
 +  void StateChanged(ButtonState old_state) override {
 +    views::LabelButton::StateChanged(old_state);
++    layer()->SetOpacity(GetState() == STATE_DISABLED ? kDisabledOpacity : 1.0f);
 +    const bool pressed = GetState() == STATE_PRESSED;
 +    if (pressed == (old_state == STATE_PRESSED)) {
 +      return;
@@ -327,7 +333,7 @@ index 0000000000..9b8d9a47af
 +
 +  // 闪办广场（用户 11-16 15:37：「闪办宣传也是一个完整版即将上线的这个一个口径」）：
 +  // 保留位置，但完整广场还没随包（主程序返回 GALLERY_UNAVAILABLE），所以做成
-+  // 「还不能点」：按钮不可用（没有悬停 / 按下底、不进 Tab 顺序、字用次要色），
++  // 「还不能点」：按钮不可用（没有悬停 / 按下反馈、不进 Tab 顺序、整颗 45%），
 +  // 下面一行小字「完整版即将上线」，读屏读出名字加「完整版即将上线」。
 +  // 广场页随包以后去掉 SetEnabled(false) 和小字即可，action 已经接好。
 +  auto* gallery_column =
