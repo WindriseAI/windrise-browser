@@ -32,33 +32,7 @@ index b58905ddb371f96377320c2948fe64bb17257663..52757c6073f53b89413387c3c105da6f
      "//chrome/browser/browsing_data",
      "//chrome/browser/browsing_data:constants",
      "//chrome/browser/btm",
-@@ -1578,6 +1587,25 @@ source_set("core") {
-     ]
-   }
- 
-+  if (is_mac && enable_sparkle) {
-+    sources += [ "mac/sparkle_glue.mm" ]
-+    deps += [ "//chrome/browser/mac:sparkle_glue_headers" ]
-+
-+    # Headers config for compilation (linking handled by chrome_framework)
-+    public_configs = [ "//third_party/sparkle:sparkle_link_framework" ]
-+  }
-+
-+  if (is_win && enable_winsparkle) {
-+    sources += [
-+      "win/winsparkle_glue.cc",
-+      "win/winsparkle_glue.h",
-+    ]
-+
-+    # Link flags (import lib + /DELAYLOAD) propagate to every binary linking
-+    # this target via all_dependent_configs on the group.
-+    deps += [ "//third_party/winsparkle" ]
-+  }
-+
-   if (!is_win && !is_android) {
-     sources += [
-       "certificate_viewer_stub.cc",
-@@ -2077,6 +2105,7 @@ source_set("browser") {
+@@ -2077,6 +2086,7 @@ source_set("browser") {
      "//chrome/browser/breadcrumbs",
      "//chrome/browser/browser_actuator",
      "//chrome/browser/browser_actuator/internals",

@@ -82,7 +82,7 @@ features:
     files:
       # Buildflag deps for the per-product profile roots; the identity
       # values themselves live in files claimed by browseros-core,
-      # branding, and mac-sparkle-updater
+      # branding, and managed-browser-updater
       - chrome/common/BUILD.gn
       - chrome/install_static/BUILD.gn
 
@@ -109,50 +109,18 @@ features:
 
   # ── LAYER 3: INFRASTRUCTURE SERVICES ──────────────────────
 
-  mac-sparkle-updater:
-    description: "feat: mac sparkle updater"
+  managed-browser-updater:
+    description: "feat: delegate native browser updates to Windrise Bridge"
     files:
       - chrome/BUILD.gn
       - chrome/app/app-Info.plist
       - chrome/browser/BUILD.gn
-      - chrome/browser/buildflags.gni
-      - chrome/browser/mac/BUILD.gn
-      - chrome/browser/mac/chrome_browser_main_extra_parts_mac.h
-      - chrome/browser/mac/chrome_browser_main_extra_parts_mac.mm
-      - chrome/browser/mac/sparkle_glue.h
-      - chrome/browser/mac/sparkle_glue.mm
       - chrome/browser/sparkle_buildflags.gni
       - chrome/browser/ui/BUILD.gn
-      - chrome/browser/ui/toolbar/app_menu_icon_controller.cc
-      - chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.cc
       - chrome/browser/ui/webui/help/BUILD.gn
-      - chrome/browser/ui/webui/help/sparkle_version_updater_mac.h
-      - chrome/browser/ui/webui/help/sparkle_version_updater_mac.mm
-      - chrome/browser/ui/webui/help/version_updater_mac.mm
-      - chrome/browser/lifetime/application_lifetime.cc
-      - chrome/browser/upgrade_detector/upgrade_detector_impl.cc
-
-  sparkle-third-party:
-    description: "feat: sparkle third party framework (downloaded on-the-fly)"
-    files:
-      - third_party/sparkle/
-
-  win-sparkle-updater:
-    description: "feat: win winsparkle updater"
-    files:
-      - chrome/browser/chrome_browser_main_win.cc
       - chrome/browser/ui/webui/help/version_updater_basic.cc
-      - chrome/browser/ui/webui/help/winsparkle_version_updater_win.cc
-      - chrome/browser/ui/webui/help/winsparkle_version_updater_win.h
-      - chrome/browser/win/winsparkle_glue.cc
-      - chrome/browser/win/winsparkle_glue.h
       - chrome/installer/mini_installer/BUILD.gn
       - chrome/installer/mini_installer/chrome.release
-
-  winsparkle-third-party:
-    description: "feat: winsparkle third party library (downloaded on-the-fly)"
-    files:
-      - third_party/winsparkle/
 
   server:
     description: "feat: browseros server"

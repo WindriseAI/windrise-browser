@@ -2,15 +2,7 @@ diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
 index 88668a0..1d81b59 100644
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -9,6 +9,7 @@ import("//build/config/features.gni")
- import("//build/config/ozone.gni")
- import("//build/config/ui.gni")
- import("//chrome/browser/buildflags.gni")
-+import("//chrome/browser/sparkle_buildflags.gni")
- import("//chrome/common/features.gni")
- import("//components/captive_portal/core/features.gni")
- import("//components/compose/features.gni")
-@@ -308,6 +309,8 @@ if (!is_android) {
+@@ -308,6 +308,8 @@ if (!is_android) {
        "//build:branding_buildflags",
        "//chrome/app:command_ids",
        "//chrome/app/vector_icons",
@@ -19,7 +11,7 @@ index 88668a0..1d81b59 100644
        "//chrome/browser/browsing_data",
        "//chrome/browser/contextual_cueing",
        "//chrome/browser/contextual_tasks:ui",
-@@ -320,6 +323,7 @@ if (!is_android) {
+@@ -320,6 +322,7 @@ if (!is_android) {
        "//chrome/browser/history_clusters",
        "//chrome/browser/indigo",
        "//chrome/browser/indigo/resources:indigo_strings",
@@ -27,7 +19,7 @@ index 88668a0..1d81b59 100644
        "//chrome/browser/media/router:media_router_feature",
        "//chrome/browser/multistep_filter/ui",
        "//chrome/browser/prefs",
-@@ -342,6 +346,7 @@ if (!is_android) {
+@@ -342,6 +345,7 @@ if (!is_android) {
        "//chrome/browser/ui/commerce",
        "//chrome/browser/ui/customize_chrome",
        "//chrome/browser/ui/dialogs:browser_dialogs",
@@ -35,7 +27,7 @@ index 88668a0..1d81b59 100644
        "//chrome/browser/ui/fuzzy_search",
        "//chrome/browser/ui/interaction",
        "//chrome/browser/ui/lens",
-@@ -394,6 +399,10 @@ if (!is_android) {
+@@ -394,6 +398,10 @@ if (!is_android) {
        "//components/spellcheck/browser",
        "//components/undo",
      ]
@@ -46,7 +38,7 @@ index 88668a0..1d81b59 100644
      if (is_mac) {
        deps += [
          ":browser_commands_mac",
-@@ -860,6 +869,11 @@ if (!is_android) {
+@@ -860,6 +868,11 @@ if (!is_android) {
        "//chrome/browser/autocomplete",
        "//chrome/browser/autofill",
        "//chrome/browser/bookmarks",
@@ -58,7 +50,7 @@ index 88668a0..1d81b59 100644
        "//chrome/browser/browsing_data",
        "//chrome/browser/content_settings:content_settings_factory",
        "//chrome/browser/contextual_tasks:ui",
-@@ -870,6 +884,7 @@ if (!is_android) {
+@@ -870,6 +883,7 @@ if (!is_android) {
        "//chrome/browser/feedback",
        "//chrome/browser/feedback:feedback_impl",
        "//chrome/browser/history",
@@ -66,7 +58,7 @@ index 88668a0..1d81b59 100644
        "//chrome/browser/lens/region_search",
        "//chrome/browser/lifetime",
        "//chrome/browser/media/router",
-@@ -1516,6 +1531,8 @@ source_set("layout_constants") {
+@@ -1516,6 +1530,8 @@ source_set("layout_constants") {
  
    deps = [
      "//base",
