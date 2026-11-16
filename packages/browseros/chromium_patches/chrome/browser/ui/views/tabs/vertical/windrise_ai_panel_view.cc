@@ -1,20 +1,23 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..da9d6ee25b
+index 0000000000..c7248b5dd4
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,510 @@
+@@ -0,0 +1,525 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h"
 +
++#include <algorithm>
 +#include <memory>
 +#include <utility>
 +
 +#include "base/functional/bind.h"
 +#include "base/i18n/number_formatting.h"
++#include "base/i18n/rtl.h"
 +#include "base/i18n/time_formatting.h"
++#include "base/strings/string_util.h"
 +#include "base/time/time.h"
 +#include "cc/paint/paint_flags.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
@@ -128,8 +131,11 @@ index 0000000000..da9d6ee25b
 +
 +// 帧里「2 分钟前」「昨天 16:12」：一小时内写「N 分钟前」，今天写「今天 HH:MM」，
 +// 昨天写「昨天 HH:MM」，更早写「M 月 D 日」（英文 Today 16:12 / Yesterday
-+// 16:12 / 11/14）。两张帧都是 24 小时制，中英文都按 24 小时写。扩展现在只推
++// 16:12 / Nov 14）。两张帧都是 24 小时制，中英文都按 24 小时写。扩展现在只推
 +// 「距今分钟数」，绝对时间 = 现在 - 分钟数；今天 / 昨天按本地零点分。
++// 英文较早的日期写「月份缩写 + 日」（Nov 14），不写 11/14：美式读「11 月 14 日」、
++// 欧式读「11 日」会混。中文界面仍用「M 月 D 日」那条（字一个不变）。月份缩写
++// 是固定的英文三个字母：风桥自己的字符串只有中英两套，非中文界面一律是英文。
 +std::u16string FormatLastActive(int minutes) {
 +  if (minutes < 60) {
 +    return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MINUTES_AGO,
@@ -149,8 +155,17 @@ index 0000000000..da9d6ee25b
 +  }
 +  base::Time::Exploded exploded;
 +  when.LocalExplode(&exploded);
-+  return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MONTH_DAY,
-+                                    base::FormatNumber(exploded.month),
++  if (base::StartsWith(base::i18n::GetConfiguredLocale(), "zh")) {
++    return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MONTH_DAY,
++                                      base::FormatNumber(exploded.month),
++                                      base::FormatNumber(exploded.day_of_month));
++  }
++  static constexpr const char16_t* kMonthAbbr[] = {
++      u"Jan", u"Feb", u"Mar", u"Apr", u"May", u"Jun",
++      u"Jul", u"Aug", u"Sep", u"Oct", u"Nov", u"Dec"};
++  const int month_index = std::clamp(exploded.month, 1, 12) - 1;
++  return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MONTH_NAME_DAY,
++                                    kMonthAbbr[month_index],
 +                                    base::FormatNumber(exploded.day_of_month));
 +}
 +
