@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..8458db2d5e
+index 0000000000..7e30891559
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,131 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -48,6 +48,10 @@ index 0000000000..8458db2d5e
 +
 +  // 标签栏折叠 / 展开时由 VerticalTabStripRegionView 调。
 +  void SetCollapsed(bool collapsed);
++  // 标签栏收起到位时卡片的宽度（= 收起宽 - 两侧留白，和收起态标签同宽）。
++  // 收起态的「标志 + 数字」按这个宽度居中，而不是按这一刻的宽度：交叉淡的
++  // 时候卡片宽度还在变，按这一刻居中会让这一组一边淡入一边横移。
++  void SetCollapsedContentWidth(int width) { collapsed_content_width_ = width; }
 +
 +  // 面板点了底部按钮：转成 browserOS.onAiPanelAction 发给扩展。
 +  void NotifyPanelAction(const char* action);
@@ -122,6 +126,8 @@ index 0000000000..8458db2d5e
 +  // 这次切换开始时卡片的宽度；两种状态稳定时各自量到的宽度（0 = 还没量到）。
 +  int fade_start_width_ = 0;
 +  int settled_width_[2] = {0, 0};
++  // 见 SetCollapsedContentWidth；0 = 不知道，退回按这一刻的宽度。
++  int collapsed_content_width_ = 0;
 +  gfx::LinearAnimation fade_out_animation_;
 +  gfx::LinearAnimation fade_in_animation_;
 +  // AI 图标只在 AI 状态变化时解码一次（动效-1115 N2：切换时不再解 PNG）。

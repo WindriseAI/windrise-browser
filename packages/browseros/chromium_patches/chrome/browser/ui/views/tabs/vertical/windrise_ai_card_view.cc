@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..eb3209e485
+index 0000000000..b4fba08f9d
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,597 @@
+@@ -0,0 +1,602 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -424,7 +424,12 @@ index 0000000000..eb3209e485
 +  const int slot =
 +      std::max(metrics.Get(LayoutMetric::kRailGlyphSize), text_width);
 +  const int group_width = icon_size + gap + slot;
-+  const int group_x = std::max(0, (width() - group_width + 1) / 2);
++  // 按收起到位时的卡片宽居中（交叉淡期间卡片宽度还在变，这一组不跟着横移，
++  // 和标签图标一样始终在同一个 x）。
++  const int base_width = collapsed_content_width_ > 0
++                             ? std::min(width(), collapsed_content_width_)
++                             : width();
++  const int group_x = std::max(0, (base_width - group_width + 1) / 2);
 +  const int icon_y = center_y - icon_size / 2;
 +  mark_->SetBounds(group_x, icon_y, icon_size, icon_size);
 +  // 行高等于字体高时基线就在 GetBaseline()；字形中线 = 基线 - 大写高 / 2，

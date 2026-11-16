@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e75c..be43c47ccf 100644
+index 338178e75c..81e1213775 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 @@ -16,7 +16,12 @@
@@ -23,7 +23,7 @@ index 338178e75c..be43c47ccf 100644
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_focus_swipe_controller.h"
  #include "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.h"
-@@ -190,6 +196,20 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -190,6 +196,23 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
                LayoutConstant::kVerticalTabStripCollapsedVerticalPadding),
            region_horizontal_padding, 0, region_horizontal_padding));
  
@@ -40,11 +40,14 @@ index 338178e75c..be43c47ccf 100644
 +      views::kMarginsKey,
 +      gfx::Insets::TLBR(0, region_horizontal_padding, 0,
 +                        region_horizontal_padding));
++  // 收起态「标志 + 数字」按收起到位时的卡片宽居中（和收起态标签同宽）。
++  ai_card_view_->SetCollapsedContentWidth(
++      tabs::kVerticalTabStripCollapsedWidth - 2 * region_horizontal_padding);
 +
    gemini_button_ =
        content_area_view_->AddChildView(std::make_unique<views::View>());
  
-@@ -231,9 +251,29 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
+@@ -231,9 +254,29 @@ VerticalTabStripRegionView::VerticalTabStripRegionView(
    }
  
    SetNotifyEnterExitOnChild(true);
@@ -74,7 +77,7 @@ index 338178e75c..be43c47ccf 100644
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -934,6 +974,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
+@@ -934,6 +977,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
    if (tab_strip_view()) {
      tab_strip_view()->SetCollapsedState(collapsed);
    }
@@ -84,7 +87,7 @@ index 338178e75c..be43c47ccf 100644
  
    if ((state == tabs::VerticalTabStripCollapseState::kCollapsing) ||
        (state == tabs::VerticalTabStripCollapseState::kExpanded &&
-@@ -1231,6 +1274,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
+@@ -1231,6 +1277,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
  void VerticalTabStripRegionView::OnActiveTabChanged(
      const tabs::TabInterface* active_tab) {
    BaseTabStripRegionView::OnActiveTabChanged(active_tab);
@@ -92,7 +95,7 @@ index 338178e75c..be43c47ccf 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1242,5 +1286,61 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1289,61 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

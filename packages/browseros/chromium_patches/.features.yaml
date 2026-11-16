@@ -612,3 +612,5 @@ features:
       - "chrome/browser/ui/tabs/vertical_tab_strip_state.h"
       - "chrome/app/vector_icons/windrise_bridge_mark.icon"
       - "chrome/app/vector_icons/BUILD.gn"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h"
+      - "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"

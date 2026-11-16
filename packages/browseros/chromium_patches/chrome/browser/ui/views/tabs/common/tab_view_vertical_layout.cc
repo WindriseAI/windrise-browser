@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc b/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc
-index d2b935e0c8..7bf150acd3 100644
+index d2b935e0c8..e774d0679c 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc
 @@ -4,6 +4,10 @@
@@ -48,8 +48,8 @@ index d2b935e0c8..7bf150acd3 100644
  
 +  // 风桥 theme-v2 §4（用户 11-05 / 11-16「收起时露出一个汉字或一个英文大写」）：
 +  // 折叠窄条上，图标右边跟一个字，图标 16 + 间距 5 + 字 14，作为一组在整个
-+  // 标签宽里居中（不是在扣掉内边距 10/12 后的 28 里居中——那一组 35 放不下，
-+  // 而且那块的中线比「+」、顶部按钮的中线偏左 1）。
++  // 标签宽里居中（不是在扣掉内边距 10/12 后剩下的那块里居中——收起宽 70 时那块
++  // 只有 32，那一组 35 放不下；而且那块的中线比「+」、顶部按钮的中线偏左 1）。
 +  // - 字占一个固定 14 宽的格子，汉字、英文大写、数字都在格子里按字形水平
 +  //   居中，所以每个标签的图标都在同一条竖线上，不随字宽左右晃。
 +  // - 图标那一格就是上游居中分支放下的那一个：平时是图标，有声音 / 录屏等

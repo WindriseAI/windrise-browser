@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_view.cc b/chrome/browser/ui/views/tabs/common/tab_view.cc
-index 7ad4897a75..cb44c566a8 100644
+index 7ad4897a75..a5b975e9bb 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_view.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_view.cc
 @@ -6,12 +6,17 @@
@@ -67,7 +67,7 @@ index 7ad4897a75..cb44c566a8 100644
 +      return glyph;
 +    }
 +  }
-+  std::string_view host = data.visible_url.host_piece();
++  std::string_view host = data.visible_url.host();
 +  if (host.starts_with("www.")) {
 +    host.remove_prefix(4);
 +  }
