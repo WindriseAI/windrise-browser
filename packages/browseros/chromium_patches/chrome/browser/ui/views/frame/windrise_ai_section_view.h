@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..8c5f6c2111
+index 0000000000..26f44ebc0b
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,237 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -38,10 +38,12 @@ index 0000000000..8c5f6c2111
 +// 下段——AI 的标签。
 +//
 +// - 人的标签在上段（上游 TabStripView，从上往下排、正常滚动）；AI 的标签在
-+//   这一段，贴着底部、从下往上排。滚轮方向和上段相同（用户 18:15「算了，AI区
-+//   不单独滚动了，就正常滚动」取代了 18:12 的「反过来滚滚轮」）。
++//   这一段，整段贴着底部。滚轮方向和上段相同（用户 18:15「算了，AI区不单独
++//   滚动了，就正常滚动」取代了 18:12 的「反过来滚滚轮」）。
 +// - 每个 AI 一组「组合页」（组名 = AI 名，数据来自 browserOS.setAiTabs），默认
-+//   收起成一行，点开才把这个 AI 的全部标签展开出来（往上展开，点的那一行不动）。
++//   收起成一行（标题「某某正在操作」），点开才把这个 AI 的全部标签展开在标题
++//   下面（照定稿帧）。整段贴着下沿往上长，标题被平滑推上去；收起原路回来；
++//   中途可以打断。
 +// - 两段之间的分隔条：两段没碰到时不显示；放不下（碰到）时才淡入。用户可以
 +//   上下拖动，设定 AI 段最多占多高（用户 18:19），松手位置按比例记在偏好里。
 +// - 收起态（70 宽）：组合页一行是「AI 标志 + 标签数」，标签一行是「图标 +
@@ -112,6 +114,7 @@ index 0000000000..8c5f6c2111
 +  class ScrollIndicator;
 +
 +  // 一行要画的东西。key：组合页行是 AI 名，标签行是模型里的标签。
++ public:
 +  struct RowData {
 +    bool is_header = false;
 +    std::u16string ai_name;
@@ -125,6 +128,17 @@ index 0000000000..8c5f6c2111
 +    bool active = false;     // 标签行：当前标签；组合页行：收起着且里面有当前标签
 +    bool operating = false;  // 组合页行：这个 AI 正在操作
 +  };
++  // 认行用的那几项（同一个 AI 的标题、同一个标签算同一行）。
++  struct RowKeyView {
++    bool is_header;
++    const std::u16string& ai_name;
++    tabs::TabHandle tab;
++  };
++  static RowKeyView KeyOf(const RowData& data) {
++    return RowKeyView{data.is_header, data.ai_name, data.tab};
++  }
++
++ private:
 +
 +  // 段高怎么分（都不含本视图的上下外边距）。
 +  struct Allocation {
@@ -153,8 +167,14 @@ index 0000000000..8c5f6c2111
 +  int HumanMinimumHeight() const;
 +  double StoredRatio() const;
 +
-+  // 段高从眼前的高度过渡到新目标（可以随时被下一次打断，从当前值接着走）。
-+  void StartHeightTransition();
++  // 段高（和每一行的位置）从眼前的值过渡到新目标，可以随时被下一次打断、
++  // 从当前值接着走。capture_row_starts：行的起点取眼前位置（Rebuild 自己
++  // 算好起点时传 false）。
++  void StartHeightTransition(bool capture_row_starts);
++  // 过渡走完：拿掉退场的行，每一行停在终点。
++  void FinishRowTransition();
++  // 某一行眼前离可视区下沿多高。
++  int DisplayedFromBottom(const Row* row) const;
 +  void SetScrollOffset(int offset);
 +  int MaxScrollOffset() const;
 +  void ShowScrollIndicator();
@@ -187,6 +207,10 @@ index 0000000000..8c5f6c2111
 +  raw_ptr<views::View> viewport_ = nullptr;
 +  raw_ptr<ScrollIndicator> indicator_ = nullptr;
 +  std::vector<raw_ptr<Row>> rows_;
++  // 收起时正在跟着标题退场的行（过渡结束拿掉，不可点）。
++  std::vector<raw_ptr<Row>> exiting_rows_;
++  // 行是不是正在按过渡进度走（和段高共用 height_animation_ 这一条进度）。
++  bool row_transition_ = false;
 +  std::vector<RowData> row_data_;
 +  // 每个 AI 的组合页展开了没有（只在本窗口、本次运行里记）。默认收起。
 +  std::map<std::u16string, bool> expanded_;

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..489de31b62
+index 0000000000..15d34302b6
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1205 @@
+@@ -0,0 +1,1370 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -186,6 +186,16 @@ index 0000000000..489de31b62
 +  }
 +  const RowData& data() const { return data_; }
 +
++  // 过渡用：这一行离可视区下沿多高（起点 / 终点）。可视区下沿在屏幕上不动
++  // （这一段贴着左下卡片），所以用「离下沿多高」插值，段高一边长、行一边走，
++  // 两者用同一条进度，不会错开。
++  int start_from_bottom() const { return start_from_bottom_; }
++  int final_from_bottom() const { return final_from_bottom_; }
++  void SetFromBottom(int start, int end) {
++    start_from_bottom_ = start;
++    final_from_bottom_ = end;
++  }
++
 +  // 「×」只在展开态的标签行、悬停或当前标签时出现。
 +  gfx::Rect GetCloseHitRect() const {
 +    const int inset_right = Metric(LayoutMetric::kTabContentsInsetRight);
@@ -255,11 +265,12 @@ index 0000000000..489de31b62
 +    int text_right = width() - inset_right;
 +
 +    if (data_.is_header) {
-+      // 右边：标签数 + 箭头。收起着箭头朝上（往上展开），展开了朝下。
++      // 右边：标签数 + 箭头。标签在标题下面展开（照定稿帧）：收起着箭头朝下，
++      // 展开了朝上。
 +      const SkColor icon_color = text_secondary;
 +      const gfx::ImageSkia chevron = gfx::CreateVectorIcon(
-+          data_.expanded ? vector_icons::kKeyboardArrowDownIcon
-+                         : vector_icons::kKeyboardArrowUpIcon,
++          data_.expanded ? vector_icons::kKeyboardArrowUpIcon
++                         : vector_icons::kKeyboardArrowDownIcon,
 +          kIconSize, icon_color);
 +      text_right -= kIconSize;
 +      canvas->DrawImageInt(chevron, text_right, center_y - kIconSize / 2);
@@ -406,6 +417,8 @@ index 0000000000..489de31b62
 +
 +  const raw_ptr<WindriseAiSectionView> section_;
 +  RowData data_;
++  int start_from_bottom_ = 0;
++  int final_from_bottom_ = 0;
 +};
 +
 +BEGIN_METADATA(WindriseAiSectionView, Row)
@@ -641,16 +654,40 @@ index 0000000000..489de31b62
 +  return gfx::Size(0, target);
 +}
 +
-+void WindriseAiSectionView::StartHeightTransition() {
++void WindriseAiSectionView::StartHeightTransition(bool capture_row_starts) {
++  if (capture_row_starts) {
++    // 每一行也从眼前的位置接着走（例如松开分隔条时上一次展开还没走完）。
++    for (Row* row : rows_) {
++      row->SetFromBottom(DisplayedFromBottom(row), row->final_from_bottom());
++    }
++    for (Row* row : exiting_rows_) {
++      row->SetFromBottom(DisplayedFromBottom(row), row->final_from_bottom());
++    }
++  }
 +  if (!GetWidget() || !IsDrawn()) {
++    FinishRowTransition();
 +    PreferredSizeChanged();
 +    return;
 +  }
 +  // 从眼前的高接着走（可打断：上一次过渡没走完也从当前值出发）。
 +  height_from_ = height();
++  row_transition_ = true;
 +  height_animation_.Reset(0.0);
 +  height_animation_.Show();
 +  PreferredSizeChanged();
++  InvalidateLayout();
++}
++
++void WindriseAiSectionView::FinishRowTransition() {
++  row_transition_ = false;
++  for (Row* row : exiting_rows_) {
++    viewport_->RemoveChildViewT(row);
++  }
++  exiting_rows_.clear();
++  for (Row* row : rows_) {
++    row->SetFromBottom(row->final_from_bottom(), row->final_from_bottom());
++  }
++  InvalidateLayout();
 +}
 +
 +// --- 布局与绘制 -------------------------------------------------------------
@@ -673,14 +710,24 @@ index 0000000000..489de31b62
 +  viewport_->SetBounds(0, splitter, width(), std::max(0, height() - splitter));
 +  scroll_offset_ = std::clamp(scroll_offset_, 0, MaxScrollOffset());
 +
-+  // 从下往上排：第 0 行贴着可视区下沿；scroll_offset_ 是藏在下沿以下的高度。
++  // 内容贴着可视区下沿（最后一行在最下面）；scroll_offset_ 是藏在下沿以下
++  // 的高度。过渡中每一行按同一条进度从起点走到终点。
 +  const int row_height = RowHeight();
-+  int from_bottom = 0;
++  const double progress =
++      row_transition_ ? height_animation_.GetCurrentValue() : 1.0;
++  const auto place = [&](Row* row) {
++    const int from_bottom = gfx::Tween::IntValueBetween(
++        progress, row->start_from_bottom(), row->final_from_bottom());
++    row->SetBounds(0,
++                   viewport_->height() + scroll_offset_ - from_bottom -
++                       row_height,
++                   width(), row_height);
++  };
 +  for (Row* row : rows_) {
-+    const int y =
-+        viewport_->height() + scroll_offset_ - from_bottom - row_height;
-+    row->SetBounds(0, y, width(), row_height);
-+    from_bottom += row_height + RowGap();
++    place(row);
++  }
++  for (Row* row : exiting_rows_) {
++    place(row);
 +  }
 +  constexpr int kIndicatorWidth = 4;
 +  indicator_->SetBounds(std::max(0, width() - kIndicatorWidth - 2), 0,
@@ -767,8 +814,9 @@ index 0000000000..489de31b62
 +  const tabs::TabInterface* active_tab = tab_strip_model_->GetActiveTab();
 +  TabGroupModel* group_model = tab_strip_model_->group_model();
 +
-+  // AiState.sections 按 AI 第一次出现的先后排；下段从下往上排，所以先来的
-+  // AI 在最下面。每个 AI：先是组合页行，展开了再在它上面依次排它的标签。
++  // AiState.sections 按 AI 第一次出现的先后从上往下排，整段内容贴着下沿。
++  // 每个 AI：标题行（「某某正在操作」）在上，展开了它的标签在标题下面依次排
++  // （照定稿帧 site-zh-ai；协调人 1116 裁定，旧的「从下往上排」作废）。
 +  for (const browseros::windrise::AiSection& section : state.sections) {
 +    if (!section.group || !group_model->ContainsTabGroup(*section.group)) {
 +      continue;
@@ -830,16 +878,30 @@ index 0000000000..489de31b62
 +  return rows;
 +}
 +
++namespace {
++
++bool SameRowKey(const WindriseAiSectionView::RowKeyView& a,
++                const WindriseAiSectionView::RowKeyView& b) {
++  return a.is_header == b.is_header && a.ai_name == b.ai_name && a.tab == b.tab;
++}
++
++}  // namespace
++
++int WindriseAiSectionView::DisplayedFromBottom(const Row* row) const {
++  // 按过渡进度算，不看 bounds：两次重建之间还没排版时也取得对。
++  const double progress =
++      row_transition_ ? height_animation_.GetCurrentValue() : 1.0;
++  return gfx::Tween::IntValueBetween(progress, row->start_from_bottom(),
++                                     row->final_from_bottom());
++}
++
 +void WindriseAiSectionView::Rebuild(bool animate_height) {
 +  std::vector<RowData> rows = CollectRows();
-+  const int old_content = ContentHeight();
 +  const bool was_empty = row_data_.empty();
 +
 +  bool same_shape = rows.size() == row_data_.size();
 +  for (size_t i = 0; same_shape && i < rows.size(); ++i) {
-+    same_shape = rows[i].is_header == row_data_[i].is_header &&
-+                 rows[i].ai_name == row_data_[i].ai_name &&
-+                 rows[i].tab == row_data_[i].tab;
++    same_shape = SameRowKey(KeyOf(rows[i]), KeyOf(row_data_[i]));
 +  }
 +  row_data_ = std::move(rows);
 +
@@ -851,21 +913,120 @@ index 0000000000..489de31b62
 +    return;
 +  }
 +
-+  for (Row* row : rows_) {
++  const bool can_animate =
++      animate_height && !was_empty && GetWidget() && IsDrawn();
++
++  // 1. 旧行（从上往下）和它们眼前离下沿多高。上一次过渡还没走完、正在退场的
++  //    行直接拿掉（再点一次展开时，同一个标签会建新行，从它的标题下面接着
++  //    出来）。
++  for (Row* row : exiting_rows_) {
 +    viewport_->RemoveChildViewT(row);
 +  }
++  exiting_rows_.clear();
++  std::vector<Row*> old_rows;
++  std::vector<int> old_fb;
++  for (Row* row : rows_) {
++    old_rows.push_back(row);
++    old_fb.push_back(DisplayedFromBottom(row));
++  }
 +  rows_.clear();
++
++  // 2. 新行：同一个 AI 的标题、同一个标签沿用原来那一行（位置、悬停都接着）。
++  std::vector<int> reused_old_index(row_data_.size(), -1);
++  std::vector<bool> old_reused(old_rows.size(), false);
 +  for (size_t i = 0; i < row_data_.size(); ++i) {
-+    Row* row = viewport_->AddChildViewAt(std::make_unique<Row>(this), i);
++    Row* row = nullptr;
++    for (size_t j = 0; j < old_rows.size(); ++j) {
++      if (!old_reused[j] &&
++          SameRowKey(KeyOf(old_rows[j]->data()), KeyOf(row_data_[i]))) {
++        row = old_rows[j];
++        old_reused[j] = true;
++        reused_old_index[i] = static_cast<int>(j);
++        break;
++      }
++    }
++    if (!row) {
++      row = viewport_->AddChildView(std::make_unique<Row>(this));
++    }
 +    row->SetData(row_data_[i]);
 +    rows_.push_back(row);
 +  }
++
++  // 3. 终点：最后一行贴着下沿，往上依次累加。
++  const int step = RowHeight() + RowGap();
++  std::vector<int> final_fb(rows_.size());
++  for (size_t i = 0; i < rows_.size(); ++i) {
++    final_fb[i] = static_cast<int>(rows_.size() - 1 - i) * step;
++  }
++
++  // 4. 起点：沿用的行从眼前的位置出发；新出现的行跟着它上面最近一个沿用的
++  //    行一起走（展开时，标签挂在标题下面，从下沿底下跟着标题一起升上来）；
++  //    上面没有就跟下面最近的；都没有就原地出现（整段第一次出现时由段高从
++  //    下沿长出来露出它们）。
++  for (size_t i = 0; i < rows_.size(); ++i) {
++    int start = final_fb[i];
++    if (can_animate) {
++      if (reused_old_index[i] >= 0) {
++        start = old_fb[reused_old_index[i]];
++      } else {
++        bool anchored = false;
++        for (int k = static_cast<int>(i) - 1; k >= 0 && !anchored; --k) {
++          if (reused_old_index[k] >= 0) {
++            start = final_fb[i] + (old_fb[reused_old_index[k]] - final_fb[k]);
++            anchored = true;
++          }
++        }
++        for (size_t k = i + 1; k < rows_.size() && !anchored; ++k) {
++          if (reused_old_index[k] >= 0) {
++            start = final_fb[i] + (old_fb[reused_old_index[k]] - final_fb[k]);
++            anchored = true;
++          }
++        }
++      }
++    }
++    rows_[i]->SetFromBottom(start, final_fb[i]);
++  }
++
++  // 5. 不再需要的旧行：能动的话留着退场——跟着它上面最近一个还在的行一起走
++  //    （收起时，标签跟着标题原路沉到下沿底下），过渡结束再拿掉。
++  for (size_t j = 0; j < old_rows.size(); ++j) {
++    if (old_reused[j]) {
++      continue;
++    }
++    Row* row = old_rows[j];
++    bool anchored = false;
++    int end_fb = old_fb[j];
++    if (can_animate) {
++      for (int k = static_cast<int>(j) - 1; k >= 0 && !anchored; --k) {
++        if (old_reused[k]) {
++          end_fb = old_fb[j] + (old_rows[k]->final_from_bottom() - old_fb[k]);
++          anchored = true;
++        }
++      }
++      for (size_t k = j + 1; k < old_rows.size() && !anchored; ++k) {
++        if (old_reused[k]) {
++          end_fb = old_fb[j] + (old_rows[k]->final_from_bottom() - old_fb[k]);
++          anchored = true;
++        }
++      }
++    }
++    if (!anchored) {
++      viewport_->RemoveChildViewT(row);
++      continue;
++    }
++    row->SetFromBottom(old_fb[j], end_fb);
++    row->SetEnabled(false);
++    exiting_rows_.push_back(row);
++  }
++
 +  // 滚动细条永远在行的上面。
 +  viewport_->ReorderChildView(indicator_, viewport_->children().size());
 +
-+  if (animate_height && (ContentHeight() != old_content || was_empty)) {
-+    StartHeightTransition();
++  if (can_animate || (animate_height && was_empty)) {
++    // 段高和每一行用同一条进度：标题贴着这一段的上沿被平滑推上去 / 收回来。
++    StartHeightTransition(/*capture_row_starts=*/false);
 +  } else {
++    FinishRowTransition();
 +    PreferredSizeChanged();
 +  }
 +  InvalidateLayout();
@@ -1056,8 +1217,8 @@ index 0000000000..489de31b62
 +      !ComputeAllocation().colliding) {
 +    return false;
 +  }
-+  // 抓住的是眼前的高：正在回弹 / 过渡也立刻停在当前值，从这里跟手。
-+  height_animation_.Stop();
++  // 抓住的是眼前的高：段高立刻停在当前值（drag_height_ 盖过过渡），从这里
++  // 跟手；行的过渡照走完，不跳。
 +  pressed_in_splitter_ = true;
 +  drag_started_ = false;
 +  drag_start_height_ = height();
@@ -1116,7 +1277,7 @@ index 0000000000..489de31b62
 +    // 从眼前（可能是橡皮筋拉出来的）高度过渡到目标：拖过边界就弹回去；按下
 +    // 没拖就接着走完被按住之前的过渡。
 +    drag_height_.reset();
-+    StartHeightTransition();
++    StartHeightTransition(/*capture_row_starts=*/true);
 +  }
 +}
 +
@@ -1196,6 +1357,7 @@ index 0000000000..489de31b62
 +    const gfx::Animation* animation) {
 +  if (animation == &height_animation_) {
 +    PreferredSizeChanged();
++    InvalidateLayout();
 +  } else if (animation == &indicator_animation_) {
 +    indicator_->SchedulePaint();
 +  } else {
@@ -1205,6 +1367,9 @@ index 0000000000..489de31b62
 +
 +void WindriseAiSectionView::AnimationEnded(const gfx::Animation* animation) {
 +  AnimationProgressed(animation);
++  if (animation == &height_animation_) {
++    FinishRowTransition();
++  }
 +}
 +
 +BEGIN_METADATA(WindriseAiSectionView)
