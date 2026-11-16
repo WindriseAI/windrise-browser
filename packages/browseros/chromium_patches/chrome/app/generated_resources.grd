@@ -1,8 +1,8 @@
 diff --git a/chrome/app/generated_resources.grd b/chrome/app/generated_resources.grd
-index b9d0f60014..344617b9c1 100644
+index b9d0f60014..12517f3884 100644
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -9412,6 +9412,51 @@ Keep your key file in a safe place. You will need it to create new versions of y
+@@ -9412,6 +9412,54 @@ Keep your key file in a safe place. You will need it to create new versions of y
        <message name="IDS_READ_LATER_COLLAPSE_BUTTON_ARIA_LABEL" desc="Aria label for the Read later list collapse button.">
          Collapse <ph name="HEADER">$1<ex>Unread</ex></ph>
        </message>
@@ -42,6 +42,9 @@ index b9d0f60014..344617b9c1 100644
 +      <message name="IDS_WINDRISE_AI_MONTH_DAY" desc="Windrise: when an AI was last used, before yesterday; MONTH and DAY are numbers">
 +        <ph name="MONTH">$1<ex>11</ex></ph>/<ph name="DAY">$2<ex>14</ex></ph>
 +      </message>
++      <message name="IDS_WINDRISE_AI_MONTH_NAME_DAY" desc="Windrise: when an AI was last used, before yesterday, in English-style UIs; MONTH is the abbreviated month name, DAY a number. Chinese keeps IDS_WINDRISE_AI_MONTH_DAY">
++        <ph name="MONTH">$1<ex>Nov</ex></ph> <ph name="DAY">$2<ex>14</ex></ph>
++      </message>
 +      <message name="IDS_WINDRISE_AI_CONNECT" desc="Windrise: wide button in the AI panel that starts connecting another AI">
 +        Connect an AI
 +      </message>
@@ -54,7 +57,7 @@ index b9d0f60014..344617b9c1 100644
        <message name="IDS_READ_LATER_MENU_UNREAD_HEADER" desc="Header for section of unread Read later items.">
          Unread
        </message>
-@@ -11901,6 +11946,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
+@@ -11901,6 +11949,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
          <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
            Mozilla Firefox
          </message>

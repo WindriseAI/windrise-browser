@@ -1,0 +1,16 @@
+diff --git a/chrome/app/theme/theme_resources.grd b/chrome/app/theme/theme_resources.grd
+index 538b8a6f07..a4832dbfd6 100644
+--- a/chrome/app/theme/theme_resources.grd
++++ b/chrome/app/theme/theme_resources.grd
+@@ -150,6 +150,11 @@
+       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_plugins.png" />
+       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
+       <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_32" file="${branding_path_component}/product_logo_32.png" />
++      <!-- Windrise: B6 browser mark without the glass plate (ink #14171C), the
++           logo WebUI pages show for "this browser" (about card, settings / history /
++           downloads page header); see current_channel_logo.cc. Files come from
++           the B6 final export, windrise-browser-mark-ink-32 / -256 (scaled to 64). -->
++      <structure type="chrome_scaled_image" name="IDR_WINDRISE_BROWSER_MARK_32" file="${branding_path_component}/windrise_browser_mark_32.png" />
+       <if expr="not is_android">
+           <structure type="chrome_scaled_image" name="IDR_PRICE_TRACKING_ON_IOS_ICON" file="common/price_tracking_on_ios.png" />
+       </if>

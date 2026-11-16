@@ -1,14 +1,15 @@
 diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.cc b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
 new file mode 100644
-index 0000000000..b387fc3113
+index 0000000000..f4f9157fe9
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,159 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/ui/views/toolbar/windrise_grid_button.h"
 +
++#include <algorithm>
 +#include <memory>
 +#include <utility>
 +
@@ -26,6 +27,7 @@ index 0000000000..b387fc3113
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +#include "ui/gfx/font_list.h"
 +#include "ui/gfx/geometry/insets.h"
++#include "ui/views/accessibility/view_accessibility.h"
 +#include "ui/views/controls/label.h"
 +
 +namespace {
@@ -45,6 +47,8 @@ index 0000000000..b387fc3113
 +      browser_(browser) {
 +  SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
 +  SetTooltipText(std::u16string(GetText()));
++  // 窄窗时字拿掉，读屏名字仍是「格子」。
++  GetViewAccessibility().SetName(std::u16string(GetText()));
 +  SetDefaultBackgroundColorId(kColorWindriseTileBackground);
 +  SetVectorIcon(kGridViewIcon);
 +  ApplyStyleFromPrefs();
@@ -66,14 +70,70 @@ index 0000000000..b387fc3113
 +      LayoutMetric::kGridButtonRadius);
 +}
 +
++void WindriseGridButton::AddedToWidget() {
++  ToolbarButton::AddedToWidget();
++  views::Widget* widget = GetWidget();
++  if (widget && !widget_observation_.IsObservingSource(widget)) {
++    widget_observation_.Observe(widget);
++  }
++  if (widget && !widget->IsMinimized()) {
++    UpdateCompact(widget->GetWindowBoundsInScreen().width());
++  }
++}
++
++void WindriseGridButton::RemovedFromWidget() {
++  widget_observation_.Reset();
++  ToolbarButton::RemovedFromWidget();
++}
++
++void WindriseGridButton::OnWidgetBoundsChanged(views::Widget* widget,
++                                               const gfx::Rect& new_bounds) {
++  // 最小化时报上来的宽不算（同侧栏）。
++  if (widget->IsMinimized()) {
++    return;
++  }
++  UpdateCompact(new_bounds.width());
++}
++
++void WindriseGridButton::OnWidgetDestroying(views::Widget* widget) {
++  widget_observation_.Reset();
++}
++
++void WindriseGridButton::UpdateCompact(int window_width) {
++  if (window_width <= 0) {
++    return;
++  }
++  const bool compact =
++      browseros::windrise::IsNarrowWindow(window_width, compact_);
++  if (compact == compact_) {
++    return;
++  }
++  compact_ = compact;
++  ApplyStyleFromPrefs();
++}
++
 +void WindriseGridButton::ApplyStyleFromPrefs() {
 +  const browseros::windrise::LayoutMetrics& metrics =
 +      browseros::windrise::GetLayoutMetrics();
++  const int height = metrics.Get(LayoutMetric::kGridButtonHeight);
 +
-+  SetLayoutInsets(gfx::Insets::TLBR(
-+      0, metrics.Get(LayoutMetric::kGridButtonPaddingLeft), 0,
-+      metrics.Get(LayoutMetric::kGridButtonPaddingRight)));
-+  SetMinSize(gfx::Size(0, metrics.Get(LayoutMetric::kGridButtonHeight)));
++  if (compact_) {
++    // 只剩图标：左右内边距 = (高 - 图标) / 2，整颗是高 x 高的圆（圆角偏好
++    // grid_button_radius 默认就是半高，全圆角）。
++    SetText(std::u16string());
++    const int side = std::max(0, (height - GetIconSize()) / 2);
++    SetLayoutInsets(gfx::Insets::TLBR(0, side, 0, side));
++  } else {
++    SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
++    SetLayoutInsets(gfx::Insets::TLBR(
++        0, metrics.Get(LayoutMetric::kGridButtonPaddingLeft), 0,
++        metrics.Get(LayoutMetric::kGridButtonPaddingRight)));
++  }
++  SetMinSize(gfx::Size(0, height));
++  // LabelButton::SetText 会把读屏名字一起改成按钮上的字（窄窗时是空的），
++  // 每次换字以后把名字放回「格子」。
++  GetViewAccessibility().SetName(
++      l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
 +  SetImageLabelSpacing(metrics.Get(LayoutMetric::kGridButtonIconGap));
 +
 +  const int font_size = metrics.Get(LayoutMetric::kGridButtonFontSize);
