@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a69f4..7d40a0eb92 100644
+index b1ea4a69f4..b83ba21b0b 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -32,20 +32,7 @@ index b1ea4a69f4..7d40a0eb92 100644
    }
  
    // Position the vertical tabstrip bottom corner.
-@@ -1041,8 +1045,11 @@ BrowserViewTabbedLayoutImpl::CalculateProposedLayout(
-       corner_bounds.Outset(
-           gfx::Outsets::TLBR(0, views::Separator::kThickness, 0, 0));
-     }
-+    // 风桥 甲23 §4.4：下端同理。定稿帧 36:26925 里 x=240 那条 .5px 线直通到
-+    // 窗口底（y786–799 都是线与网页的混色），网页左下角是直角；上游这里同样放
-+    // 一个带旧描边色的内凹圆角（kBottomCorner 默认 1.0，平时可见），风桥不显示。
-     layout.AddChild(views().vertical_tab_strip_bottom_corner, corner_bounds,
--                    bottom_corner_visible);
-+                    /*visible=*/false);
-   }
- 
-   // When the tabstrip isn't at the top or in constrained widths, the top
-@@ -1586,11 +1593,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
+@@ -1586,11 +1590,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
  
  void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
      const BrowserLayoutParams& params) {
@@ -73,7 +60,7 @@ index b1ea4a69f4..7d40a0eb92 100644
        // Note that this will set a lower leading corner on the multi contents
        // view even if there's a shadow box, but since the curve is effectively
        // the same this will not produce a visual bug.
-@@ -1602,8 +1620,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1602,8 +1617,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
          content_corners.set_lower_left(radius);
        }
      }
@@ -83,7 +70,7 @@ index b1ea4a69f4..7d40a0eb92 100644
  
    // Want to cut the vertical tabstrip and its decorations out of the top
    // container in transparency mode.
-@@ -1706,11 +1724,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1706,11 +1721,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
  
      CustomCornersBackground::Outline vertical_tabs_outline;
      vertical_tabs_outline.color = {
@@ -103,3 +90,19 @@ index b1ea4a69f4..7d40a0eb92 100644
              static_cast<float>(1.0f - kVerticalTabStripOutlineFadeOnHover *
                                            vertical_tabs_bottom_corner_amount) *
              frame_color.opacity,
+@@ -1727,6 +1749,15 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+       vertical_tabs_outline.bottom = true;
+     }
+     vertical_tabs_background->SetOutline(vertical_tabs_outline);
++    // 风桥 甲23 §4.4：网页左下角那个内凹圆角（上游 kBottomCorner 默认 1.0，平时
++    // 可见；网页角要圆是用户多次说过的，保留）的描边原来是上游的
++    // kColorVerticalTabStripShadow，和上面改过的侧栏右沿线接不上色。改成和右沿
++    // 同色同透明度，这条线一直到底都是同一种线。
++    if (CustomFloatingCorner* const bottom_corner_view =
++            views().vertical_tab_strip_bottom_corner.get()) {
++      bottom_corner_view->SetStroke(vertical_tabs_outline.color,
++                                    /*is_vertical_window_edge=*/true);
++    }
+ 
+     // Cut the vertical tab strip out of the top container.
+     if (!frame_color.is_opaque()) {
