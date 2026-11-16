@@ -744,3 +744,10 @@ features:
       - "chrome/browser/resources/settings/router.ts"
       - "components/autofill/core/common/autofill_debug_features.cc"
       - "chrome/browser/preloading/preloading_prefs.cc"
+
+  windrise-browser-p1-hover-1116:
+    description: "fix: vertical tab strip expand-on-hover lays the grid/search buttons out like the expanded strip (horizontal, top right), morphing from the collapsed stack with the hover width so it follows the strip's duration, curve and interruption (P1 hover ruling)"
+    files:
+      - "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.cc"
+      - "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.h"
+      - "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc"
