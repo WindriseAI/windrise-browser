@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
-index 268324dce9..a9d743600a 100644
+index 268324dce9..6955ef0cec 100644
 --- a/chrome/browser/ui/views/frame/BUILD.gn
 +++ b/chrome/browser/ui/views/frame/BUILD.gn
 @@ -526,7 +526,12 @@ source_set("horizontal_tab_strip_region_view") {
@@ -16,7 +16,7 @@ index 268324dce9..a9d743600a 100644
    public_deps = [
      ":base_tab_strip_region_view",
      "//base",
-@@ -553,6 +558,23 @@ source_set("vertical_tab_strip_region_view") {
+@@ -553,6 +558,25 @@ source_set("vertical_tab_strip_region_view") {
      ":safe_invoke",
      ":shadow",
      "//chrome/app:generated_resources",
@@ -31,6 +31,8 @@ index 268324dce9..a9d743600a 100644
 +    "//chrome/browser/ui:tab_ui_helper",
 +    "//chrome/browser/ui/tabs:tab_enums",
 +    "//chrome/browser/ui/tabs:tab_group",
++    # 风桥 原生一批 B：下段代理行的声音 / 录制等提示（和上段标签同一套图标）。
++    "//chrome/browser/ui/tabs/alert:tab_alert",
 +    "//components/prefs",
 +    "//components/vector_icons",
 +    "//skia",
@@ -40,7 +42,7 @@ index 268324dce9..a9d743600a 100644
      "//chrome/browser/ui:browser_actions",
      "//chrome/browser/ui:browser_element_identifiers",
      "//chrome/browser/ui:layout_constants",
-@@ -565,6 +587,7 @@ source_set("vertical_tab_strip_region_view") {
+@@ -565,6 +589,7 @@ source_set("vertical_tab_strip_region_view") {
      "//chrome/browser/ui/views/animations",
      "//chrome/browser/ui/views/tabs/common:impl",
      "//chrome/browser/ui/views/tabs/organizer",
@@ -48,7 +50,7 @@ index 268324dce9..a9d743600a 100644
      "//chrome/browser/ui/web_applications",
      "//ui/base/dragdrop:types",
      "//ui/compositor",
-@@ -1635,7 +1658,10 @@ source_set("multi_contents_background_view_impl") {
+@@ -1635,7 +1660,10 @@ source_set("multi_contents_background_view_impl") {
    public_deps = [ ":multi_contents_background_view" ]
    deps = [
      ":themed_background",
@@ -59,7 +61,7 @@ index 268324dce9..a9d743600a 100644
      "//ui/compositor",
      "//ui/gfx/geometry",
    ]
-@@ -1790,6 +1816,8 @@ if (is_win) {
+@@ -1790,6 +1818,8 @@ if (is_win) {
        ":safe_invoke",
        "//chrome/app:chrome_dll_resources",
        "//chrome/app:command_ids",
@@ -68,7 +70,7 @@ index 268324dce9..a9d743600a 100644
        "//chrome/browser/themes",
        "//chrome/browser/ui:layout_constants",
        "//chrome/browser/ui:ui_features",
-@@ -3026,6 +3054,8 @@ source_set("browser_view_tabbed_layout_impl") {
+@@ -3026,6 +3056,8 @@ source_set("browser_view_tabbed_layout_impl") {
      "//build:buildflag_header_h",
      "//chrome/browser/ui:layout_constants",
      "//chrome/browser/ui:ui_features",
@@ -77,7 +79,7 @@ index 268324dce9..a9d743600a 100644
      "//chrome/browser/ui/browser_window",
      "//chrome/browser/ui/color:color_headers",
      "//chrome/browser/ui/immersive:immersive_mode_controller",
-@@ -3135,14 +3165,24 @@ source_set("contents_container_view") {
+@@ -3135,14 +3167,24 @@ source_set("contents_container_view") {
      ":tab_modal_dialog_host",
      "//base",
      "//chrome/browser/devtools:devtools_contents_resizing_strategy",
@@ -103,7 +105,7 @@ index 268324dce9..a9d743600a 100644
    public_deps = [ ":contents_container_view" ]
    deps = [
      ":browser_view_header",
-@@ -3155,9 +3195,13 @@ source_set("contents_container_view_impl") {
+@@ -3155,9 +3197,13 @@ source_set("contents_container_view_impl") {
      ":top_container_view",
      "//base",
      "//base:i18n",
@@ -117,7 +119,7 @@ index 268324dce9..a9d743600a 100644
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
      "//chrome/browser/glic/browser_ui:glow_controller",
-@@ -3171,12 +3215,29 @@ source_set("contents_container_view_impl") {
+@@ -3171,12 +3217,29 @@ source_set("contents_container_view_impl") {
      "//chrome/common:chrome_features",
      "//components/search",
      "//content/public/browser",

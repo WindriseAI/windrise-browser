@@ -1,17 +1,19 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..3c4cbf86fa
+index 0000000000..bbff8bae95
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1423 @@
+@@ -0,0 +1,1868 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/ui/views/frame/windrise_ai_section_view.h"
 +
 +#include <algorithm>
++#include <array>
 +#include <cmath>
 +#include <cstdlib>
++#include <set>
 +#include <utility>
 +
 +#include "base/containers/span.h"
@@ -32,13 +34,18 @@ index 0000000000..3c4cbf86fa
 +#include "chrome/browser/ui/tabs/tab_group_model.h"
 +#include "chrome/browser/ui/tabs/tab_strip_model.h"
 +#include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
++#include "chrome/browser/ui/tabs/alert/tab_alert_controller.h"
++#include "chrome/browser/ui/tabs/alert/tab_alert_icon.h"
 +#include "chrome/browser/ui/tabs/vertical_tab_strip_state.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "components/prefs/pref_service.h"
++#include "components/tabs/public/tab_alert.h"
 +#include "components/tabs/public/tab_group.h"
++#include "components/tabs/public/tab_network_state.h"
 +#include "components/vector_icons/vector_icons.h"
 +#include "third_party/skia/include/core/SkColor.h"
 +#include "third_party/skia/include/core/SkPoint.h"
++#include "third_party/skia/include/core/SkRRect.h"
 +#include "third_party/skia/include/core/SkTileMode.h"
 +#include "url/gurl.h"
 +#include "ui/base/cursor/cursor.h"
@@ -46,18 +53,22 @@ index 0000000000..3c4cbf86fa
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +#include "ui/base/models/image_model.h"
 +#include "ui/color/color_provider.h"
++#include "ui/compositor/compositor.h"
 +#include "ui/compositor/layer.h"
 +#include "ui/events/event.h"
 +#include "ui/gfx/animation/animation.h"
 +#include "ui/gfx/animation/linear_animation.h"
 +#include "ui/gfx/animation/tween.h"
 +#include "ui/gfx/canvas.h"
++#include "ui/gfx/color_utils.h"
 +#include "ui/gfx/font.h"
 +#include "ui/gfx/font_list.h"
 +#include "ui/gfx/geometry/point_conversions.h"
 +#include "ui/gfx/geometry/rect.h"
 +#include "ui/gfx/geometry/rect_f.h"
++#include "ui/gfx/geometry/skia_conversions.h"
 +#include "ui/gfx/image/image.h"
++#include "ui/gfx/paint_throbber.h"
 +#include "ui/gfx/paint_vector_icon.h"
 +#include "ui/gfx/scoped_canvas.h"
 +#include "ui/gfx/text_utils.h"
@@ -66,6 +77,7 @@ index 0000000000..3c4cbf86fa
 +#include "ui/views/context_menu_controller.h"
 +#include "ui/views/controls/button/button.h"
 +#include "ui/views/view_class_properties.h"
++#include "ui/views/widget/widget.h"
 +
 +namespace {
 +
@@ -106,6 +118,36 @@ index 0000000000..3c4cbf86fa
 +// 动画节拍：在窗口里时跟合成器的帧走（120Hz 屏 120 帧、60Hz 屏 60 帧，按时间
 +// 推进）；还没进窗口时退回 LinearAnimation 自己的定时器（最快 100 帧）。
 +constexpr int kTransitionFrameRate = 120;
++
++// 「正在操作」光效（R191）。起 300ms、收 400ms、曲线 WINDRISE_EASE_OUT：和网页
++// 四周光效的起 / 收同一组数（windrise_edge_light_view.h「开 300ms、收 400ms」）。
++// 这是一圈常驻的状态光，不是点一下的反馈，所以不受「UI 动画不超过 300ms」那条
++// 约束；减少动态效果时直接到位。
++constexpr base::TimeDelta kGlowInDuration = base::Milliseconds(300);
++constexpr base::TimeDelta kGlowOutDuration = base::Milliseconds(400);
++// 减少动态效果：光不流动，定格在这一刻（同网页光效 kEdgeLightFreezeTime）。
++constexpr float kGlowFreezeTime = 2.35f;
++// 沿一圈取多少个亮度点（扫角渐变的色标数）。
++constexpr int kGlowStops = 48;
++// 托底冷灰（同网页光效浅色页的托底柔影 rgba(132,143,158)，liuguang.js render 第 1 层）。
++constexpr SkColor kGlowBedColor = SkColorSetRGB(132, 143, 158);
++// 和上段标签的提示图标之间的间距（上游 tab_view_vertical_layout.cc kDefaultPadding）。
++constexpr int kIndicatorGap = 4;
++
++// 官网白边流光的起伏函数，和网页四周光效逐字相同（extension edge-light/
++// liuguang.js 的 wave()、windrise_edge_light_model.cc Wave()；后者已不编译，所以
++// 这里照抄一份，系数一个不改）。s 是沿一圈的位置 0..1，dir 是方向。两个方向
++// 叠起来用：四周同时都有亮处、亮处原地起伏，不是一段光绕圈（甲29）。
++float GlowWave(float s, float t, float dir) {
++  constexpr float kTwoPi = 6.28318530718f;
++  const float a =
++      0.5f + 0.5f * std::sin(kTwoPi * (2.0f * s + dir * 0.09f * t) +
++                             1.4f * std::sin(kTwoPi * (3.0f * s - dir * 0.05f * t)));
++  const float b =
++      0.5f + 0.5f * std::sin(kTwoPi * (5.0f * s - dir * 0.13f * t) +
++                             0.8f * std::sin(kTwoPi * 2.0f * s + 0.3f * t));
++  return a * a * 0.75f + b * b * b * 0.45f;
++}
 +
 +// 分隔条把手、滚动细条：墨色 28%，悬停 / 拖动 45%（和桌面端细条同一套）。
 +constexpr float kGripRestAlpha = 0.28f;
@@ -156,6 +198,18 @@ index 0000000000..3c4cbf86fa
 +                          weight);
 +}
 +
++// 标签在不在加载（和上段标签的转圈同一个判断：TabUIHelper 的网络状态）。
++tabs::TabNetworkState NetworkStateOf(tabs::TabInterface* tab) {
++  TabUIHelper* helper = tab ? TabUIHelper::From(tab) : nullptr;
++  return helper ? helper->GetTabNetworkState() : tabs::TabNetworkState::kNone;
++}
++
++bool TabIsLoading(tabs::TabInterface* tab) {
++  const tabs::TabNetworkState state = NetworkStateOf(tab);
++  return state == tabs::TabNetworkState::kWaiting ||
++         state == tabs::TabNetworkState::kLoading;
++}
++
 +}  // namespace
 +
 +// ---------------------------------------------------------------------------
@@ -181,7 +235,12 @@ index 0000000000..3c4cbf86fa
 +  ~Row() override = default;
 +
 +  void SetData(const RowData& data) {
++    const bool tab_changed =
++        data.is_header != data_.is_header || !(data.tab == data_.tab);
 +    data_ = data;
++    if (tab_changed) {
++      SubscribeAlert();
++    }
 +    std::u16string name = data_.is_header ? data_.ai_name : TabTitle();
 +    if (data_.is_header && data_.operating) {
 +      name = l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_OPERATING,
@@ -337,12 +396,21 @@ index 0000000000..3c4cbf86fa
 +      return;
 +    }
 +
-+    // 标签行：图标 + 标题（+ 悬停 / 当前时的「×」）。
++    // 标签行：图标 + 标题（+ 悬停 / 当前时的「×」）。右边的位置照上段标签
++    // （tab_view_vertical_layout.cc）：「×」在最右；声音 / 录制等提示在它左边
++    // 隔 4，没有「×」时提示就占最右那一格。
++    int slot_right = width() - inset_right;
 +    if (ShowsClose()) {
 +      const gfx::ImageSkia close = gfx::CreateVectorIcon(
 +          vector_icons::kCloseSmallIcon, kIconSize, text_secondary);
-+      text_right = width() - inset_right - kIconSize;
++      text_right = slot_right - kIconSize;
 +      canvas->DrawImageInt(close, text_right, center_y - kIconSize / 2);
++      text_right -= kIconTitleGap;
++      slot_right -= kIconSize + kIndicatorGap;
++    }
++    if (const std::optional<tabs::TabAlert> alert = AlertToShow()) {
++      text_right = slot_right - kIconSize;
++      PaintAlert(canvas, *alert, text_right, center_y);
 +      text_right -= kIconTitleGap;
 +    }
 +    DrawTextOnCenterLine(canvas, TabTitle(), title_font,
@@ -418,6 +486,28 @@ index 0000000000..3c4cbf86fa
 +      return;
 +    }
 +    tabs::TabInterface* tab = Tab();
++    // 收起态那一格只放一个东西（同上段标签收起时居中的那一个）：有提示时画
++    // 提示图标，其次加载时画转圈，都没有才画网站图标。展开态提示在右边，
++    // 这一格只看加载。
++    if (section_->IsRail()) {
++      if (const std::optional<tabs::TabAlert> alert = AlertToShow()) {
++        PaintAlert(canvas, *alert, x, center_y);
++        return;
++      }
++    }
++    const tabs::TabNetworkState network = NetworkStateOf(tab);
++    if (network == tabs::TabNetworkState::kWaiting ||
++        network == tabs::TabNetworkState::kLoading) {
++      // 和上段标签同一个转圈（gfx::PaintThrobberSpinning、同一组颜色）；
++      // 节拍由本段的合成器帧时钟推（OnAnimationStep 里重画在转的行）。
++      gfx::PaintThrobberSpinning(
++          canvas, gfx::Rect(x, y, kIconSize, kIconSize),
++          colors->GetColor(network == tabs::TabNetworkState::kWaiting
++                               ? kColorTabThrobberPreconnect
++                               : kColorTabThrobber),
++          section_->ThrobberElapsed());
++      return;
++    }
 +    TabUIHelper* helper = tab ? TabUIHelper::From(tab) : nullptr;
 +    ui::ImageModel favicon = helper ? helper->GetFavicon() : ui::ImageModel();
 +    gfx::ImageSkia image;
@@ -432,10 +522,51 @@ index 0000000000..3c4cbf86fa
 +                         kIconSize, kIconSize, true);
 +  }
 +
++  std::optional<tabs::TabAlert> AlertToShow() const {
++    if (data_.is_header) {
++      return std::nullopt;
++    }
++    tabs::TabInterface* tab = Tab();
++    const tabs::TabAlertController* alerts =
++        tab ? tabs::TabAlertController::From(tab) : nullptr;
++    return alerts ? alerts->GetAlertToShow() : std::nullopt;
++  }
++
++  // 提示图标：和上段标签的提示同一套图标和颜色（tab_alert_icon.h）。
++  void PaintAlert(gfx::Canvas* canvas,
++                  tabs::TabAlert alert,
++                  int x,
++                  int center_y) {
++    const bool frame_active = GetWidget() && GetWidget()->ShouldPaintAsActive();
++    const SkColor color = GetColorProvider()->GetColor(
++        tabs::GetAlertIndicatorColor(alert, data_.active, frame_active));
++    canvas->DrawImageInt(
++        gfx::CreateVectorIcon(tabs::GetAlertIcon(alert), kIconSize, color), x,
++        center_y - kIconSize / 2);
++  }
++
++  // 提示变了（开始放声音、开始录屏……）就重画。订阅跟着这一行代理的标签换。
++  void SubscribeAlert() {
++    alert_subscription_ = {};
++    tabs::TabInterface* tab = data_.is_header ? nullptr : Tab();
++    tabs::TabAlertController* alerts =
++        tab ? tabs::TabAlertController::From(tab) : nullptr;
++    if (!alerts) {
++      return;
++    }
++    alert_subscription_ = alerts->AddAlertToShowChangedCallback(
++        base::BindRepeating(
++            [](Row* row, std::optional<tabs::TabAlert>) {
++              row->SchedulePaint();
++            },
++            base::Unretained(this)));
++  }
++
 +  const raw_ptr<WindriseAiSectionView> section_;
 +  RowData data_;
 +  int start_from_bottom_ = 0;
 +  int final_from_bottom_ = 0;
++  base::CallbackListSubscription alert_subscription_;
 +};
 +
 +BEGIN_METADATA(WindriseAiSectionView, Row)
@@ -488,6 +619,162 @@ index 0000000000..3c4cbf86fa
 +
 +BEGIN_METADATA(WindriseAiSectionView, ScrollIndicator)
 +END_METADATA
++
++// ---------------------------------------------------------------------------
++// 「正在操作」光效（R191）：正在操作的 AI 那一组（标题行 + 展开的标签行）外沿
++// 一圈银白流光。画在可视区里自己的一层上：每帧只重画这一层，行不跟着重画；
++// 光只往组里面羽化（按组的圆角裁），不往外溢，所以贴着可视区边的那一组也不会
++// 被裁出一道硬边。
++//
++// 层次照网页四周光效（liuguang.js render 的前两层）缩到侧栏的尺度：
++//  1. 浅色侧栏上先垫一层冷灰托底 rgb(132,143,158)，跟着起伏走（白底上白光才
++//     看得见，甲32）；暗色侧栏不垫（网页光效暗处同样不垫）。
++//  2. 白光三圈：最外一圈常亮、往里两圈只在起伏高处亮——亮处更宽、暗处更窄，
++//     像水面起伏，不是一圈等宽的框（甲31）。
++// 亮度沿一圈按 GlowWave 两个方向叠加：四周同时都有亮处、原地起伏（甲29）。
++// 不加粒子、不加脉冲：这是高频出现、可能亮好几分钟的状态光，克制为先。
++class WindriseAiSectionView::OperatingGlow : public views::View {
++  METADATA_HEADER(OperatingGlow, views::View)
++
++ public:
++  explicit OperatingGlow(WindriseAiSectionView* section) : section_(section) {
++    SetPaintToLayer();
++    layer()->SetFillsBoundsOpaquely(false);
++    SetCanProcessEventsWithinSubtree(false);
++    GetViewAccessibility().SetIsIgnored(true);
++  }
++  OperatingGlow(const OperatingGlow&) = delete;
++  OperatingGlow& operator=(const OperatingGlow&) = delete;
++  ~OperatingGlow() override = default;
++
++  void OnPaint(gfx::Canvas* canvas) override {
++    const ui::ColorProvider* colors = GetColorProvider();
++    if (!colors || section_->glow_fades_.empty()) {
++      return;
++    }
++    // 字是深色 = 浅色侧栏。
++    const bool light_sidebar = color_utils::IsDark(
++        colors->GetColor(kColorTabForegroundActiveFrameActive));
++    const float t = section_->GlowTime();
++    const float radius = static_cast<float>(Metric(LayoutMetric::kTabRadius));
++    for (const auto& [name, fade] : section_->glow_fades_) {
++      const float k = section_->GlowAlpha(name);
++      if (k <= 0.001f) {
++        continue;
++      }
++      std::optional<gfx::RectF> group;
++      const auto add = [&](const Row* row) {
++        if (row->data().ai_name != name) {
++          return;
++        }
++        const gfx::RectF bounds(row->bounds());
++        if (group) {
++          group->Union(bounds);
++        } else {
++          group = bounds;
++        }
++      };
++      for (const Row* row : section_->rows_) {
++        add(row);
++      }
++      for (const Row* row : section_->exiting_rows_) {
++        add(row);
++      }
++      if (group && !group->IsEmpty()) {
++        PaintGroup(canvas, *group, radius, k, t, light_sidebar);
++      }
++    }
++  }
++
++ private:
++  static void PaintGroup(gfx::Canvas* canvas,
++                         const gfx::RectF& group,
++                         float radius,
++                         float k,
++                         float t,
++                         bool light_sidebar) {
++    // 出现的头一段亮得快一点（同 liuguang kk = min(1, k * 1.4)）。
++    const float kk = std::min(1.0f, k * 1.4f);
++    std::array<float, kGlowStops> white;
++    std::array<float, kGlowStops> bed;
++    for (int i = 0; i < kGlowStops; ++i) {
++      // s 从 0 到 1（GlowWave 对 s 以 1 为周期，首尾两个色标同色，接缝不露）。
++      const float s_pos = static_cast<float>(i) / (kGlowStops - 1);
++      const float forward = GlowWave(s_pos, t, 1.0f);
++      const float backward = GlowWave(s_pos, t, -1.0f);
++      white[i] = std::clamp((forward * 0.6f + backward * 0.4f) / 1.1f, 0.0f,
++                            1.0f);
++      bed[i] = std::clamp(forward / 1.2f, 0.0f, 1.0f);
++    }
++    const SkPoint center = SkPoint::Make(group.CenterPoint().x(),
++                                         group.CenterPoint().y());
++    gfx::ScopedCanvas scoped(canvas);
++    canvas->sk_canvas()->clipRRect(
++        SkRRect::MakeRectXY(gfx::RectFToSkRect(group), radius, radius),
++        /*do_anti_alias=*/true);
++    // 一圈：离组外沿 inset 处、宽 width 的描边，颜色 color，第 i 个色标的透明度
++    // alpha(i)。亮度沿一圈的分布用扫角渐变给。
++    const auto ring = [&](float inset, float width, SkColor color,
++                          auto alpha) {
++      SkColor4f stops[kGlowStops];
++      SkScalar positions[kGlowStops];
++      for (int i = 0; i < kGlowStops; ++i) {
++        stops[i] = SkColor4f::FromColor(color);
++        stops[i].fA = std::clamp(alpha(i), 0.0f, 1.0f);
++        positions[i] = static_cast<float>(i) / (kGlowStops - 1);
++      }
++      gfx::RectF r = group;
++      r.Inset(inset);
++      if (r.IsEmpty()) {
++        return;
++      }
++      cc::PaintFlags flags;
++      flags.setAntiAlias(true);
++      flags.setStyle(cc::PaintFlags::kStroke_Style);
++      flags.setStrokeWidth(width);
++      flags.setShader(cc::PaintShader::MakeSweepGradient(
++          center.x(), center.y(), stops, positions, kGlowStops,
++          SkTileMode::kClamp, 0.0f, 360.0f));
++      const float rr = std::max(0.0f, radius - inset);
++      canvas->sk_canvas()->drawRRect(
++          SkRRect::MakeRectXY(gfx::RectFToSkRect(r), rr, rr), flags);
++    };
++    if (light_sidebar) {
++      ring(2.0f, 1.5f, kGlowBedColor,
++           [&](int i) { return 0.40f * kk * (0.45f + 0.55f * bed[i]); });
++      ring(3.5f, 1.5f, kGlowBedColor,
++           [&](int i) { return 0.20f * kk * bed[i]; });
++    }
++    const float tone = light_sidebar ? 1.0f : 0.8f;
++    ring(0.75f, 1.5f, SK_ColorWHITE,
++         [&](int i) { return tone * kk * (0.55f + 0.45f * white[i]); });
++    ring(2.0f, 1.5f, SK_ColorWHITE,
++         [&](int i) { return tone * kk * 0.55f * white[i]; });
++    ring(3.25f, 1.5f, SK_ColorWHITE,
++         [&](int i) { return tone * kk * 0.25f * white[i] * white[i]; });
++  }
++
++  const raw_ptr<WindriseAiSectionView> section_;
++};
++
++BEGIN_METADATA(WindriseAiSectionView, OperatingGlow)
++END_METADATA
++
++float WindriseAiSectionView::GlowFade::ValueAt(base::TimeTicks now) const {
++  if (DoneAt(now)) {
++    return to;
++  }
++  if (now <= start) {
++    return from;
++  }
++  const double progress = (now - start) / duration;
++  return from + (to - from) * static_cast<float>(gfx::Tween::CalculateValue(
++                                  gfx::Tween::WINDRISE_EASE_OUT, progress));
++}
++
++bool WindriseAiSectionView::GlowFade::DoneAt(base::TimeTicks now) const {
++  return duration.is_zero() || now >= start + duration;
++}
 +
 +// ---------------------------------------------------------------------------
 +
@@ -562,6 +849,8 @@ index 0000000000..3c4cbf86fa
 +  viewport_->layer()->SetMasksToBounds(true);
 +  indicator_ =
 +      viewport_->AddChildView(std::make_unique<ScrollIndicator>(this));
++  glow_ = viewport_->AddChildView(std::make_unique<OperatingGlow>(this));
++  clock_origin_ = base::TimeTicks::Now();
 +
 +  if (tab_strip_model_) {
 +    tab_strip_model_->AddObserver(this);
@@ -575,6 +864,10 @@ index 0000000000..3c4cbf86fa
 +}
 +
 +WindriseAiSectionView::~WindriseAiSectionView() {
++  if (frame_compositor_) {
++    frame_compositor_->RemoveAnimationObserver(this);
++    frame_compositor_ = nullptr;
++  }
 +  if (tab_strip_model_) {
 +    tab_strip_model_->RemoveObserver(this);
 +  }
@@ -797,6 +1090,11 @@ index 0000000000..3c4cbf86fa
 +  constexpr int kIndicatorWidth = 4;
 +  indicator_->SetBounds(std::max(0, width() - kIndicatorWidth - 2), 0,
 +                        kIndicatorWidth, viewport_->height());
++  // 光效那一层盖满可视区；行动了（过渡、滚动）它也要跟着重画。
++  glow_->SetBoundsRect(viewport_->GetLocalBounds());
++  if (!glow_fades_.empty()) {
++    glow_->SchedulePaint();
++  }
 +  UpdateSplitterVisibility();
 +}
 +
@@ -855,6 +1153,150 @@ index 0000000000..3c4cbf86fa
 +void WindriseAiSectionView::OnThemeChanged() {
 +  views::View::OnThemeChanged();
 +  SchedulePaint();
++  glow_->SchedulePaint();
++}
++
++void WindriseAiSectionView::AddedToWidget() {
++  views::View::AddedToWidget();
++  UpdateFrameClock();
++}
++
++void WindriseAiSectionView::RemovedFromWidget() {
++  if (frame_compositor_) {
++    frame_compositor_->RemoveAnimationObserver(this);
++    frame_compositor_ = nullptr;
++  }
++  views::View::RemovedFromWidget();
++}
++
++// --- 「正在操作」光效与帧时钟 ----------------------------------------------
++
++void WindriseAiSectionView::SyncGlowTargets() {
++  const base::TimeTicks now = base::TimeTicks::Now();
++  const bool reduce_motion = gfx::Animation::PrefersReducedMotion();
++  std::set<std::u16string> present;
++  std::set<std::u16string> operating;
++  for (const RowData& row : row_data_) {
++    if (!row.is_header) {
++      continue;
++    }
++    present.insert(row.ai_name);
++    if (row.operating) {
++      operating.insert(row.ai_name);
++    }
++  }
++  // 这个 AI 那一组整个没了：光没地方画，直接拿掉。
++  std::erase_if(glow_fades_, [&](const auto& entry) {
++    return !present.contains(entry.first);
++  });
++  for (const std::u16string& name : present) {
++    const float target = operating.contains(name) ? 1.0f : 0.0f;
++    auto it = glow_fades_.find(name);
++    if (it == glow_fades_.end()) {
++      if (target == 0.0f) {
++        continue;
++      }
++      it = glow_fades_.emplace(name, GlowFade()).first;
++    }
++    GlowFade& fade = it->second;
++    if (fade.to == target) {
++      continue;
++    }
++    // 从眼前的值接着走（中途开 / 停都能打断，不跳）。
++    fade.from = fade.ValueAt(now);
++    fade.to = target;
++    fade.start = now;
++    fade.duration = reduce_motion ? base::TimeDelta()
++                                  : (target > 0.0f ? kGlowInDuration
++                                                   : kGlowOutDuration);
++  }
++  std::erase_if(glow_fades_, [&](const auto& entry) {
++    return entry.second.to == 0.0f && entry.second.DoneAt(now);
++  });
++  glow_->SchedulePaint();
++  UpdateFrameClock();
++}
++
++float WindriseAiSectionView::GlowAlpha(const std::u16string& ai_name) const {
++  const auto it = glow_fades_.find(ai_name);
++  return it == glow_fades_.end() ? 0.0f
++                                 : it->second.ValueAt(base::TimeTicks::Now());
++}
++
++float WindriseAiSectionView::GlowTime() const {
++  if (gfx::Animation::PrefersReducedMotion()) {
++    return kGlowFreezeTime;
++  }
++  // 按真实时间推进（不按帧数），60Hz、120Hz 屏上流速一样。2000 秒一循环，
++  // 免得开得很久以后 float 精度不够、起伏变成一顿一顿。
++  const double seconds = (base::TimeTicks::Now() - clock_origin_).InSecondsF();
++  return static_cast<float>(std::fmod(seconds, 2000.0));
++}
++
++base::TimeDelta WindriseAiSectionView::ThrobberElapsed() const {
++  return base::TimeTicks::Now() - clock_origin_;
++}
++
++bool WindriseAiSectionView::AnyRowLoading() const {
++  for (const RowData& row : row_data_) {
++    if (!row.is_header && TabIsLoading(row.tab.Get())) {
++      return true;
++    }
++  }
++  return false;
++}
++
++bool WindriseAiSectionView::NeedsFrames() const {
++  const base::TimeTicks now = base::TimeTicks::Now();
++  const bool reduce_motion = gfx::Animation::PrefersReducedMotion();
++  for (const auto& [name, fade] : glow_fades_) {
++    if (!fade.DoneAt(now)) {
++      return true;  // 正在淡入 / 淡出
++    }
++    if (!reduce_motion && fade.to > 0.0f) {
++      return true;  // 亮着就在流动；减少动态效果时定格，不用帧
++    }
++  }
++  return AnyRowLoading();
++}
++
++void WindriseAiSectionView::UpdateFrameClock() {
++  ui::Compositor* compositor =
++      GetWidget() ? GetWidget()->GetCompositor() : nullptr;
++  const bool want = compositor && NeedsFrames();
++  if (frame_compositor_ && (!want || frame_compositor_ != compositor)) {
++    frame_compositor_->RemoveAnimationObserver(this);
++    frame_compositor_ = nullptr;
++  }
++  if (want && !frame_compositor_) {
++    frame_compositor_ = compositor;
++    frame_compositor_->AddAnimationObserver(this);
++  }
++}
++
++void WindriseAiSectionView::OnAnimationStep(base::TimeTicks timestamp) {
++  const base::TimeTicks now = base::TimeTicks::Now();
++  std::erase_if(glow_fades_, [&](const auto& entry) {
++    return entry.second.to == 0.0f && entry.second.DoneAt(now);
++  });
++  glow_->SchedulePaint();
++  for (Row* row : rows_) {
++    if (!row->data().is_header && TabIsLoading(row->data().tab.Get())) {
++      row->SchedulePaint();
++    }
++  }
++  if (!NeedsFrames()) {
++    // 最后一帧已经排了重画；摘下时钟，不再空转。
++    UpdateFrameClock();
++  }
++}
++
++void WindriseAiSectionView::OnCompositingShuttingDown(
++    ui::Compositor* compositor) {
++  if (frame_compositor_ == compositor) {
++    frame_compositor_->RemoveAnimationObserver(this);
++    frame_compositor_ = nullptr;
++  }
 +}
 +
 +// --- 数据 -------------------------------------------------------------------
@@ -960,6 +1402,7 @@ index 0000000000..3c4cbf86fa
 +    same_shape = SameRowKey(KeyOf(rows[i]), KeyOf(row_data_[i]));
 +  }
 +  row_data_ = std::move(rows);
++  SyncGlowTargets();
 +
 +  if (same_shape) {
 +    // 只有内容变了（当前标签、正在操作、数字）：原地更新，悬停状态不丢。
@@ -1094,6 +1537,8 @@ index 0000000000..3c4cbf86fa
 +  for (size_t i = 0; i < rows_.size() && i < row_data_.size(); ++i) {
 +    rows_[i]->SetData(row_data_[i]);
 +  }
++  // 开始 / 停止加载：转圈要不要帧跟着变。
++  UpdateFrameClock();
 +}
 +
 +void WindriseAiSectionView::OnAiStateChanged() {

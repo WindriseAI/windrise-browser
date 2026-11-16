@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..9e5bbcfd4c
+index 0000000000..fa841d9295
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,285 @@
+@@ -0,0 +1,341 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -26,6 +26,7 @@ index 0000000000..9e5bbcfd4c
 +#include "components/tabs/public/tab_interface.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
 +#include "ui/base/mojom/menu_source_type.mojom-forward.h"
++#include "ui/compositor/compositor_animation_observer.h"
 +#include "ui/gfx/animation/animation_delegate.h"
 +#include "ui/gfx/animation/linear_animation.h"
 +#include "ui/views/animation/animation_delegate_views.h"
@@ -36,6 +37,10 @@ index 0000000000..9e5bbcfd4c
 +class BrowserWindowInterface;
 +class PrefService;
 +class TabStripModel;
++
++namespace ui {
++class Compositor;
++}  // namespace ui
 +
 +
 +// 风桥 N6（用户 11-05 18:12 / 18:15，漏做核查 L2、#55 #56 #58）：竖向侧栏的
@@ -59,12 +64,22 @@ index 0000000000..9e5bbcfd4c
 +// （kScaleToMinimum）由 FlexLayout 把剩下的给它。
 +//
 +// 这一段里的标签不是上游 TabView，是对模型里那些标签的代理行：点一下切过去、
-+// 中键或「×」关掉，右键复用上段的完整标签菜单。上游标签的拖动、悬停卡、声音
-+// 指示这一段没有。
++// 中键或「×」关掉，右键复用上段的完整标签菜单；加载转圈、声音 / 录制等提示
++// 照上段标签的位置画（R1116 原生一批 B 第 7 项）。上游标签的拖动、悬停卡这一段
++// 没有。
++//
++// 「正在操作」光效（用户 R191，11-06 02:15「AI 操作那个总体的那个网页组呢，
++// 周围要给他加一个正在操作的那个光效，动动态光效，银色的，就是反正跟浏览器
++// 融合」）：某个 AI 正在操作时，它那一组（标题行 + 展开的标签行）的外沿亮起
++// 一圈银白流光，和网页四周的边缘光效同一套语言（官网白边流光的起伏函数
++// Wave，四周同时都亮、亮度沿边起伏、不绕圈；银色托底；不用黑底）。只在
++// 「正在操作」时出现：300ms 淡入、停手 400ms 淡出（同网页光效起 / 收的时长和
++// 曲线）；减少动态效果时不流动，定格成一帧，直接出现 / 消失。
 +class WindriseAiSectionView : public views::View,
 +                              public TabStripModelObserver,
 +                              public views::ViewObserver,
-+                              public gfx::AnimationDelegate {
++                              public gfx::AnimationDelegate,
++                              public ui::CompositorAnimationObserver {
 +  METADATA_HEADER(WindriseAiSectionView, views::View)
 +
 + public:
@@ -98,6 +113,8 @@ index 0000000000..9e5bbcfd4c
 +  void OnGestureEvent(ui::GestureEvent* event) override;
 +  ui::Cursor GetCursor(const ui::MouseEvent& event) override;
 +  void OnThemeChanged() override;
++  void AddedToWidget() override;
++  void RemovedFromWidget() override;
 +
 +  // TabStripModelObserver:
 +  void OnTabStripModelChanged(TabStripModel* tab_strip_model,
@@ -117,9 +134,25 @@ index 0000000000..9e5bbcfd4c
 +  void AnimationProgressed(const gfx::Animation* animation) override;
 +  void AnimationEnded(const gfx::Animation* animation) override;
 +
++  // ui::CompositorAnimationObserver（光效流动、光效淡入淡出、加载转圈的节拍：
++  // 跟合成器每个 vsync 走，120Hz 屏 120 帧）：
++  void OnAnimationStep(base::TimeTicks timestamp) override;
++  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
++
 + private:
 +  class Row;
 +  class ScrollIndicator;
++  class OperatingGlow;
++
++  // 一个 AI 那一组光效的淡入淡出（按合成器时间戳算，WINDRISE_EASE_OUT）。
++  struct GlowFade {
++    float from = 0.0f;
++    float to = 0.0f;
++    base::TimeTicks start;
++    base::TimeDelta duration;
++    float ValueAt(base::TimeTicks now) const;
++    bool DoneAt(base::TimeTicks now) const;
++  };
 +
 +  // 一条过渡：跟着合成器的每一帧走（views::AnimationDelegateViews 给它装
 +  // CompositorAnimationRunner），120Hz 屏上就是 120 帧（「所有动画带动效的
@@ -240,6 +273,21 @@ index 0000000000..9e5bbcfd4c
 +  void FinishDrag();
 +  void UpdateSplitterVisibility();
 +
++  // 按行数据更新每个 AI 光效的目标（正在操作 = 1，否则 0）。
++  void SyncGlowTargets();
++  // 光效当前强度（0..1）。
++  float GlowAlpha(const std::u16string& ai_name) const;
++  // 光效流动用的时间（秒）；减少动态效果时定格。
++  float GlowTime() const;
++  // 有没有标签行在加载（要按帧重画转圈）。
++  bool AnyRowLoading() const;
++  // 要不要继续跟合成器的帧：光效在流动 / 淡入淡出，或有行在转圈。
++  bool NeedsFrames() const;
++  // 按 NeedsFrames() 挂上 / 摘下合成器观察。
++  void UpdateFrameClock();
++  // 加载转圈从什么时候开始算（同一个起点，每行的转圈相位一致）。
++  base::TimeDelta ThrobberElapsed() const;
++
 +  raw_ptr<BrowserWindowInterface> browser_;
 +  raw_ptr<TabStripModel> tab_strip_model_;
 +  raw_ptr<PrefService> prefs_;
@@ -284,6 +332,14 @@ index 0000000000..9e5bbcfd4c
 +  // 滚动时右侧那根细条：淡入 180ms、停 0.9 秒、淡出 400ms。
 +  Transition indicator_transition_;
 +  base::OneShotTimer indicator_hide_timer_;
++
++  // 「正在操作」光效：画在可视区里自己的一层上（只重画这一层），不接输入。
++  raw_ptr<OperatingGlow> glow_ = nullptr;
++  std::map<std::u16string, GlowFade> glow_fades_;
++  // 合成器帧时钟：挂在哪个合成器上（没挂是 nullptr）；时间起点（光效流动和
++  // 转圈都从这里按真实时间算，不按帧数）。
++  raw_ptr<ui::Compositor> frame_compositor_ = nullptr;
++  base::TimeTicks clock_origin_;
 +
 +  base::WeakPtrFactory<WindriseAiSectionView> weak_factory_{this};
 +};
