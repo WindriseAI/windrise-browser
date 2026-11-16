@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a69f4..876d2bb814 100644
+index b1ea4a69f4..7d40a0eb92 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -32,7 +32,20 @@ index b1ea4a69f4..876d2bb814 100644
    }
  
    // Position the vertical tabstrip bottom corner.
-@@ -1586,11 +1590,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
+@@ -1041,8 +1045,11 @@ BrowserViewTabbedLayoutImpl::CalculateProposedLayout(
+       corner_bounds.Outset(
+           gfx::Outsets::TLBR(0, views::Separator::kThickness, 0, 0));
+     }
++    // 风桥 甲23 §4.4：下端同理。定稿帧 36:26925 里 x=240 那条 .5px 线直通到
++    // 窗口底（y786–799 都是线与网页的混色），网页左下角是直角；上游这里同样放
++    // 一个带旧描边色的内凹圆角（kBottomCorner 默认 1.0，平时可见），风桥不显示。
+     layout.AddChild(views().vertical_tab_strip_bottom_corner, corner_bounds,
+-                    bottom_corner_visible);
++                    /*visible=*/false);
+   }
+ 
+   // When the tabstrip isn't at the top or in constrained widths, the top
+@@ -1586,11 +1593,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
  
  void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
      const BrowserLayoutParams& params) {
@@ -60,7 +73,7 @@ index b1ea4a69f4..876d2bb814 100644
        // Note that this will set a lower leading corner on the multi contents
        // view even if there's a shadow box, but since the curve is effectively
        // the same this will not produce a visual bug.
-@@ -1602,8 +1617,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1602,8 +1620,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
          content_corners.set_lower_left(radius);
        }
      }
@@ -70,7 +83,7 @@ index b1ea4a69f4..876d2bb814 100644
  
    // Want to cut the vertical tabstrip and its decorations out of the top
    // container in transparency mode.
-@@ -1706,11 +1721,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1706,11 +1724,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
  
      CustomCornersBackground::Outline vertical_tabs_outline;
      vertical_tabs_outline.color = {
