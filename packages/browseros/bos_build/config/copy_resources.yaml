@@ -66,7 +66,9 @@ copy_operations:
     source: "resources/windrise/fonts/harmonyos_sans"
     destination: "ui/webui/resources/harmonyos_sans"
     type: "directory"
-    required: true
+    # Not "required": the real-config unit tests seed only the server and
+    # onboarding inputs. A missing copy still fails the build, because
+    # ui/webui/resources/BUILD.gn lists these files as generate_grd inputs.
 
   - name: "BrowserClaw Product Logo Icons"
     source: "resources/browserclaw/icons/*.png"
