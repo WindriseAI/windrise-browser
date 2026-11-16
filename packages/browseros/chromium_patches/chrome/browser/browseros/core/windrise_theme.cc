@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..b6ac744753
+index 0000000000..271b4be535
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,325 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -76,14 +76,15 @@ index 0000000000..b6ac744753
 +     "browseros.windrise.theme.dark.ai_panel_button_background", 0xFFFFFF,
 +     0x4A525C},
 +    // N7 B 版银色玻璃：上浅下深的竖向渐变（方案标注表第 6 行：#F1F3F5 -> #E2E6EA）。
-+    // 暗色原生不做，先同亮色。
++    // 暗色取面板同一档深色（上 #3C434C、下 #323840，见下面面板两项）：卡片的字
++    // 在暗色下是浅色，原来暗色值同亮色，浅底配浅字看不清（面板交付稿第八节 4）。
 +    {ThemeToken::kAiCardBackgroundTop,
 +     "browseros.windrise.theme.light.ai_card_background_top",
-+     "browseros.windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0xF1F3F5},
++     "browseros.windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0x3C434C},
 +    {ThemeToken::kAiCardBackgroundBottom,
 +     "browseros.windrise.theme.light.ai_card_background_bottom",
 +     "browseros.windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
-+     0xE2E6EA},
++     0x323840},
 +    // 面板（N7 B 版）：亮色取值和卡片同一套渐变（方案 N7：「同一渐变」）。暗色
 +    // 单独给深色两档（上 = 浮层色 #3C434C，下 = tile 色 #323840），否则暗色下
 +    // 浅底配浅字看不见。「接一个 AI」按钮底见上面 ai_panel_button_background：

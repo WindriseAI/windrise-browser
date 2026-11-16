@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..b4fba08f9d
+index 0000000000..5ab7a0f3fc
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,602 @@
+@@ -0,0 +1,607 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -39,6 +39,7 @@ index 0000000000..b4fba08f9d
 +#include "ui/gfx/animation/tween.h"
 +#include "ui/gfx/canvas.h"
 +#include "ui/gfx/codec/png_codec.h"
++#include "ui/gfx/color_utils.h"
 +#include "ui/gfx/geometry/skia_conversions.h"
 +#include "ui/gfx/skia_paint_util.h"
 +#include "ui/gfx/image/image_skia.h"
@@ -502,7 +503,11 @@ index 0000000000..b4fba08f9d
 +  highlight.setAntiAlias(true);
 +  highlight.setStyle(cc::PaintFlags::kStroke_Style);
 +  highlight.setStrokeWidth(1.0f);
-+  highlight.setColor(SkColorSetARGB(0xE6, 0xFF, 0xFF, 0xFF));
++  // 暗色（底是深色两档）时高光收到和面板一样弱（.15），亮色照旧 .9。
++  const bool dark = color_utils::IsDark(
++      GetColorProvider()->GetColor(kColorWindriseAiCardBackgroundBottom));
++  highlight.setColor(dark ? SkColorSetA(SK_ColorWHITE, 0x26)
++                          : SkColorSetARGB(0xE6, 0xFF, 0xFF, 0xFF));
 +  canvas->sk_canvas()->drawLine(radius, 0.5f, width() - radius, 0.5f,
 +                                highlight);
 +
