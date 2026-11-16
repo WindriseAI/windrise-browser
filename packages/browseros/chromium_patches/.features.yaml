@@ -115,8 +115,10 @@ features:
       - chrome/BUILD.gn
       - chrome/app/app-Info.plist
       - chrome/browser/BUILD.gn
+      - chrome/browser/buildflags.gni
       - chrome/browser/sparkle_buildflags.gni
       - chrome/browser/ui/BUILD.gn
+      - chrome/browser/ui/toolbar/app_menu_model.cc
       - chrome/browser/ui/webui/help/BUILD.gn
       - chrome/browser/ui/webui/help/version_updater_basic.cc
       - chrome/installer/mini_installer/BUILD.gn

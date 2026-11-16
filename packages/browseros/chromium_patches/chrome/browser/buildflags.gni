@@ -1,0 +1,21 @@
+diff --git a/chrome/browser/buildflags.gni b/chrome/browser/buildflags.gni
+--- a/chrome/browser/buildflags.gni
++++ b/chrome/browser/buildflags.gni
+@@ -12,10 +12,12 @@ declare_args() {
+   # By default, only branded builds allow for platform experience.
+   enable_platform_experience = is_chrome_branded
+ 
+-  # By default, only branded builds integrate with automatic updates.
+-  enable_updater = is_chrome_branded && target_os != "android"
++  # Windrise Bridge owns signed browser package updates on every desktop build.
++  enable_updater = false
+ 
+-  # Detect updates and notify the user for Google Chrome across all platforms.
+-  # Chromium does not use an auto-updater.
+-  enable_update_notifications = is_chrome_branded
++  # Do not expose a second update or relaunch channel in the browser menus.
++  enable_update_notifications = false
+ }
++
++assert(!enable_updater && !enable_update_notifications,
++       "Windrise browser updates are managed by Windrise Bridge")

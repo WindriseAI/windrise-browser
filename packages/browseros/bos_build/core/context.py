@@ -92,10 +92,6 @@ class Context:
     source_sha: str = ""
     resume_state: Any = None
 
-    # Third party pins
-    SPARKLE_VERSION: str = "2.7.0"
-    WINSPARKLE_VERSION: str = "0.9.3"
-
     artifact_registry: ArtifactRegistry = field(init=False)
     env: EnvConfig = field(init=False)
 
@@ -191,17 +187,9 @@ class Context:
         """Get Sparkle directory"""
         return join_paths(self.chromium_src, "third_party", "sparkle")
 
-    def get_sparkle_url(self) -> str:
-        """Get Sparkle download URL"""
-        return f"https://github.com/sparkle-project/Sparkle/releases/download/{self.SPARKLE_VERSION}/Sparkle-{self.SPARKLE_VERSION}.tar.xz"
-
     def get_winsparkle_dir(self) -> Path:
         """Get WinSparkle directory"""
         return join_paths(self.chromium_src, "third_party", "winsparkle")
-
-    def get_winsparkle_url(self) -> str:
-        """Get WinSparkle download URL (note the v-prefixed release tag)"""
-        return f"https://github.com/vslavik/winsparkle/releases/download/v{self.WINSPARKLE_VERSION}/WinSparkle-{self.WINSPARKLE_VERSION}.zip"
 
     def get_extensions_manifest_url(self) -> str:
         """Get CDN URL for bundled extensions manifest"""
@@ -268,12 +256,11 @@ class Context:
         return self.semantic_version
 
     def get_sparkle_version(self) -> str:
-        """Update feed version compared by Sparkle/WinSparkle.
+        """Historical appcast version, also preserved in macOS bundle metadata.
 
-        Epoch-prefixed BrowserOS version (see the derivation notes in
-        lib/versions.py). Stamped into CFBundleVersion at signing,
-        mirrored by chrome/browser/win/winsparkle_glue.cc, and carried in
-        the appcast's sparkle:version — the three must stay in lockstep.
+        Desktop browser updates now belong to Windrise Bridge. Existing release
+        metadata and already shipped appcast clients retain the epoch-prefixed
+        BrowserOS version (see lib/versions.py).
         Returns: e.g., "10000.0.47.0.2"
         """
         return versions_mod.update_feed_version(self.browseros_version_parts)

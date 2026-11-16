@@ -14,7 +14,16 @@ BrowserOS patches add:
 - Enhanced privacy via [ungoogled-chromium](https://github.com/ungoogled-software/ungoogled-chromium) patches
 - Custom branding, icons, and entitlements
 - Keychain access group management (macOS)
-- Sparkle auto-update framework (macOS)
+- Browser package updates managed by Windrise Bridge, using its signed component updater
+
+Windows and macOS builds do not link or provision WinSparkle/Sparkle. Chromium's
+native updater and update notifications are disabled, with GN assertions rejecting
+local overrides that enable them. About returns `DISABLED`, which hides native
+update controls without claiming the installed version is current. Browser package
+checks, signature verification and installation remain owned by Windrise Bridge.
+Builds still use platform code signing. Historical appcast publishing and shared
+sidecar signing tools remain available for already shipped clients; desktop build
+plans no longer schedule browser appcast signing.
 
 ## Prerequisites
 

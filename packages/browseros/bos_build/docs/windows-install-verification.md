@@ -20,15 +20,18 @@ install. BrowserOS installs per-user; the Apps & Features entry is under:
 
 ## Update Path
 
-- [ ] Install an older BrowserOS version.
-- [ ] Open `chrome://settings/help` and let WinSparkle find the newer update.
-- [ ] Start the update from the WinSparkle flow.
-- [ ] No installer progress window appears during the update.
-- [ ] BrowserOS does not auto-launch as part of the update install.
-- [ ] Relaunch BrowserOS after the update completes.
-- [ ] `chrome://settings/help` shows the new expected version.
-- [ ] `WinSparkle.dll` exists in
-      `%LOCALAPPDATA%\BrowserOS\Application\<version>\`.
+- [ ] Install an older Windrise browser version through Windrise Bridge.
+- [ ] With Bridge closed, open `chrome://settings/help`: version remains visible;
+      native update status, check, install and relaunch controls are absent.
+- [ ] Browser menu exposes no independent browser upgrade action.
+- [ ] Leave the browser running past the former one-hour update interval, then
+      close and reopen it: no browser appcast request or updater installer occurs.
+- [ ] Start a browser package update in Bridge using the normal signed manifest.
+- [ ] Confirm Bridge alone checks, verifies and installs the package; reject an
+      invalid signature or digest without replacing the installed browser.
+- [ ] Relaunch the browser through the normal host flow and verify its version.
+- [ ] Newly packaged browser files contain no `WinSparkle.dll`; old-version
+      leftovers are not evidence that the new browser loads an updater.
 
 ## Silent Fresh Install
 

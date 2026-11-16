@@ -138,28 +138,8 @@ class WindowsPackageModuleValidateTest(unittest.TestCase):
         path.write_text("")
         return path
 
-    def test_validate_raises_when_winsparkle_dll_missing(self):
-        self._touch_output("mini_installer.exe")
-        winsparkle_path = self.build_output_dir / "WinSparkle.dll"
-
-        with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
-            with self.assertRaises(ValidationError) as raised:
-                windows.WindowsPackageModule().validate(self.ctx)
-
-        message = str(raised.exception)
-        self.assertIn("WinSparkle.dll", message)
-        self.assertIn(str(winsparkle_path), message)
-        self.assertIn("auto-update", message)
-
-    def test_validate_passes_when_installer_and_winsparkle_dll_exist(self):
-        self._touch_output("mini_installer.exe")
-        self._touch_output("WinSparkle.dll")
-
-        with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
-            windows.WindowsPackageModule().validate(self.ctx)
 
     def test_validate_raises_when_mini_installer_missing(self):
-        self._touch_output("WinSparkle.dll")
         mini_installer_path = self.build_output_dir / "mini_installer.exe"
 
         with mock.patch.object(windows, "IS_WINDOWS", return_value=True):

@@ -91,7 +91,7 @@ def main(
     setup: bool = typer.Option(
         False,
         "--setup",
-        help="Run setup phase (clean, git_setup, sparkle_setup/winsparkle_setup)",
+        help="Run setup phase (clean, git_setup, windows_sdk)",
     ),
     prep: bool = typer.Option(
         False,

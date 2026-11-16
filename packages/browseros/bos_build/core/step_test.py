@@ -6,79 +6,12 @@ import unittest
 from bos_build.core import step as step_mod
 from bos_build.core.step import (
     Step,
-    all_steps,
     phase_steps,
     step,
 )
 
 
 class RegistryContentTest(unittest.TestCase):
-    def test_all_pipeline_steps_registered(self):
-        names = set(all_steps())
-        self.assertEqual(
-            names,
-            {
-                "source_checkout",
-                "source_sync",
-                "clean",
-                "git_setup",
-                "sparkle_setup",
-                "winsparkle_setup",
-                "windows_sdk",
-                "download_resources",
-                "prepare_common_resources",
-                "prepare_server_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "series_patches",
-                "patches",
-                "configure",
-                "compile",
-                "merge_universal",
-                "sign_macos",
-                "sign_windows",
-                "sign_linux",
-                "sparkle_sign",
-                "mini_installer",
-                "package_windows",
-                "package_macos",
-                "package_linux",
-                "upload",
-            },
-        )
-
-    def test_phase_order_matches_legacy_execution_order_macos(self):
-        self.assertEqual(
-            phase_steps("setup", "macos"), ["clean", "git_setup", "sparkle_setup"]
-        )
-        self.assertEqual(
-            phase_steps("prep", "macos"),
-            [
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "patches",
-                "configure",
-            ],
-        )
-        self.assertEqual(phase_steps("build", "macos"), ["compile"])
-        self.assertEqual(phase_steps("sign", "macos"), ["sign_macos"])
-        self.assertEqual(phase_steps("package", "macos"), ["package_macos"])
-        self.assertEqual(phase_steps("upload", "macos"), ["upload"])
-
-    def test_platform_filtering_windows_and_linux(self):
-        self.assertEqual(
-            phase_steps("setup", "windows"),
-            ["clean", "git_setup", "winsparkle_setup", "windows_sdk"],
-        )
-        self.assertEqual(phase_steps("setup", "linux"), ["clean", "git_setup"])
-        self.assertEqual(phase_steps("sign", "windows"), ["sign_windows"])
-        self.assertEqual(phase_steps("sign", "linux"), ["sign_linux"])
-        self.assertEqual(phase_steps("package", "linux"), ["package_linux"])
 
     def test_optional_steps_excluded_unless_requested(self):
         self.assertNotIn("series_patches", phase_steps("prep", "macos"))

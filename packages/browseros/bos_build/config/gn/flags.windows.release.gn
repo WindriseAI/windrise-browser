@@ -9,6 +9,8 @@ is_clang=true
 chrome_pgo_phase = 0
 dcheck_always_on=false
 enable_winsparkle=false
+enable_updater=false
+enable_update_notifications=false
 enable_swiftshader=false
 proprietary_codecs=true
 
