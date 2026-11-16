@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/server/browseros_server_config.h b/chrome/browser/browseros/server/browseros_server_config.h
 new file mode 100644
-index 0000000000000..a98e3b74de45e
+index 0000000000000..166a6d7beca3d
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_config.h
 @@ -0,0 +1,147 @@
@@ -134,7 +134,7 @@ index 0000000000000..a98e3b74de45e
 +  std::string log_name;
 +  base::FilePath::StringType config_file_name;
 +  std::string health_path;
-+  bool enable_updater = true;
++  bool enable_updater = false;
 +
 +  ServerPorts ports;
 +  ServerPaths paths;

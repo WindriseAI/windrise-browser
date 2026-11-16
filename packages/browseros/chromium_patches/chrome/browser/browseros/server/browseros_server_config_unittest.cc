@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/server/browseros_server_config_unittest.cc b/chrome/browser/browseros/server/browseros_server_config_unittest.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba93482b95080
+index 0000000000000000000000000000000000000000..4f8126ef815a53780439dec75376520390c5e967
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_config_unittest.cc
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,222 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -112,15 +112,12 @@ index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba934
 +  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("config.json")),
 +            ToPathString(descriptor.config_file_name));
 +  EXPECT_EQ(std::string_view("/system/health"), descriptor.health_path);
-+  EXPECT_TRUE(descriptor.enable_updater);
++  EXPECT_FALSE(descriptor.enable_updater);
 +
 +  // Empty state dir preserves the legacy .browseros/current_version layout.
 +  EXPECT_TRUE(descriptor.updater.state_dir.empty());
-+  EXPECT_EQ(std::string_view("https://cdn.browseros.com/appcast-server.xml"),
-+            descriptor.updater.appcast_url);
-+  EXPECT_EQ(
-+      std::string_view("https://cdn.browseros.com/appcast-server.alpha.xml"),
-+      descriptor.updater.alpha_appcast_url);
++  EXPECT_TRUE(descriptor.updater.appcast_url.empty());
++  EXPECT_TRUE(descriptor.updater.alpha_appcast_url.empty());
 +  EXPECT_EQ(std::string_view("/status"), descriptor.updater.readiness_path);
 +}
 +
@@ -137,18 +134,13 @@ index 0000000000000000000000000000000000000000..3e6c8d9cbb478e9d3dc59fa2e63ba934
 +  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("config.json")),
 +            ToPathString(descriptor.config_file_name));
 +  EXPECT_EQ(std::string_view("/system/health"), descriptor.health_path);
-+  EXPECT_TRUE(descriptor.enable_updater);
++  EXPECT_FALSE(descriptor.enable_updater);
 +
-+  // Claw isolates OTA state under .browseros/BrowserClawServer/ and fetches its
-+  // own feed.
++  // Claw keeps its local state separate even though OTA is disabled.
 +  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("BrowserClawServer")),
 +            ToPathString(descriptor.updater.state_dir));
-+  EXPECT_EQ(
-+      std::string_view("https://cdn.browseros.com/appcast-claw-server.xml"),
-+      descriptor.updater.appcast_url);
-+  EXPECT_EQ(std::string_view(
-+                "https://cdn.browseros.com/appcast-claw-server.alpha.xml"),
-+            descriptor.updater.alpha_appcast_url);
++  EXPECT_TRUE(descriptor.updater.appcast_url.empty());
++  EXPECT_TRUE(descriptor.updater.alpha_appcast_url.empty());
 +  // No readiness contract yet: empty path skips the status fetch.
 +  EXPECT_TRUE(descriptor.updater.readiness_path.empty());
 +}

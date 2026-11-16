@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/server/browseros_server_config.cc b/chrome/browser/browseros/server/browseros_server_config.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d96acdc23
+index 0000000000000000000000000000000000000000..f07c164156bc59fe335fd2535cfdf3050c65cb9b
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_config.cc
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,182 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -23,12 +23,13 @@ index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d
 +    FILE_PATH_LITERAL("browseros_server"),
 +    FILE_PATH_LITERAL("config.json"),
 +    "/system/health",
-+    true,
++    // Windrise Bridge updates the server with the browser package.
++    false,
 +    {
 +        // Empty state dir keeps the legacy .browseros/current_version layout.
 +        FILE_PATH_LITERAL(""),
-+        "https://cdn.browseros.com/appcast-server.xml",
-+        "https://cdn.browseros.com/appcast-server.alpha.xml",
++        "",
++        "",
 +        "/status",
 +    },
 +};
@@ -40,12 +41,12 @@ index 0000000000000000000000000000000000000000..c383a4374cc5a7bd4c4408c4efbdeb7d
 +    FILE_PATH_LITERAL("browseros-claw-server"),
 +    FILE_PATH_LITERAL("config.json"),
 +    "/system/health",
-+    true,
++    false,
 +    {
 +        // Isolate Claw OTA state under .browseros/BrowserClawServer/.
 +        FILE_PATH_LITERAL("BrowserClawServer"),
-+        "https://cdn.browseros.com/appcast-claw-server.xml",
-+        "https://cdn.browseros.com/appcast-claw-server.alpha.xml",
++        "",
++        "",
 +        // Claw does not expose the {can_update} readiness contract yet; empty
 +        // skips readiness and restarts after verification.
 +        "",

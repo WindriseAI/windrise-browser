@@ -44,6 +44,13 @@ class BundledExtensionsModule(Step):
 
     def execute(self, ctx: Context) -> None:
         self.validate(ctx)
+        if not ctx.required_extension_ids:
+            output_dir = self._get_output_dir(ctx)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            self._clear_generated_outputs(ctx, output_dir)
+            self._generate_json([], output_dir)
+            log_success("No bundled extensions required; skipped manifest download")
+            return
         if ctx.resource_mode == "source":
             manifest = validated_common_resources(ctx)
             staged = self._prepared_extensions(ctx, manifest)
