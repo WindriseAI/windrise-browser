@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a69f4..3ad551ca6b 100644
+index b1ea4a69f4..876d2bb814 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -19,7 +19,20 @@ index b1ea4a69f4..3ad551ca6b 100644
  
  // Maximum portion of the window a "size-restricted" contents-height side panel
  // can take up. This is not the only limit on side panel size.
-@@ -1586,11 +1587,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
+@@ -1018,8 +1019,11 @@ BrowserViewTabbedLayoutImpl::CalculateProposedLayout(
+       corner_bounds.Outset(
+           gfx::Outsets::TLBR(0, views::Separator::kThickness, 0, 0));
+     }
++    // 风桥 甲23 §4.4：定稿帧 36:26925 里侧栏和工具栏之间是一条直的 .5px 线，
++    // 工具栏左上角是直角（x=241–242、y=0–6 全是工具栏色）。上游在这里放一个
++    // 带描边的内凹圆角（实物 x=247–252、y=0–8 那段弧），风桥不显示。
+     layout.AddChild(views().vertical_tab_strip_top_corner, corner_bounds,
+-                    top_corner_visible);
++                    /*visible=*/false);
+   }
+ 
+   // Position the vertical tabstrip bottom corner.
+@@ -1586,11 +1590,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
  
  void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
      const BrowserLayoutParams& params) {
@@ -47,7 +60,7 @@ index b1ea4a69f4..3ad551ca6b 100644
        // Note that this will set a lower leading corner on the multi contents
        // view even if there's a shadow box, but since the curve is effectively
        // the same this will not produce a visual bug.
-@@ -1602,8 +1614,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1602,8 +1617,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
          content_corners.set_lower_left(radius);
        }
      }
@@ -57,3 +70,23 @@ index b1ea4a69f4..3ad551ca6b 100644
  
    // Want to cut the vertical tabstrip and its decorations out of the top
    // container in transparency mode.
+@@ -1706,11 +1721,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+ 
+     CustomCornersBackground::Outline vertical_tabs_outline;
+     vertical_tabs_outline.color = {
+-        .color = kColorVerticalTabStripShadow,
++        // 风桥 甲23 §4.4：侧栏右沿的线用分隔线色 #C9CED5（kLine），见下面的 0.5。
++        // 上游 kColorVerticalTabStripShadow = 中性描边色 60%，实物读到
++        // (207,209,211)，不是规范里的线色。
++        .color = kColorToolbarContentAreaSeparator,
+         // Vertical tabs outline fades partially during expand-on-hover to be
+         // replaced with shadow. Note that the glass alpha will affect the
+         // entire paint operation, so no need to re-multiply it in here.
++        // 风桥：再乘 0.5，1 倍屏上这 1px 就是 .5px 的观感（与网页上沿那条一致）。
++        // 这里是 DIP 描边、不认倍数：2 倍屏上是 2 个设备像素的 50%，墨量等于
++        // .5px 实线，但不是「1 个设备像素实色」。
+         .opacity =
++            0.5f *
+             static_cast<float>(1.0f - kVerticalTabStripOutlineFadeOnHover *
+                                           vertical_tabs_bottom_corner_amount) *
+             frame_color.opacity,

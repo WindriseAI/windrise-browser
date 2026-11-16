@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..f1fc0dbd8e
+index 0000000000..b5a10da5b8
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,294 @@
+@@ -0,0 +1,298 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -153,6 +153,10 @@ index 0000000000..f1fc0dbd8e
 +     "browseros.windrise.layout.ai_panel_row_height", 35},
 +    {LayoutMetric::kAiPanelButtonHeight,
 +     "browseros.windrise.layout.ai_panel_button_height", 36},
++    // 甲23：书签栏 32（乙02、theme-v2「书签栏 高 32」；帧 36:26925 里网页上沿
++    // 在 80 = 工具栏 48 + 书签栏 32）。上游是按钮 28 + 6 = 34。
++    {LayoutMetric::kBookmarkBarHeight,
++     "browseros.windrise.layout.bookmark_bar_height", 32},
 +    // N10：窗口圆角取 Windows 11 的 8；AI 操作时网页区四角 12 -> 36，300ms
 +    // （方案 N10，11-13 用户确认）。
 +    {LayoutMetric::kWindowCornerRadius,
