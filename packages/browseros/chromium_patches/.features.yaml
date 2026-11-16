@@ -735,3 +735,12 @@ features:
     files:
       - "resources/browseros/icons/default_100_percent/windrise_browser_mark_32.png"
       - "resources/browseros/icons/default_200_percent/windrise_browser_mark_32.png"
+
+  windrise-browser-defaults-1117:
+    description: "fix: localized shared help, redirect unsupported sync routes, keep autofill local and default page preloading off; server/onboarding/startup changes retain their existing feature ownership"
+    files:
+      - "chrome/browser/ui/chrome_pages.cc"
+      - "chrome/common/url_constants.h"
+      - "chrome/browser/resources/settings/router.ts"
+      - "components/autofill/core/common/autofill_debug_features.cc"
+      - "chrome/browser/preloading/preloading_prefs.cc"

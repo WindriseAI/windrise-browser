@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.ts b/chrome/browser/resources/settings/about_page/about_page.ts
-index 30855eca88e6139226d36767e57cda53c44f72aa..dfccf4e5e5546f3273100fd9fe7d3947a21736d8 100644
+index 30855eca88e6139226d36767e57cda53c44f72aa..8b56d3195ca0873f017f9f084340b4f63f10a2fe 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.ts
 @@ -93,6 +93,8 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
@@ -20,17 +20,10 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..dfccf4e5e5546f3273100fd9fe7d3947
  
    private aboutBrowserProxy_: AboutPageBrowserProxy =
        AboutPageBrowserProxyImpl.getInstance();
-@@ -221,7 +225,28 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+@@ -224,6 +228,24 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+     this.aboutBrowserProxy_.openHelpPage();
    }
  
-   protected onHelpClick_() {
--    this.aboutBrowserProxy_.openHelpPage();
-+    const language = document.documentElement.lang.toLowerCase();
-+    const isChinese = language === 'zh' || language.startsWith('zh-');
-+    window.open(isChinese ? 'https://www.windrisebridge.cn/help' :
-+                            'https://www.windrisebridge.com/help');
-+  }
-+
 +  // 浏览器开源（AGPL）：源代码仓库。和安装器 SOURCE.txt 写的是同一个地址。
 +  protected onSourceCodeClick_() {
 +    window.open('https://github.com/WindriseAI/windrise-browser');
@@ -47,6 +40,8 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..dfccf4e5e5546f3273100fd9fe7d3947
 +      this.fontLicenseText_ = text.replace(/\0/g, '').trim();
 +    }
 +    this.showFontLicense_ = !this.showFontLicense_;
-   }
- 
++  }
++
    protected onRelaunchClick_() {
+     this.performRestart(RestartType.RELAUNCH);
+   }

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_browser_main.cc
-index cbf3b6c563090a64c427e1b0ce8cbf7118aa82d2..d7e0df4e0d32f03c726428f932565b98b356424b 100644
+index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac752b4c1ed 100644
 --- a/chrome/browser/chrome_browser_main.cc
 +++ b/chrome/browser/chrome_browser_main.cc
 @@ -34,6 +34,7 @@
@@ -10,7 +10,19 @@ index cbf3b6c563090a64c427e1b0ce8cbf7118aa82d2..d7e0df4e0d32f03c726428f932565b98
  #include "chrome/browser/chrome_browser_main_extra_parts.h"
  #include "chrome/browser/component_updater/registration.h"
  #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
-@@ -1359,6 +1360,43 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
+@@ -1005,6 +1006,11 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
+ 
+ int ChromeBrowserMainParts::PreEarlyInitialization() {
+   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
++  // Windrise distributes component revisions with the browser package.
++  // Set Chromium's existing switch before any component service is created;
++  // it disables scheduled and on-demand updates, including policy exemptions.
++  base::CommandLine::ForCurrentProcess()->AppendSwitch(
++      switches::kDisableComponentUpdate);
+   for (auto& chrome_extra_part : chrome_extra_parts_) {
+     chrome_extra_part->PreEarlyInitialization();
+   }
+@@ -1359,6 +1365,43 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
    }
  #endif
  
@@ -54,20 +66,29 @@ index cbf3b6c563090a64c427e1b0ce8cbf7118aa82d2..d7e0df4e0d32f03c726428f932565b98
  #if BUILDFLAG(IS_MAC)
  #if defined(ARCH_CPU_X86_64)
    // The use of Rosetta to run the x64 version of Chromium on Arm is neither
-@@ -1963,6 +2001,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+@@ -1956,12 +1999,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
      g_browser_process->CreateDevToolsAutoOpener();
    }
  
-+  // BrowserOS: Start AFTER CreateDevToolsProtocolHandler so that BrowserOS's
-+  // CDP handler replaces Chromium's (StartRemoteDebuggingServer is a global
-+  // singleton — the last caller wins).
+-  // Needs to be done before PostProfileInit, since the SODA Installer setup is
+-  // called inside PostProfileInit and depends on it.
+-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+-          switches::kDisableComponentUpdate)) {
+-    component_updater::RegisterComponentsForUpdate();
+-  }
++  // Explicit debugging transports and --disable-browseros-server take
++  // precedence over the managed service's CDP listener.
 +  LOG(INFO) << "browseros: Starting Windrise server process";
 +  browseros::BrowserOSServerManager::GetInstance()->Start();
 +
-   // Needs to be done before PostProfileInit, since the SODA Installer setup is
-   // called inside PostProfileInit and depends on it.
-   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-@@ -2267,6 +2311,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
++  // Register packaged/cached components before PostProfileInit (including SODA).
++  // The native disable-component-update default stops network checks in the
++  // component service while allowing installers to load local revisions.
++  component_updater::RegisterComponentsForUpdate();
+ 
+   // `profile` may be nullptr if the profile picker is shown.
+   Profile* profile = profile_info.profile;
+@@ -2261,6 +2307,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
      chrome_extra_part->PostMainMessageLoopRun();
    }
  

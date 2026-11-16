@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/onboarding/browseros_onboarding.cc b/chrome/browser/browseros/onboarding/browseros_onboarding.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf88b3d9646
+index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f91c11ab8
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding.cc
-@@ -0,0 +1,801 @@
+@@ -0,0 +1,833 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -21,6 +21,7 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +#include "base/functional/bind.h"
 +#include "base/functional/callback.h"
 +#include "base/location.h"
++#include "base/memory/raw_ptr.h"
 +#include "base/memory/weak_ptr.h"
 +#include "base/notreached.h"
 +#include "base/strings/stringprintf.h"
@@ -39,6 +40,7 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +#include "chrome/grit/browseros_onboarding_resources.h"
 +#include "chrome/grit/browseros_onboarding_resources_map.h"
 +#include "components/user_data_importer/common/importer_data_types.h"
++#include "content/public/browser/navigation_controller.h"
 +#include "content/public/browser/navigation_entry.h"
 +#include "content/public/browser/navigation_handle.h"
 +#include "content/public/browser/navigation_throttle.h"
@@ -70,13 +72,33 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +class OnboardingNavigationThrottle : public content::NavigationThrottle {
 + public:
 +  explicit OnboardingNavigationThrottle(
-+      content::NavigationThrottleRegistry& registry)
-+      : content::NavigationThrottle(registry) {}
++      content::NavigationThrottleRegistry& registry,
++      bool redirect_to_new_tab = false)
++      : content::NavigationThrottle(registry),
++        redirect_to_new_tab_(redirect_to_new_tab) {}
 +
-+  ThrottleCheckResult WillStartRequest() override { return CANCEL_AND_IGNORE; }
++  ThrottleCheckResult WillStartRequest() override {
++    if (redirect_to_new_tab_) {
++      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
++          FROM_HERE,
++          base::BindOnce(
++              [](base::WeakPtr<content::WebContents> contents) {
++                if (contents) {
++                  content::NavigationController::LoadURLParams params(
++                      GURL(chrome::kChromeUINewTabURL));
++                  contents->GetController().LoadURLWithParams(params);
++                }
++              },
++              navigation_handle()->GetWebContents()->GetWeakPtr()));
++    }
++    return CANCEL_AND_IGNORE;
++  }
 +  const char* GetNameForLogging() override {
 +    return "BrowserOSOnboardingNavigationThrottle";
 +  }
++
++ private:
++  const bool redirect_to_new_tab_;
 +};
 +
 +constexpr uint16_t kBrowserOSImportableItems =
@@ -745,15 +767,14 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +                              IDR_BROWSEROS_ONBOARDING_INDEX_HTML);
 +
 +  auto handler = std::make_unique<BrowserOSOnboardingHandler>();
-+  handler_ = handler.get();
-+  web_ui->AddMessageHandler(std::move(handler));
 +  auto* bindings = static_cast<OnboardingBindings*>(
 +      web_ui->GetWebContents()->GetUserData(kOnboardingBindingsKey));
 +  if (bindings) {
-+    handler_->SetCompletionCallback(bindings->completion_callback,
-+                                    bindings->ensure_ready,
-+                                    bindings->setup_state);
++    handler->SetCompletionCallback(bindings->completion_callback,
++                                   bindings->ensure_ready,
++                                   bindings->setup_state);
 +  }
++  web_ui->AddMessageHandler(std::move(handler));
 +}
 +
 +BrowserOSOnboarding::~BrowserOSOnboarding() = default;
@@ -764,6 +785,21 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +  auto& handle = registry.GetNavigationHandle();
 +  const GURL& source = handle.GetWebContents()->GetLastCommittedURL();
 +  const GURL& target = handle.GetURL();
++  if (handle.IsInPrimaryMainFrame() &&
++      target.SchemeIs(content::kChromeUIScheme) &&
++      target.host() == chrome::kChromeUIBrowserOSOnboardingHost) {
++    const auto* bindings = static_cast<OnboardingBindings*>(
++        handle.GetWebContents()->GetUserData(kOnboardingBindingsKey));
++    if (!bindings || !bindings->setup_state ||
++        bindings->setup_state->completion_handled ||
++        !bindings->completion_callback ||
++        bindings->completion_callback.IsCancelled() || !bindings->ensure_ready ||
++        bindings->ensure_ready.IsCancelled()) {
++      registry.AddThrottle(std::make_unique<OnboardingNavigationThrottle>(
++          registry, /*redirect_to_new_tab=*/true));
++    }
++    return;
++  }
 +  if (!handle.IsInPrimaryMainFrame() || !handle.IsRendererInitiated() ||
 +      !source.SchemeIs(content::kChromeUIScheme) ||
 +      source.host() != chrome::kChromeUIBrowserOSOnboardingHost) {
@@ -787,7 +823,9 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +  }
 +}
 +
++// static
 +void BrowserOSOnboarding::SetCompletionCallback(
++    content::WebContents* contents,
 +    base::RepeatingClosure completion_callback,
 +    BrowserOSOnboardingEnsureReady ensure_ready,
 +    scoped_refptr<BrowserOSOnboardingSetupState> setup_state) {
@@ -795,13 +833,7 @@ index 0000000000000000000000000000000000000000..0809951dcf660ba1f9a3704bdcf5cbf8
 +  bindings->completion_callback = std::move(completion_callback);
 +  bindings->ensure_ready = std::move(ensure_ready);
 +  bindings->setup_state = std::move(setup_state);
-+  if (handler_) {
-+    handler_->SetCompletionCallback(bindings->completion_callback,
-+                                    bindings->ensure_ready,
-+                                    bindings->setup_state);
-+  }
-+  web_ui()->GetWebContents()->SetUserData(kOnboardingBindingsKey,
-+                                          std::move(bindings));
++  contents->SetUserData(kOnboardingBindingsKey, std::move(bindings));
 +}
 +
 +WEB_UI_CONTROLLER_TYPE_IMPL(BrowserOSOnboarding)

@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/server/browseros_server_manager.cc b/chrome/browser/browseros/server/browseros_server_manager.cc
 new file mode 100644
-index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d907259cd
+index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b341c559880
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_manager.cc
 @@ -0,0 +1,1562 @@
@@ -417,8 +417,10 @@ index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d
 +  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +  std::set<int> assigned_ports;
 +
-+  // Skip FindAvailablePort for CLI-overridden ports; trust the developer.
-+  bool cdp_fixed = command_line->HasSwitch(browseros::kCDPPort);
++  // Do not probe a managed CDP port when another debug transport owns control.
++  bool cdp_fixed = command_line->HasSwitch(browseros::kCDPPort) ||
++                   command_line->HasSwitch(::switches::kRemoteDebuggingPipe) ||
++                   command_line->HasSwitch(::switches::kRemoteDebuggingPort);
 +  bool proxy_fixed = command_line->HasSwitch(browseros::kProxyPort);
 +  bool server_fixed = command_line->HasSwitch(browseros::kServerPort);
 +
@@ -515,31 +517,29 @@ index 0000000000000000000000000000000000000000..19919de8931b03b7ae7cf772f9e98b0d
 +    return;
 +  }
 +
-+  // Phase 1: Determine and resolve ports.
-+  // Resolve runs unconditionally (even with --disable-server) so that
-+  // CLI overrides are validated and persisted correctly.
++  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
++  if (command_line->HasSwitch(browseros::kDisableServer)) {
++    LOG(INFO) << "browseros: Managed server disabled via command line";
++    return;
++  }
++
++  // Resolve ports only for an enabled service; probing also binds sockets.
 +  LoadPortsFromPrefs();
 +  SetupPrefObservers();
 +  ApplyCommandLineOverrides();
 +  ResolvePortsForStartup();
 +  SavePortsToPrefs();
 +
-+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+
 +  // Phase 2: Bind CDP to the resolved port.
 +  // Must happen AFTER resolution, otherwise FindAvailablePort detects our
 +  // own CDP binding as "port in use" and reassigns to a different port,
 +  // causing the sidecar to connect to a port where nothing listens.
-+  if (!command_line->HasSwitch(::switches::kRemoteDebuggingPort)) {
++  if (!command_line->HasSwitch(::switches::kRemoteDebuggingPort) &&
++      !command_line->HasSwitch(::switches::kRemoteDebuggingPipe)) {
 +    StartCDPServer();
 +  } else {
-+    LOG(WARNING) << "browseros: Skipping managed CDP server - "
-+                 << "--remote-debugging-port takes precedence";
-+  }
-+
-+  if (command_line->HasSwitch(browseros::kDisableServer)) {
-+    LOG(INFO) << "browseros: Managed server disabled via command line";
-+    return;
++    LOG(INFO) << "browseros: Skipping managed CDP server - "
++              << "explicit remote debugging transport takes precedence";
 +  }
 +
 +  // Phase 3: Sidecar lifecycle - lock, recover orphans, launch.

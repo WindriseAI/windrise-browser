@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
-index 4fa3120e55..4d972e4fba 100644
+index 4fa3120e55..127a7d7e3c 100644
 --- a/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 +++ b/chrome/browser/ui/views/profiles/first_run_flow_controller.cc
 @@ -25,6 +25,9 @@
@@ -12,7 +12,7 @@ index 4fa3120e55..4d972e4fba 100644
  #include "chrome/browser/enterprise/util/managed_browser_utils.h"
  #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
  #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-@@ -298,6 +301,70 @@ class IntroStepController : public IntroBasedAnimatedStepController {
+@@ -298,6 +301,60 @@ class IntroStepController : public IntroBasedAnimatedStepController {
    base::WeakPtrFactory<IntroStepController> weak_ptr_factory_{this};
  };
  
@@ -35,6 +35,9 @@ index 4fa3120e55..4d972e4fba 100644
 +  void Show(StepSwitchFinishedCallback step_shown_callback,
 +            bool reset_state) override {
 +    if (reset_state) {
++      BrowserOSOnboarding::SetCompletionCallback(
++          host().GetPickerContents(), completion_callback_, ensure_ready_,
++          setup_state_);
 +      host().ShowScreenInPickerContents(
 +          GURL(chrome::kChromeUIBrowserOSOnboardingURL),
 +          base::BindOnce(&BrowserOSOnboardingStepController::OnLoaded,
@@ -47,7 +50,6 @@ index 4fa3120e55..4d972e4fba 100644
 +              host().GetPickerContents()->GetURL());
 +    host().ShowScreenInPickerContents(
 +        GURL(), base::BindOnce(std::move(step_shown_callback.value()), true));
-+    ExpectCompletionCallback();
 +  }
 +
 +  void OnNavigateBackRequested() override {
@@ -57,18 +59,6 @@ index 4fa3120e55..4d972e4fba 100644
 + private:
 +  void OnLoaded(StepSwitchFinishedCallback step_shown_callback) {
 +    std::move(step_shown_callback.value()).Run(/*success=*/true);
-+    ExpectCompletionCallback();
-+  }
-+
-+  void ExpectCompletionCallback() {
-+    auto* onboarding_ui = host()
-+                              .GetPickerContents()
-+                              ->GetWebUI()
-+                              ->GetController()
-+                              ->GetAs<BrowserOSOnboarding>();
-+    DCHECK(onboarding_ui);
-+    onboarding_ui->SetCompletionCallback(completion_callback_, ensure_ready_,
-+                                        setup_state_);
 +  }
 +
 +  base::RepeatingClosure completion_callback_;
@@ -83,7 +73,7 @@ index 4fa3120e55..4d972e4fba 100644
  class DefaultBrowserStepController : public ProfileManagementStepController {
   public:
    explicit DefaultBrowserStepController(
-@@ -1014,21 +1081,30 @@ void FirstRunFlowController::Init() {
+@@ -1014,21 +1071,30 @@ void FirstRunFlowController::Init() {
      }
    }
  
@@ -129,7 +119,7 @@ index 4fa3120e55..4d972e4fba 100644
  }
  
  void FirstRunFlowController::CancelSigninFlow() {
-@@ -1093,6 +1169,13 @@ void FirstRunFlowController::HandleIntroSigninChoice(IntroChoice choice) {
+@@ -1093,6 +1159,13 @@ void FirstRunFlowController::HandleIntroSigninChoice(IntroChoice choice) {
        kAccessPoint, profile_->GetPath());
  }
  

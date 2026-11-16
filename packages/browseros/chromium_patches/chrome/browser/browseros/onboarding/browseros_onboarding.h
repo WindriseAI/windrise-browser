@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/onboarding/browseros_onboarding.h b/chrome/browser/browseros/onboarding/browseros_onboarding.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..7126c2accebe176d3803c2e3c5f4590c37cdcb02
+index 0000000000000000000000000000000000000000..5e860f377fffc843d3d1f77d6aa1618f9fb969fb
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding.h
 @@ -0,0 +1,68 @@
@@ -12,7 +12,6 @@ index 0000000000000000000000000000000000000000..7126c2accebe176d3803c2e3c5f4590c
 +#define CHROME_BROWSER_BROWSEROS_ONBOARDING_BROWSEROS_ONBOARDING_H_
 +
 +#include "base/functional/callback_forward.h"
-+#include "base/memory/raw_ptr.h"
 +#include "base/memory/ref_counted.h"
 +#include "content/public/browser/web_ui_controller.h"
 +#include "content/public/browser/webui_config.h"
@@ -37,6 +36,7 @@ index 0000000000000000000000000000000000000000..7126c2accebe176d3803c2e3c5f4590c
 +
 +namespace content {
 +class NavigationThrottleRegistry;
++class WebContents;
 +}
 +
 +class BrowserOSOnboardingHandler;
@@ -60,14 +60,14 @@ index 0000000000000000000000000000000000000000..7126c2accebe176d3803c2e3c5f4590c
 +  static void MaybeCreateNavigationThrottle(
 +      content::NavigationThrottleRegistry& registry);
 +
-+  void SetCompletionCallback(
++  // Bind the owning flow before its first navigation; reloads reuse the binding.
++  static void SetCompletionCallback(
++      content::WebContents* contents,
 +      base::RepeatingClosure completion_callback,
 +      BrowserOSOnboardingEnsureReady ensure_ready,
 +      scoped_refptr<BrowserOSOnboardingSetupState> setup_state);
 +
 + private:
-+  raw_ptr<BrowserOSOnboardingHandler> handler_ = nullptr;
-+
 +  WEB_UI_CONTROLLER_TYPE_DECL();
 +};
 +
