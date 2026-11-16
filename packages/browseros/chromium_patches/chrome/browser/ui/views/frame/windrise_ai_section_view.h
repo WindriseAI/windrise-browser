@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..547ee3c801
+index 0000000000..43be13181f
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,264 @@
+@@ -0,0 +1,278 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -26,6 +26,7 @@ index 0000000000..547ee3c801
 +#include "ui/base/metadata/metadata_header_macros.h"
 +#include "ui/gfx/animation/animation_delegate.h"
 +#include "ui/gfx/animation/linear_animation.h"
++#include "ui/views/animation/animation_delegate_views.h"
 +#include "ui/gfx/image/image_skia.h"
 +#include "ui/views/view.h"
 +#include "ui/views/view_observer.h"
@@ -114,15 +115,24 @@ index 0000000000..547ee3c801
 +  class Row;
 +  class ScrollIndicator;
 +
-+  // 一条过渡：按 120 帧的节拍走（「所有动画带动效的全部做成120帧」；
-+  // gfx::SlideAnimation 固定 60 帧），曲线 WINDRISE_EASE_OUT。中途换目标
-+  // 从眼前的值接着走；减少动态效果时时长为 0，直接到位。
-+  class Transition {
++  // 一条过渡：跟着合成器的每一帧走（views::AnimationDelegateViews 给它装
++  // CompositorAnimationRunner），120Hz 屏上就是 120 帧（「所有动画带动效的
++  // 全部做成120帧」；gfx::SlideAnimation 自己的定时器固定 60 帧，LinearAnimation
++  // 自己的定时器最快 100 帧，所以都不直接用）。曲线 WINDRISE_EASE_OUT。中途换
++  // 目标从眼前的值接着走；减少动态效果时时长为 0，直接到位。进度回调转给
++  // 本视图（owner）。
++  class Transition : public views::AnimationDelegateViews {
 +   public:
-+    Transition(gfx::AnimationDelegate* delegate, base::TimeDelta duration);
++    Transition(views::View* host,
++               gfx::AnimationDelegate* owner,
++               base::TimeDelta duration);
 +    Transition(const Transition&) = delete;
 +    Transition& operator=(const Transition&) = delete;
-+    ~Transition();
++    ~Transition() override;
++
++    // gfx::AnimationDelegate:
++    void AnimationProgressed(const gfx::Animation* animation) override;
++    void AnimationEnded(const gfx::Animation* animation) override;
 +
 +    void SetDuration(base::TimeDelta duration);
 +    // 从眼前的值走向 target；已经在往 target 走就不重来。
@@ -135,6 +145,7 @@ index 0000000000..547ee3c801
 +    const gfx::Animation* animation() const { return &animation_; }
 +
 +   private:
++    const raw_ptr<gfx::AnimationDelegate> owner_;
 +    gfx::LinearAnimation animation_;
 +    double from_ = 0.0;
 +    double to_ = 0.0;
@@ -178,7 +189,10 @@ index 0000000000..547ee3c801
 +  };
 +
 +  // 数据变了（AI 段、标签进出、展开收起）：重建行，段高按需要过渡。
-+  void Rebuild(bool animate_height);
++  // from_toggle：这次是点组合页展开 / 收起引起的。只有这时，不再需要的行才
++  // 留着跟标题一起退场；标签被关掉、AI 被清掉时直接拿掉（句柄已失效，留着只会
++  // 画出一个空行滑过去）。
++  void Rebuild(bool animate_height, bool from_toggle = false);
 +  // 标签标题 / 图标变了：只更新行的内容。
 +  void RefreshRowContents();
 +  std::vector<RowData> CollectRows() const;

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e75c..a0df25888b 100644
+index 338178e75c..9843a6828a 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 @@ -17,6 +17,8 @@
@@ -97,17 +97,23 @@ index 338178e75c..a0df25888b 100644
    for (const auto& lock : hover_locks_) {
      lock->ClearRegionViewOnDestruction();
    }
-@@ -409,6 +473,34 @@ void VerticalTabStripRegionView::AddedToWidget() {
+@@ -409,6 +473,40 @@ void VerticalTabStripRegionView::AddedToWidget() {
    if (GetFocusManager()) {
      GetFocusManager()->AddFocusChangeListener(&focus_listener_);
    }
 +  // 风桥 L11：打开时窗口就窄，也要收起。
-+  UpdateWindriseNarrowWindow(GetWidget()->GetWindowBoundsInScreen().width());
++  if (!GetWidget()->IsMinimized()) {
++    UpdateWindriseNarrowWindow(GetWidget()->GetWindowBoundsInScreen().width());
++  }
 +}
 +
 +void VerticalTabStripRegionView::OnWidgetBoundsChanged(
 +    views::Widget* widget,
 +    const gfx::Rect& new_bounds) {
++  // 最小化时报上来的宽不算（不然还原时会先收起再展开一遍）。
++  if (widget->IsMinimized()) {
++    return;
++  }
 +  UpdateWindriseNarrowWindow(new_bounds.width());
 +}
 +
@@ -132,7 +138,7 @@ index 338178e75c..a0df25888b 100644
  }
  
  void VerticalTabStripRegionView::RemovedFromWidget() {
-@@ -885,7 +977,13 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -885,7 +983,13 @@ void VerticalTabStripRegionView::AddTabStripView(
    std::optional<size_t> separator_index =
        content_parent->GetIndexOf(top_button_separator_);
    CHECK(separator_index.has_value());
@@ -147,20 +153,20 @@ index 338178e75c..a0df25888b 100644
  
    // Pre-set the animation values to the appropriate state.
    auto* const animation_controller =
-@@ -907,6 +1005,12 @@ void VerticalTabStripRegionView::AddTabStripView(
+@@ -907,6 +1011,12 @@ void VerticalTabStripRegionView::AddTabStripView(
                base::Unretained(this)));
  
    OnCollapseStateChanged(state_controller_->GetCollapseState());
 +
 +  // 风桥 L11：标签条接上、动画订阅好以后，收起才有动画可走（RequestCollapse
 +  // 在没有标签条时直接返回），所以窄窗判断放在这里再做一次。
-+  if (GetWidget()) {
++  if (GetWidget() && !GetWidget()->IsMinimized()) {
 +    UpdateWindriseNarrowWindow(GetWidget()->GetWindowBoundsInScreen().width());
 +  }
  }
  
  std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
-@@ -916,6 +1020,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
+@@ -916,6 +1026,9 @@ std::unique_ptr<views::View> VerticalTabStripRegionView::RemoveTabStripView(
    omnibox_tab_helper_observation_.Reset();
    ResetExpandOnHoverTimers();
    is_expanded_on_hover_ = false;
@@ -170,7 +176,7 @@ index 338178e75c..a0df25888b 100644
    return BaseTabStripRegionView::RemoveTabStripView(view);
  }
  
-@@ -934,6 +1041,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
+@@ -934,6 +1047,9 @@ void VerticalTabStripRegionView::OnCollapseStateChanged(
    if (tab_strip_view()) {
      tab_strip_view()->SetCollapsedState(collapsed);
    }
@@ -180,7 +186,7 @@ index 338178e75c..a0df25888b 100644
  
    if ((state == tabs::VerticalTabStripCollapseState::kCollapsing) ||
        (state == tabs::VerticalTabStripCollapseState::kExpanded &&
-@@ -1231,6 +1341,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
+@@ -1231,6 +1347,7 @@ void VerticalTabStripRegionView::OnOmniboxPopupVisibilityChanged(bool is_open) {
  void VerticalTabStripRegionView::OnActiveTabChanged(
      const tabs::TabInterface* active_tab) {
    BaseTabStripRegionView::OnActiveTabChanged(active_tab);
@@ -188,7 +194,7 @@ index 338178e75c..a0df25888b 100644
    omnibox_tab_helper_observation_.Reset();
  
    if (active_tab) {
-@@ -1242,5 +1353,62 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
+@@ -1242,5 +1359,62 @@ void VerticalTabStripRegionView::OnActiveTabChanged(
    }
  }
  

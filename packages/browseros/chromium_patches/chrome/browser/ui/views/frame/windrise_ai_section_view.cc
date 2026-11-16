@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..3f3516cdd0
+index 0000000000..23c0711759
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1396 @@
+@@ -0,0 +1,1411 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -102,7 +102,8 @@ index 0000000000..3f3516cdd0
 +constexpr base::TimeDelta kIndicatorInDuration = base::Milliseconds(180);
 +constexpr base::TimeDelta kIndicatorOutDuration = base::Milliseconds(400);
 +constexpr base::TimeDelta kIndicatorHold = base::Milliseconds(900);
-+// 动画节拍：120 帧（定稿依据「120 帧」）。60Hz 屏上按时间推进，自然降到 60。
++// 动画节拍：在窗口里时跟合成器的帧走（120Hz 屏 120 帧、60Hz 屏 60 帧，按时间
++// 推进）；还没进窗口时退回 LinearAnimation 自己的定时器（最快 100 帧）。
 +constexpr int kTransitionFrameRate = 120;
 +
 +// 分隔条把手、滚动细条：墨色 28%，悬停 / 拖动 45%（和桌面端细条同一套）。
@@ -477,13 +478,26 @@ index 0000000000..3f3516cdd0
 +
 +// ---------------------------------------------------------------------------
 +
-+WindriseAiSectionView::Transition::Transition(gfx::AnimationDelegate* delegate,
++WindriseAiSectionView::Transition::Transition(views::View* host,
++                                              gfx::AnimationDelegate* owner,
 +                                              base::TimeDelta duration)
-+    : animation_(gfx::Animation::RichAnimationDuration(duration),
++    : views::AnimationDelegateViews(host),
++      owner_(owner),
++      animation_(gfx::Animation::RichAnimationDuration(duration),
 +                 kTransitionFrameRate,
-+                 delegate) {}
++                 this) {}
 +
 +WindriseAiSectionView::Transition::~Transition() = default;
++
++void WindriseAiSectionView::Transition::AnimationProgressed(
++    const gfx::Animation* animation) {
++  owner_->AnimationProgressed(animation);
++}
++
++void WindriseAiSectionView::Transition::AnimationEnded(
++    const gfx::Animation* animation) {
++  owner_->AnimationEnded(animation);
++}
 +
 +void WindriseAiSectionView::Transition::SetDuration(base::TimeDelta duration) {
 +  animation_.SetDuration(gfx::Animation::RichAnimationDuration(duration));
@@ -522,10 +536,10 @@ index 0000000000..3f3516cdd0
 +    : browser_(browser),
 +      tab_strip_model_(tab_strip_model),
 +      prefs_(prefs),
-+      height_transition_(this, kHeightDuration),
-+      splitter_transition_(this, kSplitterFadeDuration),
-+      grip_transition_(this, kGripDuration),
-+      indicator_transition_(this, kIndicatorInDuration) {
++      height_transition_(this, this, kHeightDuration),
++      splitter_transition_(this, this, kSplitterFadeDuration),
++      grip_transition_(this, this, kGripDuration),
++      indicator_transition_(this, this, kIndicatorInDuration) {
 +  viewport_ = AddChildView(std::make_unique<views::View>());
 +  viewport_->SetPaintToLayer();
 +  viewport_->layer()->SetFillsBoundsOpaquely(false);
@@ -925,7 +939,7 @@ index 0000000000..3f3516cdd0
 +                                     row->final_from_bottom());
 +}
 +
-+void WindriseAiSectionView::Rebuild(bool animate_height) {
++void WindriseAiSectionView::Rebuild(bool animate_height, bool from_toggle) {
 +  std::vector<RowData> rows = CollectRows();
 +  const bool was_empty = row_data_.empty();
 +
@@ -1017,8 +1031,9 @@ index 0000000000..3f3516cdd0
 +    rows_[i]->SetFromBottom(start, final_fb[i]);
 +  }
 +
-+  // 5. 不再需要的旧行：能动的话留着退场——跟着它上面最近一个还在的行一起走
-+  //    （收起时，标签跟着标题原路沉到下沿底下），过渡结束再拿掉。
++  // 5. 不再需要的旧行：点组合页收起时留着退场——跟着它上面最近一个还在的
++  //    行一起走（标签跟着标题原路沉到下沿底下），过渡结束再拿掉。别的原因
++  //    （标签关了、AI 清了）直接拿掉，其余行补位过去。
 +  for (size_t j = 0; j < old_rows.size(); ++j) {
 +    if (old_reused[j]) {
 +      continue;
@@ -1026,7 +1041,7 @@ index 0000000000..3f3516cdd0
 +    Row* row = old_rows[j];
 +    bool anchored = false;
 +    int end_fb = old_fb[j];
-+    if (can_animate) {
++    if (can_animate && from_toggle) {
 +      for (int k = static_cast<int>(j) - 1; k >= 0 && !anchored; --k) {
 +        if (old_reused[k]) {
 +          end_fb = old_fb[j] + (old_rows[k]->final_from_bottom() - old_fb[k]);
@@ -1076,7 +1091,7 @@ index 0000000000..3f3516cdd0
 +void WindriseAiSectionView::ToggleExpanded(const std::u16string& ai_name) {
 +  bool& expanded = expanded_[ai_name];
 +  expanded = !expanded;
-+  Rebuild(/*animate_height=*/true);
++  Rebuild(/*animate_height=*/true, /*from_toggle=*/true);
 +}
 +
 +void WindriseAiSectionView::ActivateTab(tabs::TabInterface* tab) {
