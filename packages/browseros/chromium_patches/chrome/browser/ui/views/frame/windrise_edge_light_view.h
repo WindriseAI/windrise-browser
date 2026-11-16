@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.h b/chrome/browser/ui/views/frame/windrise_edge_light_view.h
 new file mode 100644
-index 0000000000..3c22c5fcad
+index 0000000000..ba9ba75e0c
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.h
 @@ -0,0 +1,103 @@
@@ -25,7 +25,7 @@ index 0000000000..3c22c5fcad
 +class WebContents;
 +}  // namespace content
 +
-+// 风桥 N10 / N11：AI 操作某个标签时的「计时器」。本身不画任何东西。
++// 风桥 AI 操作某个标签时的「计时器」。本身不画任何东西。
 +//
 +// 光效改由网页代码画（11-13 定）：默认是扩展画在网页里（页内层），也可以由
 +// WindriseEdgeLightWebView（独立层）画；原生 Skia 画法已摘除。这个类只留下计时：

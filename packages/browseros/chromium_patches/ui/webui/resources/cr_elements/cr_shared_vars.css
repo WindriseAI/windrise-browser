@@ -1,8 +1,8 @@
 diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
-index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..701bc66a5505ce2b9cb34b56c21f654a77c8b226 100644
+index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acce314608a 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,107 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,99 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -10,29 +10,21 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..701bc66a5505ce2b9cb34b56c21f654a
 +/* Copyright 2026 Windrise. Use of this source code is governed by the
 + * AGPL-3.0 license that can be found in the LICENSE file. */
 +
-+/* 风桥内部页统一样式（方案 N12）。追加在 cr_shared_vars.css 末尾，生成模块
++/* 风桥内部页统一样式。追加在 cr_shared_vars.css 末尾，生成模块
 + * 会被 document.adoptedStyleSheets 全局采用，所以这里的 html / body 规则对所有
 + * 内部页生效。
-+ * 依据：kb/browser-internal-style-v1.md 第 2、3 节；亮色值同 browser-theme-v2.md。
 + * 原生侧：--color-sys-* 这组值同时由 windrise_color_mixer.cc 从
 + * browseros.windrise.theme.* 偏好给出（Windows 的 theme_source 不下发 sys 集合，
 + * 所以这里的兜底值就是页面实际用的值）；渐变与玻璃不能映射成单个颜色，写死。
-+ * 效果图：mock/internal-pages.mjs 在真 158 的 chrome://settings 等页面上原样注入
-+ * 这一份，截图即最终效果。
-+ *
 + * html / body 两条规则对所有内部页共用；--color-sys-* 由 ColorMixer 补丁
 + * （windrise_color_mixer.cc）从同一组偏好值给出，这里写的是同值兜底。
 + *
-+ * 暗色分支等于亮色（已定事项 丙11）：选择器用 html:not(#wr-tokens)（一个 id 级的
++ * 暗色分支等于亮色：选择器用 html:not(#wr-tokens)（一个 id 级的
 + * 特异度，任何 html 都匹配），压过上游 html[webui-refresh-2026]、html[dark] 和主题
 + * 色表在暗色下给 html 的同名变量；再加 color-scheme: light，滚动条、表单控件也走亮色。
-+ * 第三包深色设置页「黑字压深灰卡片」（V6）就是暗色下卡片底被更高特异度的规则换掉、
-+ * 字仍是这里的墨色造成的。
++ * 避免暗色下卡片底被更高特异度的规则换掉，而文字仍是这里的墨色。
 + *
-+ * 取值与 run-1112/browser-design/native/cr_shared_vars.windrise.css（11-13 修好的那份）
-+ * 逐条相同；11-16 补进的是 --wr-page-bg（反差小、过渡长，方案 N12⑤）。和那份只差写法：
-+ * 选择器 html:not(#wr-tokens) 加 color-scheme: light（丙11），以及为过 stylelint 的
-+ * 拆行、#FFF、单引号、规则间空行（b62ebd4a3，编译错 B2）。
++ * --wr-page-bg 使用反差小、过渡长的渐变。
 + */
 +html:not(#wr-tokens) {
 +  color-scheme: light;
@@ -90,7 +82,7 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..701bc66a5505ce2b9cb34b56c21f654a
 +  --cr-secondary-text-color: #4A515C;
 +  --cr-link-color: #0E1116;
 +  --cr-checked-color: #0E1116;
-+  /* 焦点：internal-style-v1 只定了颜色（--wr-focus 墨色），没定粗细；按协调人 11-12 晚：1px 墨色 + 外面 2px 半透明墨色，
++  /* 焦点：颜色用 --wr-focus 墨色；1px 墨色 + 外面 2px 半透明墨色，
 +     不用上游那圈 2px 实心深色（和银色不搭）。原生补丁里各输入框 / 搜索框的 :focus-visible 统一成下面这个 box-shadow。 */
 +  --cr-focus-outline-color: #0E1116;
 +  --wr-focus-ring: 0 0 0 1px #0E1116, 0 0 0 3px rgb(14 17 22 / .16);

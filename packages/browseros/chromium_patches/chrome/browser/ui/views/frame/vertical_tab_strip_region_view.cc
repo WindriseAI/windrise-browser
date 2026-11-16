@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
-index 338178e75c..7668588e29 100644
+index 338178e75c..15be3ca890 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
 @@ -17,6 +17,9 @@
@@ -26,7 +26,7 @@ index 338178e75c..7668588e29 100644
                LayoutConstant::kVerticalTabStripCollapsedVerticalPadding),
            region_horizontal_padding, 0, region_horizontal_padding));
  
-+  // 风桥 N7：左下「已连接 N 个 AI」卡片，放在新标签按钮下面、gemini 按钮上面。
++  // 风桥 左下「已连接 N 个 AI」卡片，放在新标签按钮下面、gemini 按钮上面。
 +  ai_card_view_ =
 +      content_area_view_->AddChildViewAt(
 +          std::make_unique<WindriseAiCardView>(browser_view->browser()),
@@ -43,7 +43,7 @@ index 338178e75c..7668588e29 100644
 +  ai_card_view_->SetCollapsedContentWidth(
 +      tabs::kVerticalTabStripCollapsedWidth - 2 * region_horizontal_padding);
 +
-+  // 风桥 N6：侧栏下段（AI 的标签）。放在「+」和左下卡片之间：「+」是唯一一个
++  // 风桥 侧栏下段（AI 的标签）。放在「+」和左下卡片之间：「+」是唯一一个
 +  // 可以无限伸长的子视图，两段之间的空白都归它，所以这一段贴着卡片、从下往上
 +  // 排；两段放不下时段高由它自己按用户拖的比例算，上段（kScaleToMinimum）
 +  // 拿剩下的。和标签同宽（左右留白同标签列），和卡片之间留一个标签列的上下
@@ -89,7 +89,7 @@ index 338178e75c..7668588e29 100644
    SetNotifyEnterExitOnChild(true);
 +  // 158 用 top_button_separator_ 的 SetInactiveColorId() 处理非激活态
 +  // 颜色（见本文件构造函数与 ours 中的写法），不再需要 UpdateColors()。
-+  // N6：AI 组归属改变时重新排上段；不因为当前标签属于 AI 而撑开侧栏。
++  // AI 组归属改变时重新排上段；不因为当前标签属于 AI 而撑开侧栏。
 +  // 析构时 BrowserView 的成员可能已经先拆掉，所以把窗口指针存下来供 Detach 用。
 +  windrise_ai_window_ = browser_view->browser();
 +  if (browseros::windrise::AiWindowState* ai_state =
@@ -127,7 +127,7 @@ index 338178e75c..7668588e29 100644
 +}
 +
 +void VerticalTabStripRegionView::UpdateWindriseNarrowWindow(int window_width) {
-+  // 风桥 L11（丙12）：窗口宽 < 900 时侧栏自动收起，但不写用户偏好；宽回来
++  // 风桥 L11：窗口宽 < 900 时侧栏自动收起，但不写用户偏好；宽回来
 +  // 以后恢复用户自己的选择（状态控制器里做）。阈值和回差（< 900 进，>= 920
 +  // 出）与工具栏格子按钮收成图标共用一份：browseros::windrise::IsNarrowWindow。
 +  // 标签条还没接上时先不判断（收起请求会落空），接上时 AddTabStripView 再调。
@@ -152,7 +152,7 @@ index 338178e75c..7668588e29 100644
 +  views::View* const tab_strip =
 +      content_parent->AddChildViewAt(std::move(view),
 +                                     separator_index.value() + 1);
-+  // 风桥 N6：下段要看上段（人的标签）要多高，才知道两段碰没碰到。
++  // 风桥 下段要看上段（人的标签）要多高，才知道两段碰没碰到。
 +  if (ai_section_view_) {
 +    ai_section_view_->SetHumanSection(tab_strip, bottom_button_container_);
 +  }

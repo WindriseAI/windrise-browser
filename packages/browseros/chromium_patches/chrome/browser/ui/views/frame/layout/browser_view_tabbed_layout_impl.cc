@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a69f4..ca4958b387 100644
+index b1ea4a69f4..9de3363fe1 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -23,7 +23,7 @@ index b1ea4a69f4..ca4958b387 100644
        corner_bounds.Outset(
            gfx::Outsets::TLBR(0, views::Separator::kThickness, 0, 0));
      }
-+    // 风桥 甲23 §4.4：定稿帧 36:26925 里侧栏和工具栏之间是一条直的 .5px 线，
++    // 风桥 设计稿 36:26925 里侧栏和工具栏之间是一条直的 .5px 线，
 +    // 工具栏左上角是直角（x=241–242、y=0–6 全是工具栏色）。上游在这里放一个
 +    // 带描边的内凹圆角（实物 x=247–252、y=0–8 那段弧），风桥不显示。
      layout.AddChild(views().vertical_tab_strip_top_corner, corner_bounds,
@@ -37,7 +37,7 @@ index b1ea4a69f4..ca4958b387 100644
                            params.visual_client_area.width(),
                            views().toolbar->GetPreferredSize().height());
 +      if (layout_data_->tab_strip_type == TabStripType::kVertical) {
-+        // 风桥 甲23 §4.4-b：竖向标签栏下工具栏高固定走偏好（默认 48，乙02），
++        // 风桥 竖向标签栏下工具栏高固定走偏好（默认 48），
 +        // 不再被右侧标题按钮区撑高（上游这里是 max(排除区高, 最小高)，Windows
 +        // 还原窗口上排除区底边在 49）。不低于工具栏最小高，免得内容被裁。
 +        // BrowserFrameViewWin::LayoutCaptionButtons 用同一个式子定标题按钮区
@@ -59,7 +59,7 @@ index b1ea4a69f4..ca4958b387 100644
 -    gfx::RoundedCornersF content_corners;
 -    if (layout_data_->tab_strip_type == TabStripType::kVertical &&
 -        !is_fullscreen(layout_data_->window_state)) {
-+  // 风桥 N10：竖向标签栏下，网页区上两角圆角（偏好
++  // 风桥 竖向标签栏下，网页区上两角圆角（偏好
 +  // browseros.windrise.layout.web_contents_radius，默认 12），四边缝 0；全屏 /
 +  // 网页全屏时圆角回 0。下两角跟窗口自身的圆角（Windows 11 由系统裁），所以
 +  // 这里只在下边沿用上游逻辑给一个 leading corner。
@@ -93,7 +93,7 @@ index b1ea4a69f4..ca4958b387 100644
      CustomCornersBackground::Outline vertical_tabs_outline;
      vertical_tabs_outline.color = {
 -        .color = kColorVerticalTabStripShadow,
-+        // 风桥 甲23 §4.4：侧栏右沿的线用分隔线色 #C9CED5（kLine），见下面的 0.5。
++        // 风桥 侧栏右沿的线用分隔线色 #C9CED5（kLine），见下面的 0.5。
 +        // 上游 kColorVerticalTabStripShadow = 中性描边色 60%，实物读到
 +        // (207,209,211)，不是规范里的线色。
 +        .color = kColorToolbarContentAreaSeparator,
@@ -112,7 +112,7 @@ index b1ea4a69f4..ca4958b387 100644
        vertical_tabs_outline.bottom = true;
      }
      vertical_tabs_background->SetOutline(vertical_tabs_outline);
-+    // 风桥 甲23 §4.4：网页左下角那个内凹圆角（上游 kBottomCorner 默认 1.0，平时
++    // 风桥 网页左下角那个内凹圆角（上游 kBottomCorner 默认 1.0，平时
 +    // 可见；网页角要圆是用户多次说过的，保留）的描边原来是上游的
 +    // kColorVerticalTabStripShadow，和上面改过的侧栏右沿线接不上色。改成和右沿
 +    // 同色同透明度，这条线一直到底都是同一种线。

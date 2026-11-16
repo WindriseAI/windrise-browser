@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/multi_contents_view.cc b/chrome/browser/ui/views/frame/multi_contents_view.cc
-index a756f076ff..60a43d4d2e 100644
+index a756f076ff..576a19f739 100644
 --- a/chrome/browser/ui/views/frame/multi_contents_view.cc
 +++ b/chrome/browser/ui/views/frame/multi_contents_view.cc
 @@ -9,6 +9,7 @@
@@ -34,10 +34,10 @@ index a756f076ff..60a43d4d2e 100644
  constexpr int kSnapDistance = 15;
 -}
 +
-+// 风桥 甲23 §4.2：网页上沿的分隔线照定稿帧 36:26925 画成 .5px #C9CED5。
++// 风桥 网页上沿的分隔线照设计稿 36:26925 画成 .5px #C9CED5。
 +// 只画一个设备像素：1 倍屏上用 50% 透明度（帧里 y80 正是线色与网页各半的混色），
 +// 2 倍及以上用实色（一个设备像素就是 .5px）。1.25–1.75 倍之间按同样的「墨量」
-+// 取 min(1, 0.5 × 倍数)，这是本补丁的插值，裁定只定了 1 倍和 2 倍。
++// 取 min(1, 0.5 × 倍数)，这是本补丁的插值，规格只定了 1 倍和 2 倍。
 +// 线压在网页第一行上，不另占一行（见 CalculateSeparatorLayouts），所以它有自己的
 +// layer，并且排在网页容器之后，画在网页上面；不接鼠标事件。
 +class WindriseHairlineSeparator : public views::View {
@@ -85,7 +85,7 @@ index a756f076ff..60a43d4d2e 100644
            *drop_target_view_, *delegate_, g_browser_process->local_state(),
            browser_view_->browser()->GetTabStripModel());
  
-+  // 风桥 甲23 §4.2：顶边用 .5px 细线（见 WindriseHairlineSeparator）。
++  // 风桥 顶边用 .5px 细线（见 WindriseHairlineSeparator）。
    contents_separators_.top_separator =
 -      AddChildView(ContentsSeparator::CreateLayerBasedContentsSeparator());
 +      AddChildView(std::make_unique<WindriseHairlineSeparator>());
@@ -140,7 +140,7 @@ index a756f076ff..60a43d4d2e 100644
  
 -  const bool show_background =
 -      drop_target_view_->GetVisible() || IsInSplitView();
-+  // 风桥 N10：单窗口态网页区带圆角时也显示背景视图（窗口底色，不圆角），
++  // 风桥 单窗口态网页区带圆角时也显示背景视图（窗口底色，不圆角），
 +  // 圆角处露出的才是窗口底色而不是后面的工具栏色。
 +  const bool show_background = drop_target_view_->GetVisible() ||
 +                               IsInSplitView() || !background_radii_.IsEmpty();
@@ -151,7 +151,7 @@ index a756f076ff..60a43d4d2e 100644
    }
    child_layouts.push_back(corner_layout);
  
-+  // 风桥 甲23 §4.4：顶边细线压在网页第一行上（定稿帧 36:26925 里线直接压在网页
++  // 风桥 顶边细线压在网页第一行上（设计稿 36:26925 里线直接压在网页
 +  // 上沿，不另占一行），网页不再为它往下让 1px。
    return gfx::Rect(available_space.x() + leading_separator_width,
 -                   available_space.y() + separator_height,

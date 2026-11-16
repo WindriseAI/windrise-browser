@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/layout_constants.cc b/chrome/browser/ui/layout_constants.cc
-index b8206dc188..aaf1b3ab15 100644
+index b8206dc188..b69149d543 100644
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
 @@ -4,8 +4,11 @@
@@ -31,7 +31,7 @@ index b8206dc188..aaf1b3ab15 100644
 +        const int bookmark_bar_attached_vertical_margin = 6;
 +        return button_height + bookmark_bar_attached_vertical_margin;
 +      }
-+      // 风桥 甲23：书签栏高走偏好（默认 32，乙02）；按钮 28 在栏内居中，上下各 2
++      // 风桥 书签栏高走偏好（默认 32）；按钮 28 在栏内居中，上下各 2
 +      // （见 BookmarkBarView::Layout）。不低于按钮高，免得按钮被裁。
 +      return std::max(button_height,
 +                      browseros::windrise::GetLayoutMetrics().Get(
@@ -44,7 +44,7 @@ index b8206dc188..aaf1b3ab15 100644
        return touch_ui ? 3 : 8;
      case LayoutConstant::kLocationBarHeight:
 -      return touch_ui ? 36 : 34;
-+      // 风桥 甲23 §4.4-b：地址栏高走偏好（默认 36，乙02）；上游非触屏是 34。
++      // 风桥 地址栏高走偏好（默认 36）；上游非触屏是 34。
 +      return touch_ui ? 36
 +                      : browseros::windrise::GetLayoutMetrics().Get(
 +                            browseros::windrise::LayoutMetric::kLocationBarHeight);
@@ -58,12 +58,12 @@ index b8206dc188..aaf1b3ab15 100644
 -    case LayoutConstant::kVerticalTabCornerRadius:
        return 8;
 +    case LayoutConstant::kVerticalTabCornerRadius:
-+      // 风桥 N3：标签圆角走偏好（默认 10，方案 3 节）。
++      // 风桥 标签圆角走偏好（默认 10，方案 3 节）。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTabRadius);
      case LayoutConstant::kVerticalTabHeight:
 -      return 30;
-+      // 风桥 N3：标签高走偏好（默认 36）。
++      // 风桥 标签高走偏好（默认 36）。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTabHeight);
      case LayoutConstant::kVerticalTabPinnedHeight:
@@ -72,7 +72,7 @@ index b8206dc188..aaf1b3ab15 100644
        return 32;
      case LayoutConstant::kVerticalTabStripHorizontalPadding:
 -      return 12;
-+      // 风桥 N3：标签列左右各留 8（240 宽的栏里标签 224）。
++      // 风桥 标签列左右各留 8（240 宽的栏里标签 224）。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTabStripHorizontalPadding);
      case LayoutConstant::kVerticalTabStripUncollapsedVerticalPadding:
@@ -83,14 +83,14 @@ index b8206dc188..aaf1b3ab15 100644
        return 18;
      case LayoutConstant::kVerticalTabStripButtonIconSize:
 -      return 20;
-+      // 风桥 N3：顶部小按钮图标 16。
++      // 风桥 顶部小按钮图标 16。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTopButtonIconSize);
      case LayoutConstant::kVerticalTabStripTopButtonPadding:
        return 4;
      case LayoutConstant::kVerticalTabStripFlatEdgeButtonPadding:
 -      return 2;
-+      // 风桥 P1：格子、搜索两个 32 见方 tile 之间留 4（定稿帧 36:26925 展开态
++      // 风桥 格子、搜索两个 32 见方 tile 之间留 4（设计稿 36:26925 展开态
 +      // 横排、点头页 ntp-zh-rail 收起态竖排都是 4）。
 +      return 4;
      case LayoutConstant::kVerticalTabStripTopButtonContainerHeight:
@@ -99,12 +99,12 @@ index b8206dc188..aaf1b3ab15 100644
        return 32;
      case LayoutConstant::kVerticalTabStripCollapseButtonSize:
 -      return 32;
-+      // 风桥 N3：展开收起按钮 32 见方（与顶部其它按钮同高）。
++      // 风桥 展开收起按钮 32 见方（与顶部其它按钮同高）。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTopButtonSize);
      case LayoutConstant::kVerticalTabStripTopContainerButtonSize:
 -      return 28;
-+      // 风桥 N3：顶部小按钮 32 见方。
++      // 风桥 顶部小按钮 32 见方。
 +      return browseros::windrise::GetLayoutMetrics().Get(
 +          browseros::windrise::LayoutMetric::kTopButtonSize);
      case LayoutConstant::kVerticalTabPinnedBorderThickness:

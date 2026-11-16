@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/ui/views/tabs/common/BUILD.gn b/chrome/browser/ui/views/tabs/common/BUILD.gn
-index 032f6ef..1140e91 100644
+index 032f6ef..54bf7d5 100644
 --- a/chrome/browser/ui/views/tabs/common/BUILD.gn
 +++ b/chrome/browser/ui/views/tabs/common/BUILD.gn
 @@ -101,6 +101,11 @@ source_set("impl") {
      "//cc/paint",
      "//chrome/app/theme:theme_resources",
      "//chrome/browser:primitives",
-+    # 风桥 N3：竖向标签的内边距 / 圆角 / 高度读外观偏好。
++    # 风桥 竖向标签的内边距 / 圆角 / 高度读外观偏好。
 +    "//chrome/browser/browseros/core:ai_state",
 +    # 风桥 theme-v2 §4：收起时那一个字的取字规则（和侧栏下段共用）。
 +    "//chrome/browser/browseros/core:rail_glyph",

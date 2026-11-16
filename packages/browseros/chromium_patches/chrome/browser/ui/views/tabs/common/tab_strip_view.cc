@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_strip_view.cc b/chrome/browser/ui/views/tabs/common/tab_strip_view.cc
-index 50da31fe97..183ffaeb0c 100644
+index 50da31fe97..21c383e492 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_strip_view.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_strip_view.cc
 @@ -9,6 +9,7 @@
@@ -16,7 +16,7 @@ index 50da31fe97..183ffaeb0c 100644
  
 +namespace {
 +
-+// 风桥 N6：竖向标签条上段不画 AI 的标签组（见 UnpinnedTabContainerView），
++// 风桥 竖向标签条上段不画 AI 的标签组（见 UnpinnedTabContainerView），
 +// 这些组里的标签由侧边栏下段画。AI 切到自己的标签时，上段不该为一个看不见的
 +// 标签滚动。
 +bool IsInWindriseAiGroup(const views::View* view) {

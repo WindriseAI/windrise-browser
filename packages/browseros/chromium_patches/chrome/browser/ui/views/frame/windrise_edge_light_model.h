@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_model.h b/chrome/browser/ui/views/frame/windrise_edge_light_model.h
 new file mode 100644
-index 0000000000..ff64c94369
+index 0000000000..4a55615ad3
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_model.h
 @@ -0,0 +1,175 @@
@@ -17,10 +17,10 @@ index 0000000000..ff64c94369
 +#include "third_party/skia/include/core/SkBitmap.h"
 +#include "third_party/skia/include/core/SkRect.h"
 +
-+// 风桥 N11 边缘光效的纯计算部分：走线、起伏函数、脉冲包络、粒子、亮度分析。
++// 风桥 边缘光效的纯计算部分：走线、起伏函数、脉冲包络、粒子、亮度分析。
 +// 不依赖任何 View / 合成器，输入全是数，输出是数，同一时刻算出来永远一样
 +// （方案「粒子怎么算」：全部由时间算出来，不存状态）。依据只有一份：
-+// browser-design/native/方案.md「光效层（N11）」一节。
++// browser-design/native/方案.md「光效层」一节。
 +namespace browseros::windrise {
 +
 +// ---------------------------------------------------------------------------

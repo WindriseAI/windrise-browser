@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..5ab7a0f3fc
+index 0000000000..51be809ca6
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 @@ -0,0 +1,607 @@
@@ -57,7 +57,7 @@ index 0000000000..5ab7a0f3fc
 +// chrome.browserOS.onAiPanelAction（见 browser_os.idl）。
 +constexpr char kPanelActionEventName[] = "browserOS.onAiPanelAction";
 +
-+// 动效-1115 N2：每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
++// 每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
 +constexpr base::TimeDelta kContentFadeDuration = base::Milliseconds(180);
 +// 旧组透明度降到这个值时，新组无论如何都开始淡入（兜底，保证两组有重叠）。
 +// 不按时间兜底：T0 前段很陡，旧组在 1/3 时长时已经接近 0，按时间等会留空档
@@ -95,8 +95,8 @@ index 0000000000..5ab7a0f3fc
 +  SetPaintToLayer();
 +  layer()->SetFillsBoundsOpaquely(false);
 +
-+  // 折叠时「标志 + 数字」的标志：风桥钩形标志（定稿帧 ntp-zh-rail 左下、theme-v2 §5、
-+  // 标注 #6、已定 丙16；原来误用了闪办的闪电）。
++  // 折叠时「标志 + 数字」的标志：风桥钩形标志（设计稿 ntp-zh-rail 左下、theme-v2 §5、
++  // 标注 #6、已定 ；原来误用了闪办的闪电）。
 +  mark_ = AddChildView(std::make_unique<views::ImageView>());
 +  mark_->SetImage(ui::ImageModel::FromVectorIcon(
 +      kWindriseBridgeMarkIcon, kColorTabForegroundActiveFrameActive,
@@ -399,7 +399,7 @@ index 0000000000..5ab7a0f3fc
 +      icon->SetBounds(0, 0, 0, 0);
 +    }
 +  }
-+  // 动效-1115 N2：稳定时记下这种状态的宽度，下次切换用来判「宽度过中点」；
++  // 稳定时记下这种状态的宽度，下次切换用来判「宽度过中点」；
 +  // 交叉淡进行中（侧栏宽度每帧在变、每帧都会排版）看一眼要不要开始淡入新组。
 +  if (!fade_out_animation_.is_animating() &&
 +      !fade_in_animation_.is_animating() && !fade_in_pending_) {
@@ -410,7 +410,7 @@ index 0000000000..5ab7a0f3fc
 +}
 +
 +void WindriseAiCardView::LayoutCollapsedGroup(int center_y) {
-+  // theme-v2 §5 / 已定 乙04、丙16：折叠时「标志 + 数字」和标签的「图标 + 一个字」
++  // theme-v2 §5 / 已定 折叠时「标志 + 数字」和标签的「图标 + 一个字」
 +  // 同构——同一组尺寸（标志 16、间距 5、数字占 14 宽的格子、字号 14），同样
 +  // 作为一组在卡片宽里居中，数字同样按字形对齐标志中线
 +  // （TabViewVerticalLayout 里那一段的同一套算法）。卡片和标签一样宽、一样

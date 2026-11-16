@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..f54b5c0fbb
+index 0000000000..ff3eb74f4b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
 @@ -0,0 +1,211 @@
@@ -26,7 +26,7 @@ index 0000000000..f54b5c0fbb
 +
 +// 风桥外观数值的运行时来源。整窗配色（ColorMixer）、弹层圆角、工具栏格子
 +// 按钮尺寸、网页区圆角都从这里取，值全部来自 profile 偏好：改偏好即改外观，
-+// 不用重编。默认值是 docs 里的定稿数值（见报告「偏好键对照表」）。
++// 不用重编。默认值是 设计稿数值。
 +//
 +// 颜色偏好存十进制 RGB（0xRRGGBB，例如 #E8EBEE 写 15264750），读出来统一补
 +// 不透明 alpha。这样值恒为正数，user_prefs JSON 里可读。需要半透明时再加单独
@@ -45,14 +45,14 @@ index 0000000000..f54b5c0fbb
 +  kTextSecondary,       // 次要文字、未选中标签
 +  kIcon,                // 工具栏图标
 +  kLine,                // 分隔线
-+  kWebContentsGap,      // 网页区四周的缝（N10 定：缝宽 0，颜色留着备用）
-+  kPanel,               // 「已连接 N 个 AI」面板底（N7，B 版银色玻璃的平涂近似）
-+  kCard,                // 左下卡片底（N7）
-+  kSectionHeaderText,   // 侧边栏上下分段的段标题（N6）
-+  kSectionDivider,      // 分段之间的分隔线（N6）
++  kWebContentsGap,      // 网页区四周的缝（定：缝宽 0，颜色留着备用）
++  kPanel,               // 「已连接 N 个 AI」面板底（B 版银色玻璃的平涂近似）
++  kCard,                // 左下卡片底
++  kSectionHeaderText,   // 侧边栏上下分段的段标题
++  kSectionDivider,      // 分段之间的分隔线
 +  kSlotChipBackground,  // 闪办芯片底（墨色实心）
 +  kSlotChipForeground,  // 闪办芯片字与图标
-+  // N7 左下卡片与浮出面板（B 版银色玻璃，原生只能平涂）
++  // 左下卡片与浮出面板（B 版银色玻璃，原生只能平涂）
 +  kAiCardBackground,     // 卡片底
 +  kAiPanelBackground,    // 面板底
 +  kAiPanelButtonBackground,  // 面板按钮底（白玻璃的平涂近似）
@@ -76,8 +76,8 @@ index 0000000000..f54b5c0fbb
 +  kGridButtonIconGap,        // 格子按钮图标与文字的间距
 +  kGridButtonFontSize,       // 格子按钮文字字号
 +  kWebContentsRadius,        // 网页区圆角
-+  kWebContentsGap,           // 网页区与窗框之间的缝（N10 定：默认 0）
-+  // N3 竖向标签栏
++  kWebContentsGap,           // 网页区与窗框之间的缝（定：默认 0）
++  // 竖向标签栏
 +  kTabHeight,                  // 标签高
 +  kTabRadius,                  // 标签圆角
 +  kTabStripHorizontalPadding,  // 标签列左右留白（标签宽 = 栏宽 - 两倍）
@@ -90,11 +90,11 @@ index 0000000000..f54b5c0fbb
 +  // 折叠窄条：标签「图标 + 一个字」、左下卡片「标志 + 数字」共用（theme-v2 §4、§5）
 +  kRailGlyphSize,              // 那一个字 / 数字的字号
 +  kRailGlyphGap,               // 图标与字之间的间距
-+  // N6 上下分段
++  // 上下分段
 +  kAiSectionHeaderHeight,   // 段标题行高
 +  kAiSectionHeaderFontSize, // 段标题字号
 +  kAiSplitterHeight,        // 两段之间分隔条那一条的高（拖动热区；没碰到时透明）
-+  // N7 左下「已连接 N 个 AI」卡片与面板
++  // 左下「已连接 N 个 AI」卡片与面板
 +  kAiCardHeight,           // 卡片高
 +  kAiCardRadius,           // 卡片圆角
 +  kAiCardPaddingLeft,      // 卡片左内边（AI 标志与面板文字同一条竖线）
@@ -106,15 +106,15 @@ index 0000000000..f54b5c0fbb
 +  kAiPanelPadding,         // 面板内边
 +  kAiPanelRowHeight,       // 面板行高
 +  kAiPanelButtonHeight,    // 面板按钮高
-+  // 甲23 书签栏
-+  kBookmarkBarHeight,      // 书签栏高（乙02：32；按钮 28 在栏内上下各留 2）
-+  // 甲23 §4.4-b 工具栏 / 地址栏
-+  kToolbarHeight,          // 工具栏高（乙02：48；Windows 标题按钮区跟它对齐）
-+  kLocationBarHeight,      // 地址栏高（乙02：36，全圆角）
-+  // N10 / N11
++  // 书签栏
++  kBookmarkBarHeight,      // 书签栏高（32；按钮 28 在栏内上下各留 2）
++  // 工具栏 / 地址栏
++  kToolbarHeight,          // 工具栏高（48；Windows 标题按钮区跟它对齐）
++  kLocationBarHeight,      // 地址栏高（36，全圆角）
++  // 网页圆角与边缘光效
 +  kWindowCornerRadius,       // 窗口圆角（Windows 11 系统裁出来的那 8px）
-+  // AI 操作时网页区四角的过渡目标半径（N10，11-13 定 12 -> 36）与时长。边缘光
-+  // 效（N11）的外沿贴着这个动画值，不另有自己的圆角数值。
++  // AI 操作时网页区四角的过渡目标半径（12 -> 36）与时长。边缘光
++  // 效的外沿贴着这个动画值，不另有自己的圆角数值。
 +  kWebContentsRadiusAi,
 +  kWebContentsRadiusAiMs,
 +};
@@ -159,12 +159,12 @@ index 0000000000..f54b5c0fbb
 +  }
 +};
 +
-+// N6：侧栏两段碰到时，下段（AI）占两段可用高的比例。用户拖分隔条松手时写，
++// 侧栏两段碰到时，下段（AI）占两段可用高的比例。用户拖分隔条松手时写，
 +// 范围 0.1–0.9，默认 0.4。
 +inline constexpr char kAiSectionRatioPref[] =
 +    "browseros.windrise.layout.ai_section_ratio";
 +
-+// 窄窗（丙12 / 方案「窄窗」行：窗口宽 < 900 时侧栏自动收起、格子按钮收成只剩
++// 窄窗（/ 方案「窄窗」行：窗口宽 < 900 时侧栏自动收起、格子按钮收成只剩
 +// 图标）。两处共用这一个阈值：竖向侧栏（VerticalTabStripRegionView）和工具栏
 +// 格子按钮（WindriseGridButton）。进出各留一点回差（< 900 进，>= 920 出），拖
 +// 窗口边在 900 附近来回时不来回切换。`was_narrow` = 上一次的判断结果。

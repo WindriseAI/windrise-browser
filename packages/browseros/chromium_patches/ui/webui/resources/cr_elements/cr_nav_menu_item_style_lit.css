@@ -1,5 +1,5 @@
 diff --git a/ui/webui/resources/cr_elements/cr_nav_menu_item_style_lit.css b/ui/webui/resources/cr_elements/cr_nav_menu_item_style_lit.css
-index 1c14b6800f5da090647de289928e976dc5160eb7..738d2f5aafee9103bdea2fb38fd8d7fd49120572 100644
+index 1c14b6800f5da090647de289928e976dc5160eb7..b72dab848459bc8673e7f6552e4024c6fd575119 100644
 --- a/ui/webui/resources/cr_elements/cr_nav_menu_item_style_lit.css
 +++ b/ui/webui/resources/cr_elements/cr_nav_menu_item_style_lit.css
 @@ -25,22 +25,26 @@
@@ -8,8 +8,8 @@ index 1c14b6800f5da090647de289928e976dc5160eb7..738d2f5aafee9103bdea2fb38fd8d7fd
    align-items: center;
 -  border-end-end-radius: 100px;
 -  border-start-end-radius: 100px;
-+  /* Windrise N12③：左栏选中项两头都圆（圆角 10、左右各留 8），和侧边栏标签同一种，
-+   * 不是上游左边直边贴着网页区左缘的半个胶囊；N13 / 丙07：每行 36（原 40），
++  /* Windrise ：左栏选中项两头都圆（圆角 10、左右各留 8），和侧边栏标签同一种，
++   * 不是上游左边直边贴着网页区左缘的半个胶囊；/ 每行 36（原 40），
 +   * 设置左栏最后一项在 720 高的网页区里整行露出。左内边距 23 → 16（外边距 1 → 8），图标和字的
 +   * 位置不变。设置 / 历史 / 扩展 / 密码 / 证书管理等页的左栏和书签页的文件夹树都用这一份，
 +   * 一起统一（书签树自己覆盖了内边距和右外边距，只有左外边距、圆角、行高跟着变）。 */

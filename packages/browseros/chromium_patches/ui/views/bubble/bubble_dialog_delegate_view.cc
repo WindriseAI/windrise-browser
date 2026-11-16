@@ -1,5 +1,5 @@
 diff --git a/ui/views/bubble/bubble_dialog_delegate_view.cc b/ui/views/bubble/bubble_dialog_delegate_view.cc
-index 53e90715ea..129587fbad 100644
+index 53e90715ea..ef19d73502 100644
 --- a/ui/views/bubble/bubble_dialog_delegate_view.cc
 +++ b/ui/views/bubble/bubble_dialog_delegate_view.cc
 @@ -53,6 +53,7 @@
@@ -26,7 +26,7 @@ index 53e90715ea..129587fbad 100644
  
  // Create a widget to host the bubble.
 +#if !BUILDFLAG(IS_MAC)
-+// Windrise motion-1115 N3/N4: the shared bubble open / close animation, plugged
++// Windrise the shared bubble open / close animation, plugged
 +// into aura's window visibility animation (VisibilityController, which
 +// already respects the system "show animations" setting, and which
 +// DesktopWindowTreeHostWin waits on before destroying the HWND on close).
@@ -107,7 +107,7 @@ index 53e90715ea..129587fbad 100644
    DCHECK(bubble_params.parent || !bubble->has_parent());
    bubble_widget->Init(std::move(bubble_params));
 +#if !BUILDFLAG(IS_MAC)
-+  // Windrise motion-1115 N3/N4. Bubbles that turned the visibility animation
++  // Windrise . Bubbles that turned the visibility animation
 +  // off themselves (SetVisibilityAnimationTransition(ANIMATE_NONE),
 +  // kAnimationsDisabledKey) still get none.
 +  if (!bubble->windrise_use_default_visibility_animation()) {
@@ -126,7 +126,7 @@ index 53e90715ea..129587fbad 100644
    SetShowCloseButton(false);
  
    LayoutProvider* const layout_provider = LayoutProvider::Get();
-+  // 风桥 N2：气泡圆角独立于对话框。对话框走 kDialogRadius（ChromeLayoutProvider
++  // 风桥 气泡圆角独立于对话框。对话框走 kDialogRadius（ChromeLayoutProvider
 +  // 把它映射到 radius_large = 16），气泡在这里固定成菜单 / 气泡档
 +  // （radius_medium = 12）。派生类里显式 set_corner_radius 的仍然覆盖这里。
 +  set_corner_radius(

@@ -1,5 +1,5 @@
 diff --git a/ui/views/controls/menu/menu_host.cc b/ui/views/controls/menu/menu_host.cc
-index 293bacaa70..eda9947394 100644
+index 293bacaa70..d3a2deb863 100644
 --- a/ui/views/controls/menu/menu_host.cc
 +++ b/ui/views/controls/menu/menu_host.cc
 @@ -37,6 +37,10 @@
@@ -20,7 +20,7 @@ index 293bacaa70..eda9947394 100644
 +#if defined(USE_AURA)
 +namespace {
 +
-+// Windrise motion-1115 N10 (coordinator decision b): mouse-opened root menus
++// Windrise mouse-opened root menus
 +// fade in over 120ms (press step) on gfx::Tween::WINDRISE_EASE_OUT, opacity
 +// only; no closing animation; keyboard-opened menus and submenus appear
 +// instantly. Upstream default on Windows was FADE 150ms LINEAR both ways.
@@ -52,7 +52,7 @@ index 293bacaa70..eda9947394 100644
  
    Init(std::move(params));
 +#if defined(USE_AURA)
-+  // Windrise motion-1115 N10.
++  // Windrise .
 +  if (aura::Window* window = GetNativeWindow()) {
 +    const bool is_root_menu = !submenu_->GetMenuItem()->GetParentMenuItem();
 +    if (is_root_menu && menu_controller &&

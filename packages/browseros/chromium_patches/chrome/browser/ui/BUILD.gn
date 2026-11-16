@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
-index 88668a0..1d81b59 100644
+index 88668a0..97cfa39 100644
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
 @@ -308,6 +308,8 @@ if (!is_android) {
@@ -62,7 +62,7 @@ index 88668a0..1d81b59 100644
  
    deps = [
      "//base",
-+    # Windrise 竖向标签栏尺寸（N3 高 / 圆角 / 左右留白 / 顶部按钮）读外观偏好。
++    # Windrise 竖向标签栏尺寸（高 / 圆角 / 左右留白 / 顶部按钮）读外观偏好。
 +    "//chrome/browser/browseros/core:theme",
      "//chrome/browser/ui:ui_features",
      "//chrome/common:chrome_features",

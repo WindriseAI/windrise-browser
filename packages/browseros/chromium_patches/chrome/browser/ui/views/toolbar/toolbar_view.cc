@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-index 7f404c6864..fd2448e1c8 100644
+index 7f404c6864..4511bedda6 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
 @@ -23,6 +23,7 @@
@@ -38,7 +38,7 @@ index 7f404c6864..fd2448e1c8 100644
      }
    }
  
-+  // 风桥「格子」按钮（方案 N8）：地址栏（和 glic 按钮）之后、扩展按钮之前。
++  // 风桥「格子」按钮：地址栏（和 glic 按钮）之后、扩展按钮之前。
 +  // 尺寸与配色都从偏好取，见 WindriseGridButton。
 +  windrise_grid_button_ =
 +      AddChildView(std::make_unique<WindriseGridButton>(browser_));
@@ -59,12 +59,11 @@ index 7f404c6864..fd2448e1c8 100644
      avatar_->SetVisible(show_avatar_toolbar_button);
    }
  
-@@ -1577,6 +1597,13 @@ void ToolbarView::InitLayout() {
+@@ -1577,6 +1597,12 @@ void ToolbarView::InitLayout() {
            : kOrderOffset + 1;
    constexpr int kToolbarActionsFlexOrder = kOrderOffset + 2;
    constexpr int kExtensionsFlexOrder = kOrderOffset + 3;
-+  // 风桥「格子」按钮排在扩展容器前面拿位置（order 越小越先拿到）：用户 R231
-+  // 「固定四五个扩展……都能固定上」同时不许挤掉我们自己的按钮。窗口不够宽时
++  // 风桥「格子」按钮排在扩展容器前面拿位置（order 越小越先拿到）。窗口不够宽时
 +  // 先把放不下的扩展收进拼图菜单，格子按钮一直留着（最小宽 = 首选宽，不会被
 +  // 压成 0）；窄窗（< 900）时它本身已收成 32 见方的图标
 +  // （WindriseGridButton::UpdateCompact）。和「固定的工具栏动作」同一档
@@ -73,7 +72,7 @@ index 7f404c6864..fd2448e1c8 100644
  
    const views::FlexSpecification location_bar_flex_rule =
        views::FlexSpecification(views::LayoutOrientation::kHorizontal,
-@@ -1610,6 +1637,17 @@ void ToolbarView::InitLayout() {
+@@ -1610,6 +1636,17 @@ void ToolbarView::InitLayout() {
                                         extensions_flex_rule);
    }
  

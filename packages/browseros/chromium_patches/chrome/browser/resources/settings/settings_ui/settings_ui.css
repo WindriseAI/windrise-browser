@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/resources/settings/settings_ui/settings_ui.css b/chrome/browser/resources/settings/settings_ui/settings_ui.css
-index b2a8a4d89b43c47d5c3c2022273342a2c797e42c..b374f7436b8af1d8445ca1702e1d6bde5a4e9dff 100644
+index b2a8a4d89b43c47d5c3c2022273342a2c797e42c..dfcb4d580e3fd0abfe4e7314684c92aa023ef29f 100644
 --- a/chrome/browser/resources/settings/settings_ui/settings_ui.css
 +++ b/chrome/browser/resources/settings/settings_ui/settings_ui.css
 @@ -53,6 +53,10 @@
  cr-toolbar {
    min-height: 56px;
    --cr-toolbar-center-basis: var(--settings-main-basis);
-+  /* Windrise N12④：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
++  /* Windrise ：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
 +  --wr-toolbar-left-flex: 0 0 266px;
 +  --wr-toolbar-field-justify: start;
 +  --wr-toolbar-field-gap: 25px;

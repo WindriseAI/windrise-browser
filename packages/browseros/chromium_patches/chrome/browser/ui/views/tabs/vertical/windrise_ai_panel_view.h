@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
 new file mode 100644
-index 0000000000..134f746ad2
+index 0000000000..f4faf00bc1
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h
 @@ -0,0 +1,49 @@
@@ -23,8 +23,8 @@ index 0000000000..134f746ad2
 +class Canvas;
 +}  // namespace gfx
 +
-+// 「已连接 N 个 AI」卡片点开后浮出的面板（方案 N7，B 版银色玻璃；定稿帧
-+// brand-ext/编译项-待定稿/img/ntp-zh-panel.jpg / ntp-en-panel.jpg）。
++// 「已连接 N 个 AI」卡片点开后浮出的面板（B 版银色玻璃；设计稿
++// ntp-zh-panel / ntp-en-panel）。
 +// 从上到下：标题「已连接 N 个 AI」、每家 AI 一行（名字 + 上次调用时间）、
 +// 「接一个 AI」白底宽按钮、.5px 线、底部文字行「打开风桥 / 闪办广场 / 设置」。
 +// 按钮发给扩展（browserOS.onAiPanelAction）。不放额度、剩余时长、公网地址。

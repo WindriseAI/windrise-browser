@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/core/windrise_rail_glyph.h b/chrome/browser/browseros/core/windrise_rail_glyph.h
 new file mode 100644
-index 0000000000..0f0517b9a5
+index 0000000000..2f3d2376b1
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_rail_glyph.h
 @@ -0,0 +1,35 @@
@@ -17,7 +17,7 @@ index 0000000000..0f0517b9a5
 +// 竖向标签（tabs/common/tab_view.cc）和侧栏下段的 AI 组合页
 +// （frame/windrise_ai_section_view.cc）共用这一条规则。
 +//
-+// 规则照规格字面（协调人 1116 裁定）：
++// 规则照规格字面：
 +//   1. 标题里有汉字，取第一个汉字（ICU 文字属 Han，含增补平面）；
 +//   2. 否则取第一个英文（拉丁）字母，转大写；
 +//   3. 两者都没有，取标题的第一个字符（跳过空白和不可见的格式字符），数字、

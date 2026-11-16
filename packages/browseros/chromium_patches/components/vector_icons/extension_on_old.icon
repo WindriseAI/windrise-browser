@@ -1,5 +1,5 @@
 diff --git a/components/vector_icons/extension_on_old.icon b/components/vector_icons/extension_on_old.icon
-index e95fcf0d68..58937767c1 100644
+index e95fcf0d68..aeb61bc626 100644
 --- a/components/vector_icons/extension_on_old.icon
 +++ b/components/vector_icons/extension_on_old.icon
 @@ -1,49 +1,35 @@
@@ -10,7 +10,7 @@ index e95fcf0d68..58937767c1 100644
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +//
-+// 风桥 R231（用户 11-06 03:32「扩展程序的那个积木怎么画的这么怪」）：工具栏
++// 工具栏
 +// 拼图重画。原图是实心的凸块接空心的身子，和工具栏其它线条图标不是一套。
 +// 改成纯线条：11 见方圆角 2 的身子 + 上、右两个凸块，线宽 1.5（和 grid_view
 +// 等 20dp 工具栏图标同粗），凸块和边之间用 0.9 的小圆角过渡，整条线切线连续，

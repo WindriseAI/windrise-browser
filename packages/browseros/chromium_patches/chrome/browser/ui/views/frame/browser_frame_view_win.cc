@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/browser_frame_view_win.cc b/chrome/browser/ui/views/frame/browser_frame_view_win.cc
-index 8bcc77c6b9..9ebca73cc9 100644
+index 8bcc77c6b9..6284ba8d4b 100644
 --- a/chrome/browser/ui/views/frame/browser_frame_view_win.cc
 +++ b/chrome/browser/ui/views/frame/browser_frame_view_win.cc
 @@ -16,6 +16,7 @@
@@ -20,7 +20,7 @@ index 8bcc77c6b9..9ebca73cc9 100644
            ? (TitlebarHeight(false) - WindowTopY())
            : GetFrameHeight();
  
-+  // 风桥 甲23 §4.4-b：竖向标签栏的普通窗口里，标题按钮区的下沿和工具栏下沿
++  // 风桥 竖向标签栏的普通窗口里，标题按钮区的下沿和工具栏下沿
 +  // 对齐。上游高 = 工具栏最小高 + 2，从 WindowTopY()（还原窗口为 1）开始，
 +  // 底边比工具栏多 1 行：它会把工具栏撑到 49；工具栏改回 48 后又会压住书签栏 /
 +  // 网页第一行，悬停「关闭」时露出 1px 红，点击区也多一行。这里按

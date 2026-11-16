@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.h b/chrome/browser/ui/views/frame/contents_container_view.h
-index e3ae9d104d..c8b3b2bd58 100644
+index e3ae9d104d..64dc12d039 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.h
 +++ b/chrome/browser/ui/views/frame/contents_container_view.h
 @@ -7,22 +7,33 @@
@@ -40,7 +40,7 @@ index e3ae9d104d..c8b3b2bd58 100644
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
-+  // 风桥 N11：按 AI 状态（browserOS.setAiActivity）开 / 关网页四周的边缘光效。
++  // 风桥 按 AI 状态（browserOS.setAiActivity）开 / 关网页四周的边缘光效。
 +  void UpdateEdgeLight();
 +  // 只同步开 / 关，不动布局（Layout 里调，避免 InvalidateLayout 递归）。
 +  void SyncEdgeLight();
@@ -59,7 +59,7 @@ index e3ae9d104d..c8b3b2bd58 100644
 +  // 扩展没登记时无效。
 +  GURL EdgeLightWebLayerUrl() const;
 +
-+  // 风桥 N10：AI 操作时网页区四角 12 -> 36 的过渡。进度 0..1 由边缘光效视图按
++  // 风桥 AI 操作时网页区四角 12 -> 36 的过渡。进度 0..1 由边缘光效视图按
 +  // 合成器时间戳算出来（同一个动画值，光的外沿因此始终贴着网页角）。
 +  void OnAiCornerProgress(float progress);
 +  // 基准圆角（rounded_corner_radii_）与 AI 过渡逐角合成。全屏 / 网页全屏 /
@@ -73,20 +73,20 @@ index e3ae9d104d..c8b3b2bd58 100644
    bool is_in_split_ = false;
  
    raw_ptr<BrowserView> browser_view_ = nullptr;
-+  // 风桥 N11：AI 操作时的边缘光效层（挂在网页区上方，不接输入）。
++  // 风桥 AI 操作时的边缘光效层（挂在网页区上方，不接输入）。
 +  raw_ptr<WindriseEdgeLightView> edge_light_view_ = nullptr;
 +  base::CallbackListSubscription ai_state_subscription_;
 +  base::CallbackListSubscription ai_pulse_subscription_;
 +  base::CallbackListSubscription assistant_authority_subscription_;
-+  // N10：AI 操作时网页角过渡进度（0 = 基准，1 = 36）与最近一次应用的有效圆角。
++  // AI 操作时网页角过渡进度（0 = 基准，1 = 36）与最近一次应用的有效圆角。
 +  float ai_corner_progress_ = 0.0f;
 +  gfx::RoundedCornersF last_effective_radii_;
 +  // AiWindowState 的键（只比较指针，不解引用）。
 +  raw_ptr<BrowserWindowInterface> windrise_ai_window_ = nullptr;
-+  // 风桥 N11 独立层：透明、不接输入的网页视图，加载扩展的 edge-light/frame.html。
++  // 风桥 独立层：透明、不接输入的网页视图，加载扩展的 edge-light/frame.html。
 +  raw_ptr<WindriseEdgeLightWebView> edge_light_web_view_ = nullptr;
 +  std::string edge_light_mode_;
-+  // 最近一次授权检查被拒（动效-1115 N7：被拒后不逐帧重查）。
++  // 最近一次授权检查被拒（被拒后不逐帧重查）。
 +  bool edge_light_denied_ = false;
 +  PrefChangeRegistrar edge_light_prefs_;
  

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/chrome_layout_provider.cc b/chrome/browser/ui/views/chrome_layout_provider.cc
-index 6ee376f2de..ef038afc87 100644
+index 6ee376f2de..8be6a9da4e 100644
 --- a/chrome/browser/ui/views/chrome_layout_provider.cc
 +++ b/chrome/browser/ui/views/chrome_layout_provider.cc
 @@ -8,6 +8,7 @@
@@ -14,7 +14,7 @@ index 6ee376f2de..ef038afc87 100644
    CHECK_GE(token, views::kShapeContextTokenStart, base::NotFatalUntil::M162);
    CHECK_LT(token, kChromeShapeContextTokenEnd, base::NotFatalUntil::M162);
  
-+  // 风桥：弹层 / 控件圆角走偏好（方案 N2，偏好 browseros.windrise.layout.radius_*）。
++  // 风桥：弹层 / 控件圆角走偏好（偏好 browseros.windrise.layout.radius_*）。
 +  // - 对话框 16（radius_large）；
 +  // - 菜单 / 气泡 12（radius_medium）。气泡在 BubbleDialogDelegate 构造函数里
 +  //   把 corner_radius 直接设成 kMenuRadius，所以两者不再共用 kDialogRadius；

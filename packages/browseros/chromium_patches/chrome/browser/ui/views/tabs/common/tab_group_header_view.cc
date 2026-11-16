@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc b/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc
-index 9e6a5d1..b1cbf93 100644
+index 9e6a5d1..29fcc92 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc
 +++ b/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc
 @@ -9,6 +9,8 @@
@@ -58,7 +58,7 @@ index 9e6a5d1..b1cbf93 100644
    if (!GetColorProvider()) {
      return SK_ColorBLACK;
    }
-+  // 风桥 N6：AI 用的标签那一段（扩展经 browserOS.setAiTabs 指定）不画组底色，
++  // 风桥 AI 用的标签那一段（扩展经 browserOS.setAiTabs 指定）不画组底色，
 +  // 组头读起来就是这一段的段标题。
 +  if (delegate_->IsValid() &&
 +      browseros::windrise::AiGroups::Contains(delegate_->GetTabGroup().id())) {

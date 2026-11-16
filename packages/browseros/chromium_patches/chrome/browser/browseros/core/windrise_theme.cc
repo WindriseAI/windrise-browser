@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..271b4be535
+index 0000000000..63bd5929cc
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,323 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -43,14 +43,14 @@ index 0000000000..271b4be535
 +     "browseros.windrise.theme.dark.line", 0xC9CED5, 0x3A4048},
 +    {ThemeToken::kWebContentsGap, "browseros.windrise.theme.light.web_gap",
 +     "browseros.windrise.theme.dark.web_gap", 0xDDE1E5, 0x262B32},
-+    // WINDRISE-TODO(value)：N7 定稿用 B 版银色玻璃（mock panelalt 是
++    // WINDRISE-TODO(value)：定稿用 B 版银色玻璃（mock panelalt 是
 +    // linear-gradient(180deg,#EEF0F2,#E3E7EB)）。原生 color id 只能平涂，
-+    // 先取最接近的 --wr-tile 值，等设计帮手给平涂定值后改这里与偏好默认值。
++    // 先取最接近的 --wr-tile 值，等设计稿给平涂定值后改这里与偏好默认值。
 +    {ThemeToken::kPanel, "browseros.windrise.theme.light.panel",
 +     "browseros.windrise.theme.dark.panel", 0xE8EBEE, 0x323840},
 +    {ThemeToken::kCard, "browseros.windrise.theme.light.card",
 +     "browseros.windrise.theme.dark.card", 0xE8EBEE, 0x323840},
-+    // WINDRISE-TODO(value)：N6 段标题 / 分隔线的定值还没给，先用次要文字与线。
++    // WINDRISE-TODO(value)：段标题 / 分隔线的定值还没给，先用次要文字与线。
 +    {ThemeToken::kSectionHeaderText,
 +     "browseros.windrise.theme.light.section_header_text",
 +     "browseros.windrise.theme.dark.section_header_text", 0x4A515C, 0xB4BCC5},
@@ -63,8 +63,8 @@ index 0000000000..271b4be535
 +    {ThemeToken::kSlotChipForeground,
 +     "browseros.windrise.theme.light.slot_chip_foreground",
 +     "browseros.windrise.theme.dark.slot_chip_foreground", 0xFFFFFF, 0xFFFFFF},
-+    // WINDRISE-TODO(value)：N7 卡片 / 面板的 B 版银色玻璃是渐变 + 上缘高光，
-+    // 原生 color id 只能平涂，先取 --wr-tile 值；设计帮手给平涂定值后改这里。
++    // WINDRISE-TODO(value)：卡片 / 面板的 B 版银色玻璃是渐变 + 上缘高光，
++    // 原生 color id 只能平涂，先取 --wr-tile 值；设计稿给平涂定值后改这里。
 +    {ThemeToken::kAiCardBackground,
 +     "browseros.windrise.theme.light.ai_card_background",
 +     "browseros.windrise.theme.dark.ai_card_background", 0xE8EBEE, 0x323840},
@@ -75,9 +75,9 @@ index 0000000000..271b4be535
 +     "browseros.windrise.theme.light.ai_panel_button_background",
 +     "browseros.windrise.theme.dark.ai_panel_button_background", 0xFFFFFF,
 +     0x4A525C},
-+    // N7 B 版银色玻璃：上浅下深的竖向渐变（方案标注表第 6 行：#F1F3F5 -> #E2E6EA）。
++    // B 版银色玻璃：上浅下深的竖向渐变（方案标注表第 6 行：#F1F3F5 -> #E2E6EA）。
 +    // 暗色取面板同一档深色（上 #3C434C、下 #323840，见下面面板两项）：卡片的字
-+    // 在暗色下是浅色，原来暗色值同亮色，浅底配浅字看不清（面板交付稿第八节 4）。
++    // 在暗色下是浅色，原来暗色值同亮色，浅底配浅字看不清。
 +    {ThemeToken::kAiCardBackgroundTop,
 +     "browseros.windrise.theme.light.ai_card_background_top",
 +     "browseros.windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0x3C434C},
@@ -85,7 +85,7 @@ index 0000000000..271b4be535
 +     "browseros.windrise.theme.light.ai_card_background_bottom",
 +     "browseros.windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
 +     0x323840},
-+    // 面板（N7 B 版）：亮色取值和卡片同一套渐变（方案 N7：「同一渐变」）。暗色
++    // 面板（B 版）：亮色取值和卡片同一套渐变。暗色
 +    // 单独给深色两档（上 = 浮层色 #3C434C，下 = tile 色 #323840），否则暗色下
 +    // 浅底配浅字看不见。「接一个 AI」按钮底见上面 ai_panel_button_background：
 +    // 亮色白（代码里再乘 .78 透明度，照 rgb(255 255 255 / .78)），暗色 #4A525C。
@@ -118,11 +118,11 @@ index 0000000000..271b4be535
 +     "browseros.windrise.layout.grid_button_font_size", 13},
 +    {LayoutMetric::kWebContentsRadius,
 +     "browseros.windrise.layout.web_contents_radius", 12},
-+    // N10 定稿：网页区四边的缝为 0（还剩圆角）。留着这个键是为了以后要缝时
++    // 定稿：网页区四边的缝为 0（还剩圆角）。留着这个键是为了以后要缝时
 +    // 改偏好即可，不用重编。
 +    {LayoutMetric::kWebContentsGap, "browseros.windrise.layout.web_contents_gap",
 +     0},
-+    // N3 竖向标签栏：帧 36:26925 的量（标签 36 高、圆角 10、左右各留 8、
++    // 竖向标签栏：帧 36:26925 的量（标签 36 高、圆角 10、左右各留 8、
 +    // 内左 10 / 内右 12、顶部按钮 32 见方、图标 16、「+」整宽 36）。
 +    {LayoutMetric::kTabHeight, "browseros.windrise.layout.tab_height", 36},
 +    {LayoutMetric::kTabRadius, "browseros.windrise.layout.tab_radius", 10},
@@ -140,12 +140,11 @@ index 0000000000..271b4be535
 +     "browseros.windrise.layout.top_button_radius", 10},
 +    {LayoutMetric::kNewTabButtonHeight,
 +     "browseros.windrise.layout.new_tab_button_height", 36},
-+    // 折叠窄条：图标 16 + 一个字 14，间距 5（theme-v2 §4；用户 11-05「收起时
-+    // 露出一个汉字」）。左下卡片折叠时的「标志 + 数字」用同一组值（§5 同构）。
++    // 折叠窄条：图标 16 + 一个字 14，间距 5。左下卡片折叠时的「标志 + 数字」用同一组值（§5 同构）。
 +    {LayoutMetric::kRailGlyphSize, "browseros.windrise.layout.rail_glyph_size",
 +     14},
 +    {LayoutMetric::kRailGlyphGap, "browseros.windrise.layout.rail_glyph_gap", 5},
-+    // N6 分段标题。WINDRISE-TODO(value)：行高 / 字号方案里没写，先按标签
++    // 分段标题。WINDRISE-TODO(value)：行高 / 字号方案里没写，先按标签
 +    // 文字行（14px 字号、28 高）来。
 +    {LayoutMetric::kAiSectionHeaderHeight,
 +     "browseros.windrise.layout.ai_section_header_height", 28},
@@ -153,7 +152,7 @@ index 0000000000..271b4be535
 +     "browseros.windrise.layout.ai_section_header_font_size", 14},
 +    {LayoutMetric::kAiSplitterHeight,
 +     "browseros.windrise.layout.ai_splitter_height", 12},
-+    // N7 卡片与面板：theme-v2 第 5 节（收起 44 高圆角 10；面板圆角 12）。
++    // 卡片与面板：theme-v2 第 5 节（收起 44 高圆角 10；面板圆角 12）。
 +    {LayoutMetric::kAiCardHeight, "browseros.windrise.layout.ai_card_height", 44},
 +    {LayoutMetric::kAiCardRadius, "browseros.windrise.layout.ai_card_radius", 10},
 +    {LayoutMetric::kAiCardPaddingLeft,
@@ -173,18 +172,17 @@ index 0000000000..271b4be535
 +     "browseros.windrise.layout.ai_panel_row_height", 35},
 +    {LayoutMetric::kAiPanelButtonHeight,
 +     "browseros.windrise.layout.ai_panel_button_height", 36},
-+    // 甲23：书签栏 32（乙02、theme-v2「书签栏 高 32」；帧 36:26925 里网页上沿
++    // 书签栏 32（theme-v2「书签栏 高 32」；帧 36:26925 里网页上沿
 +    // 在 80 = 工具栏 48 + 书签栏 32）。上游是按钮 28 + 6 = 34。
 +    {LayoutMetric::kBookmarkBarHeight,
 +     "browseros.windrise.layout.bookmark_bar_height", 32},
-+    // 甲23 §4.4-b：工具栏 48、地址栏 36（乙02、theme-v2；帧 36:26925 工具栏
++    // 工具栏 48、地址栏 36（theme-v2；帧 36:26925 工具栏
 +    // 0–47、地址栏约 6–41）。上游地址栏 34，工具栏被 Windows 标题按钮区撑到 49。
 +    {LayoutMetric::kToolbarHeight, "browseros.windrise.layout.toolbar_height",
 +     48},
 +    {LayoutMetric::kLocationBarHeight,
 +     "browseros.windrise.layout.location_bar_height", 36},
-+    // N10：窗口圆角取 Windows 11 的 8；AI 操作时网页区四角 12 -> 36，300ms
-+    // （方案 N10，11-13 用户确认）。
++    // 窗口圆角取 Windows 11 的 8；AI 操作时网页区四角 12 -> 36，300ms
 +    {LayoutMetric::kWindowCornerRadius,
 +     "browseros.windrise.layout.window_corner_radius", 8},
 +    {LayoutMetric::kWebContentsRadiusAi,

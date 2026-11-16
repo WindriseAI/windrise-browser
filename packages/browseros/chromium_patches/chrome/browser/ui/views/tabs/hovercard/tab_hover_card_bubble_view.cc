@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc b/chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc
-index e582c70239..9cc042b112 100644
+index e582c70239..506a23a057 100644
 --- a/chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc
 +++ b/chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc
 @@ -15,6 +15,7 @@
@@ -19,7 +19,7 @@ index e582c70239..9cc042b112 100644
 -        views::style::STYLE_BODY_3_EMPHASIS));
 +    // 风桥 theme-v2 §4：收起侧栏上悬停显示完整标题，提示框文字 12（上游标题
 +    // 13–14）。用 12 号中等字重，和下面 12 号常规的域名仍分得出主次。展开态
-+    // 保持上游原样（协调人 1116 裁定：新样式只用于收起态）。
++    // 保持上游原样。
 +    title_label_ =
 +        bubble_view_->bubble_params().windrise_rail_style
 +            ? AddChildView(std::make_unique<FadeLabelView>(
@@ -36,7 +36,7 @@ index e582c70239..9cc042b112 100644
  #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
    set_accept_events(false);
  #endif
-+  // Windrise motion-1115: the hover card runs its own WidgetFadeAnimator;
++  // Windrise : the hover card runs its own WidgetFadeAnimator;
 +  // keep upstream's default visibility animation on every platform,
 +  // Windows included (decision d: unchanged).
 +  set_windrise_use_default_visibility_animation(true);

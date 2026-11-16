@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
-index 64150f80cf..abfee1317f 100644
+index 64150f80cf..21234bd4f7 100644
 --- a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
 +++ b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
 @@ -5,8 +5,10 @@
@@ -17,7 +17,7 @@ index 64150f80cf..abfee1317f 100644
    auto orientation = collapsed ? views::LayoutOrientation::kVertical
                                 : views::LayoutOrientation::kHorizontal;
  
-+  // 风桥 N3：「+」整宽（展开态铺满标签列 224），36 高、#E8EBEE 底、圆角 10；
++  // 风桥 「+」整宽（展开态铺满标签列 224），36 高、#E8EBEE 底、圆角 10；
 +  // 收起时同样 36 高、宽同收起态标签（P3 / Q4：点头页 ntp-zh-rail 收起态「+」
 +  // 54×36，和标签同宽同高）。数值走偏好，改偏好即改外观。
 +  using browseros::windrise::LayoutMetric;
@@ -25,7 +25,7 @@ index 64150f80cf..abfee1317f 100644
 +      browseros::windrise::GetLayoutMetrics();
 +  const int new_tab_height = metrics.Get(LayoutMetric::kNewTabButtonHeight);
 +  new_tab_button_->SetMinSize(gfx::Size(0, new_tab_height));
-+  // 高度取首选尺寸 36（甲06 / 乙02）：展开态横向排、交叉轴不拉伸，宽度由下面的
++  // 高度取首选尺寸 36（/ ）：展开态横向排、交叉轴不拉伸，宽度由下面的
 +  // flex 规则铺满标签列；收起态竖向排、主轴按首选高 36，交叉轴拉伸成标签宽。
 +  // 收起态不能清掉首选尺寸：TabStripFlatEdgeButton 的默认首选是 32 见方，主轴
 +  // 只认首选高，清掉就回到 32。

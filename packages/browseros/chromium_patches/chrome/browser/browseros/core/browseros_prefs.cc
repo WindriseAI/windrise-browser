@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.cc b/chrome/browser/browseros/core/browseros_prefs.cc
 new file mode 100644
-index 0000000000..6fbb28686d
+index 0000000000..78c608a1db
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.cc
 @@ -0,0 +1,114 @@
@@ -25,7 +25,7 @@ index 0000000000..6fbb28686d
 +  registry->RegisterBooleanPref(prefs::kShowToolbarLabels,
 +                                !IsBrowserClawProduct());
 +  registry->RegisterBooleanPref(prefs::kVerticalTabsEnabled, true);
-+  // 风桥竖向标签栏首启即展开（方案 N4，帧里都是展开态）。
++  // 风桥竖向标签栏首启即展开（帧里都是展开态）。
 +  registry->RegisterBooleanPref(prefs::kVerticalTabsStartCollapsed, false);
 +  registry->RegisterStringPref(prefs::kAIWorkspaceGroupPrefix, "AI ");
 +  registry->RegisterBooleanPref(prefs::kShowTabGroupsInBookmarkBar, false);
@@ -37,7 +37,7 @@ index 0000000000..6fbb28686d
 +  // default. BrowserOS keeps stock focus behaviour.
 +  registry->RegisterBooleanPref(prefs::kAutomationNeverStealsFocus,
 +                                IsBrowserClawProduct());
-+  // 风桥 N11：光效画在哪（page / layer），扩展经 setEdgeLightMode 写。
++  // 风桥 光效画在哪（page / layer），扩展经 setEdgeLightMode 写。
 +  registry->RegisterStringPref(prefs::kWindriseEdgeLightMode, "page");
 +  registry->RegisterStringPref(prefs::kWindriseEdgeLightExtensionId, "");
 +

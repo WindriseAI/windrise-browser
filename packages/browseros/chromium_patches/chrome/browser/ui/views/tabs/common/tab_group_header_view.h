@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/common/tab_group_header_view.h b/chrome/browser/ui/views/tabs/common/tab_group_header_view.h
-index 1645b25..a231f51 100644
+index 1645b25..88883b9 100644
 --- a/chrome/browser/ui/views/tabs/common/tab_group_header_view.h
 +++ b/chrome/browser/ui/views/tabs/common/tab_group_header_view.h
 @@ -19,6 +19,7 @@
@@ -14,7 +14,7 @@ index 1645b25..a231f51 100644
    SkColor GetBackgroundColor() const;
    SkColor GetForegroundColor() const;
    void UpdateColors();
-+  // 风桥 N6：AI 那一段的标题按段标题的字体 / 行高排（偏好
++  // 风桥 AI 那一段的标题按段标题的字体 / 行高排（偏好
 +  // browseros.windrise.layout.ai_section_header_*）。
 +  void UpdateAiSectionStyle();
  

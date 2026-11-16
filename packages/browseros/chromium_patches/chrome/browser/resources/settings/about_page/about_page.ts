@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.ts b/chrome/browser/resources/settings/about_page/about_page.ts
-index 30855eca88e6139226d36767e57cda53c44f72aa..b79c01a6b11c7f066c425a937e853beaebd93a84 100644
+index 30855eca88e6139226d36767e57cda53c44f72aa..8ddcc0c595c12b82aaf0d1dfd7d4cab2af58709f 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.ts
 @@ -93,6 +93,8 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
@@ -20,7 +20,7 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..b79c01a6b11c7f066c425a937e853bea
  
    private aboutBrowserProxy_: AboutPageBrowserProxy =
        AboutPageBrowserProxyImpl.getInstance();
-@@ -221,7 +225,26 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+@@ -221,7 +225,25 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
    }
  
    protected onHelpClick_() {
@@ -33,8 +33,7 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..b79c01a6b11c7f066c425a937e853bea
 +    window.open('https://github.com/WindriseAI/windrise-browser');
 +  }
 +
-+  // 字体声明（kb/browser-ui-inventory-1106「已定」第 3 条；用户 11-06：「字体协议那个不用给它
-+  // 那么多画面，写一行小小字儿就行了」）：平时只有一行小字，点一下在这一行下面展开协议全文，再点收起。
++  // 字体声明平时只有一行小字，点一下在这一行下面展开协议全文，再点收起。
 +  // 协议文件和字体一起原样打包在 chrome://resources/harmonyos_sans/，末尾补齐用的空字符显示时去掉。
 +  protected async onFontLicenseClick_(e: Event) {
 +    e.preventDefault();

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/BUILD.gn b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
-index e88955ec6c..e1676001cb 100644
+index e88955ec6c..ed1cbb6982 100644
 --- a/chrome/browser/ui/views/tabs/vertical/BUILD.gn
 +++ b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
 @@ -47,7 +47,10 @@ source_set("impl") {
@@ -8,7 +8,7 @@ index e88955ec6c..e1676001cb 100644
    deps = [
 +    "//cc/paint",
      "//chrome/browser:primitives",
-+    # 风桥 N3：顶部小按钮的底与圆角读外观偏好。
++    # 风桥 顶部小按钮的底与圆角读外观偏好。
 +    "//chrome/browser/browseros/core:theme",
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
@@ -17,7 +17,7 @@ index e88955ec6c..e1676001cb 100644
    ]
  }
  
-+# 风桥 N7：左下「已连接 N 个 AI」卡片与浮出面板。单独成 target，供
++# 风桥 左下「已连接 N 个 AI」卡片与浮出面板。单独成 target，供
 +# frame:vertical_tab_strip_region_view 挂进侧边栏；这里不依赖 frame，避免与
 +# vertical:impl -> frame:vertical_tab_strip_region_view 形成环形依赖。
 +source_set("windrise_ai_ui") {

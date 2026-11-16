@@ -1,5 +1,5 @@
 diff --git a/ui/views/bubble/bubble_dialog_delegate_view.h b/ui/views/bubble/bubble_dialog_delegate_view.h
-index c63a5501d9..9e70b00730 100644
+index c63a5501d9..4daf9f8c75 100644
 --- a/ui/views/bubble/bubble_dialog_delegate_view.h
 +++ b/ui/views/bubble/bubble_dialog_delegate_view.h
 @@ -64,6 +64,7 @@ class ExtensionInstallDialogView;
@@ -14,7 +14,7 @@ index c63a5501d9..9e70b00730 100644
    bool accept_events() const { return accept_events_; }
    void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
  
-+  // Windrise motion-1115 (N3/N4): every bubble gets the shared open / close
++  // Windrise : every bubble gets the shared open / close
 +  // animation (open 240ms: opacity 0->1 + scale 0.96->1 from the anchor side;
 +  // close 180ms: opacity only; curve gfx::Tween::WINDRISE_EASE_OUT). Bubbles
 +  // that run their own fade (the tab hover card) keep upstream's default.
@@ -40,7 +40,7 @@ index c63a5501d9..9e70b00730 100644
    friend class ::ProfileMenuViewBase;
    friend class ::RemoveSuggestionBubbleDialogDelegateView;
    friend class ::StoragePressureBubbleView;
-+  // 风桥 N7：左下「已连接 N 个 AI」面板，走 CreatePassKey() 构造。
++  // 风桥 左下「已连接 N 个 AI」面板，走 CreatePassKey() 构造。
 +  friend class ::WindriseAiPanelView;
    friend class ::TabGroupEditorBubbleView;
    friend class ::TabHoverCardBubbleView;

@@ -1,6 +1,6 @@
 diff --git a/chrome/app/vector_icons/windrise_bridge_mark.icon b/chrome/app/vector_icons/windrise_bridge_mark.icon
 new file mode 100644
-index 0000000000..94a8854291
+index 0000000000..91fc07f588
 --- /dev/null
 +++ b/chrome/app/vector_icons/windrise_bridge_mark.icon
 @@ -0,0 +1,95 @@
@@ -9,7 +9,7 @@ index 0000000000..94a8854291
 +// 风桥钩形标志（单色）：一道弧 + 右下一个开口小环。形取自
 +// tools/windrise/brand-src/windrise-bridge-icon.svg 里那一组标志（弧 82 点折线 +
 +// r=4.4、线宽 2.6 的圆弧），整体平移 (+0.12, -1.74) 让外包框居中在 32 画布里。
-+// 16 DIP 显示时宽约 14、高约 9.5，和定稿帧 ntp-zh-rail 左下卡片量得的一致。
++// 16 DIP 显示时宽约 14、高约 9.5，和设计稿 ntp-zh-rail 左下卡片量得的一致。
 +
 +CANVAS_DIMENSIONS, 32,
 +MOVE_TO, 2.96f, 23.84f,

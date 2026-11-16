@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
-index 5c8d5a6d20..9aa607be4c 100644
+index 5c8d5a6d20..2d022fc3cb 100644
 --- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
 +++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
 @@ -35,7 +35,10 @@
@@ -34,7 +34,7 @@ index 5c8d5a6d20..9aa607be4c 100644
    raw_ptr<views::View> content_area_view_ = nullptr;
 +
 +  raw_ptr<WindriseAiCardView> ai_card_view_ = nullptr;
-+  // 风桥 N6：侧栏下段（AI 的标签），在「+」和左下卡片之间。
++  // 风桥 侧栏下段（AI 的标签），在「+」和左下卡片之间。
 +  raw_ptr<WindriseAiSectionView> ai_section_view_ = nullptr;
 +  // 风桥 L11：窗口是不是窄着（< 900 进，>= 920 出）。
 +  bool windrise_narrow_window_ = false;

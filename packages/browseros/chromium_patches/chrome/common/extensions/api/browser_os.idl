@@ -1,6 +1,6 @@
 diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
 new file mode 100644
-index 0000000000..301d0eab70
+index 0000000000..426ba49623
 --- /dev/null
 +++ b/chrome/common/extensions/api/browser_os.idl
 @@ -0,0 +1,280 @@
@@ -55,7 +55,7 @@ index 0000000000..301d0eab70
 +    DOMString? text;
 +  };
 +
-+  // A connected AI (used by the N7 card and panel).
++  // A connected AI (used by the card and panel).
 +  dictionary AiConnection {
 +    // Display name (for example Claude).
 +    DOMString name;
@@ -67,7 +67,7 @@ index 0000000000..301d0eab70
 +    long? lastActiveMinutes;
 +  };
 +
-+  // Options for setAiTabs (N6 sectioned tab list).
++  // Options for setAiTabs (sectioned tab list).
 +  dictionary SetAiTabsOptions {
 +    // Any tab currently owned by the AI (used to locate the window).
 +    long tabId;
@@ -79,7 +79,7 @@ index 0000000000..301d0eab70
 +    long[] tabIds;
 +  };
 +
-+  // Options for setConnectedAis (N7).
++  // Options for setConnectedAis .
 +  dictionary SetConnectedAisOptions {
 +    // Any tab in the window (used to locate the window).
 +    long tabId;
@@ -88,7 +88,7 @@ index 0000000000..301d0eab70
 +    AiConnection[] connections;
 +  };
 +
-+  // Options for setAiActivity (N11 edge light).
++  // Options for setAiActivity (edge light).
 +  dictionary SetAiActivityOptions {
 +    // The tab the AI is operating on.
 +    long tabId;
@@ -101,7 +101,7 @@ index 0000000000..301d0eab70
 +    DOMString? aiName;
 +  };
 +
-+  // Options for setEdgeLightMode (N11: where the edge light is drawn).
++  // Options for setEdgeLightMode (where the edge light is drawn).
 +  dictionary SetEdgeLightModeOptions {
 +    // "page": the extension draws it inside the page (default).
 +    // "layer": a transparent, input-less web view over the web contents loads
@@ -110,7 +110,7 @@ index 0000000000..301d0eab70
 +    DOMString mode;
 +  };
 +
-+  // Options for pulseAiActivity (N11 edge light, one pulse per action).
++  // Options for pulseAiActivity (edge light, one pulse per action).
 +  dictionary PulseAiActivityOptions {
 +    // The tab that performed the action.
 +    long tabId;
@@ -233,27 +233,27 @@ index 0000000000..301d0eab70
 +        DOMString message,
 +        ShowInfoBarCallback callback);
 +
-+    // Windrise N6: tells the browser which tabs belong to the current AI.
++    // Windrise tells the browser which tabs belong to the current AI.
 +    // The browser groups them into the last section of the side panel.
 +    static void setAiTabs(SetAiTabsOptions options, optional VoidCallback callback);
 +
-+    // Windrise N7: data for the bottom-left connected-AI card and panel.
++    // Windrise data for the bottom-left connected-AI card and panel.
 +    static void setConnectedAis(
 +        SetConnectedAisOptions options,
 +        optional VoidCallback callback);
 +
-+    // Windrise N11: turns the AI operation edge light on or off for a tab.
++    // Windrise turns the AI operation edge light on or off for a tab.
 +    static void setAiActivity(
 +        SetAiActivityOptions options,
 +        optional VoidCallback callback);
 +
-+    // Windrise N11: chooses where the edge light is drawn. Stored in a
++    // Windrise chooses where the edge light is drawn. Stored in a
 +    // profile pref; takes effect on the next frame of every window.
 +    static void setEdgeLightMode(
 +        SetEdgeLightModeOptions options,
 +        optional VoidCallback callback);
 +
-+    // Windrise N11: called once per AI action (click, typing, navigation,
++    // Windrise called once per AI action (click, typing, navigation,
 +    // scroll) so the edge light pulses. Ignored unless setAiActivity is on.
 +    static void pulseAiActivity(
 +        PulseAiActivityOptions options,
@@ -279,7 +279,7 @@ index 0000000000..301d0eab70
 +    // owns what "grid mode" looks like; the browser only reports the click.
 +    static void onGridButtonClicked();
 +
-+    // Windrise N7: a panel footer button was clicked. |action| is "open_app",
++    // Windrise a panel footer button was clicked. |action| is "open_app",
 +    // "grid" or "settings".
 +    static void onAiPanelAction(DOMString action);
 +  };

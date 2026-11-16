@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..5ecc8620d0 100644
+index 413b2f626d..ec39e2c502 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -4,12 +4,17 @@
@@ -45,13 +45,13 @@ index 413b2f626d..5ecc8620d0 100644
              .Build());
    }
  
-+  // 风桥 N11：边缘光效层，画在网页区上方（层 = 网页区，外扩 0），不接输入。
-+  // N10：网页角 12 -> 36 的过渡进度由它按合成器时间戳算，经回调交给本类。
++  // 风桥 边缘光效层，画在网页区上方（层 = 网页区，外扩 0），不接输入。
++  // 网页角 12 -> 36 的过渡进度由它按合成器时间戳算，经回调交给本类。
 +  edge_light_view_ = AddChildView(std::make_unique<WindriseEdgeLightView>());
 +  edge_light_view_->SetCanProcessEventsWithinSubtree(false);
 +  edge_light_view_->SetCornerProgressCallback(base::BindRepeating(
 +      &ContentsContainerView::OnAiCornerProgress, base::Unretained(this)));
-+  // 风桥 N11 独立层：和光效层同一个位置、在它上面；平时不建网页视图（第一次显示才建）。
++  // 风桥 独立层：和光效层同一个位置、在它上面；平时不建网页视图（第一次显示才建）。
 +  edge_light_web_view_ = AddChildView(
 +      std::make_unique<WindriseEdgeLightWebView>(browser_view->browser()));
 +  // 光效画在哪由偏好定，扩展经 browserOS.setEdgeLightMode 写；改了立刻生效。
@@ -109,7 +109,7 @@ index 413b2f626d..5ecc8620d0 100644
    }
 +
 +  if (edge_light_view_) {
-+    // 光的外沿贴着网页角：同一组数（含 N10 的 AI 过渡）。
++    // 光的外沿贴着网页角：同一组数（含 的 AI 过渡）。
 +    edge_light_view_->SetCornerRadii(content_rounded_corners);
 +  }
 +  if (edge_light_web_view_) {
@@ -160,7 +160,7 @@ index 413b2f626d..5ecc8620d0 100644
 +void ContentsContainerView::OnAiCornerProgress(float progress) {
 +  ai_corner_progress_ = progress;
 +  // 光效层每帧回调一次（淡出结束回到 0 时一定回调）：独立层的显示 / 隐藏跟着它。
-+  // 逐帧只走不带授权 IO 的那一半（动效-1115 N7）。
++  // 逐帧只走不带授权 IO 的那一半。
 +  SyncEdgeLightWebLayerShown();
 +  if (GetEffectiveRoundedCorners() == last_effective_radii_) {
 +    return;
@@ -216,7 +216,7 @@ index 413b2f626d..5ecc8620d0 100644
 +  const std::string mode = browser_view_->GetProfile()->GetPrefs()->GetString(
 +      browseros::prefs::kWindriseEdgeLightMode);
 +  // 只有 page / layer 两种（原生 Skia 画法已摘除，别的值都按 page）。
-+  // 两种模式下 edge_light_view_ 都照常计时（N10 网页角 12 -> 36、IsActive），它本身不画。
++  // 两种模式下 edge_light_view_ 都照常计时（网页角 12 -> 36、IsActive），它本身不画。
 +  edge_light_mode_ = mode == "layer" ? "layer" : "page";
 +  UpdateEdgeLight();
 +  // 模式 / 扩展 id 变了：重新判一次授权（原来由逐帧检查顺带做）。
@@ -289,7 +289,7 @@ index 413b2f626d..5ecc8620d0 100644
 +}
 +
 +bool ContentsContainerView::RefreshEdgeLightAuthorization() {
-+  // 动效-1115 N7：授权检查可能在 UI 线程上阻塞读文件（第一次校验扩展 /
++  // 授权检查可能在 UI 线程上阻塞读文件（第一次校验扩展 /
 +  // 未授权时 PollAuthority 读租约），所以只在这里做，不进逐帧路径。
 +  Profile* profile = browser_view_->GetProfile();
 +  const std::string& id = profile->GetPrefs()->GetString(
@@ -349,13 +349,13 @@ index 413b2f626d..5ecc8620d0 100644
    }
  
 +  if (edge_light_view_) {
-+    // 风桥 N10 / N11 计时器：只计时、不绘制，一直不可见（独立层另算，见下）。
++    // 风桥 计时器：只计时、不绘制，一直不可见（独立层另算，见下）。
 +    layouts.child_layouts.emplace_back(edge_light_view_.get(),
 +                                       /*visible=*/false,
 +                                       non_devtools_contents_bounds);
 +  }
 +  if (edge_light_web_view_) {
-+    // 风桥 N11 独立层：同一个位置（网页区，外扩 0），在光效层上面。
++    // 风桥 独立层：同一个位置（网页区，外扩 0），在光效层上面。
 +    layouts.child_layouts.emplace_back(edge_light_web_view_.get(),
 +                                       edge_light_web_view_->shown(),
 +                                       non_devtools_contents_bounds);

@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..7e30891559
+index 0000000000..76ce7d0228
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 @@ -0,0 +1,131 @@
@@ -31,7 +31,7 @@ index 0000000000..7e30891559
 +class ExpandOnHoverLock;
 +class WindriseAiPanelView;
 +
-+// 竖向标签栏左下角「已连接 N 个 AI」卡片（方案 N7，B 版银色玻璃）。
++// 竖向标签栏左下角「已连接 N 个 AI」卡片（B 版银色玻璃）。
 +// 数据全部来自扩展：browserOS.setConnectedAis 推连接列表，卡片只显示数量 /
 +// AI 标志 / 齿轮；点卡片向右上方浮出 WindriseAiPanelView。收起（折叠标签栏）
 +// 时只剩风桥标志 + 数字。
@@ -66,7 +66,7 @@ index 0000000000..7e30891559
 +  // views::WidgetObserver:
 +  void OnWidgetDestroyed(views::Widget* widget) override;
 +
-+  // views::AnimationDelegateViews（经 views::Button 继承；motion-1115 N2：折叠 /
++  // views::AnimationDelegateViews（经 views::Button 继承；折叠 /
 +  // 展开内容交叉淡。不是 fade_out_animation_ / fade_in_animation_ 的回调原样交给
 +  // views::Button，保持 Button 自己悬停动画的行为）：
 +  void AnimationProgressed(const gfx::Animation* animation) override;
@@ -81,7 +81,7 @@ index 0000000000..7e30891559
 +  void RebuildFromState();
 +  void ShowPanel();
 +
-+  // 动效-1115 N2（审查 P4 改）：折叠态 ⇄ 展开态内容真正的交叉淡。两组内容
++  // ：折叠态 ⇄ 展开态内容真正的交叉淡。两组内容
 +  // 同时在场、各自一层：旧的一组立刻按 T0 淡出 180ms；新的一组等卡片宽度走过
 +  // 新旧宽度的中点（切换开始时已是目标宽度就立刻）再按 T0 淡入 180ms；无论如何
 +  // 旧组透明度降到 0.5 时新组一定已经开始，两组之间不留空档。被打断：两组都从
@@ -130,7 +130,7 @@ index 0000000000..7e30891559
 +  int collapsed_content_width_ = 0;
 +  gfx::LinearAnimation fade_out_animation_;
 +  gfx::LinearAnimation fade_in_animation_;
-+  // AI 图标只在 AI 状态变化时解码一次（动效-1115 N2：切换时不再解 PNG）。
++  // AI 图标只在 AI 状态变化时解码一次（切换时不再解 PNG）。
 +  std::vector<gfx::ImageSkia> decoded_icons_;
 +};
 +

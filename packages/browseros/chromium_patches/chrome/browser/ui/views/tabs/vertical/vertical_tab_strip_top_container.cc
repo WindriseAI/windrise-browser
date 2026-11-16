@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc
-index c34734562b..6c3cb7f497 100644
+index c34734562b..a3504e85e1 100644
 --- a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc
 +++ b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc
 @@ -4,10 +4,12 @@
@@ -19,8 +19,8 @@ index c34734562b..6c3cb7f497 100644
  void VerticalTabStripTopContainer::Layout(PassKey) {
    LayoutSuperclass<views::View>(this);
    combo_button_->SetOrientation(combo_button_orientation_);
-+  // 风桥 P1（59c 判定）：格子、搜索和收起按钮一样，各自是一块 #E8EBEE 底、
-+  // 圆角 10 的 32 见方 tile（乙01 / 乙02、方案:18、定稿帧 36:26925 与点头页
++  // 风桥 格子、搜索和收起按钮一样，各自是一块 #E8EBEE 底、
++  // 圆角 10 的 32 见方 tile（/ 方案:18、设计稿 36:26925 与点头页
 +  // ntp-zh-rail）。颜色走 mixer 的 kColorWindriseTileBackground，圆角走偏好；
 +  // 每次布局给一次（两个 setter 值没变就直接返回），改偏好即改外观。
 +  const float top_button_radius = static_cast<float>(
@@ -54,7 +54,7 @@ index c34734562b..6c3cb7f497 100644
 -        int padding = is_collapsed
 -                          ? kComboButtonCollapsedPadding
 -                          : std::max(0, (host_size.width() - width) / 2);
-+        // 风桥 P1（59c 判定）：上游收起时把组合按钮撑满栏宽，按钮比 32 宽就
++        // 风桥 上游收起时把组合按钮撑满栏宽，按钮比 32 宽就
 +        // 塞进标签文字，窄栏里露出「…」。这里一律取首选宽（两个 32 见方竖排），
 +        // 在收起栏的标签列里水平居中（点头页 ntp-zh-rail：66 栏里居中）。
 +        // 悬停展开时栏变宽但仍按收起态排，x 继续按收起栏的宽度算，按钮不跟着

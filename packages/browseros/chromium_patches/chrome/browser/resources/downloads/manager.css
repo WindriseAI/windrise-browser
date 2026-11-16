@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/resources/downloads/manager.css b/chrome/browser/resources/downloads/manager.css
-index 5d92f27829e9bf3dd0298d5440a7615eb0ab132c..59fc884ccce4ba58bf3eccbd497c1f25d68cc200 100644
+index 5d92f27829e9bf3dd0298d5440a7615eb0ab132c..60cf7cb40a71698de53dfffd0ff33f6157ecd310 100644
 --- a/chrome/browser/resources/downloads/manager.css
 +++ b/chrome/browser/resources/downloads/manager.css
 @@ -34,6 +34,10 @@
    --cr-toolbar-field-max-width: var(--cr-toolbar-center-basis);
    --cr-toolbar-field-width: 100%;
    --cr-toolbar-header-white-space: nowrap;
-+  /* Windrise N12④：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
++  /* Windrise ：搜索框从左栏宽 + 25 开始（见 cr_toolbar.css 补丁） */
 +  --wr-toolbar-left-flex: 0 0 266px;
 +  --wr-toolbar-field-justify: start;
 +  --wr-toolbar-field-gap: 25px;

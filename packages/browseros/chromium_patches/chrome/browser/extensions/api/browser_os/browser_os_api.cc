@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/extensions/api/browser_os/browser_os_api.cc b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 new file mode 100644
-index 0000000000..eb807041a6
+index 0000000000..3c3d52dcbb
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
 @@ -0,0 +1,795 @@
@@ -502,7 +502,7 @@ index 0000000000..eb807041a6
 +  return RespondNow(NoArguments());
 +}
 +
-+// 风桥 N6：哪些标签是某个 AI 的。每个 AI 一个标签组，组名就是 AI 名；侧边栏
++// 风桥 哪些标签是某个 AI 的。每个 AI 一个标签组，组名就是 AI 名；侧边栏
 +// 下段把每个组画成一个可展开的「组合页」（WindriseAiSectionView），上段不画它们。
 +// 按 aiName 区分：同一个 AI 再调一次是整组替换，tabIds 传空数组只清这个 AI 的
 +// 一组，不影响别的 AI。浏览器只动这些 AI 组，不碰用户自己的组与固定标签。
@@ -620,7 +620,7 @@ index 0000000000..eb807041a6
 +  return RespondNow(NoArguments());
 +}
 +
-+// 风桥 N7：卡片 / 面板的数据。图标是 base64 PNG，原生自己解码，不联网。
++// 风桥 卡片 / 面板的数据。图标是 base64 PNG，原生自己解码，不联网。
 +ExtensionFunction::ResponseAction BrowserOSSetConnectedAisFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
@@ -668,7 +668,7 @@ index 0000000000..eb807041a6
 +  return RespondNow(NoArguments());
 +}
 +
-+// 风桥 N11：开关某个标签的银色海浪。
++// 风桥 开关某个标签的银色海浪。
 +ExtensionFunction::ResponseAction BrowserOSSetAiActivityFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));

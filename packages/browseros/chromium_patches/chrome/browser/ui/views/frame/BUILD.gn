@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
-index 268324dce9..6955ef0cec 100644
+index 268324dce9..4a53764d96 100644
 --- a/chrome/browser/ui/views/frame/BUILD.gn
 +++ b/chrome/browser/ui/views/frame/BUILD.gn
 @@ -526,7 +526,12 @@ source_set("horizontal_tab_strip_region_view") {
@@ -9,7 +9,7 @@ index 268324dce9..6955ef0cec 100644
 -  sources = [ "vertical_tab_strip_region_view.cc" ]
 +  sources = [
 +    "vertical_tab_strip_region_view.cc",
-+    # 风桥 N6：侧栏下段（AI 的标签、分隔条、组合页）。
++    # 风桥 侧栏下段（AI 的标签、分隔条、组合页）。
 +    "windrise_ai_section_view.cc",
 +    "windrise_ai_section_view.h",
 +  ]
@@ -20,11 +20,11 @@ index 268324dce9..6955ef0cec 100644
      ":safe_invoke",
      ":shadow",
      "//chrome/app:generated_resources",
-+    # 风桥：竖标签栏读 BrowserOS 偏好 / AI 段状态，并挂 N7 卡片。
++    # 风桥：竖标签栏读 BrowserOS 偏好 / AI 段状态，并挂 卡片。
 +    "//chrome/browser/browseros/core:ai_state",
 +    "//chrome/browser/browseros/core:prefs",
 +    "//chrome/browser/profiles:profile",
-+    # 风桥 N6 下段：取字规则、外观偏好、标签标题 / 图标、图标、绘制。
++    # 风桥 下段：取字规则、外观偏好、标签标题 / 图标、图标、绘制。
 +    "//cc/paint",
 +    "//chrome/browser/browseros/core:rail_glyph",
 +    "//chrome/browser/browseros/core:theme",
@@ -54,7 +54,7 @@ index 268324dce9..6955ef0cec 100644
    public_deps = [ ":multi_contents_background_view" ]
    deps = [
      ":themed_background",
-+    # 风桥 N10：单窗口态背景视图用 kColorWindriseWebContentsGap 填窗口底色。
++    # 风桥 单窗口态背景视图用 kColorWindriseWebContentsGap 填窗口底色。
 +    "//chrome/browser/ui/color:color_headers",
      "//ui/base/metadata",
 +    "//ui/color",
@@ -65,7 +65,7 @@ index 268324dce9..6955ef0cec 100644
        ":safe_invoke",
        "//chrome/app:chrome_dll_resources",
        "//chrome/app:command_ids",
-+      # 风桥 甲23：标题按钮区高跟工具栏高（外观偏好）走。
++      # 风桥 标题按钮区高跟工具栏高（外观偏好）走。
 +      "//chrome/browser/browseros/core:theme",
        "//chrome/browser/themes",
        "//chrome/browser/ui:layout_constants",
@@ -74,7 +74,7 @@ index 268324dce9..6955ef0cec 100644
      "//build:buildflag_header_h",
      "//chrome/browser/ui:layout_constants",
      "//chrome/browser/ui:ui_features",
-+    # 风桥 N10：网页区圆角读外观偏好。
++    # 风桥 网页区圆角读外观偏好。
 +    "//chrome/browser/browseros/core:theme",
      "//chrome/browser/ui/browser_window",
      "//chrome/browser/ui/color:color_headers",
@@ -83,7 +83,7 @@ index 268324dce9..6955ef0cec 100644
      ":tab_modal_dialog_host",
      "//base",
      "//chrome/browser/devtools:devtools_contents_resizing_strategy",
-+    # 风桥 N11 独立层：头文件里有 PrefChangeRegistrar 和 GURL 成员 / 返回值。
++    # 风桥 独立层：头文件里有 PrefChangeRegistrar 和 GURL 成员 / 返回值。
 +    "//components/prefs",
      "//ui/base/metadata",
      "//ui/gfx/geometry",
@@ -96,7 +96,7 @@ index 268324dce9..6955ef0cec 100644
 -  sources = [ "contents_container_view.cc" ]
 +  sources = [
 +    "contents_container_view.cc",
-+    # 风桥 N11：windrise_edge_light_model.{h,cc}（原生 Skia 画法）已摘出编译，补丁文件留作备用。
++    # 风桥 windrise_edge_light_model.{h,cc}（原生 Skia 画法）已摘出编译，补丁文件留作备用。
 +    "windrise_edge_light_view.cc",
 +    "windrise_edge_light_view.h",
 +    "windrise_edge_light_web_view.cc",
@@ -132,9 +132,9 @@ index 268324dce9..6955ef0cec 100644
 +    "//ui/gfx/animation",
      "//ui/gfx/geometry",
      "//ui/views",
-+    # 风桥 N11 边缘光效：CopyFromSurface 的结果类型在 viz 里。
++    # 风桥 边缘光效：CopyFromSurface 的结果类型在 viz 里。
 +    "//components/viz/common",
-+    # 风桥 N11 独立层（windrise_edge_light_web_view）：偏好、扩展身份、网页视图、原生窗口不接输入。
++    # 风桥 独立层（windrise_edge_light_web_view）：偏好、扩展身份、网页视图、原生窗口不接输入。
 +    "//chrome/browser/browseros/core:prefs",
 +    "//chrome/browser/profiles:profile",
 +    "//components/prefs",

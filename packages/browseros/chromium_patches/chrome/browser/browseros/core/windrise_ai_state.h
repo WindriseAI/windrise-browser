@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000000..65eaf8f38c
+index 0000000000..1dfbf1a88b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
 @@ -0,0 +1,144 @@
@@ -25,9 +25,9 @@ index 0000000000..65eaf8f38c
 +class BrowserWindowInterface;
 +
 +// 扩展推给浏览器的 AI 运行状态，按浏览器窗口保存。三个消费点：
-+// - N6 侧边栏上下分段：哪些标签是 AI 的（ai_tab_ids）与当前 AI 名；
-+// - N7 左下「已连接 N 个 AI」卡片与面板：connections；
-+// - N11 边缘光效：哪些标签正在被 AI 操作（active_tab_ids），以及 AI 每个动作
++// - 侧边栏上下分段：哪些标签是 AI 的（ai_tab_ids）与当前 AI 名；
++// - 左下「已连接 N 个 AI」卡片与面板：connections；
++// - 边缘光效：哪些标签正在被 AI 操作（active_tab_ids），以及 AI 每个动作
 +//   一次的脉冲（PulseActivity，不进 AiState：脉冲是一次性事件，不是状态）。
 +//
 +// 生命周期：窗口里的视图用 Attach()/Detach() 成对登记（引用计数），最后一个视图
@@ -43,7 +43,7 @@ index 0000000000..65eaf8f38c
 +  int last_active_minutes = 0;
 +};
 +
-+// N6：侧边栏下段里的一个 AI。每个 AI 一组（组名 = AI 名），由
++// 侧边栏下段里的一个 AI。每个 AI 一组（组名 = AI 名），由
 +// browserOS.setAiTabs 按 aiName 建立 / 整组替换 / 传空数组清掉；不同 AI 互不影响。
 +struct AiSection {
 +  std::u16string name;
@@ -56,7 +56,7 @@ index 0000000000..65eaf8f38c
 +struct AiState {
 +  // 最近一次推了非空标签列表的 AI 名；空 = 没有 AI 在用标签。
 +  std::u16string active_ai_name;
-+  // N7 面板里的行。
++  // 面板里的行。
 +  std::vector<AiConnection> connections;
 +  // 所有 AI 的标签（各段 tab_ids 的并集）。
 +  std::vector<int> ai_tab_ids;

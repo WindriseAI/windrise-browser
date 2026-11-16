@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/BUILD.gn b/chrome/browser/extensions/BUILD.gn
-index aa7042008..a193a8857 100644
+index aa7042008..5a1bf708d 100644
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
 @@ -353,6 +353,14 @@ source_set("extensions") {
@@ -38,7 +38,7 @@ index aa7042008..a193a8857 100644
        "//components/live_caption:constants",
 +      "//chrome/app:generated_resources",
 +      "//chrome/browser/browseros/core",
-+      # 风桥 N6/N7/N11：browserOS.setAiTabs / setConnectedAis / setAiActivity。
++      # 风桥 browserOS.setAiTabs / setConnectedAis / setAiActivity。
 +      "//chrome/browser/browseros/core:ai_state",
 +      "//chrome/browser/browseros/core:prefs",
 +      "//chrome/browser/browseros/metrics",

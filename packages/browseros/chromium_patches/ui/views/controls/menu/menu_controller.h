@@ -1,12 +1,12 @@
 diff --git a/ui/views/controls/menu/menu_controller.h b/ui/views/controls/menu/menu_controller.h
-index 655814df01..56a199d74d 100644
+index 655814df01..58625f5699 100644
 --- a/ui/views/controls/menu/menu_controller.h
 +++ b/ui/views/controls/menu/menu_controller.h
 @@ -167,6 +167,11 @@ class VIEWS_EXPORT MenuController final : public gfx::AnimationDelegate,
  
    bool for_drop() const { return for_drop_; }
  
-+  // Windrise motion-1115 (N10): whether the current menu was opened with the
++  // Windrise : whether the current menu was opened with the
 +  // mouse. MenuHost gives mouse-opened root menus a 120ms fade-in; menus
 +  // opened from the keyboard (and submenus) appear instantly.
 +  bool windrise_opened_by_mouse() const { return windrise_opened_by_mouse_; }

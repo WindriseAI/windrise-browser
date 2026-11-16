@@ -1,13 +1,13 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_edge_light_view.cc b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
 new file mode 100644
-index 0000000000..355abee38c
+index 0000000000..863cbbdae7
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_edge_light_view.cc
 @@ -0,0 +1,213 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +//
-+// 风桥 N10 / N11 计时器：只计时、不绘制（11-13）。
++// 风桥 计时器：只计时、不绘制（11-13）。
 +// 原生 Skia 光效已摘除（光效改由网页代码画：扩展页内层 / WindriseEdgeLightWebView 独立层），
 +// 这里只保留原实现里的起 / 收计时和网页角 12 -> 36 的进度回调——曲线、时长照原实现，一个数都没改：
 +//   起 300ms，cubic-bezier(.23, 1, .32, 1)；收 400ms，网页角按同一条曲线收回；减少动态效果时不过渡。
@@ -32,7 +32,7 @@ index 0000000000..355abee38c
 +constexpr double kRampDownSeconds = 0.400;
 +
 +float Ease(float x) {
-+  // 动效-1115 N7：不再每帧新建 CubicBezier，改用 T0（gfx::Tween::WINDRISE_EASE_OUT，
++  // 不再每帧新建 CubicBezier，改用 T0（gfx::Tween::WINDRISE_EASE_OUT，
 +  // 内部是同一条 CubicBezier(0.23, 1, 0.32, 1) 的静态实例），算出来的值逐位相同。
 +  return static_cast<float>(gfx::Tween::CalculateValue(
 +      gfx::Tween::WINDRISE_EASE_OUT, std::clamp(x, 0.0f, 1.0f)));

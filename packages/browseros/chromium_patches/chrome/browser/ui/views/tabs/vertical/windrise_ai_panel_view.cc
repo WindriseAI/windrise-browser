@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..4931096ffc
+index 0000000000..c579b88530
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 @@ -0,0 +1,527 @@
@@ -75,7 +75,7 @@ index 0000000000..4931096ffc
 +constexpr char kActionGallery[] = "gallery";
 +constexpr char kActionSettings[] = "settings";
 +
-+// 定稿帧（ntp-zh-panel / ntp-en-panel，2x 图按 1/2 量）：
++// 设计稿（ntp-zh-panel / ntp-en-panel，2x 图按 1/2 量）：
 +// 「接一个 AI」按钮 36 高（偏好 ai_panel_button_height）、圆角 10、字 14
 +// Medium，底 rgb(255 255 255 / .78)；底部文字行字 14，线到字顶 10；
 +// 「闪办广场」下面的小字 11。
@@ -100,7 +100,7 @@ index 0000000000..4931096ffc
 +// design-language.md 按钮三态「按下 scale(.97) 120ms」）。松开稍慢 160ms
 +// （review-animations 第 9 条：按 / 松不对称）；曲线 WINDRISE_EASE_OUT =
 +// cubic-bezier(.23,1,.32,1)，
-+// 合成器逐帧推进（120Hz 屏 120 帧，已定 甲52）；中途松开从当前值反向，不跳。
++// 合成器逐帧推进（120Hz 屏 120 帧，已定 ）；中途松开从当前值反向，不跳。
 +// 系统关了动画（Windows「显示动画」= 减少动态效果）时一帧到位，颜色反馈照旧。
 +constexpr float kPressedScale = 0.97f;
 +constexpr base::TimeDelta kPressDuration = base::Milliseconds(120);
@@ -206,7 +206,7 @@ index 0000000000..4931096ffc
 +    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +    SetInstallFocusRingOnFocus(true);
 +    // 焦点环用墨色（Windrise 配色里 kColorSysStateFocusRing = 主文字色），不用
-+    // 上游默认的蓝色强调色（已定 甲04：界面不出现彩色）。
++    // 上游默认的蓝色强调色（已定 界面不出现彩色）。
 +    if (views::FocusRing* ring = views::FocusRing::Get(this)) {
 +      ring->SetColorId(ui::kColorSysStateFocusRing);
 +    }
@@ -295,7 +295,7 @@ index 0000000000..4931096ffc
 +      browser_(browser) {
 +  SetButtons(static_cast<int>(ui::mojom::DialogButton::kNone));
 +  set_close_on_deactivate(true);
-+  // B 版银色玻璃（已定 甲08、漏做核查 L7）：渐变、高光由 OnPaintBackground
++  // B 版银色玻璃（已定 漏做核查 L7）：渐变、高光由 OnPaintBackground
 +  // 画满整个面板；气泡框自己的底取渐变下端色，圆角抗锯齿那一圈不露别的颜色。
 +  // 外面那条 .5px 线和一层投影用气泡框自带的（BubbleBorder 画 1 物理像素的
 +  // 线 + 投影），这里不再画第二条。
@@ -316,7 +316,7 @@ index 0000000000..4931096ffc
 +  rows_container_->SetOrientation(views::BoxLayout::Orientation::kVertical);
 +  rows_container_->SetBetweenChildSpacing(0);
 +
-+  // 「接一个 AI」：行下面的白底宽按钮（两张帧；方案 N7「36 高圆角 10、底
++  // 「接一个 AI」：行下面的白底宽按钮（两张帧；方案 「36 高圆角 10、底
 +  // rgb(255 255 255 / .78)」）。放在 rows_container_ 外面：扩展推新数据重建行
 +  // 时它不跟着重建，悬停、焦点不丢。
 +  auto connect = std::make_unique<PanelButton>(
@@ -357,7 +357,7 @@ index 0000000000..4931096ffc
 +  footer->AddChildView(
 +      make_text_button(IDS_WINDRISE_AI_PANEL_OPEN_APP, kActionOpenApp));
 +
-+  // 闪办广场（用户 11-16 15:37：「闪办宣传也是一个完整版即将上线的这个一个口径」）：
++  // 闪办广场：文案口径是「完整版即将上线」。
 +  // 保留位置，但完整广场还没随包（主程序返回 GALLERY_UNAVAILABLE），所以做成
 +  // 「还不能点」：按钮不可用（没有悬停 / 按下反馈、不进 Tab 顺序、整颗 45%），
 +  // 下面一行小字「完整版即将上线」，读屏读出名字加「完整版即将上线」。
@@ -379,7 +379,7 @@ index 0000000000..4931096ffc
 +      SizedFont(caption->font_list(), kCaptionSize, /*medium=*/false));
 +  // 小字和「闪办广场」左对齐，紧贴上一行（按钮自带下内边 4，这里收回 2）。
 +  // 小字的宽会算进这一列的宽：英文用短的 Coming soon，中英文三项加小字都在
-+  // 196 + 12 以内（交付稿 3.1 甲47 那一行有算式）。
++  // 196 + 12 以内。
 +  caption->SetProperty(views::kMarginsKey,
 +                       gfx::Insets::TLBR(-2, kTextButtonInsetH, 0, 0));
 +  // 名字和说明已经由按钮读出，小字本身不再单独读一遍。
@@ -421,7 +421,7 @@ index 0000000000..4931096ffc
 +  if (!color_provider) {
 +    return;
 +  }
-+  // 和卡片同一套银色玻璃（windrise_ai_card_view.cc OnPaintBackground；方案 N7
++  // 和卡片同一套银色玻璃（windrise_ai_card_view.cc OnPaintBackground；方案 
 +  // 面板定值）：上浅下深的竖向渐变 + 上缘 1px 白高光 .95 + 内圈 .75px 白 .6。
 +  // 暗色下底是深色两档，高光收弱，不出现一圈亮白边。
 +  const float radius =

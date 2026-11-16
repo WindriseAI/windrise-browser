@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.h b/chrome/browser/ui/views/toolbar/toolbar_view.h
-index e38c93e2c6..3556bbb8a4 100644
+index e38c93e2c6..4c49793d05 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.h
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.h
 @@ -66,6 +66,7 @@ class ToolbarController;
@@ -14,7 +14,7 @@ index e38c93e2c6..3556bbb8a4 100644
  
    raw_ptr<ToolbarButton> ai_overlay_dialog_button_ = nullptr;
  
-+  // 风桥「格子」按钮（方案 N8）：地址栏之后、扩展按钮之前。
++  // 风桥「格子」按钮：地址栏之后、扩展按钮之前。
 +  raw_ptr<WindriseGridButton> windrise_grid_button_ = nullptr;
 +
    const raw_ptr<BrowserWindowInterface> browser_;

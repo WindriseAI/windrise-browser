@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/browseros/core/browseros_prefs.h b/chrome/browser/browseros/core/browseros_prefs.h
 new file mode 100644
-index 0000000000..973c7faab1
+index 0000000000..0cf77879a1
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
 @@ -0,0 +1,132 @@
@@ -70,9 +70,9 @@ index 0000000000..973c7faab1
 +inline constexpr char kAutomationNeverStealsFocus[] =
 +    "browseros.automation_never_steals_focus";
 +
-+// String: where the Windrise AI edge light (N11) is drawn.
++// String: where the Windrise AI edge light  is drawn.
 +//   "page"  - the Windrise extension draws it inside the page (default);
-+//             the browser only animates the N10 web-contents corners.
++//             the browser only animates the web-contents corners.
 +//   "layer" - a transparent, input-less web view over the web contents loads
 +//             the extension's edge-light/frame.html (same drawing code).
 +// Any other value is treated as "page" (the native Skia drawing was removed).

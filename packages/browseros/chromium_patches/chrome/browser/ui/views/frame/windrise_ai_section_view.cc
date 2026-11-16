@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..29d60cd657
+index 0000000000..1e54fa3165
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1950 @@
+@@ -0,0 +1,1946 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -101,13 +101,10 @@ index 0000000000..29d60cd657
 +constexpr double kDefaultRatio = 0.4;
 +constexpr double kMinRatio = 0.1;
 +constexpr double kMaxRatio = 0.9;
-+// 滚轮方向。用户 11-05 18:12 先说过 AI 段「反过来滚滚轮」（R186），18:15 改口
-+// 「算了，AI区不单独滚动了，就正常滚动。」（R189，产品需求清单记 R186 已被它
-+// 取代）。所以这里照 R189：和上段同一个方向（+1）。协调人如果裁定要反向，
-+// 只改这一个数为 -1。
++// 滚轮方向和上段一致（+1）。
 +constexpr int kWheelDirection = 1;
 +
-+// 动效（review-animations 十条见交付稿第五节）。曲线都是 WINDRISE_EASE_OUT
++// 动效曲线都是 WINDRISE_EASE_OUT
 +// （.23, 1, .32, 1）；减少动态效果时 RichAnimationDuration 给 0，直接到位。
 +constexpr base::TimeDelta kHeightDuration = base::Milliseconds(200);
 +constexpr base::TimeDelta kSplitterFadeDuration = base::Milliseconds(150);
@@ -119,7 +116,7 @@ index 0000000000..29d60cd657
 +// 推进）；还没进窗口时退回 LinearAnimation 自己的定时器（最快 100 帧）。
 +constexpr int kTransitionFrameRate = 120;
 +
-+// 「正在操作」光效（R191）。起 300ms、收 400ms、曲线 WINDRISE_EASE_OUT：和网页
++// 「正在操作」光效。起 300ms、收 400ms、曲线 WINDRISE_EASE_OUT：和网页
 +// 四周光效的起 / 收同一组数（windrise_edge_light_view.h「开 300ms、收 400ms」）。
 +// 这是一圈常驻的状态光，不是点一下的反馈，所以不受「UI 动画不超过 300ms」那条
 +// 约束；减少动态效果时直接到位。
@@ -137,7 +134,7 @@ index 0000000000..29d60cd657
 +// 官网白边流光的起伏函数，和网页四周光效逐字相同（extension edge-light/
 +// liuguang.js 的 wave()、windrise_edge_light_model.cc Wave()；后者已不编译，所以
 +// 这里照抄一份，系数一个不改）。s 是沿一圈的位置 0..1，dir 是方向。两个方向
-+// 叠起来用：四周同时都有亮处、亮处原地起伏，不是一段光绕圈（甲29）。
++// 叠起来用：四周同时都有亮处、亮处原地起伏，不是一段光绕圈。
 +float GlowWave(float s, float t, float dir) {
 +  constexpr float kTwoPi = 6.28318530718f;
 +  const float a =
@@ -233,7 +230,7 @@ index 0000000000..29d60cd657
 +                                             std::clamp(alpha, 0.0f, 1.0f)));
 +}
 +
-+// 按字形把文字放到某条中线上（甲45：不按行框居中）：基线 = 中线 + 半个
++// 按字形把文字放到某条中线上（不按行框居中）：基线 = 中线 + 半个
 +// 大写字母高。文字框高等于字体高时 RenderText 不再挪基线。
 +void DrawTextOnCenterLine(gfx::Canvas* canvas,
 +                          std::u16string_view text,
@@ -392,7 +389,7 @@ index 0000000000..29d60cd657
 +    int text_right = width() - inset_right;
 +
 +    if (data_.is_header) {
-+      // 右边：标签数 + 箭头。标签在标题下面展开（照定稿帧）：收起着箭头朝下，
++      // 右边：标签数 + 箭头。标签在标题下面展开（照设计稿）：收起着箭头朝下，
 +      // 展开了朝上。
 +      const SkColor icon_color = text_secondary;
 +      const gfx::ImageSkia chevron = gfx::CreateVectorIcon(
@@ -411,7 +408,7 @@ index 0000000000..29d60cd657
 +      text_right -= kIconTitleGap;
 +
 +      // 名字用正文色、中等字重；正在操作时整句是「<名字> 正在操作」，名字
-+      // 以外的部分用段标题色（丙01）。放不下整句时只放名字。
++      // 以外的部分用段标题色。放不下整句时只放名字。
 +      const gfx::FontList name_font =
 +          title_font.DeriveWithWeight(gfx::Font::Weight::MEDIUM);
 +      const SkColor status_color =
@@ -682,17 +679,17 @@ index 0000000000..29d60cd657
 +END_METADATA
 +
 +// ---------------------------------------------------------------------------
-+// 「正在操作」光效（R191）：正在操作的 AI 那一组（标题行 + 展开的标签行）外沿
++// 「正在操作」光效：正在操作的 AI 那一组（标题行 + 展开的标签行）外沿
 +// 一圈银白流光。画在可视区里自己的一层上：每帧只重画这一层，行不跟着重画；
 +// 光只往组里面羽化（按组的圆角裁），不往外溢，所以贴着可视区边的那一组也不会
 +// 被裁出一道硬边。
 +//
 +// 层次照网页四周光效（liuguang.js render 的前两层）缩到侧栏的尺度：
 +//  1. 浅色侧栏上，亮处底下垫一层冷灰托底 rgb(132,143,158)（白底上白光才
-+//     看得见，甲32）；暗色侧栏不垫（网页光效暗处同样不垫）。
++//     看得见）；暗色侧栏不垫（网页光效暗处同样不垫）。
 +//  2. 白光三圈：只在起伏高处亮，亮处更宽、暗处几乎没有——一段段亮光沿边
-+//     起伏，不是一圈等宽的框（甲31）。
-+// 亮度沿一圈按 GlowWave 两个方向叠加：四周同时都有亮处、原地起伏（甲29）。
++//     起伏，不是一圈等宽的框。
++// 亮度沿一圈按 GlowWave 两个方向叠加：四周同时都有亮处、原地起伏。
 +// 不加粒子、不加脉冲：这是高频出现、可能亮好几分钟的状态光，克制为先。
 +class WindriseAiSectionView::OperatingGlow : public views::View {
 +  METADATA_HEADER(OperatingGlow, views::View)
@@ -1065,8 +1062,7 @@ index 0000000000..29d60cd657
 +    allocation.target = allocation.natural;
 +    return allocation;
 +  }
-+  // 碰到时：用户拖出来的比例是「AI 段最多占多高」（用户 11-05 18:19「分割条
-+  // 拖动就是设定 AI 区最多占多高」）。但上段用不满它那一份时，多出来的给下段，
++  // 碰到时：拖动比例设定 AI 段的最大高度。上段用不满它那一份时，多出来的给下段，
 +  // 不在「+」下面留一块空白：下限是「两段可用高 − 上段要的高」。
 +  const int fill_floor =
 +      std::max(allocation.min_height,
@@ -1400,7 +1396,7 @@ index 0000000000..29d60cd657
 +
 +  // AiState.sections 按 AI 第一次出现的先后从上往下排，整段内容贴着下沿。
 +  // 每个 AI：标题行（「某某正在操作」）在上，展开了它的标签在标题下面依次排
-+  // （照定稿帧 site-zh-ai；协调人 1116 裁定，旧的「从下往上排」作废）。
++  // （设计稿 site-zh-ai）。
 +  for (const browseros::windrise::AiSection& section : state.sections) {
 +    if (!section.group || !group_model->ContainsTabGroup(*section.group)) {
 +      continue;
@@ -1723,7 +1719,7 @@ index 0000000000..29d60cd657
 +  if (MaxScrollOffset() <= 0 || event.y_offset() == 0) {
 +    return false;
 +  }
-+  // 和上段同一个方向（R189「就正常滚动」）：滚轮往下，内容往上走，露出下沿
++  // 和上段同一个方向：滚轮往下，内容往上走，露出下沿
 +  // 以下的；滚轮往上，露出上面（更晚开的）标签。y_offset 往下滚是负数；
 +  // scroll_offset_ 是藏在下沿以下的高度。
 +  SetScrollOffset(scroll_offset_ + kWheelDirection * event.y_offset());
