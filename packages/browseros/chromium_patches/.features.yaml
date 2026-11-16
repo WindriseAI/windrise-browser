@@ -336,6 +336,7 @@ features:
       - chrome/browser/ui/tabs/BUILD.gn
       # Chromium 155 removed the kVerticalTabs feature gate; retain pref sync.
       - chrome/browser/ui/tabs/vertical_tab_strip_state_controller.cc
+      - chrome/browser/ui/views/frame/browser_frame_view_win.cc
       - chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
       - chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
       - chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h

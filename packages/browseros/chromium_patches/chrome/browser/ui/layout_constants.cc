@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/layout_constants.cc b/chrome/browser/ui/layout_constants.cc
-index b8206dc188..a24c579b62 100644
+index b8206dc188..ec3323fcba 100644
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
 @@ -4,8 +4,11 @@
@@ -39,7 +39,19 @@ index b8206dc188..a24c579b62 100644
      }
      case LayoutConstant::kBookmarkBarButtonHeight:
        return touch_ui ? 36 : 28;
-@@ -157,16 +168,23 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -84,7 +95,10 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LayoutConstant::kLocationBarTrailingDecorationInnerPadding:
+       return touch_ui ? 3 : 8;
+     case LayoutConstant::kLocationBarHeight:
+-      return touch_ui ? 36 : 34;
++      // 风桥 甲23 §4.4-b：地址栏高走偏好（默认 36，乙02）；上游非触屏是 34。
++      return touch_ui ? 36
++                      : browseros::windrise::GetLayoutMetrics().Get(
++                            browseros::windrise::LayoutMetric::kLocationBarHeight);
+     // LINT.IfChange(LocationBarIconSize)
+     case LayoutConstant::kLocationBarIconSize:
+       return touch_ui ? 20 : 16;
+@@ -157,16 +171,23 @@ int GetLayoutConstant(LayoutConstant constant) {
        return 20;
      case LayoutConstant::kMainBackgroundRegionCornerRadius:
      case LayoutConstant::kToolbarCornerRadius:
@@ -66,7 +78,7 @@ index b8206dc188..a24c579b62 100644
      case LayoutConstant::kVerticalTabStripUncollapsedVerticalPadding:
        return 12;
      case LayoutConstant::kVerticalTabStripCollapsedVerticalPadding:
-@@ -174,7 +192,9 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -174,7 +195,9 @@ int GetLayoutConstant(LayoutConstant constant) {
      case LayoutConstant::kVerticalTabStripComboButtonIconSize:
        return 18;
      case LayoutConstant::kVerticalTabStripButtonIconSize:
@@ -77,7 +89,7 @@ index b8206dc188..a24c579b62 100644
      case LayoutConstant::kVerticalTabStripTopButtonPadding:
        return 4;
      case LayoutConstant::kVerticalTabStripFlatEdgeButtonPadding:
-@@ -184,9 +204,13 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -184,9 +207,13 @@ int GetLayoutConstant(LayoutConstant constant) {
      case LayoutConstant::kVerticalTabStripNewTabButtonSize:
        return 32;
      case LayoutConstant::kVerticalTabStripCollapseButtonSize:

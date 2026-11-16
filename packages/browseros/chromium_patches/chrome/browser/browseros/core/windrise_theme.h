@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..aa46414153
+index 0000000000..0cae386f96
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,189 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -102,6 +102,9 @@ index 0000000000..aa46414153
 +  kAiPanelButtonHeight,    // 面板按钮高
 +  // 甲23 书签栏
 +  kBookmarkBarHeight,      // 书签栏高（乙02：32；按钮 28 在栏内上下各留 2）
++  // 甲23 §4.4-b 工具栏 / 地址栏
++  kToolbarHeight,          // 工具栏高（乙02：48；Windows 标题按钮区跟它对齐）
++  kLocationBarHeight,      // 地址栏高（乙02：36，全圆角）
 +  // N10 / N11
 +  kWindowCornerRadius,       // 窗口圆角（Windows 11 系统裁出来的那 8px）
 +  // AI 操作时网页区四角的过渡目标半径（N10，11-13 定 12 -> 36）与时长。边缘光

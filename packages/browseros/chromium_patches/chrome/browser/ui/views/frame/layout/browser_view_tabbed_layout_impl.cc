@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
-index b1ea4a69f4..b83ba21b0b 100644
+index b1ea4a69f4..ca4958b387 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.cc
 @@ -15,6 +15,7 @@
@@ -32,7 +32,25 @@ index b1ea4a69f4..b83ba21b0b 100644
    }
  
    // Position the vertical tabstrip bottom corner.
-@@ -1586,11 +1590,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
+@@ -1465,6 +1469,17 @@ gfx::Rect BrowserViewTabbedLayoutImpl::CalculateTopContainerLayout(
+                           params.visual_client_area.y(),
+                           params.visual_client_area.width(),
+                           views().toolbar->GetPreferredSize().height());
++      if (layout_data_->tab_strip_type == TabStripType::kVertical) {
++        // 风桥 甲23 §4.4-b：竖向标签栏下工具栏高固定走偏好（默认 48，乙02），
++        // 不再被右侧标题按钮区撑高（上游这里是 max(排除区高, 最小高)，Windows
++        // 还原窗口上排除区底边在 49）。不低于工具栏最小高，免得内容被裁。
++        // BrowserFrameViewWin::LayoutCaptionButtons 用同一个式子定标题按钮区
++        // 的底边，两者始终对齐。
++        toolbar_bounds.set_height(std::max(
++            browseros::windrise::GetLayoutMetrics().Get(
++                browseros::windrise::LayoutMetric::kToolbarHeight),
++            views().toolbar->GetMinimumSize().height()));
++      }
+       params.SetTop(toolbar_bounds.bottom());
+       needs_exclusion = false;
+     }
+@@ -1586,11 +1601,22 @@ void BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(
  
  void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
      const BrowserLayoutParams& params) {
@@ -60,7 +78,7 @@ index b1ea4a69f4..b83ba21b0b 100644
        // Note that this will set a lower leading corner on the multi contents
        // view even if there's a shadow box, but since the curve is effectively
        // the same this will not produce a visual bug.
-@@ -1602,8 +1617,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1602,8 +1628,8 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
          content_corners.set_lower_left(radius);
        }
      }
@@ -70,7 +88,7 @@ index b1ea4a69f4..b83ba21b0b 100644
  
    // Want to cut the vertical tabstrip and its decorations out of the top
    // container in transparency mode.
-@@ -1706,11 +1721,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1706,11 +1732,18 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
  
      CustomCornersBackground::Outline vertical_tabs_outline;
      vertical_tabs_outline.color = {
@@ -90,7 +108,7 @@ index b1ea4a69f4..b83ba21b0b 100644
              static_cast<float>(1.0f - kVerticalTabStripOutlineFadeOnHover *
                                            vertical_tabs_bottom_corner_amount) *
              frame_color.opacity,
-@@ -1727,6 +1749,15 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
+@@ -1727,6 +1760,15 @@ void BrowserViewTabbedLayoutImpl::DoPostLayoutVisualAdjustments(
        vertical_tabs_outline.bottom = true;
      }
      vertical_tabs_background->SetOutline(vertical_tabs_outline);

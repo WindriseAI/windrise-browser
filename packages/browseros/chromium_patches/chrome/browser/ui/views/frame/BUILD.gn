@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
-index 268324dce9..8ab55647ce 100644
+index 268324dce9..591940b9e7 100644
 --- a/chrome/browser/ui/views/frame/BUILD.gn
 +++ b/chrome/browser/ui/views/frame/BUILD.gn
 @@ -553,6 +553,10 @@ source_set("vertical_tab_strip_region_view") {
@@ -32,7 +32,16 @@ index 268324dce9..8ab55647ce 100644
      "//ui/compositor",
      "//ui/gfx/geometry",
    ]
-@@ -3026,6 +3034,8 @@ source_set("browser_view_tabbed_layout_impl") {
+@@ -1790,6 +1798,8 @@ if (is_win) {
+       ":safe_invoke",
+       "//chrome/app:chrome_dll_resources",
+       "//chrome/app:command_ids",
++      # 风桥 甲23：标题按钮区高跟工具栏高（外观偏好）走。
++      "//chrome/browser/browseros/core:theme",
+       "//chrome/browser/themes",
+       "//chrome/browser/ui:layout_constants",
+       "//chrome/browser/ui:ui_features",
+@@ -3026,6 +3036,8 @@ source_set("browser_view_tabbed_layout_impl") {
      "//build:buildflag_header_h",
      "//chrome/browser/ui:layout_constants",
      "//chrome/browser/ui:ui_features",
@@ -41,7 +50,7 @@ index 268324dce9..8ab55647ce 100644
      "//chrome/browser/ui/browser_window",
      "//chrome/browser/ui/color:color_headers",
      "//chrome/browser/ui/immersive:immersive_mode_controller",
-@@ -3135,14 +3145,24 @@ source_set("contents_container_view") {
+@@ -3135,14 +3147,24 @@ source_set("contents_container_view") {
      ":tab_modal_dialog_host",
      "//base",
      "//chrome/browser/devtools:devtools_contents_resizing_strategy",
@@ -67,7 +76,7 @@ index 268324dce9..8ab55647ce 100644
    public_deps = [ ":contents_container_view" ]
    deps = [
      ":browser_view_header",
-@@ -3155,9 +3175,13 @@ source_set("contents_container_view_impl") {
+@@ -3155,9 +3177,13 @@ source_set("contents_container_view_impl") {
      ":top_container_view",
      "//base",
      "//base:i18n",
@@ -81,7 +90,7 @@ index 268324dce9..8ab55647ce 100644
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
      "//chrome/browser/glic/browser_ui:glow_controller",
-@@ -3171,12 +3195,29 @@ source_set("contents_container_view_impl") {
+@@ -3171,12 +3197,29 @@ source_set("contents_container_view_impl") {
      "//chrome/common:chrome_features",
      "//components/search",
      "//content/public/browser",
