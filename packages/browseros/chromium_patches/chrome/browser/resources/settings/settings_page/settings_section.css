@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/resources/settings/settings_page/settings_section.css b/chrome/browser/resources/settings/settings_page/settings_section.css
+index 620aad3462a4addb1dc69283b5466aa24bf32a4f..7c673e2663126d9a9cb3c2bf5af8d5d29ad587d1 100644
+--- a/chrome/browser/resources/settings/settings_page/settings_section.css
++++ b/chrome/browser/resources/settings/settings_page/settings_section.css
+@@ -59,10 +59,13 @@
+   margin-top: var(--cr-section-vertical-margin);
+ }
+ 
++/* Windrise N12① / 乙07：卡片半透明白 .74，透出页面的银色渐变，上缘一道白色内高光
++ * 加 .5px 细线；不随主题色表的近白不透明底（rgb(253 252 252)）走。关于页也在这里。 */
+ #card {
+-  background-color: var(--cr-card-background-color);
++  background-color: rgb(255 255 255 / .74);
+   border-radius: var(--cr-card-border-radius);
+-  box-shadow: var(--cr-card-shadow);
++  box-shadow: inset 0 1px 0 rgb(255 255 255 / .9),
++      0 0 0 .5px rgb(60 60 67 / .14);
+   flex: 1;
+   overflow: hidden;
+ }

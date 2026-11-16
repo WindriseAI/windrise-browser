@@ -1,0 +1,46 @@
+diff --git a/ui/webui/resources/css/harmonyos_sans.css b/ui/webui/resources/css/harmonyos_sans.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..63f69f0711e4ae6061d80af248bb47eb3a5a4698
+--- /dev/null
++++ b/ui/webui/resources/css/harmonyos_sans.css
+@@ -0,0 +1,40 @@
++/* Copyright 2026 Windrise. Use of this source code is governed by the
++ * AGPL-3.0 license that can be found in the LICENSE file. */
++
++/* HarmonyOS Sans SC for WebUI pages (font decided 11-06: browser, desktop and
++ * mobile all use HarmonyOS Sans). Imported by text_defaults_md.css, the same way
++ * roboto.css is. The .ttf files are the unmodified upstream release (not subset,
++ * not renamed, not converted); their license ships next to them and is shown on
++ * the About page. local() first, so a system-installed copy is used when present;
++ * otherwise the bundled copy loads from chrome://resources. No synthetic weights:
++ * 400 / 500 / 700 each map to a real face. */
++
++@font-face {
++  font-display: block;
++  font-family: 'HarmonyOS Sans SC';
++  font-style: normal;
++  font-weight: 400;
++  src: local('HarmonyOS Sans SC'), local('HarmonyOS_Sans_SC'),
++      url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf)
++      format('truetype');
++}
++
++@font-face {
++  font-display: block;
++  font-family: 'HarmonyOS Sans SC';
++  font-style: normal;
++  font-weight: 500;
++  src: local('HarmonyOS Sans SC Medium'), local('HarmonyOS_Sans_SC_Medium'),
++      url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf)
++      format('truetype');
++}
++
++@font-face {
++  font-display: block;
++  font-family: 'HarmonyOS Sans SC';
++  font-style: normal;
++  font-weight: 700;
++  src: local('HarmonyOS Sans SC Bold'), local('HarmonyOS_Sans_SC_Bold'),
++      url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Bold.ttf)
++      format('truetype');
++}

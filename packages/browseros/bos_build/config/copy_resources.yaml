@@ -58,6 +58,16 @@ copy_operations:
     type: "directory"
     product: "browseros"
 
+  # Windrise: HarmonyOS Sans SC for WebUI pages (font decided 11-06). Copied
+  # unmodified (not subset, renamed or converted) together with its license;
+  # ui/webui/resources/BUILD.gn packs them into chrome://resources/harmonyos_sans/
+  # and css/harmonyos_sans.css declares the @font-face rules.
+  - name: "Windrise HarmonyOS Sans SC Fonts"
+    source: "resources/windrise/fonts/harmonyos_sans"
+    destination: "ui/webui/resources/harmonyos_sans"
+    type: "directory"
+    required: true
+
   - name: "BrowserClaw Product Logo Icons"
     source: "resources/browserclaw/icons/*.png"
     destination: "chrome/app/theme/chromium/"

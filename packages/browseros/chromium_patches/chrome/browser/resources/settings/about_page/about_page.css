@@ -1,16 +1,59 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.css b/chrome/browser/resources/settings/about_page/about_page.css
-index 2987e61a89e98daf3271f9b5af84b3aa7424ea2a..822cc4e181741c44cf0db3c8d3600294e0274620 100644
+index 2987e61a89e98daf3271f9b5af84b3aa7424ea2a..11678fe69892aec9c6cc11362ec4aef53a9f2c93 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.css
 +++ b/chrome/browser/resources/settings/about_page/about_page.css
-@@ -15,10 +15,7 @@
+@@ -15,10 +15,52 @@
  
  .info-sections {
    padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
--}
--
++  line-height: 1.8;
+ }
+ 
 -.info-section {
 -  margin-bottom: 12px;
-+  line-height: 1.8;
++/* 字体声明：一行小字（用户 11-06）；点开后协议全文在下面展开。
++ * 展开淡入 + 下移 4px，180ms，曲线同侧栏 T0；收起 120ms（收比开快）。只动 opacity / transform。 */
++#fontLicense {
++  font-size: 12px;
++  text-decoration: none;
++}
++
++#fontLicense:hover {
++  text-decoration: underline;
++}
++
++#fontLicenseText {
++  color: var(--cr-secondary-text-color);
++  font-family: inherit;
++  font-size: 12px;
++  line-height: 1.6;
++  margin: 8px 0 0;
++  max-height: 240px;
++  opacity: 1;
++  overflow-y: auto;
++  transform: none;
++  transition: opacity 180ms cubic-bezier(.23, 1, .32, 1),
++      transform 180ms cubic-bezier(.23, 1, .32, 1),
++      display 180ms allow-discrete;
++  white-space: pre-wrap;
++
++  @starting-style {
++    opacity: 0;
++    transform: translateY(-4px);
++  }
++}
++
++#fontLicenseText[hidden] {
++  opacity: 0;
++  transform: translateY(-4px);
++  transition-duration: 120ms;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  #fontLicenseText,
++  #fontLicenseText[hidden] {
++    transform: none;
++  }
  }
  
  .product-title {

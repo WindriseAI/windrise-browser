@@ -1,0 +1,29 @@
+diff --git a/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar.css b/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar.css
+index de24f1a045261121bf8f913ffb800bee01f256a3..2a64b60e67f1ccee0eeb30d9110c51eb3a61fadb 100644
+--- a/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar.css
++++ b/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar.css
+@@ -92,17 +92,22 @@ cr-icon-button {
+   position: absolute;
+ }
+ 
++/* Windrise N12④：设置 / 历史 / 下载 / 扩展各页页头搜索框起点统一，都从左栏宽 + 25 开始
++ * （设置左栏 266，搜索框左缘 291）。左边一段定宽，搜索框在中间那段里靠左；右侧控件多的页
++ * （扩展页「开发者模式」）由中间那段收窄让位。窄窗口（narrow）时仍走上游。 */
+ :host(:not([narrow])) #leftContent {
+-  flex: 1 1 var(--cr-toolbar-field-margin, 0);
++  flex: 0 0 266px;
+ }
+ 
+ :host(:not([narrow])) #centeredContent {
+   flex-basis: var(--cr-toolbar-center-basis, 0);
++  justify-content: start;
++  padding-inline-start: 25px;
+ }
+ 
+ :host(:not([narrow])[disable-right-content-grow]) #centeredContent {
+   justify-content: start;
+-  padding-inline-start: 12px;
++  padding-inline-start: 25px;
+ }
+ 
+ :host(:not([narrow])) #rightContent {

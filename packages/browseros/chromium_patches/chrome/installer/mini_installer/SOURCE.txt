@@ -1,6 +1,6 @@
 diff --git a/chrome/installer/mini_installer/SOURCE.txt b/chrome/installer/mini_installer/SOURCE.txt
 new file mode 100644
-index 0000000000..05a53b63ca
+index 0000000000000000000000000000000000000000..474e1445eb86dac23388f0346ae6fc163010f028
 --- /dev/null
 +++ b/chrome/installer/mini_installer/SOURCE.txt
 @@ -0,0 +1,12 @@
@@ -8,7 +8,7 @@ index 0000000000..05a53b63ca
 +本程序按 GNU Affero General Public License v3.0 授权（见同目录的 LICENSE）。
 +
 +完整对应源码（包含本二进制带有的全部修改）发布在：
-+    https://github.com/WindriseAI/BrowserOS   （分支：windrise）
++    https://github.com/WindriseAI/windrise-browser   （分支：windrise）
 +
 +合成方法：
 +  1. 检出 Chromium 基线提交 6449d9f9a6（158.0.8127.18）；

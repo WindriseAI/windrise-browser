@@ -1,8 +1,21 @@
 diff --git a/chrome/app/settings_strings.grdp b/chrome/app/settings_strings.grdp
-index e1bf5d1..a025ee4 100644
+index e1bf5d14c9fc2abfd989ad140d525f5b65c54a43..b419c3b31e957c11a215b61e41a8a2a6abd42720 100644
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -3529,8 +3529,8 @@
+@@ -59,6 +59,12 @@
+     <message name="IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_SYSTEM_REQUIREMENTS" desc="The accessibility label for a 'Learn more' link next to an error message about how the user's operating system is not supported.">
+       Learn more about system requirements
+     </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_SOURCE_CODE" desc="Windrise: row on the About page that opens the browser's public source code repository. The placeholder is the repository address shown to the user.">
++      Source code (open source): <ph name="URL">$1<ex>github.com/WindriseAI/windrise-browser</ex></ph>
++    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_FONT" desc="Windrise: one line of small text on the About page naming the bundled UI font; clicking it opens the font license.">
++      Font: HarmonyOS Sans
++    </message>
+     <if expr="not is_chromeos">
+       <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">
+         Relaunch
+@@ -3529,8 +3535,8 @@
      </message>
  
      <!-- Sync / People Page -->
@@ -13,7 +26,7 @@ index e1bf5d1..a025ee4 100644
      </message>
      <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
        Google Profile photo
-@@ -3712,6 +3712,12 @@
+@@ -3712,6 +3718,12 @@
        <message name="IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX" desc="Checkbox for importing form data for autofill">
          Autofill form data
        </message>

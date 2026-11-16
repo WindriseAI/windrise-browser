@@ -1,0 +1,12 @@
+diff --git a/ui/webui/resources/css/BUILD.gn b/ui/webui/resources/css/BUILD.gn
+index 91cc473cde7640544c58307c7742ffe399e47757..7e208dd1eacf0020961e3033c2a3d79f4d1ca64b 100644
+--- a/ui/webui/resources/css/BUILD.gn
++++ b/ui/webui/resources/css/BUILD.gn
+@@ -26,6 +26,7 @@ preprocess_if_expr("preprocess") {
+   in_files = [
+     "action_link.css",
+     "chrome_shared.css",
++    "harmonyos_sans.css",
+     "spinner.css",
+     "text_defaults_md.css",
+     "text_defaults.css",

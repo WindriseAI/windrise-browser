@@ -1,0 +1,12 @@
+diff --git a/ui/webui/resources/css/text_defaults_md.css b/ui/webui/resources/css/text_defaults_md.css
+index 0228e24c836d986876bdf4df62527ef906027ece..1dbc2d3446bad07e3722aa0c43e9e6617d045e7c 100644
+--- a/ui/webui/resources/css/text_defaults_md.css
++++ b/ui/webui/resources/css/text_defaults_md.css
+@@ -18,6 +18,7 @@
+ <if expr="is_linux">
+ @import url(//resources/css/roboto.css);
+ </if>
++@import url(//resources/css/harmonyos_sans.css);
+ <if expr="is_android">
+ @font-face {
+   font-family: 'Google Sans Text';
