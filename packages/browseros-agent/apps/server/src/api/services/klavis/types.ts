@@ -25,7 +25,10 @@ export interface UserIntegration {
 }
 
 export type KlavisProxyStatus =
-  | { state: 'disabled'; reason: 'missing_browseros_id' }
+  | {
+      state: 'disabled'
+      reason: 'missing_proxy_url' | 'missing_browseros_id'
+    }
   | { state: 'connecting' }
   | { state: 'ready'; toolCount: number }
   | {

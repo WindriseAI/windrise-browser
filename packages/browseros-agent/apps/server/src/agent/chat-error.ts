@@ -18,6 +18,7 @@ import {
   LoadAPIKeyError,
   NoSuchModelError,
 } from '@ai-sdk/provider'
+import { EXTERNAL_URLS } from '@browseros/shared/constants/urls'
 import {
   type ChatError,
   serializeChatError,
@@ -33,9 +34,6 @@ export interface ChatErrorContext {
 // live in a JSON body, so a small cut would strip exactly what the user needs.
 // Bounded, but large, so a pathological body still cannot flood the wire or card.
 const DETAILS_MAX_LENGTH = 20000
-
-const CONNECTION_DOCS_URL =
-  'https://docs.browseros.com/troubleshooting/connection-issues'
 
 const REDACTED = '[REDACTED]'
 
@@ -219,7 +217,7 @@ function fromMessage(message: string, ctx: ChatErrorContext): ChatError | null {
         'Could not reach the model provider. Check your network connection and any local provider URL.',
       retryable: true,
       provider: ctx.provider,
-      docsUrl: CONNECTION_DOCS_URL,
+      docsUrl: EXTERNAL_URLS.HELP,
       details: toDetails(message),
     }
   }
