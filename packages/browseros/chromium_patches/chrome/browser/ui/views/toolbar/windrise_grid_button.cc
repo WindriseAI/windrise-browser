@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/toolbar/windrise_grid_button.cc b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
 new file mode 100644
-index 0000000000..9cb29153fa
+index 0000000000..f4f9157fe9
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,159 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -130,6 +130,10 @@ index 0000000000..9cb29153fa
 +        metrics.Get(LayoutMetric::kGridButtonPaddingRight)));
 +  }
 +  SetMinSize(gfx::Size(0, height));
++  // LabelButton::SetText 会把读屏名字一起改成按钮上的字（窄窗时是空的），
++  // 每次换字以后把名字放回「格子」。
++  GetViewAccessibility().SetName(
++      l10n_util::GetStringUTF16(IDS_WINDRISE_GRID));
 +  SetImageLabelSpacing(metrics.Get(LayoutMetric::kGridButtonIconGap));
 +
 +  const int font_size = metrics.Get(LayoutMetric::kGridButtonFontSize);

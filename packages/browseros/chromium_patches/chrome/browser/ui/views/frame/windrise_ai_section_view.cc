@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..bbff8bae95
+index 0000000000..29d60cd657
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1868 @@
+@@ -0,0 +1,1950 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -147,6 +147,67 @@ index 0000000000..bbff8bae95
 +      0.5f + 0.5f * std::sin(kTwoPi * (5.0f * s - dir * 0.13f * t) +
 +                             0.8f * std::sin(kTwoPi * 2.0f * s + 0.3f * t));
 +  return a * a * 0.75f + b * b * b * 0.45f;
++}
++
++// smoothstep(0.2, 0.9, x)。
++float SmoothStepForGlow(float x) {
++  const float e = std::clamp((x - 0.2f) / 0.7f, 0.0f, 1.0f);
++  return e * e * (3.0f - 2.0f * e);
++}
++
++// 圆角矩形一圈上按弧长均匀取的第 s 个点（s ∈ [0, 1]），从右边中点出发顺时针
++// （屏幕坐标 y 朝下，和扫角渐变的角度方向一致）。光效的亮度按弧长 s 算，
++// 再换成这个点相对中心的角度当扫角渐变色标的位置——否则按角度均分时，长边
++// 中段会被拉开、靠角的地方挤在一起，起伏看起来像绕中心转的辐条。
++gfx::PointF PerimeterPoint(const gfx::RectF& r, float radius, float s) {
++  constexpr float kHalfPi = 1.57079632679f;
++  const float rad = std::clamp(radius, 0.0f,
++                               std::min(r.width(), r.height()) / 2.0f);
++  const float lv = r.height() - 2.0f * rad;
++  const float lh = r.width() - 2.0f * rad;
++  const float arc = kHalfPi * rad;
++  float d = std::clamp(s, 0.0f, 1.0f) * (2.0f * lv + 2.0f * lh + 4.0f * arc);
++  const float cy = r.CenterPoint().y();
++  // 右边下半段
++  if (d <= lv / 2.0f) {
++    return gfx::PointF(r.right(), cy + d);
++  }
++  d -= lv / 2.0f;
++  const auto corner = [&](float ccx, float ccy, float start_angle,
++                          float dist) {
++    const float a = start_angle + (rad > 0.0f ? dist / rad : 0.0f);
++    return gfx::PointF(ccx + rad * std::cos(a), ccy + rad * std::sin(a));
++  };
++  if (d <= arc) {  // 右下角：从 0 转到 90 度
++    return corner(r.right() - rad, r.bottom() - rad, 0.0f, d);
++  }
++  d -= arc;
++  if (d <= lh) {  // 下边，从右往左
++    return gfx::PointF(r.right() - rad - d, r.bottom());
++  }
++  d -= lh;
++  if (d <= arc) {  // 左下角：90 到 180 度
++    return corner(r.x() + rad, r.bottom() - rad, kHalfPi, d);
++  }
++  d -= arc;
++  if (d <= lv) {  // 左边，从下往上
++    return gfx::PointF(r.x(), r.bottom() - rad - d);
++  }
++  d -= lv;
++  if (d <= arc) {  // 左上角：180 到 270 度
++    return corner(r.x() + rad, r.y() + rad, 2.0f * kHalfPi, d);
++  }
++  d -= arc;
++  if (d <= lh) {  // 上边，从左往右
++    return gfx::PointF(r.x() + rad + d, r.y());
++  }
++  d -= lh;
++  if (d <= arc) {  // 右上角：270 到 360 度
++    return corner(r.right() - rad, r.y() + rad, 3.0f * kHalfPi, d);
++  }
++  d -= arc;
++  // 右边上半段
++  return gfx::PointF(r.right(), r.y() + rad + d);
 +}
 +
 +// 分隔条把手、滚动细条：墨色 28%，悬停 / 拖动 45%（和桌面端细条同一套）。
@@ -627,10 +688,10 @@ index 0000000000..bbff8bae95
 +// 被裁出一道硬边。
 +//
 +// 层次照网页四周光效（liuguang.js render 的前两层）缩到侧栏的尺度：
-+//  1. 浅色侧栏上先垫一层冷灰托底 rgb(132,143,158)，跟着起伏走（白底上白光才
++//  1. 浅色侧栏上，亮处底下垫一层冷灰托底 rgb(132,143,158)（白底上白光才
 +//     看得见，甲32）；暗色侧栏不垫（网页光效暗处同样不垫）。
-+//  2. 白光三圈：最外一圈常亮、往里两圈只在起伏高处亮——亮处更宽、暗处更窄，
-+//     像水面起伏，不是一圈等宽的框（甲31）。
++//  2. 白光三圈：只在起伏高处亮，亮处更宽、暗处几乎没有——一段段亮光沿边
++//     起伏，不是一圈等宽的框（甲31）。
 +// 亮度沿一圈按 GlowWave 两个方向叠加：四周同时都有亮处、原地起伏（甲29）。
 +// 不加粒子、不加脉冲：这是高频出现、可能亮好几分钟的状态光，克制为先。
 +class WindriseAiSectionView::OperatingGlow : public views::View {
@@ -696,15 +757,16 @@ index 0000000000..bbff8bae95
 +    // 出现的头一段亮得快一点（同 liuguang kk = min(1, k * 1.4)）。
 +    const float kk = std::min(1.0f, k * 1.4f);
 +    std::array<float, kGlowStops> white;
-+    std::array<float, kGlowStops> bed;
-+    for (int i = 0; i < kGlowStops; ++i) {
++    for (size_t i = 0; i < white.size(); ++i) {
 +      // s 从 0 到 1（GlowWave 对 s 以 1 为周期，首尾两个色标同色，接缝不露）。
 +      const float s_pos = static_cast<float>(i) / (kGlowStops - 1);
 +      const float forward = GlowWave(s_pos, t, 1.0f);
 +      const float backward = GlowWave(s_pos, t, -1.0f);
-+      white[i] = std::clamp((forward * 0.6f + backward * 0.4f) / 1.1f, 0.0f,
-+                            1.0f);
-+      bed[i] = std::clamp(forward / 1.2f, 0.0f, 1.0f);
++      const float raw = std::clamp(
++          (forward * 0.6f + backward * 0.4f) / 1.1f, 0.0f, 1.0f);
++      // 拉开对比（smoothstep 0.2..0.9）：亮处亮、暗处几乎没有，一圈上是一段段
++      // 亮光在起伏，不是一圈匀的线（离线连拍条里匀的那版读成了框）。
++      white[i] = SmoothStepForGlow(raw);
 +    }
 +    const SkPoint center = SkPoint::Make(group.CenterPoint().x(),
 +                                         group.CenterPoint().y());
@@ -716,42 +778,60 @@ index 0000000000..bbff8bae95
 +    // alpha(i)。亮度沿一圈的分布用扫角渐变给。
 +    const auto ring = [&](float inset, float width, SkColor color,
 +                          auto alpha) {
-+      SkColor4f stops[kGlowStops];
-+      SkScalar positions[kGlowStops];
-+      for (int i = 0; i < kGlowStops; ++i) {
-+        stops[i] = SkColor4f::FromColor(color);
-+        stops[i].fA = std::clamp(alpha(i), 0.0f, 1.0f);
-+        positions[i] = static_cast<float>(i) / (kGlowStops - 1);
-+      }
++      // alpha(i)：第 i 个色标（一圈上第 i 个等弧长点）的透明度。
 +      gfx::RectF r = group;
 +      r.Inset(inset);
 +      if (r.IsEmpty()) {
 +        return;
++      }
++      const float rr = std::max(0.0f, radius - inset);
++      std::array<SkColor4f, kGlowStops> stops;
++      std::array<SkScalar, kGlowStops> positions;
++      for (size_t i = 0; i < stops.size(); ++i) {
++        stops[i] = SkColor4f::FromColor(color);
++        stops[i].fA = std::clamp(alpha(i), 0.0f, 1.0f);
++        // 色标位置 = 一圈上第 i 个等弧长点相对中心的角度（0..1），首尾固定。
++        float position = 0.0f;
++        if (i + 1 == stops.size()) {
++          position = 1.0f;
++        } else if (i > 0) {
++          const gfx::PointF p = PerimeterPoint(
++              r, rr, static_cast<float>(i) / (kGlowStops - 1));
++          float angle = std::atan2(p.y() - center.y(), p.x() - center.x());
++          if (angle < 0.0f) {
++            angle += 6.28318530718f;
++          }
++          position = angle / 6.28318530718f;
++        }
++        // 必须严格递增（凸形状上本来就递增，这里只防浮点抖动）。
++        if (i > 0) {
++          position = std::max(position, positions[i - 1] + 1e-5f);
++        }
++        positions[i] = std::min(position, 1.0f);
 +      }
 +      cc::PaintFlags flags;
 +      flags.setAntiAlias(true);
 +      flags.setStyle(cc::PaintFlags::kStroke_Style);
 +      flags.setStrokeWidth(width);
 +      flags.setShader(cc::PaintShader::MakeSweepGradient(
-+          center.x(), center.y(), stops, positions, kGlowStops,
++          center.x(), center.y(), stops.data(), positions.data(), kGlowStops,
 +          SkTileMode::kClamp, 0.0f, 360.0f));
-+      const float rr = std::max(0.0f, radius - inset);
 +      canvas->sk_canvas()->drawRRect(
 +          SkRRect::MakeRectXY(gfx::RectFToSkRect(r), rr, rr), flags);
 +    };
 +    if (light_sidebar) {
-+      ring(2.0f, 1.5f, kGlowBedColor,
-+           [&](int i) { return 0.40f * kk * (0.45f + 0.55f * bed[i]); });
-+      ring(3.5f, 1.5f, kGlowBedColor,
-+           [&](int i) { return 0.20f * kk * bed[i]; });
++      // 冷灰托底只垫在亮处底下、紧贴白光里侧、比白光宽（同 liuguang 托底跟着
++      // 白光起伏、略宽、.74 浓度的意思）：白光在 #DDE1E5 上才看得出银色。
++      ring(2.75f, 3.5f, kGlowBedColor,
++           [&](size_t i) { return 0.70f * kk * white[i]; });
 +    }
-+    const float tone = light_sidebar ? 1.0f : 0.8f;
-+    ring(0.75f, 1.5f, SK_ColorWHITE,
-+         [&](int i) { return tone * kk * (0.55f + 0.45f * white[i]); });
++    const float tone = light_sidebar ? 1.0f : 0.85f;
++    ring(1.0f, 2.0f, SK_ColorWHITE,
++         [&](size_t i) { return tone * kk * (0.12f + 0.88f * white[i]); });
 +    ring(2.0f, 1.5f, SK_ColorWHITE,
-+         [&](int i) { return tone * kk * 0.55f * white[i]; });
++         [&](size_t i) { return tone * kk * 0.6f * white[i]; });
 +    ring(3.25f, 1.5f, SK_ColorWHITE,
-+         [&](int i) { return tone * kk * 0.25f * white[i] * white[i]; });
++         [&](size_t i) { return tone * kk * 0.3f * white[i] * white[i]; });
 +  }
 +
 +  const raw_ptr<WindriseAiSectionView> section_;
@@ -851,6 +931,8 @@ index 0000000000..bbff8bae95
 +      viewport_->AddChildView(std::make_unique<ScrollIndicator>(this));
 +  glow_ = viewport_->AddChildView(std::make_unique<OperatingGlow>(this));
 +  clock_origin_ = base::TimeTicks::Now();
++  // 光效可能一连亮好几分钟（AI 一直在操作），关掉「观察者活跃太久」的检查。
++  set_check_active_duration(false);
 +
 +  if (tab_strip_model_) {
 +    tab_strip_model_->AddObserver(this);

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-index 7f404c6864..9fde511292 100644
+index 7f404c6864..fd2448e1c8 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
 @@ -23,6 +23,7 @@
@@ -59,30 +59,31 @@ index 7f404c6864..9fde511292 100644
      avatar_->SetVisible(show_avatar_toolbar_button);
    }
  
-@@ -1577,6 +1597,12 @@ void ToolbarView::InitLayout() {
+@@ -1577,6 +1597,13 @@ void ToolbarView::InitLayout() {
            : kOrderOffset + 1;
    constexpr int kToolbarActionsFlexOrder = kOrderOffset + 2;
    constexpr int kExtensionsFlexOrder = kOrderOffset + 3;
-+  // 风桥「格子」按钮排在扩展容器前面拿位置（order 越小越先拿到、越晚让位）：
-+  // 用户 R231「固定四五个扩展……都能固定上」同时不许挤掉我们自己的按钮。窗口
-+  // 不够宽时先把放不下的扩展收进拼图菜单，格子按钮留着；窄窗（< 900）时格子
-+  // 按钮本身已收成 32 见方的图标（WindriseGridButton::UpdateCompact）。和
-+  // 「固定的工具栏动作」同一档（kToolbarActionsFlexOrder）。
++  // 风桥「格子」按钮排在扩展容器前面拿位置（order 越小越先拿到）：用户 R231
++  // 「固定四五个扩展……都能固定上」同时不许挤掉我们自己的按钮。窗口不够宽时
++  // 先把放不下的扩展收进拼图菜单，格子按钮一直留着（最小宽 = 首选宽，不会被
++  // 压成 0）；窄窗（< 900）时它本身已收成 32 见方的图标
++  // （WindriseGridButton::UpdateCompact）。和「固定的工具栏动作」同一档
++  // （kToolbarActionsFlexOrder）。
 +  constexpr int kGridButtonFlexOrder = kToolbarActionsFlexOrder;
  
    const views::FlexSpecification location_bar_flex_rule =
        views::FlexSpecification(views::LayoutOrientation::kHorizontal,
-@@ -1610,6 +1636,17 @@ void ToolbarView::InitLayout() {
+@@ -1610,6 +1637,17 @@ void ToolbarView::InitLayout() {
                                         extensions_flex_rule);
    }
  
 +  if (windrise_grid_button_) {
-+    // 极窄（连地址栏都到了最小）时才整颗让出；在那之前扩展先收进菜单。
++    // 不让出：再窄就由地址栏往它的最小宽压。
 +    windrise_grid_button_->SetProperty(
 +        views::kFlexBehaviorKey,
 +        views::FlexSpecification(
 +            views::LayoutOrientation::kHorizontal,
-+            views::MinimumFlexSizeRule::kPreferredSnapToZero,
++            views::MinimumFlexSizeRule::kPreferred,
 +            views::MaximumFlexSizeRule::kPreferred)
 +            .WithOrder(kGridButtonFlexOrder));
 +  }

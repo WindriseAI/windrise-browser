@@ -1,15 +1,16 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..c7248b5dd4
+index 0000000000..4931096ffc
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,525 @@
+@@ -0,0 +1,527 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h"
 +
 +#include <algorithm>
++#include <array>
 +#include <memory>
 +#include <utility>
 +
@@ -160,10 +161,11 @@ index 0000000000..c7248b5dd4
 +                                      base::FormatNumber(exploded.month),
 +                                      base::FormatNumber(exploded.day_of_month));
 +  }
-+  static constexpr const char16_t* kMonthAbbr[] = {
++  static constexpr std::array<std::u16string_view, 12> kMonthAbbr = {
 +      u"Jan", u"Feb", u"Mar", u"Apr", u"May", u"Jun",
 +      u"Jul", u"Aug", u"Sep", u"Oct", u"Nov", u"Dec"};
-+  const int month_index = std::clamp(exploded.month, 1, 12) - 1;
++  const size_t month_index =
++      static_cast<size_t>(std::clamp(exploded.month, 1, 12) - 1);
 +  return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MONTH_NAME_DAY,
 +                                    kMonthAbbr[month_index],
 +                                    base::FormatNumber(exploded.day_of_month));
