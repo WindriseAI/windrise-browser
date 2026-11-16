@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Windows packaging module for BrowserOS"""
 
+import json
 import shutil
 import zipfile
 from pathlib import Path
@@ -16,6 +17,12 @@ from ...lib.utils import (
     IS_WINDOWS,
 )
 from ..compile.standard import autoninja_command
+from ...lib.browser_directory_zip import (
+    VERSION_PATTERN,
+    check_layout,
+    executable_arch,
+    sha256_file,
+)
 
 
 @step("mini_installer", phase="sign", platforms=("windows",), optional=True)
@@ -49,9 +56,9 @@ class MiniInstallerModule(Step):
 
 @step("package_windows", phase="package", platforms=("windows",))
 class WindowsPackageModule(Step):
-    produces = ["installer", "installer_zip"]
+    produces = ["installer", "installer_zip", "browser_directory_zip", "browser_directory_metadata"]
     requires = []
-    description = "Create Windows installer and portable ZIP"
+    description = "Create Windows installers and complete browser directory ZIP"
 
     def validate(self, context: Context) -> None:
         if not IS_WINDOWS():
@@ -68,10 +75,13 @@ class WindowsPackageModule(Step):
 
         installer_path = self._create_installer(context)
         zip_path = self._create_portable_zip(context)
+        directory_zip, directory_metadata = self._create_directory_zip(context)
         product_executable_path = self._copy_product_executable(context)
 
         context.artifact_registry.add("installer", installer_path)
         context.artifact_registry.add("installer_zip", zip_path)
+        context.artifact_registry.add("browser_directory_zip", directory_zip)
+        context.artifact_registry.add("browser_directory_metadata", directory_metadata)
         context.artifact_registry.add("built_app", product_executable_path)
 
         log_success("Windows packages created successfully")
@@ -132,6 +142,87 @@ class WindowsPackageModule(Step):
             return zip_path
         except Exception as e:
             raise RuntimeError(f"Failed to create installer ZIP: {e}")
+
+    def _create_directory_zip(self, ctx: Context) -> tuple[Path, Path]:
+        """Reuse the mini_installer's release-manifest staging tree after signing.
+
+        Upstream BUILD.gn passes $target_gen_dir/mini_installer as staging_dir;
+        create_installer_archive.py adds temp_installer_archive/Chrome-bin.
+        Strip only Chrome-bin, retaining every runtime file and version path.
+        Do not use the raw build directory, which can contain user profiles.
+        """
+        build_output_dir = join_paths(ctx.chromium_src, ctx.out_dir)
+        browser_tree = (
+            build_output_dir / "gen" / "chrome" / "installer" / "mini_installer"
+            / "mini_installer" / "temp_installer_archive" / "Chrome-bin"
+        )
+        if not browser_tree.is_dir():
+            raise RuntimeError(f"Installer runtime tree is missing: {browser_tree}; build mini_installer first")
+
+        # This is the same VERSION file BuildVersion() uses upstream, including
+        # the product build offset; CHROMIUM_VERSION is only the upstream pin.
+        version_parts = {}
+        for line in (ctx.chromium_src / "chrome" / "VERSION").read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator:
+                version_parts[key.strip()] = value.strip()
+        version = ".".join(version_parts.get(key, "") for key in ("MAJOR", "MINOR", "BUILD", "PATCH"))
+        if not VERSION_PATTERN.fullmatch(version):
+            raise RuntimeError("chrome/VERSION does not contain a four-part Chromium version")
+
+        entries = []
+        files = []
+        for path in sorted(browser_tree.rglob("*")):
+            if path.is_symlink() or path.is_junction():
+                raise RuntimeError(f"Links are forbidden in the installer runtime tree: {path}")
+            relative = path.relative_to(browser_tree).as_posix()
+            if path.is_dir():
+                entries.append((relative + "/", True, 0))
+            elif path.is_file():
+                entries.append((relative, False, path.stat().st_size))
+                files.append((path, relative))
+            else:
+                raise RuntimeError(f"Unsupported installer runtime entry: {path}")
+        check_layout(entries, version)
+
+        staged_chrome = browser_tree / "chrome.exe"
+        if sha256_file(staged_chrome) != sha256_file(build_output_dir / "chrome.exe"):
+            raise RuntimeError("Installer tree chrome.exe differs from final build output; rebuild mini_installer after signing")
+        with staged_chrome.open("rb") as source:
+            arch = executable_arch(source)
+        if arch != ctx.architecture:
+            raise RuntimeError(f"Installer chrome.exe architecture {arch} differs from target {ctx.architecture}")
+
+        output_dir = ctx.get_dist_dir()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        zip_path = output_dir / ctx.get_artifact_name("browser_directory_zip")
+        metadata_path = zip_path.with_suffix(zip_path.suffix + ".json")
+        pending_zip = zip_path.with_suffix(zip_path.suffix + ".tmp")
+        pending_metadata = metadata_path.with_suffix(metadata_path.suffix + ".tmp")
+        try:
+            with zipfile.ZipFile(pending_zip, "w", zipfile.ZIP_DEFLATED) as archive:
+                for path, relative in files:
+                    archive.write(path, relative)
+            digest = sha256_file(pending_zip)
+            metadata = {
+                "name": zip_path.name,
+                "format": "zip",
+                "platform": "win32",
+                "arch": arch,
+                "version": version,
+                "buildId": f"sha256-{digest}",
+                "size": pending_zip.stat().st_size,
+                "sha256": digest,
+            }
+            pending_metadata.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+            pending_zip.replace(zip_path)
+            pending_metadata.replace(metadata_path)
+        finally:
+            pending_zip.unlink(missing_ok=True)
+            pending_metadata.unlink(missing_ok=True)
+        log_success(f"Browser directory ZIP created: {zip_path.name}")
+        return zip_path, metadata_path
+
 
 
 def build_mini_installer(ctx: Context) -> bool:
