@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/layout_constants.cc b/chrome/browser/ui/layout_constants.cc
-index b8206dc188..ec3323fcba 100644
+index b8206dc188..aaf1b3ab15 100644
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
 @@ -4,8 +4,11 @@
@@ -78,7 +78,7 @@ index b8206dc188..ec3323fcba 100644
      case LayoutConstant::kVerticalTabStripUncollapsedVerticalPadding:
        return 12;
      case LayoutConstant::kVerticalTabStripCollapsedVerticalPadding:
-@@ -174,7 +195,9 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -174,19 +195,27 @@ int GetLayoutConstant(LayoutConstant constant) {
      case LayoutConstant::kVerticalTabStripComboButtonIconSize:
        return 18;
      case LayoutConstant::kVerticalTabStripButtonIconSize:
@@ -89,7 +89,12 @@ index b8206dc188..ec3323fcba 100644
      case LayoutConstant::kVerticalTabStripTopButtonPadding:
        return 4;
      case LayoutConstant::kVerticalTabStripFlatEdgeButtonPadding:
-@@ -184,9 +207,13 @@ int GetLayoutConstant(LayoutConstant constant) {
+-      return 2;
++      // 风桥 P1：格子、搜索两个 32 见方 tile 之间留 4（定稿帧 36:26925 展开态
++      // 横排、点头页 ntp-zh-rail 收起态竖排都是 4）。
++      return 4;
+     case LayoutConstant::kVerticalTabStripTopButtonContainerHeight:
+       return 28;
      case LayoutConstant::kVerticalTabStripNewTabButtonSize:
        return 32;
      case LayoutConstant::kVerticalTabStripCollapseButtonSize:

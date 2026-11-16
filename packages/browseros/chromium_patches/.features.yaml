@@ -588,3 +588,12 @@ features:
       - "ui/views/controls/menu/menu_controller.cc"
       - "ui/views/controls/menu/menu_controller.h"
       - "ui/views/controls/menu/menu_host.cc"
+
+  windrise-browser-p123-1116:
+    description: "fix: vertical tab strip top grid/search buttons as 32px tiles without truncated labels (P1), collapsed new-tab button 36 high (P3), edge-light layer corners in URL fragment so dock switches no longer reload (P2)"
+    files:
+      - "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.cc"
+      - "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc"
+      - "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc"
+      - "chrome/browser/ui/views/frame/contents_container_view.cc"
+      - "chrome/browser/ui/layout_constants.cc"

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/contents_container_view.cc b/chrome/browser/ui/views/frame/contents_container_view.cc
-index 413b2f626d..c2e4cbbfeb 100644
+index 413b2f626d..5ecc8620d0 100644
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
 @@ -4,12 +4,17 @@
@@ -103,7 +103,7 @@ index 413b2f626d..c2e4cbbfeb 100644
    indigo_overlay_view_ = nullptr;
    // read_anything_immersive_overlay_view_ holds a raw_ptr to
    // contents_view_. We need to make sure we destroy
-@@ -304,10 +363,63 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
+@@ -304,10 +363,66 @@ void ContentsContainerView::SetBorderRoundedCornersFrom(
    if (glic_border_) {
      glic_border_->SetRoundedCorners(content_rounded_corners);
    }
@@ -116,7 +116,10 @@ index 413b2f626d..c2e4cbbfeb 100644
 +    // 独立层的圆角同上（和 ActorOverlayWebView 一样用 holder 的原生圆角）。
 +    edge_light_web_view_->SetCornerRadii(content_rounded_corners);
 +    // 光本身由扩展页画：全屏、devtools 停靠、分屏切换时它该用的角跟着变，
-+    // 换一下独立层地址的查询串（只有变了才重新加载，AI 过渡的每一帧不会触发）。
++    // 换一下独立层地址里 # 后面的角（只有变了才换，AI 过渡的每一帧不会触发）。
++    // P2（59c 判定）：只改 fragment 是同文档导航，页面不重新加载、光不断；
++    // 扩展 frame.js 收 hashchange，从当前角过渡到新角。依据见
++    // EdgeLightWebLayerUrl() 的注释。
 +    if (edge_light_web_view_->shown()) {
 +      const GURL url = EdgeLightWebLayerUrl();
 +      content::WebContents* layer = edge_light_web_view_->web_contents();
@@ -168,7 +171,7 @@ index 413b2f626d..c2e4cbbfeb 100644
  }
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
-@@ -318,6 +430,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
+@@ -318,6 +433,9 @@ void ContentsContainerView::ChildVisibilityChanged(View* child) {
  }
  
  void ContentsContainerView::Layout(PassKey pass_key) {
@@ -178,7 +181,7 @@ index 413b2f626d..c2e4cbbfeb 100644
    LayoutSuperclass<views::View>(this);
  
    UpdateContentsClip();
-@@ -341,7 +456,149 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
+@@ -341,7 +459,162 @@ void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
      if (!rounded_corner_radii_.IsEmpty()) {
        UpdateBorderRoundedCorners();
      }
@@ -229,8 +232,21 @@ index 413b2f626d..c2e4cbbfeb 100644
 +                   [](char c) { return c >= 'a' && c <= 'p'; })) {
 +    return GURL();
 +  }
-+  // 光由扩展页自己画、原生只裁剪，所以把光走线该用的四角带给它（放查询串，
-+  // #native&w= 不变，旧扩展照旧认得）：r0 = 平时的角，r1 = AI 操作时要到的角。
++  // 光由扩展页自己画、原生只裁剪，所以把光走线该用的四角带给它：
++  // r0 = 平时的角，r1 = AI 操作时要到的角。
++  // P2（59c 判定）：r0 / r1 放 fragment（#native&w=..&r0=..&r1=..），不放查询串。
++  // 地址只有 # 后面变时，WebView::LoadInitialURL -> LoadURLWithParams 走同文档
++  // 导航，不重新加载页面：
++  //  - navigation_controller_impl.cc GetNavigationType()：new_url.has_ref() 且
++  //    old_url.EqualsIgnoringRef(new_url) 且 GET -> SAME_DOCUMENT（前提：页面
++  //    已提交、不是出错页、没有待提交的跨文档导航）；
++  //  - 同文件 ShouldTreatNavigationAsReload()：LoadInitialURL 用
++  //    PAGE_TRANSITION_AUTO_TOPLEVEL，不是 TYPED / LINK，不会被改成重新加载；
++  //  - blink document_loader.cc CommitSameDocumentNavigation()：只改 fragment
++  //    时 EnqueueHashchangeEvent，frame.js 收 hashchange 换角。
++  // 查询串必须恒为空，否则 EqualsIgnoringRef 不成立、又变回整页重新加载。
++  // 要和改过的 frame.js（认 #native&w=..&r0=..&r1=..）一起发：旧 frame.js 的
++  // hash 正则只认 ^native&w=数字$，配新原生会认不出独立层。
 +  // devtools 停靠侧、新标签页 footer 下边的角两者都是 0（同 SetBorderRoundedCornersFrom
 +  // 对网页区的裁剪）；全屏（F11、HTML 元素全屏）、分屏不做 36，r1 = r0
 +  // （编译当天清单 §7 第 4 项）。
@@ -266,10 +282,10 @@ index 413b2f626d..c2e4cbbfeb 100644
 +          browseros::windrise::LayoutMetric::kWebContentsRadiusAi));
 +  const std::string r1 = ai_corners ? corners(ai, ai, ai, ai) : r0;
 +  // 地址只由扩展 id 拼：路径固定，调用方改不了它指向哪。
-+  return GURL("chrome-extension://" + id + "/edge-light/frame.html?r0=" + r0 +
-+              "&r1=" + r1 + "#native&w=" +
++  return GURL("chrome-extension://" + id + "/edge-light/frame.html#native&w=" +
 +              base::NumberToString(extensions::ExtensionTabUtil::GetWindowId(
-+                  browser_view_->browser())));
++                  browser_view_->browser())) +
++              "&r0=" + r0 + "&r1=" + r1);
 +}
 +
 +bool ContentsContainerView::RefreshEdgeLightAuthorization() {
@@ -328,7 +344,7 @@ index 413b2f626d..c2e4cbbfeb 100644
  }
  
  void ContentsContainerView::SetContentsResizingStrategy(
-@@ -537,6 +794,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
+@@ -537,6 +810,19 @@ views::ProposedLayout ContentsContainerView::CalculateProposedLayout(
                                         non_devtools_contents_bounds);
    }
  
