@@ -5,7 +5,6 @@
  */
 
 import { TIMEOUTS } from '@browseros/shared/constants/timeouts'
-import { EXTERNAL_URLS } from '@browseros/shared/constants/urls'
 import type { StrataCreateResponse, UserIntegration } from './types'
 
 interface KlavisIntegrationObject {
@@ -20,8 +19,8 @@ type KlavisIntegrationItem = string | KlavisIntegrationObject
 export class KlavisClient {
   private baseUrl: string
 
-  constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || EXTERNAL_URLS.KLAVIS_PROXY
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '')
   }
 
   private async request<T>(

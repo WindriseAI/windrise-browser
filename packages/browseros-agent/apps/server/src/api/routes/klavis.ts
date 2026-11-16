@@ -22,6 +22,16 @@ export function createKlavisRoutes(deps: KlavisRouteDeps) {
   const { klavis } = deps
 
   return new Hono()
+    .use('*', async (c, next) => {
+      const proxy = klavis.getProxyStatus()
+      if (proxy.state === 'disabled') {
+        return c.json(
+          { error: 'Klavis is not enabled', code: 'klavis_disabled', proxy },
+          503,
+        )
+      }
+      await next()
+    })
     .get('/servers', (c) => {
       const servers = klavis.listAvailableConnectors()
       return c.json({

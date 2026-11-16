@@ -41,6 +41,7 @@ import type {
 
 export interface KlavisServiceDeps {
   browserosId?: string | null
+  proxyUrl?: string
   client?: KlavisClient
   cache?: KlavisStrataCache
   connect?: (
@@ -52,7 +53,7 @@ export interface KlavisServiceDeps {
 /** Owns Klavis catalog, auth, Strata lifecycle, cache, and tool exposure. */
 export class KlavisService {
   private readonly browserosId?: string
-  private readonly client: KlavisClient
+  private readonly client?: KlavisClient
   private readonly cache: KlavisStrataCache
   private readonly connect: (
     deps: ConnectKlavisStrataSessionDeps,
@@ -65,18 +66,17 @@ export class KlavisService {
 
   constructor(deps: KlavisServiceDeps) {
     this.browserosId = deps.browserosId ?? undefined
-    this.client = deps.client ?? new KlavisClient()
+    const proxyUrl = deps.proxyUrl?.trim()
+    this.client = deps.client ?? (proxyUrl ? new KlavisClient(proxyUrl) : undefined)
     this.cache = deps.cache ?? new KlavisStrataCache()
     this.connect = deps.connect ?? connectKlavisStrataSession
     this.retryDelaysMs = deps.retryDelaysMs ?? KLAVIS_PROXY_RETRY_BACKOFF_MS
-    this.status = this.browserosId
-      ? { state: 'stopped' }
-      : { state: 'disabled', reason: 'missing_browseros_id' }
+    this.status = this.inactiveStatus()
   }
 
   /** Starts the background Strata session without blocking route startup. */
   start(): void {
-    if (!this.browserosId || this.status.state === 'disabled') {
+    if (!this.client || !this.browserosId || this.status.state === 'disabled') {
       return
     }
     if (
@@ -101,9 +101,7 @@ export class KlavisService {
     }
     const session = this.session
     this.session = null
-    this.status = this.browserosId
-      ? { state: 'stopped' }
-      : { state: 'disabled', reason: 'missing_browseros_id' }
+    this.status = this.inactiveStatus()
     await session?.close().catch((error) => {
       logger.warn('Failed to close Klavis proxy transport', {
         error: error instanceof Error ? error.message : String(error),
@@ -121,15 +119,14 @@ export class KlavisService {
 
   async getUserIntegrations(): Promise<UserIntegration[]> {
     const browserosId = this.requireBrowserosId()
-    return this.client.getUserIntegrations(browserosId)
+    return this.requireClient().getUserIntegrations(browserosId)
   }
 
   async getConnectorInventory(
     scope?: ConnectorToolScope,
   ): Promise<ConnectorInventory> {
-    const integrations = this.browserosId
-      ? await this.getUserIntegrations()
-      : []
+    const integrations =
+      this.client && this.browserosId ? await this.getUserIntegrations() : []
     return buildConnectorInventory({
       available: this.listAvailableConnectors(),
       integrations,
@@ -157,7 +154,9 @@ export class KlavisService {
     for (const serverName of serverNames) {
       this.requireSupportedConnector(serverName)
     }
-    const result = await this.client.createStrata(browserosId, [...serverNames])
+    const result = await this.requireClient().createStrata(browserosId, [
+      ...serverNames,
+    ])
     return serverNames.map((serverName) => ({
       serverName,
       strataId: result.strataId,
@@ -170,20 +169,21 @@ export class KlavisService {
   async submitApiKey(input: SubmitApiKeyInput): Promise<void> {
     const browserosId = this.requireBrowserosId()
     this.requireSupportedConnector(input.serverName)
-    await this.client.submitApiKey(input.apiKeyUrl, input.apiKey)
+    await this.requireClient().submitApiKey(input.apiKeyUrl, input.apiKey)
     this.cache.invalidate(browserosId)
   }
 
   async removeConnector(serverName: string): Promise<void> {
     const browserosId = this.requireBrowserosId()
     this.requireSupportedConnector(serverName)
-    const strata = await this.client.createStrata(browserosId, [serverName])
-    await this.client.deleteServersFromStrata(strata.strataId, [serverName])
+    const client = this.requireClient()
+    const strata = await client.createStrata(browserosId, [serverName])
+    await client.deleteServersFromStrata(strata.strataId, [serverName])
     this.cache.invalidate(browserosId)
   }
 
   buildAiSdkToolSet(scope: ConnectorToolScope = {}): ToolSet {
-    if (!this.browserosId) {
+    if (!this.client || !this.browserosId) {
       return {}
     }
     return buildKlavisToolSet(this.toolAdapterDeps(scope))
@@ -194,9 +194,9 @@ export class KlavisService {
     scope: ConnectorToolScope = {},
     options: KlavisMcpRegistrationOptions = {},
   ): void {
-    if (!this.browserosId) {
+    if (!this.client || !this.browserosId) {
       logger.debug('Skipping Klavis MCP tools registration', {
-        reason: 'missing_browseros_id',
+        proxy: this.status,
         selectedServers: selectedServerNames(scope),
       })
       return
@@ -210,7 +210,7 @@ export class KlavisService {
   }
 
   private async attemptConnect(attemptIndex: number): Promise<void> {
-    if (this.stopped || !this.browserosId) {
+    if (this.stopped || !this.client || !this.browserosId) {
       return
     }
 
@@ -287,7 +287,23 @@ export class KlavisService {
     }
   }
 
+  private inactiveStatus(): KlavisProxyStatus {
+    if (!this.client) return { state: 'disabled', reason: 'missing_proxy_url' }
+    if (!this.browserosId) {
+      return { state: 'disabled', reason: 'missing_browseros_id' }
+    }
+    return { state: 'stopped' }
+  }
+
+  private requireClient(): KlavisClient {
+    if (!this.client) {
+      throw new Error('Klavis is not enabled: proxy URL not configured')
+    }
+    return this.client
+  }
+
   private requireBrowserosId(): string {
+    this.requireClient()
     if (!this.browserosId) {
       throw new Error('browserosId not configured')
     }

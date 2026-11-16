@@ -51,8 +51,11 @@ export async function createHttpServer(config: HttpServerConfig) {
     : null
   if (!browserosId) shutdownOAuth()
 
-  const klavis = new KlavisService({ browserosId })
-  klavis.start()
+  const klavis = new KlavisService({
+    browserosId,
+    proxyUrl: process.env.WINDRISE_KLAVIS_PROXY_URL,
+  })
+  if (klavis.getProxyStatus().state !== 'disabled') klavis.start()
 
   const activity = new ServerActivity()
 

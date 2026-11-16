@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/browseros_switches.h b/chrome/browser/browseros/core/browseros_switches.h
 new file mode 100644
-index 0000000000000..98317c9cd677f
+index 0000000000000..1a93529125cbe
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_switches.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,25 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -22,7 +22,6 @@ index 0000000000000..98317c9cd677f
 +inline constexpr char kProxyPort[] = "browseros-proxy-port";
 +inline constexpr char kServerPort[] = "browseros-server-port";
 +inline constexpr char kDisableExtensions[] = "disable-browseros-extensions";
-+inline constexpr char kExtensionsUrl[] = "browseros-extensions-url";
 +inline constexpr char kDisableUrlOverrides[] =
 +    "browseros-disable-url-overrides";
 +inline constexpr char kBrowserOSProduct[] = "browseros-product";
