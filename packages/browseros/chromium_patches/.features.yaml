@@ -652,3 +652,17 @@ features:
       - "chrome/browser/ui/color/windrise_color_mixer.cc"
       - "chrome/app/generated_resources.grd"
       - "chrome/app/resources/generated_resources_zh-CN.xtb"
+
+  windrise-browser-ai-section-behavior-1116:
+    description: "fix: optional setAiActivity aiName attributes activity to each AI while preserving unnamed callers; selecting AI tabs respects the collapsed sidebar; AI tab rows reuse the upper tab strip context menu and TabMenuModel; decode IDN hosts before choosing a rail glyph"
+    files:
+      - "chrome/common/extensions/api/browser_os.idl"
+      - "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+      - "chrome/browser/browseros/core/windrise_ai_state.h"
+      - "chrome/browser/browseros/core/windrise_ai_state.cc"
+      - "chrome/browser/browseros/core/windrise_rail_glyph.cc"
+      - "chrome/browser/browseros/core/BUILD.gn"
+      - "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h"
+      - "chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc"
+      - "chrome/browser/ui/views/frame/windrise_ai_section_view.h"
+      - "chrome/browser/ui/views/frame/windrise_ai_section_view.cc"

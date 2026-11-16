@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_ai_state.h b/chrome/browser/browseros/core/windrise_ai_state.h
 new file mode 100644
-index 0000000000..74ace12dfe
+index 0000000000..65eaf8f38c
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_ai_state.h
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,144 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -108,7 +108,10 @@ index 0000000000..74ace12dfe
 +                    std::optional<tab_groups::TabGroupId> group);
 +  const AiSection* FindSection(const std::u16string& ai_name) const;
 +  void SetConnections(std::vector<AiConnection> connections);
-+  void SetActivity(int tab_id, bool active);
++  // 带名字只开关这个 AI；不带名字时保留旧的按标签开关行为。
++  void SetActivity(int tab_id,
++                   bool active,
++                   std::optional<std::u16string> ai_name = std::nullopt);
 +  // 扩展每个 AI 动作调一次。只通知脉冲观察者，不改状态；某个标签没在被操作时
 +  // 观察者自己忽略。
 +  void PulseActivity(int tab_id, std::optional<std::pair<float, float>> point);
@@ -116,6 +119,7 @@ index 0000000000..74ace12dfe
 +  const AiState& state() const { return state_; }
 +  bool IsAiTab(int tab_id) const;
 +  bool IsActive(int tab_id) const;
++  bool IsOperating(const std::u16string& ai_name) const;
 +
 +  base::CallbackListSubscription AddObserver(base::RepeatingClosure callback);
 +  // 脉冲观察者：回调里带载荷，和上面「状态变了」的无参观察者分开。
@@ -128,6 +132,13 @@ index 0000000000..74ace12dfe
 +  void NotifyIfChanged(bool changed);
 +  // sections 变了以后重算 ai_tab_ids（并集）。
 +  void RebuildAiTabIds();
++
++  struct Activity {
++    int tab_id;
++    // 未带 aiName 的旧调用仍归最近一次推标签的 AI。
++    std::optional<std::u16string> ai_name;
++  };
++  std::vector<Activity> activities_;
 +
 +  AiState state_;
 +  base::RepeatingClosureList observers_;

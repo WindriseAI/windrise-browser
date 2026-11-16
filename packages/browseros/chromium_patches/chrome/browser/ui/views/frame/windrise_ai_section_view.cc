@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..23c0711759
+index 0000000000..3c4cbf86fa
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1411 @@
+@@ -0,0 +1,1423 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -63,6 +63,7 @@ index 0000000000..23c0711759
 +#include "ui/gfx/text_utils.h"
 +#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 +#include "ui/views/accessibility/view_accessibility.h"
++#include "ui/views/context_menu_controller.h"
 +#include "ui/views/controls/button/button.h"
 +#include "ui/views/view_class_properties.h"
 +
@@ -160,7 +161,8 @@ index 0000000000..23c0711759
 +// ---------------------------------------------------------------------------
 +// 一行：组合页行（一个 AI）或标签行。都是可点、可聚焦的按钮。
 +
-+class WindriseAiSectionView::Row : public views::Button {
++class WindriseAiSectionView::Row : public views::Button,
++                                   public views::ContextMenuController {
 +  METADATA_HEADER(Row, views::Button)
 +
 + public:
@@ -172,6 +174,7 @@ index 0000000000..23c0711759
 +        base::Unretained(this)));
 +    SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
 +                             ui::EF_MIDDLE_MOUSE_BUTTON);
++    set_context_menu_controller(this);
 +  }
 +  Row(const Row&) = delete;
 +  Row& operator=(const Row&) = delete;
@@ -353,6 +356,16 @@ index 0000000000..23c0711759
 +    SchedulePaint();
 +  }
 +
++  void ShowContextMenuForViewImpl(
++      views::View* source,
++      const gfx::Point& point,
++      ui::mojom::MenuSourceType source_type) override {
++    if (!data_.is_header && Tab()) {
++      // 复用上段的控制器、TabMenuModel 和菜单期间的保持当前收起态锁。
++      section_->show_tab_context_menu_.Run(data_.tab, point, source_type);
++    }
++  }
++
 + private:
 +  bool IsHoveredOrPressed() const {
 +    return GetState() == STATE_HOVERED || GetState() == STATE_PRESSED;
@@ -530,12 +543,15 @@ index 0000000000..23c0711759
 +
 +// ---------------------------------------------------------------------------
 +
-+WindriseAiSectionView::WindriseAiSectionView(BrowserWindowInterface* browser,
-+                                             TabStripModel* tab_strip_model,
-+                                             PrefService* prefs)
++WindriseAiSectionView::WindriseAiSectionView(
++    BrowserWindowInterface* browser,
++    TabStripModel* tab_strip_model,
++    PrefService* prefs,
++    ShowTabContextMenuCallback show_tab_context_menu)
 +    : browser_(browser),
 +      tab_strip_model_(tab_strip_model),
 +      prefs_(prefs),
++      show_tab_context_menu_(std::move(show_tab_context_menu)),
 +      height_transition_(this, this, kHeightDuration),
 +      splitter_transition_(this, this, kSplitterFadeDuration),
 +      grip_transition_(this, this, kGripDuration),
@@ -891,11 +907,7 @@ index 0000000000..23c0711759
 +    header.tab_count = static_cast<int>(tabs_in_group.size());
 +    header.expanded = expanded;
 +    header.active = contains_active && !expanded;
-+    // 「正在操作」：这个 AI 是最近一次推标签的那一个，并且扩展报告有标签正在
-+    // 被 AI 操作（setAiActivity）。setAiActivity 不带 AI 名，多个 AI 同时
-+    // 操作时只能标在最近那一个上（见交付稿「没做成的」）。
-+    header.operating = section.name == state.active_ai_name &&
-+                       !state.active_tab_ids.empty();
++    header.operating = ai_state->IsOperating(section.name);
 +    for (const browseros::windrise::AiConnection& connection :
 +         state.connections) {
 +      if (connection.name == section.name && !connection.icon_png.empty()) {
