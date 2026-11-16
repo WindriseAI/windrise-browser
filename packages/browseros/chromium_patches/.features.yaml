@@ -641,3 +641,14 @@ features:
       - "chrome/browser/ui/views/frame/windrise_ai_section_view.h"
       - "chrome/browser/ui/views/frame/windrise_ai_section_view.cc"
       - "chrome/browser/ui/views/frame/BUILD.gn"
+  windrise-browser-ai-panel-1116:
+    description: "fix: AI panel opened from the bottom-left card follows the final frame B (ntp-zh-panel / ntp-en-panel) - silver glass background (same top-light bottom-dark gradient as the card, 1px white .95 top highlight, .75px white .6 inner ring, own dark-mode stops), white wide Connect an AI button sending connect_ai, footer as text links under a hairline with hover / pressed / focus feedback, last-used time as N min ago / Today HH:MM / Yesterday HH:MM / M/D, Gallery action renamed grid -> gallery and shown as not yet available with a Full version coming soon note (user 11-16 15:37)"
+    files:
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.h"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc"
+      - "chrome/browser/browseros/core/windrise_theme.h"
+      - "chrome/browser/browseros/core/windrise_theme.cc"
+      - "chrome/browser/ui/color/chrome_color_id.h"
+      - "chrome/browser/ui/color/windrise_color_mixer.cc"
+      - "chrome/app/generated_resources.grd"
+      - "chrome/app/resources/generated_resources_zh-CN.xtb"

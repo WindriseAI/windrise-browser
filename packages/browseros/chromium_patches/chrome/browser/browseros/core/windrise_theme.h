@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..73a6dc529b
+index 0000000000..d3c214ac38
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,200 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -58,9 +58,11 @@ index 0000000000..73a6dc529b
 +  kAiPanelButtonBackground,  // 面板按钮底（白玻璃的平涂近似）
 +  kAiCardBackgroundTop,      // 卡片底：B 版银色玻璃渐变的上端（#F1F3F5）
 +  kAiCardBackgroundBottom,   // 卡片底：渐变的下端（#E2E6EA）
++  kAiPanelBackgroundTop,     // 面板底：银色玻璃渐变的上端（亮色同卡片 #F1F3F5）
++  kAiPanelBackgroundBottom,  // 面板底：渐变的下端（亮色同卡片 #E2E6EA）
 +};
 +inline constexpr size_t kThemeTokenCount =
-+    static_cast<size_t>(ThemeToken::kAiCardBackgroundBottom) + 1;
++    static_cast<size_t>(ThemeToken::kAiPanelBackgroundBottom) + 1;
 +
 +// 布局数值 token（像素）。
 +enum class LayoutMetric {

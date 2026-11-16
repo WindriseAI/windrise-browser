@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/color/windrise_color_mixer.cc b/chrome/browser/ui/color/windrise_color_mixer.cc
 new file mode 100644
-index 0000000000..fe19a9e9e9
+index 0000000000..f28616ec22
 --- /dev/null
 +++ b/chrome/browser/ui/color/windrise_color_mixer.cc
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,125 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -109,6 +109,10 @@ index 0000000000..fe19a9e9e9
 +      token(ThemeToken::kAiPanelBackground)};
 +  mixer[kColorWindriseAiPanelButtonBackground] = {
 +      token(ThemeToken::kAiPanelButtonBackground)};
++  mixer[kColorWindriseAiPanelBackgroundTop] = {
++      token(ThemeToken::kAiPanelBackgroundTop)};
++  mixer[kColorWindriseAiPanelBackgroundBottom] = {
++      token(ThemeToken::kAiPanelBackgroundBottom)};
 +
 +  // N12：WebUI 的 --color-sys-* 在 Windows 上不由 theme_source 下发，页面里用
 +  // 的是 cr_shared_vars.css 的兜底值；这里把同一组 ui 颜色也按偏好给出，凡是
