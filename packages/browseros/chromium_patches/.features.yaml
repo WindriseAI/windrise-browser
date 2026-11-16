@@ -597,3 +597,15 @@ features:
       - "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc"
       - "chrome/browser/ui/views/frame/contents_container_view.cc"
       - "chrome/browser/ui/layout_constants.cc"
+
+  windrise-browser-rail-glyph-1116:
+    description: "fix: collapsed vertical tab strip shows favicon + first character of the title (theme-v2 §4), AI card collapsed logo + count in the same group, hover card radius 8 / title 12"
+    files:
+      - "chrome/browser/ui/views/tabs/common/tab_view.h"
+      - "chrome/browser/ui/views/tabs/common/tab_view.cc"
+      - "chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc"
+      - "chrome/browser/browseros/core/windrise_theme.h"
+      - "chrome/browser/browseros/core/windrise_theme.cc"
+      - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc"
+      - "chrome/browser/ui/views/tabs/hovercard/BUILD.gn"

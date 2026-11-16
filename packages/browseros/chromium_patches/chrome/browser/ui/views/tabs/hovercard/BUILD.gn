@@ -1,0 +1,13 @@
+diff --git a/chrome/browser/ui/views/tabs/hovercard/BUILD.gn b/chrome/browser/ui/views/tabs/hovercard/BUILD.gn
+index a994bbf492..2cfe8dc7b4 100644
+--- a/chrome/browser/ui/views/tabs/hovercard/BUILD.gn
++++ b/chrome/browser/ui/views/tabs/hovercard/BUILD.gn
+@@ -83,6 +83,8 @@ source_set("impl") {
+     "//chrome/app:generated_resources",
+     "//chrome/app/vector_icons",
+     "//chrome/browser:browser_process",
++    # 风桥 theme-v2 §4：悬停卡圆角读外观偏好。
++    "//chrome/browser/browseros/core:theme",
+     "//chrome/browser/ui:layout_constants",
+     "//chrome/browser/ui:ui_features",
+     "//chrome/browser/ui/browser_window",

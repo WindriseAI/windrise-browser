@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.h b/chrome/browser/browseros/core/windrise_theme.h
 new file mode 100644
-index 0000000000..0cae386f96
+index 0000000000..eb3df88fa6
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,192 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -85,6 +85,9 @@ index 0000000000..0cae386f96
 +  kTopButtonIconSize,          // 顶部小按钮图标
 +  kTopButtonRadius,            // 顶部小按钮圆角
 +  kNewTabButtonHeight,         // 整宽「+」的高度
++  // 折叠窄条：标签「图标 + 一个字」、左下卡片「标志 + 数字」共用（theme-v2 §4、§5）
++  kRailGlyphSize,              // 那一个字 / 数字的字号
++  kRailGlyphGap,               // 图标与字之间的间距
 +  // N6 上下分段
 +  kAiSectionHeaderHeight,   // 段标题行高
 +  kAiSectionHeaderFontSize, // 段标题字号

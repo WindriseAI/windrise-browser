@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..b016f47811
+index 0000000000..55eb7addd7
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,568 @@
+@@ -0,0 +1,595 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -101,7 +101,7 @@ index 0000000000..b016f47811
 +  mark_->SetVisible(false);
 +
 +  count_label_ = AddChildView(std::make_unique<views::Label>());
-+  count_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
++  count_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 +  count_label_->SetVisible(false);
 +
 +  for (size_t i = 0; i < kMaxShownAiIcons; ++i) {
@@ -356,6 +356,14 @@ index 0000000000..b016f47811
 +  text_->SetEnabledColor(ui::ColorVariant(kColorTabForegroundActiveFrameActive));
 +  count_label_->SetEnabledColor(
 +      ui::ColorVariant(kColorTabForegroundActiveFrameActive));
++  // theme-v2 §5：折叠时「标志 + 数字」和标签的「图标 + 一个字」同构，数字用
++  // 同一个字号（偏好 rail_glyph_size，默认 14）。
++  const int glyph_size = browseros::windrise::GetLayoutMetrics().Get(
++      LayoutMetric::kRailGlyphSize);
++  if (count_label_->font_list().GetFontSize() != glyph_size) {
++    count_label_->SetFontList(count_label_->font_list().DeriveWithSizeDelta(
++        glyph_size - count_label_->font_list().GetFontSize()));
++  }
 +  InvalidateLayout();
 +}
 +
@@ -399,15 +407,34 @@ index 0000000000..b016f47811
 +}
 +
 +void WindriseAiCardView::LayoutCollapsedGroup(int center_y) {
-+  const int icon_size = browseros::windrise::GetLayoutMetrics().Get(
-+      LayoutMetric::kAiCardIconSize);
-+  const int right = 12;
-+  int x = 8;
-+  mark_->SetBounds(x, center_y - icon_size / 2, icon_size, icon_size);
-+  x += icon_size + 2;
-+  const int count_height = count_label_->GetPreferredSize().height();
-+  count_label_->SetBounds(x, center_y - count_height / 2,
-+                          std::max(0, width() - x - right), count_height);
++  // theme-v2 §5 / 已定 乙04、丙16：折叠时「标志 + 数字」和标签的「图标 + 一个字」
++  // 同构——同一组尺寸（标志 16、间距 5、数字占 14 宽的格子、字号 14），同样
++  // 作为一组在卡片宽里居中，数字同样按字形对齐标志中线
++  // （TabViewVerticalLayout 里那一段的同一套算法）。卡片和标签一样宽、一样
++  // 居中，所以标志和上面每个标签的图标在同一条竖线上。数字到两位（10 起）
++  // 比格子宽时格子跟着放宽，一组仍居中。
++  const browseros::windrise::LayoutMetrics& metrics =
++      browseros::windrise::GetLayoutMetrics();
++  const int icon_size = metrics.Get(LayoutMetric::kAiCardIconSize);
++  const int gap = metrics.Get(LayoutMetric::kRailGlyphGap);
++  const gfx::FontList& font = count_label_->font_list();
++  const int text_width = count_label_->GetPreferredSize().width();
++  const int slot =
++      std::max(metrics.Get(LayoutMetric::kRailGlyphSize), text_width);
++  const int group_width = icon_size + gap + slot;
++  const int group_x = std::max(0, (width() - group_width + 1) / 2);
++  const int icon_y = center_y - icon_size / 2;
++  mark_->SetBounds(group_x, icon_y, icon_size, icon_size);
++  // 行高等于字体高时基线就在 GetBaseline()；字形中线 = 基线 - 大写高 / 2，
++  // 对齐标志中线。左右各留 4，数字不被自己的边界裁掉。
++  constexpr int kGlyphOverhang = 4;
++  const int mark_center_y = icon_y + icon_size / 2;
++  const int baseline_y = mark_center_y + (font.GetCapHeight() + 1) / 2;
++  const int slot_center_x = group_x + icon_size + gap + slot / 2;
++  const int label_width = slot + 2 * kGlyphOverhang;
++  count_label_->SetBounds(slot_center_x - label_width / 2,
++                          baseline_y - font.GetBaseline(), label_width,
++                          font.GetHeight());
 +}
 +
 +void WindriseAiCardView::LayoutExpandedGroup(int center_y) {

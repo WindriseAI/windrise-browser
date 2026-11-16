@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/browseros/core/windrise_theme.cc b/chrome/browser/browseros/core/windrise_theme.cc
 new file mode 100644
-index 0000000000..e46d2c585b
+index 0000000000..9cc3cf4ecc
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,309 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -127,6 +127,11 @@ index 0000000000..e46d2c585b
 +     "browseros.windrise.layout.top_button_radius", 10},
 +    {LayoutMetric::kNewTabButtonHeight,
 +     "browseros.windrise.layout.new_tab_button_height", 36},
++    // 折叠窄条：图标 16 + 一个字 14，间距 5（theme-v2 §4；用户 11-05「收起时
++    // 露出一个汉字」）。左下卡片折叠时的「标志 + 数字」用同一组值（§5 同构）。
++    {LayoutMetric::kRailGlyphSize, "browseros.windrise.layout.rail_glyph_size",
++     14},
++    {LayoutMetric::kRailGlyphGap, "browseros.windrise.layout.rail_glyph_gap", 5},
 +    // N6 分段标题。WINDRISE-TODO(value)：行高 / 字号方案里没写，先按标签
 +    // 文字行（14px 字号、28 高）来。
 +    {LayoutMetric::kAiSectionHeaderHeight,
