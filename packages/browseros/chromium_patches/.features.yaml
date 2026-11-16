@@ -599,7 +599,7 @@ features:
       - "chrome/browser/ui/layout_constants.cc"
 
   windrise-browser-rail-glyph-1116:
-    description: "fix: collapsed vertical tab strip shows favicon + first character of the title (theme-v2 §4), AI card collapsed logo + count in the same group, hover card radius 8 / title 12"
+    description: "fix: collapsed vertical tab strip 70 wide (56 + one CJK glyph) showing favicon + first character of the title (theme-v2 §3/§4), AI card collapsed Windrise mark + count in the same group, hover card radius 8 / title 12"
     files:
       - "chrome/browser/ui/views/tabs/common/tab_view.h"
       - "chrome/browser/ui/views/tabs/common/tab_view.cc"
@@ -609,3 +609,6 @@ features:
       - "chrome/browser/browseros/core/windrise_theme.cc"
       - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_bubble_view.cc"
       - "chrome/browser/ui/views/tabs/hovercard/BUILD.gn"
+      - "chrome/browser/ui/tabs/vertical_tab_strip_state.h"
+      - "chrome/app/vector_icons/windrise_bridge_mark.icon"
+      - "chrome/app/vector_icons/BUILD.gn"

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..55eb7addd7
+index 0000000000..eb3209e485
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,595 @@
+@@ -0,0 +1,597 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -94,9 +94,11 @@ index 0000000000..55eb7addd7
 +  SetPaintToLayer();
 +  layer()->SetFillsBoundsOpaquely(false);
 +
++  // 折叠时「标志 + 数字」的标志：风桥钩形标志（定稿帧 ntp-zh-rail 左下、theme-v2 §5、
++  // 标注 #6、已定 丙16；原来误用了闪办的闪电）。
 +  mark_ = AddChildView(std::make_unique<views::ImageView>());
 +  mark_->SetImage(ui::ImageModel::FromVectorIcon(
-+      kWindriseFlashIcon, kColorTabForegroundActiveFrameActive,
++      kWindriseBridgeMarkIcon, kColorTabForegroundActiveFrameActive,
 +      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardIconSize)));
 +  mark_->SetVisible(false);
 +
@@ -539,7 +541,7 @@ index 0000000000..55eb7addd7
 +void WindriseAiCardView::OnThemeChanged() {
 +  views::Button::OnThemeChanged();
 +  mark_->SetImage(ui::ImageModel::FromVectorIcon(
-+      kWindriseFlashIcon, kColorTabForegroundActiveFrameActive,
++      kWindriseBridgeMarkIcon, kColorTabForegroundActiveFrameActive,
 +      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardIconSize)));
 +  gear_->SetImage(ui::ImageModel::FromVectorIcon(
 +      kSettingsIcon, kColorTabForegroundInactiveFrameActive,
