@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..98317c9cd677f
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_switches.h
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,26 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -25,12 +25,6 @@ index 0000000000000..98317c9cd677f
 +inline constexpr char kExtensionsUrl[] = "browseros-extensions-url";
 +inline constexpr char kDisableUrlOverrides[] =
 +    "browseros-disable-url-overrides";
-+inline constexpr char kSparkleUrl[] = "browseros-sparkle-url";
-+inline constexpr char kSparkleForceCheck[] = "browseros-sparkle-force-check";
-+inline constexpr char kSparkleDryRun[] = "sparkle-dry-run";
-+inline constexpr char kSparkleSkipSignature[] = "sparkle-skip-signature";
-+inline constexpr char kSparkleSpoofVersion[] = "sparkle-spoof-version";
-+inline constexpr char kSparkleVerbose[] = "sparkle-verbose";
 +inline constexpr char kBrowserOSProduct[] = "browseros-product";
 +inline constexpr char kDockIcon[] = "browseros-dock-icon";
 +}  // namespace browseros

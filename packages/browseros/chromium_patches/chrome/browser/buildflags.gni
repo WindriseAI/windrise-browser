@@ -1,23 +1,21 @@
 diff --git a/chrome/browser/buildflags.gni b/chrome/browser/buildflags.gni
-index bc2754dc1f599cd094d52c551bb0854b981614fc..4742d45ad4732ebb4b25c359fe797e9895c037d4 100644
 --- a/chrome/browser/buildflags.gni
 +++ b/chrome/browser/buildflags.gni
-@@ -3,6 +3,7 @@
- # found in the LICENSE file.
+@@ -12,10 +12,12 @@ declare_args() {
+   # By default, only branded builds allow for platform experience.
+   enable_platform_experience = is_chrome_branded
  
- import("//build/config/chrome_build.gni")
-+import("//chrome/browser/sparkle_buildflags.gni")
+-  # By default, only branded builds integrate with automatic updates.
+-  enable_updater = is_chrome_branded && target_os != "android"
++  # Windrise Bridge owns signed browser package updates on every desktop build.
++  enable_updater = false
  
- # IMPORTANT
- # We are not accepting any new build flags in //chrome. See
-@@ -16,6 +17,8 @@ declare_args() {
-   enable_updater = is_chrome_branded && target_os != "android"
- 
-   # Detect updates and notify the user for Google Chrome across all platforms.
+-  # Detect updates and notify the user for Google Chrome across all platforms.
 -  # Chromium does not use an auto-updater.
 -  enable_update_notifications = is_chrome_branded
-+  # Chromium does not use an auto-updater. Enable for Sparkle builds on macOS
-+  # and WinSparkle builds on Windows.
-+  enable_update_notifications =
-+      is_chrome_branded || enable_sparkle || enable_winsparkle
++  # Do not expose a second update or relaunch channel in the browser menus.
++  enable_update_notifications = false
  }
++
++assert(!enable_updater && !enable_update_notifications,
++       "Windrise browser updates are managed by Windrise Bridge")

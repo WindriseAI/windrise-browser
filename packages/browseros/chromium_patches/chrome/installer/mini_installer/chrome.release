@@ -11,11 +11,10 @@ index 33e8546206..4e42fc38cc 100644
  #
  # Chrome version dir assembly manifest.
  # The name of this file must match the name of the version dir, so we cannot
-@@ -38,11 +40,14 @@ vk_swiftshader.dll: %(VersionDir)s\
+@@ -38,11 +40,13 @@ vk_swiftshader.dll: %(VersionDir)s\
  vk_swiftshader_icd.json: %(VersionDir)s\
  vulkan-1.dll: %(VersionDir)s\
  v8_context_snapshot.bin: %(VersionDir)s\
-+WinSparkle.dll: %(VersionDir)s\
  #
  # Sub directories living in the version dir
  #
@@ -27,7 +26,7 @@ index 33e8546206..4e42fc38cc 100644
  
  #
  # VisualElements sub-dir.
-@@ -59,6 +64,23 @@ SmallLogo.png: %(VersionDir)s\VisualElements\
+@@ -59,6 +63,23 @@ SmallLogo.png: %(VersionDir)s\VisualElements\
  MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
  MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
  

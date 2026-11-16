@@ -104,12 +104,10 @@ _PRESET_DEFAULTS: Dict[str, Dict[str, Any]] = {
 def plan(switches: Switches, arch: str, platform: Optional[str] = None) -> List[str]:
     """Compose the ordered step list for one architecture.
 
-    Encodes what the release.*.yaml matrix used to spell out per file:
-    sparkle_setup is a macOS build dependency even unsigned; WinSparkle
-    setup is a Windows build dependency; post-package sparkle_sign exists
-    on signed Windows and macOS builds; unsigned Windows builds get
-    mini_installer instead of sign_windows. Universal is not a flat
-    pipeline — plan_runs() expands it into three sequential runs.
+    Signed Windows builds use sign_windows; unsigned Windows builds use
+    mini_installer. Windrise Bridge owns browser package updates, so builds
+    do not provision updater frameworks or sign browser appcast artifacts.
+    Universal is expanded by plan_runs() into three sequential runs.
     """
     if arch == "universal":
         raise ValueError("universal is planned as multiple runs; use plan_runs()")
@@ -166,7 +164,6 @@ def _plan_universal_runs(
 
     prep: List[str] = []
     prep.extend(_provision_steps(switches))
-    prep.append("sparkle_setup")
     if switches.resource_mode == "source":
         prep.extend(
             [
@@ -196,7 +193,6 @@ def _plan_universal_runs(
         "compile",
         "sign_macos",
         "package_macos",
-        "sparkle_sign",
     ]
     if switches.resource_mode == "published":
         first_arch_tail = ["resources", *build_tail]
@@ -204,7 +200,7 @@ def _plan_universal_runs(
     else:
         first_arch_tail = build_tail
         second_arch_tail = [*second_arch_prefix, *build_tail]
-    merge_run = ["merge_universal", "sign_macos", "package_macos", "sparkle_sign"]
+    merge_run = ["merge_universal", "sign_macos", "package_macos"]
     if switches.upload:
         first_arch_tail.append("upload")
         second_arch_tail.append("upload")
@@ -220,16 +216,10 @@ def _plan_universal_runs(
 def _plan_release(switches: Switches, platform: str) -> List[str]:
     steps: List[str] = []
     steps.extend(_provision_steps(switches))
-    if platform == "macos":
-        steps.append("sparkle_setup")
     if platform == "windows":
-        # The release GN config always links WinSparkle.dll — the compile
-        # needs the vendored library whether or not the build is signed
-        # (ninja: 'third_party/winsparkle/x64/Release/WinSparkle.dll'
-        # missing and no known rule to make it).
         # Requirements come from the selected source, after provisioning and
         # before resources/patches. Prepared CI (provision=none) checks too.
-        steps.extend(["windows_sdk", "winsparkle_setup"])
+        steps.append("windows_sdk")
 
     if switches.resource_mode == "source":
         steps.extend(["prepare_common_resources", "prepare_server_resources"])
@@ -255,8 +245,6 @@ def _plan_release(switches: Switches, platform: str) -> List[str]:
 
     steps.append(f"package_{platform}")
 
-    if platform in ("macos", "windows") and switches.sign:
-        steps.append("sparkle_sign")
     if switches.upload:
         steps.append("upload")
     return steps
@@ -268,7 +256,7 @@ def _plan_debug(switches: Switches, platform: str) -> List[str]:
     if platform == "windows":
         # Requirements come from the selected source, after provisioning and
         # before resources/patches. Prepared CI (provision=none) checks too.
-        steps.extend(["windows_sdk", "winsparkle_setup"])
+        steps.append("windows_sdk")
     if switches.resource_mode == "source":
         steps.extend(["prepare_common_resources", "prepare_server_resources"])
     elif switches.download:

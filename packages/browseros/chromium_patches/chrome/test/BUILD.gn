@@ -12,14 +12,3 @@ index b0ef6f5..c1bb33c 100644
      "//chrome/browser/browsing_data:unit_tests",
      "//chrome/browser/btm:unit_tests",
      "//chrome/browser/chooser_controller:unit_tests",
-@@ -2924,6 +2927,10 @@ test("unit_tests") {
-     # but when we tried to pull it up to the common.gypi level, it broke
-     # other things like the ui and startup tests. *shrug*
-     ldflags = [ "-Wl,-ObjC" ]
-+
-+    if (enable_sparkle) {
-+      configs += [ "//third_party/sparkle:sparkle_link_test" ]
-+    }
-   }
- 
-   if (enable_paint_preview) {

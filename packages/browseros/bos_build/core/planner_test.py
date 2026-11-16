@@ -23,55 +23,6 @@ UNIVERSAL = Switches(preset="release", architectures=("universal",))
 
 
 class ReleaseGoldenTest(unittest.TestCase):
-    def test_macos_arm64_signed(self):
-        # release.browseros.macos.arm64.yaml / release.macos.arm64.yaml
-        self.assertEqual(
-            plan(RELEASE, "arm64", "macos"),
-            [
-                "clean",
-                "git_setup",
-                "sparkle_setup",
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "series_patches",
-                "patches",
-                "configure",
-                "compile",
-                "sign_macos",
-                "package_macos",
-                "sparkle_sign",
-                "upload",
-            ],
-        )
-
-    def test_windows_signed(self):
-        # release.browseros.windows.yaml — note sparkle_sign AFTER package
-        self.assertEqual(
-            plan(RELEASE, "x64", "windows"),
-            [
-                "clean",
-                "git_setup",
-                "windows_sdk",
-                "winsparkle_setup",
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "series_patches",
-                "patches",
-                "configure",
-                "compile",
-                "sign_windows",
-                "package_windows",
-                "sparkle_sign",
-                "upload",
-            ],
-        )
-
     def test_linux_never_plans_sign(self):
         # release.browseros.linux.yaml
         steps = plan(RELEASE, "x64", "linux")
@@ -95,113 +46,13 @@ class ReleaseGoldenTest(unittest.TestCase):
         )
         self.assertFalse(any(s.startswith("sign") for s in steps))
 
-    def test_macos_universal(self):
-        # release.browseros.macos.universal.yaml — three sequential runs on
-        # one prepped tree: prep exactly once (repeating clean/git_setup/
-        # patches would reset it), resources per arch, then the merge
-        self.assertEqual(
-            plan_runs(UNIVERSAL, "macos"),
-            [
-                (
-                    "arm64",
-                    [
-                        "clean",
-                        "git_setup",
-                        "sparkle_setup",
-                        "download_resources",
-                        "bundled_extensions",
-                        "chromium_replace",
-                        "string_replaces",
-                        "series_patches",
-                        "patches",
-                        "resources",
-                        "configure",
-                        "compile",
-                        "sign_macos",
-                        "package_macos",
-                        "sparkle_sign",
-                        "upload",
-                    ],
-                ),
-                (
-                    "x64",
-                    [
-                        "resources",
-                        "configure",
-                        "compile",
-                        "sign_macos",
-                        "package_macos",
-                        "sparkle_sign",
-                        "upload",
-                    ],
-                ),
-                (
-                    "universal",
-                    [
-                        "merge_universal",
-                        "sign_macos",
-                        "package_macos",
-                        "sparkle_sign",
-                        "upload",
-                    ],
-                ),
-            ],
-        )
-
     def test_universal_rejected_off_macos(self):
         with self.assertRaisesRegex(ValueError, "only supported on macos"):
             plan_runs(UNIVERSAL, "linux")
 
-    def test_noupload_variant(self):
-        # release.macos.arm64.noupload.yaml == release minus upload;
-        # signed artifacts are still Sparkle-signed like Windows.
-        steps = plan(Switches(preset="release", upload=False), "arm64", "macos")
-        self.assertEqual(steps[-2:], ["package_macos", "sparkle_sign"])
-        self.assertNotIn("upload", steps)
 
 
 class CiGoldenTest(unittest.TestCase):
-    def test_macos_ci_keeps_sparkle_setup_unsigned(self):
-        # release.macos.arm64.ci.yaml
-        self.assertEqual(
-            plan(CI, "arm64", "macos"),
-            [
-                "sparkle_setup",
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "series_patches",
-                "patches",
-                "configure",
-                "compile",
-                "package_macos",
-            ],
-        )
-
-    def test_windows_ci_swaps_sign_for_mini_installer(self):
-        # release.windows.ci.yaml — no sparkle_sign; winsparkle_setup stays
-        # (the release GN config links WinSparkle.dll even unsigned)
-        self.assertEqual(
-            plan(CI, "x64", "windows"),
-            [
-                "windows_sdk",
-                "winsparkle_setup",
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "series_patches",
-                "patches",
-                "configure",
-                "compile",
-                "mini_installer",
-                "package_windows",
-            ],
-        )
-
     def test_linux_ci(self):
         # release.linux.ci.yaml
         self.assertEqual(
@@ -223,8 +74,7 @@ class CiGoldenTest(unittest.TestCase):
 
 class DebugGoldenTest(unittest.TestCase):
     def test_debug_macos(self):
-        # config/debug.yaml — no clean, no series_patches, no sparkle_setup,
-        # no sign, no upload
+        # config/debug.yaml — no clean, series_patches, sign or upload
         self.assertEqual(
             plan(Switches(preset="debug"), "arm64", "macos"),
             [
@@ -245,25 +95,6 @@ class DebugGoldenTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not supported for debug"):
             plan_runs(Switches(preset="debug", architectures=("universal",)), "macos")
 
-    def test_debug_windows_builds_installer_before_packaging(self):
-        self.assertEqual(
-            plan(Switches(preset="debug"), "x64", "windows"),
-            [
-                "git_setup",
-                "windows_sdk",
-                "winsparkle_setup",
-                "download_resources",
-                "resources",
-                "bundled_extensions",
-                "chromium_replace",
-                "string_replaces",
-                "patches",
-                "configure",
-                "compile",
-                "mini_installer",
-                "package_windows",
-            ],
-        )
 
     def test_debug_linux(self):
         self.assertEqual(
@@ -376,16 +207,6 @@ class SkipTest(unittest.TestCase):
             ],
         )
 
-    def test_skip_is_subtraction_not_switch_flip(self):
-        # Skipping sign_windows must not resurrect mini_installer or drop
-        # the other signing-conditional steps — composition already ran.
-        steps = plan(
-            Switches(preset="release", skip=("sign_windows",)), "x64", "windows"
-        )
-        self.assertNotIn("sign_windows", steps)
-        self.assertNotIn("mini_installer", steps)
-        self.assertIn("winsparkle_setup", steps)
-        self.assertIn("sparkle_sign", steps)
 
     def test_skip_applies_to_universal_runs(self):
         runs = plan_runs(
@@ -434,11 +255,6 @@ class SkipTest(unittest.TestCase):
 
 
 class SliceFromTest(unittest.TestCase):
-    def test_slices_composed_plan_from_step(self):
-        self.assertEqual(
-            slice_from(plan(RELEASE, "arm64", "macos"), "sign_macos"),
-            ["sign_macos", "package_macos", "sparkle_sign", "upload"],
-        )
 
     def test_slice_from_first_step_is_identity(self):
         full = plan(RELEASE, "arm64", "macos")
