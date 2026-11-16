@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..ab4d3e5047
+index 0000000000..4f6c289e66
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,500 @@
+@@ -0,0 +1,503 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -200,6 +200,9 @@ index 0000000000..ab4d3e5047
 +  // views::Button:
 +  void StateChanged(ButtonState old_state) override {
 +    views::LabelButton::StateChanged(old_state);
++    if (!layer()) {
++      return;  // 构造里建层之前的状态变化。
++    }
 +    layer()->SetOpacity(GetState() == STATE_DISABLED ? kDisabledOpacity : 1.0f);
 +    const bool pressed = GetState() == STATE_PRESSED;
 +    if (pressed == (old_state == STATE_PRESSED)) {
