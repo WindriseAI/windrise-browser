@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..c0ad65be14
+index 0000000000..9b8d9a47af
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,457 @@
+@@ -0,0 +1,494 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -30,10 +30,16 @@ index 0000000000..c0ad65be14
 +#include "ui/base/mojom/dialog_button.mojom.h"
 +#include "ui/color/color_provider.h"
 +#include "ui/color/color_variant.h"
++#include "ui/compositor/layer.h"
++#include "ui/compositor/scoped_layer_animation_settings.h"
 +#include "ui/gfx/canvas.h"
 +#include "ui/gfx/color_utils.h"
 +#include "ui/gfx/font.h"
 +#include "ui/gfx/font_list.h"
++#include "ui/gfx/animation/animation.h"
++#include "ui/gfx/animation/tween.h"
++#include "ui/gfx/geometry/transform.h"
++#include "ui/gfx/geometry/transform_util.h"
 +#include "ui/gfx/geometry/skia_conversions.h"
 +#include "ui/gfx/skia_paint_util.h"
 +#include "ui/views/accessibility/view_accessibility.h"
@@ -85,6 +91,13 @@ index 0000000000..c0ad65be14
 +// 的 10 / 20）。
 +constexpr SkAlpha kHoverInkAlpha = 10;
 +constexpr SkAlpha kPressedInkAlpha = 20;
++// 按下缩到 .97（emil-design-eng「Buttons must feel responsive」）。按下快、
++// 松开稍慢（review-animations 第 9 条：按 / 松不对称）；曲线 WINDRISE_EASE_OUT，
++// 合成器逐帧推进（120Hz 屏 120 帧，已定 甲52）；中途松开从当前值反向，不跳。
++// 系统关了动画（Windows「显示动画」= 减少动态效果）时一帧到位，颜色反馈照旧。
++constexpr float kPressedScale = 0.97f;
++constexpr base::TimeDelta kPressDuration = base::Milliseconds(100);
++constexpr base::TimeDelta kReleaseDuration = base::Milliseconds(160);
 +
 +int Metric(LayoutMetric metric) {
 +  return browseros::windrise::GetLayoutMetrics().Get(metric);
@@ -137,8 +150,8 @@ index 0000000000..c0ad65be14
 +}
 +
 +// 面板里的两种按钮：kFilled =「接一个 AI」白底宽按钮；kText = 底部文字行。
-+// 反馈（emil-design-eng：可按的东西都要有按下反馈；这里只用颜色，不加多余
-+// 动效）：悬停叠墨色 4%，按下 8%，键盘焦点走系统焦点环（形状同底的圆角）。
++// 反馈（emil-design-eng：可按的东西都要有按下反馈，不加别的动效）：悬停叠
++// 墨色 4%；按下叠 8% 并缩到 .97；键盘焦点走系统焦点环（形状同底的圆角）。
 +// 不可用（闪办广场，完整版即将上线）时不画悬停 / 按下底，字用次要色。
 +class PanelButton : public views::LabelButton {
 +  METADATA_HEADER(PanelButton, views::LabelButton)
@@ -171,10 +184,34 @@ index 0000000000..c0ad65be14
 +    SetInstallFocusRingOnFocus(true);
 +    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
 +                                                  radius_);
++    // 按下缩放走自己的层（只动 transform，不重排、不重画）。
++    SetPaintToLayer();
++    layer()->SetFillsBoundsOpaquely(false);
 +  }
 +  PanelButton(const PanelButton&) = delete;
 +  PanelButton& operator=(const PanelButton&) = delete;
 +  ~PanelButton() override = default;
++
++  // views::Button:
++  void StateChanged(ButtonState old_state) override {
++    views::LabelButton::StateChanged(old_state);
++    const bool pressed = GetState() == STATE_PRESSED;
++    if (pressed == (old_state == STATE_PRESSED)) {
++      return;
++    }
++    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
++    settings.SetPreemptionStrategy(
++        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
++    settings.SetTransitionDuration(
++        gfx::Animation::ShouldRenderRichAnimation()
++            ? (pressed ? kPressDuration : kReleaseDuration)
++            : base::TimeDelta());
++    settings.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
++    layer()->SetTransform(
++        pressed ? gfx::GetScaleTransform(GetLocalBounds().CenterPoint(),
++                                         kPressedScale)
++                : gfx::Transform());
++  }
 +
 +  // views::View:
 +  void OnPaintBackground(gfx::Canvas* canvas) override {
