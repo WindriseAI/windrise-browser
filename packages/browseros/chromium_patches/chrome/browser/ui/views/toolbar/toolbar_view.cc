@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-index 7f404c6864..0642e53fa1 100644
+index 7f404c6864..9fde511292 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
 @@ -23,6 +23,7 @@
@@ -59,21 +59,25 @@ index 7f404c6864..0642e53fa1 100644
      avatar_->SetVisible(show_avatar_toolbar_button);
    }
  
-@@ -1577,6 +1597,8 @@ void ToolbarView::InitLayout() {
+@@ -1577,6 +1597,12 @@ void ToolbarView::InitLayout() {
            : kOrderOffset + 1;
    constexpr int kToolbarActionsFlexOrder = kOrderOffset + 2;
    constexpr int kExtensionsFlexOrder = kOrderOffset + 3;
-+  // 风桥「格子」按钮比扩展容器更早让位（order 越大越先让位）。
-+  constexpr int kGridButtonFlexOrder = kOrderOffset + 4;
++  // 风桥「格子」按钮排在扩展容器前面拿位置（order 越小越先拿到、越晚让位）：
++  // 用户 R231「固定四五个扩展……都能固定上」同时不许挤掉我们自己的按钮。窗口
++  // 不够宽时先把放不下的扩展收进拼图菜单，格子按钮留着；窄窗（< 900）时格子
++  // 按钮本身已收成 32 见方的图标（WindriseGridButton::UpdateCompact）。和
++  // 「固定的工具栏动作」同一档（kToolbarActionsFlexOrder）。
++  constexpr int kGridButtonFlexOrder = kToolbarActionsFlexOrder;
  
    const views::FlexSpecification location_bar_flex_rule =
        views::FlexSpecification(views::LayoutOrientation::kHorizontal,
-@@ -1610,6 +1632,17 @@ void ToolbarView::InitLayout() {
+@@ -1610,6 +1636,17 @@ void ToolbarView::InitLayout() {
                                         extensions_flex_rule);
    }
  
 +  if (windrise_grid_button_) {
-+    // 窄窗让位：先缩「格子」按钮，扩展按钮后让（方案 N8）。
++    // 极窄（连地址栏都到了最小）时才整颗让出；在那之前扩展先收进菜单。
 +    windrise_grid_button_->SetProperty(
 +        views::kFlexBehaviorKey,
 +        views::FlexSpecification(
