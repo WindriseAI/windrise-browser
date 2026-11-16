@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..15d34302b6
+index 0000000000..3f3516cdd0
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1370 @@
+@@ -0,0 +1,1396 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -49,6 +49,7 @@ index 0000000000..15d34302b6
 +#include "ui/compositor/layer.h"
 +#include "ui/events/event.h"
 +#include "ui/gfx/animation/animation.h"
++#include "ui/gfx/animation/linear_animation.h"
 +#include "ui/gfx/animation/tween.h"
 +#include "ui/gfx/canvas.h"
 +#include "ui/gfx/font.h"
@@ -101,6 +102,8 @@ index 0000000000..15d34302b6
 +constexpr base::TimeDelta kIndicatorInDuration = base::Milliseconds(180);
 +constexpr base::TimeDelta kIndicatorOutDuration = base::Milliseconds(400);
 +constexpr base::TimeDelta kIndicatorHold = base::Milliseconds(900);
++// 动画节拍：120 帧（定稿依据「120 帧」）。60Hz 屏上按时间推进，自然降到 60。
++constexpr int kTransitionFrameRate = 120;
 +
 +// 分隔条把手、滚动细条：墨色 28%，悬停 / 拖动 45%（和桌面端细条同一套）。
 +constexpr float kGripRestAlpha = 0.28f;
@@ -442,7 +445,7 @@ index 0000000000..15d34302b6
 +
 +  void OnPaint(gfx::Canvas* canvas) override {
 +    const float opacity =
-+        static_cast<float>(section_->indicator_animation_.GetCurrentValue());
++        static_cast<float>(section_->indicator_transition_.value());
 +    const int max_offset = section_->MaxScrollOffset();
 +    if (opacity <= 0.0f || max_offset <= 0 || !GetColorProvider()) {
 +      return;
@@ -474,27 +477,61 @@ index 0000000000..15d34302b6
 +
 +// ---------------------------------------------------------------------------
 +
++WindriseAiSectionView::Transition::Transition(gfx::AnimationDelegate* delegate,
++                                              base::TimeDelta duration)
++    : animation_(gfx::Animation::RichAnimationDuration(duration),
++                 kTransitionFrameRate,
++                 delegate) {}
++
++WindriseAiSectionView::Transition::~Transition() = default;
++
++void WindriseAiSectionView::Transition::SetDuration(base::TimeDelta duration) {
++  animation_.SetDuration(gfx::Animation::RichAnimationDuration(duration));
++}
++
++double WindriseAiSectionView::Transition::value() const {
++  if (!animation_.is_animating()) {
++    return to_;
++  }
++  return from_ + (to_ - from_) * gfx::Tween::CalculateValue(
++                                     gfx::Tween::WINDRISE_EASE_OUT,
++                                     animation_.GetCurrentValue());
++}
++
++void WindriseAiSectionView::Transition::AnimateTo(double target) {
++  const double now = value();
++  if (target == to_ && (animation_.is_animating() || now == target)) {
++    return;
++  }
++  Restart(now, target);
++}
++
++void WindriseAiSectionView::Transition::Restart(double from, double to) {
++  from_ = from;
++  to_ = to;
++  // Stop 不跳到终点（只发 AnimationCanceled），再从 0 开始走这一次。
++  animation_.Stop();
++  animation_.Start();
++}
++
++// ---------------------------------------------------------------------------
++
 +WindriseAiSectionView::WindriseAiSectionView(BrowserWindowInterface* browser,
 +                                             TabStripModel* tab_strip_model,
 +                                             PrefService* prefs)
-+    : browser_(browser), tab_strip_model_(tab_strip_model), prefs_(prefs) {
++    : browser_(browser),
++      tab_strip_model_(tab_strip_model),
++      prefs_(prefs),
++      height_transition_(this, kHeightDuration),
++      splitter_transition_(this, kSplitterFadeDuration),
++      grip_transition_(this, kGripDuration),
++      indicator_transition_(this, kIndicatorInDuration) {
 +  viewport_ = AddChildView(std::make_unique<views::View>());
 +  viewport_->SetPaintToLayer();
 +  viewport_->layer()->SetFillsBoundsOpaquely(false);
 +  viewport_->layer()->SetMasksToBounds(true);
 +  indicator_ =
 +      viewport_->AddChildView(std::make_unique<ScrollIndicator>(this));
-+
-+  height_animation_.SetSlideDuration(
-+      gfx::Animation::RichAnimationDuration(kHeightDuration));
-+  height_animation_.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
-+  splitter_animation_.SetSlideDuration(
-+      gfx::Animation::RichAnimationDuration(kSplitterFadeDuration));
-+  splitter_animation_.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
-+  grip_animation_.SetSlideDuration(
-+      gfx::Animation::RichAnimationDuration(kGripDuration));
-+  grip_animation_.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
-+  indicator_animation_.SetTweenType(gfx::Tween::WINDRISE_EASE_OUT);
 +
 +  if (tab_strip_model_) {
 +    tab_strip_model_->AddObserver(this);
@@ -644,12 +681,11 @@ index 0000000000..15d34302b6
 +    return gfx::Size(0, std::max(0, *drag_height_));
 +  }
 +  const int target = ComputeAllocation().target;
-+  if (height_animation_.is_animating()) {
++  if (height_transition_.is_animating()) {
 +    // 从过渡开始时眼前的高走向「这一刻的」目标：过渡途中窗口变高、内容又变，
 +    // 目标跟着变，不会走到一半跳一下。
 +    return gfx::Size(0, gfx::Tween::IntValueBetween(
-+                            height_animation_.GetCurrentValue(),
-+                            height_from_, target));
++                            height_transition_.value(), height_from_, target));
 +  }
 +  return gfx::Size(0, target);
 +}
@@ -672,8 +708,7 @@ index 0000000000..15d34302b6
 +  // 从眼前的高接着走（可打断：上一次过渡没走完也从当前值出发）。
 +  height_from_ = height();
 +  row_transition_ = true;
-+  height_animation_.Reset(0.0);
-+  height_animation_.Show();
++  height_transition_.Restart(0.0, 1.0);
 +  PreferredSizeChanged();
 +  InvalidateLayout();
 +}
@@ -714,7 +749,7 @@ index 0000000000..15d34302b6
 +  // 的高度。过渡中每一行按同一条进度从起点走到终点。
 +  const int row_height = RowHeight();
 +  const double progress =
-+      row_transition_ ? height_animation_.GetCurrentValue() : 1.0;
++      row_transition_ ? height_transition_.value() : 1.0;
 +  const auto place = [&](Row* row) {
 +    const int from_bottom = gfx::Tween::IntValueBetween(
 +        progress, row->start_from_bottom(), row->final_from_bottom());
@@ -736,19 +771,14 @@ index 0000000000..15d34302b6
 +}
 +
 +void WindriseAiSectionView::UpdateSplitterVisibility() {
-+  const bool colliding = ComputeAllocation().colliding;
-+  if (colliding && !splitter_animation_.IsShowing()) {
-+    splitter_animation_.Show();
-+  } else if (!colliding && splitter_animation_.IsShowing()) {
-+    splitter_animation_.Hide();
-+  }
++  splitter_transition_.AnimateTo(ComputeAllocation().colliding ? 1.0 : 0.0);
 +  SchedulePaint();
 +}
 +
 +void WindriseAiSectionView::OnPaint(gfx::Canvas* canvas) {
 +  views::View::OnPaint(canvas);
 +  const float splitter_opacity =
-+      static_cast<float>(splitter_animation_.GetCurrentValue());
++      static_cast<float>(splitter_transition_.value());
 +  if (row_data_.empty() || splitter_opacity <= 0.0f || !GetColorProvider()) {
 +    return;
 +  }
@@ -779,7 +809,7 @@ index 0000000000..15d34302b6
 +  const float grip_alpha =
 +      (kGripRestAlpha +
 +       (kGripActiveAlpha - kGripRestAlpha) *
-+           static_cast<float>(grip_animation_.GetCurrentValue())) *
++           static_cast<float>(grip_transition_.value())) *
 +      splitter_opacity;
 +  cc::PaintFlags grip;
 +  grip.setAntiAlias(true);
@@ -890,7 +920,7 @@ index 0000000000..15d34302b6
 +int WindriseAiSectionView::DisplayedFromBottom(const Row* row) const {
 +  // 按过渡进度算，不看 bounds：两次重建之间还没排版时也取得对。
 +  const double progress =
-+      row_transition_ ? height_animation_.GetCurrentValue() : 1.0;
++      row_transition_ ? height_transition_.value() : 1.0;
 +  return gfx::Tween::IntValueBetween(progress, row->start_from_bottom(),
 +                                     row->final_from_bottom());
 +}
@@ -1120,17 +1150,17 @@ index 0000000000..15d34302b6
 +  if (MaxScrollOffset() <= 0) {
 +    return;
 +  }
-+  indicator_animation_.SetSlideDuration(
-+      gfx::Animation::RichAnimationDuration(kIndicatorInDuration));
-+  indicator_animation_.Show();
++  if (indicator_transition_.target() < 1.0) {
++    indicator_transition_.SetDuration(kIndicatorInDuration);
++    indicator_transition_.AnimateTo(1.0);
++  }
 +  indicator_->SchedulePaint();
 +  indicator_hide_timer_.Start(
 +      FROM_HERE, kIndicatorHold,
 +      base::BindOnce(
 +          [](WindriseAiSectionView* view) {
-+            view->indicator_animation_.SetSlideDuration(
-+                gfx::Animation::RichAnimationDuration(kIndicatorOutDuration));
-+            view->indicator_animation_.Hide();
++            view->indicator_transition_.SetDuration(kIndicatorOutDuration);
++            view->indicator_transition_.AnimateTo(0.0);
 +          },
 +          base::Unretained(this)));
 +}
@@ -1196,11 +1226,7 @@ index 0000000000..15d34302b6
 +
 +void WindriseAiSectionView::UpdateSplitterHover(bool hovered) {
 +  splitter_hovered_ = hovered;
-+  if (hovered || pressed_in_splitter_) {
-+    grip_animation_.Show();
-+  } else {
-+    grip_animation_.Hide();
-+  }
++  grip_transition_.AnimateTo(hovered || pressed_in_splitter_ ? 1.0 : 0.0);
 +}
 +
 +void WindriseAiSectionView::OnMouseMoved(const ui::MouseEvent& event) {
@@ -1355,10 +1381,10 @@ index 0000000000..15d34302b6
 +
 +void WindriseAiSectionView::AnimationProgressed(
 +    const gfx::Animation* animation) {
-+  if (animation == &height_animation_) {
++  if (animation == height_transition_.animation()) {
 +    PreferredSizeChanged();
 +    InvalidateLayout();
-+  } else if (animation == &indicator_animation_) {
++  } else if (animation == indicator_transition_.animation()) {
 +    indicator_->SchedulePaint();
 +  } else {
 +    SchedulePaint();
@@ -1367,7 +1393,7 @@ index 0000000000..15d34302b6
 +
 +void WindriseAiSectionView::AnimationEnded(const gfx::Animation* animation) {
 +  AnimationProgressed(animation);
-+  if (animation == &height_animation_) {
++  if (animation == height_transition_.animation()) {
 +    FinishRowTransition();
 +  }
 +}

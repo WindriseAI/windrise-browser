@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.h b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
 new file mode 100644
-index 0000000000..26f44ebc0b
+index 0000000000..547ee3c801
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.h
-@@ -0,0 +1,237 @@
+@@ -0,0 +1,264 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -19,12 +19,13 @@ index 0000000000..26f44ebc0b
 +#include "base/memory/raw_ptr.h"
 +#include "base/memory/weak_ptr.h"
 +#include "base/scoped_multi_source_observation.h"
++#include "base/time/time.h"
 +#include "base/timer/timer.h"
 +#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 +#include "components/tabs/public/tab_interface.h"
 +#include "ui/base/metadata/metadata_header_macros.h"
 +#include "ui/gfx/animation/animation_delegate.h"
-+#include "ui/gfx/animation/slide_animation.h"
++#include "ui/gfx/animation/linear_animation.h"
 +#include "ui/gfx/image/image_skia.h"
 +#include "ui/views/view.h"
 +#include "ui/views/view_observer.h"
@@ -112,6 +113,32 @@ index 0000000000..26f44ebc0b
 + private:
 +  class Row;
 +  class ScrollIndicator;
++
++  // 一条过渡：按 120 帧的节拍走（「所有动画带动效的全部做成120帧」；
++  // gfx::SlideAnimation 固定 60 帧），曲线 WINDRISE_EASE_OUT。中途换目标
++  // 从眼前的值接着走；减少动态效果时时长为 0，直接到位。
++  class Transition {
++   public:
++    Transition(gfx::AnimationDelegate* delegate, base::TimeDelta duration);
++    Transition(const Transition&) = delete;
++    Transition& operator=(const Transition&) = delete;
++    ~Transition();
++
++    void SetDuration(base::TimeDelta duration);
++    // 从眼前的值走向 target；已经在往 target 走就不重来。
++    void AnimateTo(double target);
++    // 从 from 重新走向 to。
++    void Restart(double from, double to);
++    double value() const;
++    double target() const { return to_; }
++    bool is_animating() const { return animation_.is_animating(); }
++    const gfx::Animation* animation() const { return &animation_; }
++
++   private:
++    gfx::LinearAnimation animation_;
++    double from_ = 0.0;
++    double to_ = 0.0;
++  };
 +
 +  // 一行要画的东西。key：组合页行是 AI 名，标签行是模型里的标签。
 + public:
@@ -209,7 +236,7 @@ index 0000000000..26f44ebc0b
 +  std::vector<raw_ptr<Row>> rows_;
 +  // 收起时正在跟着标题退场的行（过渡结束拿掉，不可点）。
 +  std::vector<raw_ptr<Row>> exiting_rows_;
-+  // 行是不是正在按过渡进度走（和段高共用 height_animation_ 这一条进度）。
++  // 行是不是正在按过渡进度走（和段高共用 height_transition_ 这一条进度）。
 +  bool row_transition_ = false;
 +  std::vector<RowData> row_data_;
 +  // 每个 AI 的组合页展开了没有（只在本窗口、本次运行里记）。默认收起。
@@ -218,8 +245,8 @@ index 0000000000..26f44ebc0b
 +  // 内容藏在可视区下沿以下的高度：0 = 贴底（最早的在最下面）。
 +  int scroll_offset_ = 0;
 +
-+  // 段高过渡（出现、消失、展开、收起、松手回弹）。
-+  gfx::SlideAnimation height_animation_{this};
++  // 段高过渡（出现、消失、展开、收起、松手回弹），每一行的位置也跟这一条走。
++  Transition height_transition_;
 +  int height_from_ = 0;
 +  // 拖分隔条时这一刻的段高（含边界处的橡皮筋）；没在拖就是空。
 +  std::optional<int> drag_height_;
@@ -229,12 +256,12 @@ index 0000000000..26f44ebc0b
 +  bool pressed_in_splitter_ = false;
 +
 +  // 分隔条淡入淡出；悬停 / 拖动时把手加深。
-+  gfx::SlideAnimation splitter_animation_{this};
-+  gfx::SlideAnimation grip_animation_{this};
++  Transition splitter_transition_;
++  Transition grip_transition_;
 +  bool splitter_hovered_ = false;
 +
 +  // 滚动时右侧那根细条：淡入 180ms、停 0.9 秒、淡出 400ms。
-+  gfx::SlideAnimation indicator_animation_{this};
++  Transition indicator_transition_;
 +  base::OneShotTimer indicator_hide_timer_;
 +
 +  base::WeakPtrFactory<WindriseAiSectionView> weak_factory_{this};
