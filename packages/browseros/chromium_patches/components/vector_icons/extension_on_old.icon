@@ -78,7 +78,8 @@ index e95fcf0d68..aeb61bc626 100644
 +ARC_TO, 2, 2, 0, 0, 1, 2.95f, 15.05f,
 +V_LINE_TO, 8.05f,
 +ARC_TO, 2, 2, 0, 0, 1, 4.95f, 6.05f,
- CLOSE
+-CLOSE
++CLOSE,
 +NEW_PATH,
 +STROKE, 1.5f,
 +MOVE_TO, 6, 11.7f,
