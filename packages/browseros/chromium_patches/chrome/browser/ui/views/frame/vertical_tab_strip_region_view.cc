@@ -56,11 +56,11 @@ index 338178e75c..15be3ca890 100644
 +              [](VerticalTabStripRegionView* region, tabs::TabHandle tab,
 +                 const gfx::Point& point,
 +                 ui::mojom::MenuSourceType source_type) {
-+                if (!tab.Get() || !region->root_node_) {
++                if (!tab.Get() || !region->root_node_for_testing()) {
 +                  return;
 +                }
 +                TabCollectionNode* node =
-+                    region->root_node_->GetNodeForHandle(tab);
++                    region->root_node_for_testing()->GetNodeForHandle(tab);
 +                if (node && node->GetController()) {
 +                  node->GetController()->ShowTabContextMenu(node, point,
 +                                                            source_type);
