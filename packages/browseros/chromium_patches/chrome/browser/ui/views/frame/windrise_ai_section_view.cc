@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..dab150e4f9
+index 0000000000..b314724141
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,2057 @@
+@@ -0,0 +1,2058 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -909,9 +909,10 @@ index 0000000000..dab150e4f9
 +                dir * speed * age / perimeter;
 +      s -= std::floor(s);
 +      const float w = std::min(1.0f, GlowWave(s, t, dir));
-+      const float env = std::pow(std::sin(kPi * age / life), 1.2f) *
-+                        (0.4f + 0.6f * w) * kk *
-+                        (0.15f + 0.85f * GlowBrightness(s, t));
++      // sin 在 π 附近可能是很小的负数，pow 负底数是 NaN，先夹到 0。
++      const float env =
++          std::pow(std::max(0.0f, std::sin(kPi * age / life)), 1.2f) *
++          (0.4f + 0.6f * w) * kk * (0.15f + 0.85f * GlowBrightness(s, t));
 +      if (env <= 0.02f) {
 +        continue;
 +      }
