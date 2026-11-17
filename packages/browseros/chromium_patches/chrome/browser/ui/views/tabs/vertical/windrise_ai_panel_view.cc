@@ -167,7 +167,7 @@ index 0000000000..c579b88530
 +  const size_t month_index =
 +      static_cast<size_t>(std::clamp(exploded.month, 1, 12) - 1);
 +  return l10n_util::GetStringFUTF16(IDS_WINDRISE_AI_MONTH_NAME_DAY,
-+                                    kMonthAbbr[month_index],
++                                    std::u16string(kMonthAbbr[month_index]),
 +                                    base::FormatNumber(exploded.day_of_month));
 +}
 +
