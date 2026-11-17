@@ -10,6 +10,8 @@ chrome_url_overrides.newtab，随主程序 --load-extension 加载），否则�
 新标签页（默认引擎是 Google，白色那一张）。1118 查明：注册处的产品门闸只认
 kBrowserOSExtensions 目录里的产品扩展，助手不在目录里，覆盖整份被丢掉，接管从没生效。
 这里守住两头：覆盖注册放行已验证的助手；启动路径不许再冒别的首屏地址。
+1118 续做（审核第四批第 10 笔）：助手只许接管 newtab 一项，它的别的 chrome://
+覆盖和第三方扩展一样被门闸丢掉。
 （风桥侧 manifest.json 的 chrome_url_overrides.newtab 是接管的另一半，归风桥仓库管。）
 """
 
@@ -33,7 +35,7 @@ class OverrideGate(unittest.TestCase):
     def test_verified_assistant_override_passes_the_gate(self):
         text = read(self.REGISTRAR)
         self.assertIn(
-            "+      !IsVerifiedWindriseExtension(extension)) {",
+            "+    if (!IsVerifiedWindriseExtension(extension)) {",
             text,
             "assistant newtab override is dropped by the product gate again",
         )
@@ -42,10 +44,24 @@ class OverrideGate(unittest.TestCase):
             text,
         )
 
+    def test_assistant_may_only_override_newtab(self):
+        # 助手只许接管 newtab 一项：过滤只留 newtab 键，注册用过滤后的表。
+        text = read(self.REGISTRAR)
+        self.assertIn(
+            "+      if (entry.first == chrome::kChromeUINewTabHost) {",
+            text,
+            "assistant overrides are no longer filtered down to newtab",
+        )
+        self.assertIn(
+            "+      Profile::FromBrowserContext(browser_context), *allowed);",
+            text,
+            "registration must receive the filtered map, not the raw one",
+        )
+
     def test_product_gate_still_drops_every_other_extension(self):
         text = read(self.REGISTRAR)
         self.assertIn(
-            "+      !browseros::IsActiveBrowserOSExtension(extension->id()) &&",
+            "+      !browseros::IsActiveBrowserOSExtension(extension->id())) {",
             text,
             "non-product extensions must stay unable to override chrome pages",
         )
