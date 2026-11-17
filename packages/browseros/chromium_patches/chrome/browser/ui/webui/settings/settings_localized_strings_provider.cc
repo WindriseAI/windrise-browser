@@ -1,8 +1,16 @@
 diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-index 0bdda85eaadb15c23754e4968950df2c4fa0e14f..748238677e40ac14b598ab6c66b0434d8ab5a6ae 100644
+index 0bdda85eaa..fe8a3d913d 100644
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -343,6 +343,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+@@ -14,6 +14,7 @@
+ #include "base/json/json_writer.h"
+ #include "base/strings/escape.h"
+ #include "base/strings/string_number_conversions.h"
++#include "base/strings/string_util.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "build/branding_buildflags.h"
+ #include "build/build_config.h"
+@@ -343,6 +344,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
        {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
        {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
        {"aboutProductTitle", IDS_PRODUCT_NAME},
@@ -10,7 +18,7 @@ index 0bdda85eaadb15c23754e4968950df2c4fa0e14f..748238677e40ac14b598ab6c66b0434d
        {"aboutLearnMoreUpdatingErrors",
         IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATE_ERRORS},
        {"aboutLearnMoreSystemRequirements",
-@@ -359,6 +360,11 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+@@ -359,6 +361,29 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
  
    html_source->AddString("managementPage",
                           GetDeviceManagedUiHelpLabel(profile));
@@ -19,10 +27,28 @@ index 0bdda85eaadb15c23754e4968950df2c4fa0e14f..748238677e40ac14b598ab6c66b0434d
 +      "aboutSourceCode",
 +      l10n_util::GetStringFUTF16(IDS_SETTINGS_ABOUT_PAGE_SOURCE_CODE,
 +                                 u"github.com/WindriseAI/windrise-browser"));
++  // 关于页合规信息：隐私政策 / 用户协议按界面语言选站（判法和菜单帮助一致，
++  // chrome_pages.cc）。运营主体与备案号照官网页脚原文，软件里不另编主体信息。
++  const std::string& windrise_locale = g_browser_process->GetApplicationLocale();
++  const bool windrise_is_chinese =
++      base::EqualsCaseInsensitiveASCII(windrise_locale, "zh") ||
++      base::StartsWith(windrise_locale, "zh-",
++                       base::CompareCase::INSENSITIVE_ASCII);
++  html_source->AddString(
++      "aboutPrivacyUrl", base::ASCIIToUTF16(windrise_is_chinese
++                                                ? kWindrisePrivacyChineseURL
++                                                : kWindrisePrivacyURL));
++  html_source->AddString(
++      "aboutTermsUrl", base::ASCIIToUTF16(windrise_is_chinese
++                                              ? kWindriseTermsChineseURL
++                                              : kWindriseTermsURL));
++  html_source->AddString(
++      "aboutOperator", u"邯郸市丛台区风起网络科技工作室（个体工商户）");
++  html_source->AddString("aboutIcp", u"冀ICP备2026049007号-1");
    html_source->AddString(
        "aboutUpgradeUpToDate",
  #if BUILDFLAG(IS_CHROMEOS)
-@@ -1278,6 +1284,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
+@@ -1278,6 +1303,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
        {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
        {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
        {"importSuccess", IDS_SETTINGS_IMPORT_SUCCESS},

@@ -751,3 +751,9 @@ features:
       - "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.cc"
       - "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.h"
       - "chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_top_container.cc"
+
+  windrise-browser-legal-1117:
+    description: "feat: About page compliance data (privacy/terms URLs by UI language, operator name, ICP number) exposed to the settings WebUI so the design round only adds rows"
+    files:
+      - "chrome/common/url_constants.h"
+      - "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc"
