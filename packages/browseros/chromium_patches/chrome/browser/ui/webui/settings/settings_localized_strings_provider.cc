@@ -36,12 +36,12 @@ index 0bdda85eaa..182fe6291a 100644
 +                       base::CompareCase::INSENSITIVE_ASCII);
 +  html_source->AddString(
 +      "aboutPrivacyUrl", base::ASCIIToUTF16(windrise_is_chinese
-+                                                ? kWindrisePrivacyChineseURL
-+                                                : kWindrisePrivacyURL));
++                                                ? chrome::kWindrisePrivacyChineseURL
++                                                : chrome::kWindrisePrivacyURL));
 +  html_source->AddString(
 +      "aboutTermsUrl", base::ASCIIToUTF16(windrise_is_chinese
-+                                              ? kWindriseTermsChineseURL
-+                                              : kWindriseTermsURL));
++                                              ? chrome::kWindriseTermsChineseURL
++                                              : chrome::kWindriseTermsURL));
 +  const std::u16string windrise_operator =
 +      u"邯郸市丛台区风起网络科技工作室（个体工商户）";
 +  const std::u16string windrise_icp = u"冀ICP备2026049007号-1";
