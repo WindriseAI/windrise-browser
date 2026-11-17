@@ -85,7 +85,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +              [](base::WeakPtr<content::WebContents> contents) {
 +                if (contents) {
 +                  content::NavigationController::LoadURLParams params(
-+                      GURL(chrome::kChromeUINewTabURL));
++                      (GURL(chrome::kChromeUINewTabURL)));
 +                  contents->GetController().LoadURLWithParams(params);
 +                }
 +              },
