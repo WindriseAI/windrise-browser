@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/frame/windrise_ai_section_view.cc b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
 new file mode 100644
-index 0000000000..1e54fa3165
+index 0000000000..b314724141
 --- /dev/null
 +++ b/chrome/browser/ui/views/frame/windrise_ai_section_view.cc
-@@ -0,0 +1,1946 @@
+@@ -0,0 +1,2058 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -12,6 +12,7 @@ index 0000000000..1e54fa3165
 +#include <algorithm>
 +#include <array>
 +#include <cmath>
++#include <cstdint>
 +#include <cstdlib>
 +#include <set>
 +#include <utility>
@@ -206,6 +207,53 @@ index 0000000000..1e54fa3165
 +  // 右边上半段
 +  return gfx::PointF(r.right(), r.y() + rad + d);
 +}
++
++// 圆角矩形一圈的周长（和 PerimeterPoint 同一走法）。
++float PerimeterLength(const gfx::RectF& r, float radius) {
++  const float rad = std::clamp(radius, 0.0f,
++                               std::min(r.width(), r.height()) / 2.0f);
++  return 2.0f * (r.width() - 2.0f * rad) + 2.0f * (r.height() - 2.0f * rad) +
++         6.28318530718f * rad;
++}
++
++// 一圈上第 s 处的亮度 0..1：两个方向的 GlowWave 叠加，再拉开对比
++// （smoothstep 0.2..0.9）。白光色标和光粒共用这一个值。
++float GlowBrightness(float s, float t) {
++  const float raw = std::clamp(
++      (GlowWave(s, t, 1.0f) * 0.6f + GlowWave(s, t, -1.0f) * 0.4f) / 1.1f,
++      0.0f, 1.0f);
++  return SmoothStepForGlow(raw);
++}
++
++// 光粒用的确定性随机数 0..1：同一时刻画出来永远一样（同 liuguang.js 的
++// hash 用法），不存状态。
++float GlowHash(uint32_t x) {
++  x ^= x >> 16;
++  x *= 0x7feb352dU;
++  x ^= x >> 15;
++  x *= 0x846ca68bU;
++  x ^= x >> 16;
++  return static_cast<float>(x) / 4294967296.0f;
++}
++
++// 光粒（「光都是粒子」、11-13 定稿方向「版二上加粒子特效」）：照网页四周光效
++// liuguang.js 里「沿白光漂的微粒」（motes）缩到侧栏这一圈 4px 宽的光带里——
++// 一半顺时针、一半逆时针漂（同官网两条细丝一正一反），各自生、漂、淡出，
++// 骑在同一条起伏上（浪高处往里一点、更亮）；光暗的地方跟着淡。
++// 只在光带里（离组外沿 0.75–3.5，加上点自身半径最多约 4.8），碰不到行里的
++// 图标和字（行内容离外沿至少 10）。
++// 每 16 DIP 周长一颗（一行 224×36 约 30 颗），12–64 颗封顶。浅色侧栏上
++// 白点只有落在亮处的托底上才看得出，太疏就等于没有（11-13「白色背景下几乎
++// 不可见」「粒子有点儿少」）。
++constexpr float kMoteSpacing = 16.0f;
++constexpr int kMoteMin = 12;
++constexpr int kMoteMax = 64;
++// 漂移速度 6–16 DIP/s：网页光效微粒每秒走一圈的 0.15%–0.4%，按窗口周长
++// 约 4000 DIP 折成的实际速度，侧栏这一圈不按比例缩慢。
++constexpr float kMoteSpeedMin = 6.0f;
++constexpr float kMoteSpeedRange = 10.0f;
++// 深色侧栏上光粒的颜色：亮银（同 liuguang.js 深色处 rgb(225,232,244)）。
++constexpr SkColor kMoteDarkColor = SkColorSetRGB(225, 232, 244);
 +
 +// 分隔条把手、滚动细条：墨色 28%，悬停 / 拖动 45%（和桌面端细条同一套）。
 +constexpr float kGripRestAlpha = 0.28f;
@@ -690,7 +738,9 @@ index 0000000000..1e54fa3165
 +//  2. 白光三圈：只在起伏高处亮，亮处更宽、暗处几乎没有——一段段亮光沿边
 +//     起伏，不是一圈等宽的框。
 +// 亮度沿一圈按 GlowWave 两个方向叠加：四周同时都有亮处、原地起伏。
-+// 不加粒子、不加脉冲：这是高频出现、可能亮好几分钟的状态光，克制为先。
++//  3. 光粒：沿光带漂的白色小圆点（PaintMotes），浅色侧栏上是不透明纯白、
++//     淡入淡出靠变小（半透明白点落在托底上会成灰点）。
++// 不加脉冲：这是高频出现、可能亮好几分钟的状态光，克制为先。
 +class WindriseAiSectionView::OperatingGlow : public views::View {
 +  METADATA_HEADER(OperatingGlow, views::View)
 +
@@ -756,14 +806,10 @@ index 0000000000..1e54fa3165
 +    std::array<float, kGlowStops> white;
 +    for (size_t i = 0; i < white.size(); ++i) {
 +      // s 从 0 到 1（GlowWave 对 s 以 1 为周期，首尾两个色标同色，接缝不露）。
-+      const float s_pos = static_cast<float>(i) / (kGlowStops - 1);
-+      const float forward = GlowWave(s_pos, t, 1.0f);
-+      const float backward = GlowWave(s_pos, t, -1.0f);
-+      const float raw = std::clamp(
-+          (forward * 0.6f + backward * 0.4f) / 1.1f, 0.0f, 1.0f);
-+      // 拉开对比（smoothstep 0.2..0.9）：亮处亮、暗处几乎没有，一圈上是一段段
-+      // 亮光在起伏，不是一圈匀的线（离线连拍条里匀的那版读成了框）。
-+      white[i] = SmoothStepForGlow(raw);
++      // 拉开对比：亮处亮、暗处几乎没有，一圈上是一段段亮光在起伏，不是一圈
++      // 匀的线（离线连拍条里匀的那版读成了框）。
++      white[i] =
++          GlowBrightness(static_cast<float>(i) / (kGlowStops - 1), t);
 +    }
 +    const SkPoint center = SkPoint::Make(group.CenterPoint().x(),
 +                                         group.CenterPoint().y());
@@ -829,6 +875,72 @@ index 0000000000..1e54fa3165
 +         [&](size_t i) { return tone * kk * 0.6f * white[i]; });
 +    ring(3.25f, 1.5f, SK_ColorWHITE,
 +         [&](size_t i) { return tone * kk * 0.3f * white[i] * white[i]; });
++    PaintMotes(canvas, group, radius, kk, t, light_sidebar);
++  }
++
++  // 光粒，画在白光上面、同一个圆角裁切里。
++  static void PaintMotes(gfx::Canvas* canvas,
++                         const gfx::RectF& group,
++                         float radius,
++                         float kk,
++                         float t,
++                         bool light_sidebar) {
++    constexpr float kPi = 3.14159265359f;
++    const float perimeter = PerimeterLength(group, radius);
++    if (perimeter <= 0.0f) {
++      return;
++    }
++    const int count = std::clamp(static_cast<int>(perimeter / kMoteSpacing),
++                                 kMoteMin, kMoteMax);
++    cc::PaintFlags flags;
++    flags.setAntiAlias(true);
++    flags.setStyle(cc::PaintFlags::kFill_Style);
++    for (int i = 0; i < count; ++i) {
++      const uint32_t seed = 0x9E3779B9U * static_cast<uint32_t>(i + 1);
++      const float dir = (i % 2) ? -1.0f : 1.0f;
++      const float speed =
++          kMoteSpeedMin + GlowHash(seed ^ 0x51U) * kMoteSpeedRange;
++      const float life = 3.0f + GlowHash(seed ^ 0xA7U) * 3.0f;
++      // 第 n 轮：从一个新位置生出来，漂一段，淡出。
++      const float cycle = t / life + GlowHash(seed ^ 0x3CU);
++      const float n = std::floor(cycle);
++      const float age = (cycle - n) * life;
++      float s = GlowHash(seed + static_cast<uint32_t>(n) * 131U) +
++                dir * speed * age / perimeter;
++      s -= std::floor(s);
++      const float w = std::min(1.0f, GlowWave(s, t, dir));
++      // sin 在 π 附近可能是很小的负数，pow 负底数是 NaN，先夹到 0。
++      const float env =
++          std::pow(std::max(0.0f, std::sin(kPi * age / life)), 1.2f) *
++          (0.4f + 0.6f * w) * kk * (0.15f + 0.85f * GlowBrightness(s, t));
++      if (env <= 0.02f) {
++        continue;
++      }
++      const float depth =
++          0.75f + (0.25f + 0.75f * GlowHash(seed ^ 0xD2U)) * (0.8f + 1.95f * w);
++      gfx::RectF path = group;
++      path.Inset(depth);
++      if (path.IsEmpty()) {
++        continue;
++      }
++      const gfx::PointF p =
++          PerimeterPoint(path, std::max(0.0f, radius - depth), s);
++      const float base_radius = 0.55f + 0.4f * GlowHash(seed ^ 0x6BU);
++      float r = base_radius;
++      SkColor4f color = SkColor4f::FromColor(SK_ColorWHITE);
++      if (light_sidebar) {
++        r = base_radius * 1.35f * std::sqrt(std::min(1.0f, env));
++        if (r < 0.45f) {
++          continue;
++        }
++      } else {
++        color = SkColor4f::FromColor(kMoteDarkColor);
++        color.fA = std::min(1.0f, 0.75f * env);
++      }
++      flags.setColor(color);
++      canvas->sk_canvas()->drawOval(
++          SkRect::MakeLTRB(p.x() - r, p.y() - r, p.x() + r, p.y() + r), flags);
++    }
 +  }
 +
 +  const raw_ptr<WindriseAiSectionView> section_;

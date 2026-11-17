@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.html.ts b/chrome/browser/resources/settings/about_page/about_page.html.ts
-index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e61683582b 100644
+index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..642e0cc005ad93557bc1e15d4fc7678ad4dfda99 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.html.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.html.ts
 @@ -13,7 +13,7 @@ export function getHtml(this: SettingsAboutPageElement) {
@@ -36,16 +36,22 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
        </div>
        <cr-icon-button class="subpage-arrow"
            ?hidden="${!this.promoteUpdaterStatus_.actionable}"
-@@ -91,6 +80,8 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -91,6 +80,14 @@ export function getHtml(this: SettingsAboutPageElement) {
  </if>
    <cr-link-row class="hr" id="help" @click="${this.onHelpClick_}"
        label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
 +  <cr-link-row class="hr" id="sourceCode" @click="${this.onSourceCodeClick_}"
 +      label="$i18n{aboutSourceCode}" external></cr-link-row>
++  <cr-link-row class="hr" id="windrisePrivacy"
++      @click="${this.onWindrisePrivacyClick_}"
++      label="$i18n{aboutPrivacyLabel}" external></cr-link-row>
++  <cr-link-row class="hr" id="windriseTerms"
++      @click="${this.onWindriseTermsClick_}"
++      label="$i18n{aboutTermsLabel}" external></cr-link-row>
  <if expr="_google_chrome">
    <cr-link-row class="hr" id="reportIssue" @click="${this.onReportIssueClick_}"
        ?hidden="${!this.feedbackAllowedPref_?.value}"
-@@ -108,10 +99,19 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -108,13 +105,27 @@ export function getHtml(this: SettingsAboutPageElement) {
  <settings-section>
    <div class="info-sections">
      <div class="info-section">
@@ -66,3 +72,11 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
      <div class="info-section">
        <div class="secondary">$i18nRaw{aboutProductLicense}</div>
      </div>
++    ${this.showIcp_ ? html`
++      <div class="info-section">
++        <div class="secondary" id="windriseIcp">$i18n{aboutIcpLine}</div>
++      </div>
++    ` : ''}
+ <if expr="_google_chrome or _is_chrome_for_testing_branded">
+     <div class="secondary">
+       <a id="tos" href="$i18n{aboutTermsURL}">$i18n{aboutProductTos}</a>

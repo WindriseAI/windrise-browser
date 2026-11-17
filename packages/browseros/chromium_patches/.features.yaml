@@ -757,3 +757,12 @@ features:
     files:
       - "chrome/common/url_constants.h"
       - "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc"
+  windrise-browser-visual-1117:
+    description: "feat: About page rows for privacy policy / terms (all languages) and an ICP filing line at the very bottom (Chinese UI only); light motes riding the AI group operating glow"
+    files:
+      - "chrome/browser/resources/settings/about_page/about_page.html.ts"
+      - "chrome/browser/resources/settings/about_page/about_page.ts"
+      - "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc"
+      - "chrome/app/settings_strings.grdp"
+      - "chrome/app/resources/generated_resources_zh-CN.xtb"
+      - "chrome/browser/ui/views/frame/windrise_ai_section_view.cc"
