@@ -1,8 +1,8 @@
 diff --git a/chrome/app/settings_strings.grdp b/chrome/app/settings_strings.grdp
-index e1bf5d14c9fc2abfd989ad140d525f5b65c54a43..b419c3b31e957c11a215b61e41a8a2a6abd42720 100644
+index e1bf5d14c9fc2abfd989ad140d525f5b65c54a43..29006815f1441341634309869971fc5fe9bfac04 100644
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -59,6 +59,12 @@
+@@ -59,6 +59,27 @@
      <message name="IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_SYSTEM_REQUIREMENTS" desc="The accessibility label for a 'Learn more' link next to an error message about how the user's operating system is not supported.">
        Learn more about system requirements
      </message>
@@ -12,10 +12,25 @@ index e1bf5d14c9fc2abfd989ad140d525f5b65c54a43..b419c3b31e957c11a215b61e41a8a2a6
 +    <message name="IDS_SETTINGS_ABOUT_PAGE_FONT" desc="Windrise: one line of small text on the About page naming the bundled UI font; clicking it opens the font license.">
 +      Font: HarmonyOS Sans
 +    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_WINDRISE_PRIVACY" desc="Windrise: row on the About page that opens the Windrise privacy policy on the official website.">
++      Privacy Policy
++    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_WINDRISE_TERMS" desc="Windrise: row on the About page that opens the Windrise terms of service (user agreement) on the official website." meaning="Windrise About page legal row">
++      Terms of Service
++    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_WINDRISE_OPERATOR" desc="Windrise: one line of small text on the About page naming the registered operator of the software. Only shown when the browser UI is Chinese. The placeholder is the registered name, kept verbatim.">
++      Operator: <ph name="OPERATOR">$1<ex>Windrise Studio</ex></ph>
++    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_WINDRISE_ICP" desc="Windrise: one line of small text on the About page with the ICP filing number required in mainland China. Only shown when the browser UI is Chinese. The placeholder is the filing number, kept verbatim.">
++      ICP filing: <ph name="NUMBER">$1<ex>ICP 0000000-1</ex></ph>
++    </message>
++    <message name="IDS_SETTINGS_ABOUT_PAGE_WINDRISE_UPDATES" desc="Windrise: line on the About page, where Chrome would show its own update status. Windrise Browser does not update itself; the Windrise Bridge desktop app checks for and installs browser updates.">
++      Windrise Bridge checks for and installs browser updates
++    </message>
      <if expr="not is_chromeos">
        <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">
          Relaunch
-@@ -3529,8 +3535,8 @@
+@@ -3529,8 +3550,8 @@
      </message>
  
      <!-- Sync / People Page -->
@@ -26,7 +41,7 @@ index e1bf5d14c9fc2abfd989ad140d525f5b65c54a43..b419c3b31e957c11a215b61e41a8a2a6
      </message>
      <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
        Google Profile photo
-@@ -3712,6 +3718,12 @@
+@@ -3712,6 +3733,12 @@
        <message name="IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX" desc="Checkbox for importing form data for autofill">
          Autofill form data
        </message>

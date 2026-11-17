@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.html.ts b/chrome/browser/resources/settings/about_page/about_page.html.ts
-index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e61683582b 100644
+index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..42ee747e16db2f503517d8dd7fe73db1460ec4e0 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.html.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.html.ts
 @@ -13,7 +13,7 @@ export function getHtml(this: SettingsAboutPageElement) {
@@ -11,7 +11,7 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
          srcset="chrome://theme/current-channel-logo@1x 1x,
                  chrome://theme/current-channel-logo@2x 2x"
          alt="$i18n{aboutProductLogoAlt}"
-@@ -40,11 +40,6 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -40,11 +40,9 @@ export function getHtml(this: SettingsAboutPageElement) {
          <div role="alert" aria-live="polite"
              .innerHTML="${this.getUpdateStatusMessage_()}">
          </div>
@@ -20,10 +20,13 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
 -            aria-label="$i18nPolymer{aboutLearnMoreUpdatingErrors}">
 -          $i18n{learnMore}
 -        </a>
++      </div>
++      <div id="windriseUpdates" ?hidden="${this.showUpdateStatus_}">
++        $i18n{aboutWindriseUpdates}
        </div>
        <span id="deprecationWarning"
            ?hidden="${!this.obsoleteSystemInfo_.obsolete}">
-@@ -75,12 +70,6 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -75,12 +73,6 @@ export function getHtml(this: SettingsAboutPageElement) {
          @click="${this.onPromoteUpdaterClick_}">
        <div class="flex">
          ${this.promoteUpdaterStatus_.text}
@@ -36,23 +39,33 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
        </div>
        <cr-icon-button class="subpage-arrow"
            ?hidden="${!this.promoteUpdaterStatus_.actionable}"
-@@ -91,6 +80,8 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -91,6 +83,14 @@ export function getHtml(this: SettingsAboutPageElement) {
  </if>
    <cr-link-row class="hr" id="help" @click="${this.onHelpClick_}"
        label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
 +  <cr-link-row class="hr" id="sourceCode" @click="${this.onSourceCodeClick_}"
 +      label="$i18n{aboutSourceCode}" external></cr-link-row>
++  <cr-link-row class="hr" id="windrisePrivacy"
++      @click="${this.onWindrisePrivacyClick_}"
++      label="$i18n{aboutPrivacyLabel}" external></cr-link-row>
++  <cr-link-row class="hr" id="windriseTerms"
++      @click="${this.onWindriseTermsClick_}"
++      label="$i18n{aboutTermsLabel}" external></cr-link-row>
  <if expr="_google_chrome">
    <cr-link-row class="hr" id="reportIssue" @click="${this.onReportIssueClick_}"
        ?hidden="${!this.feedbackAllowedPref_?.value}"
-@@ -108,10 +99,19 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -108,8 +108,21 @@ export function getHtml(this: SettingsAboutPageElement) {
  <settings-section>
    <div class="info-sections">
      <div class="info-section">
 -      <div class="secondary">$i18n{aboutProductTitle}</div>
        <div class="secondary">$i18n{aboutProductCopyright}</div>
-     </div>
- 
++      ${this.showIcp_ ? html`
++        <div class="secondary" id="windriseOperator">$i18n{aboutOperatorLine}</div>
++        <div class="secondary" id="windriseIcp">$i18n{aboutIcpLine}</div>
++      ` : ''}
++    </div>
++
 +    <div class="info-section">
 +      <a class="secondary" id="fontLicense" href="#" role="button"
 +          aria-expanded="${this.showFontLicense_}"
@@ -61,8 +74,6 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..020114b4a45e41fbbf35ead5fbd252e6
 +        <pre id="fontLicenseText" ?hidden="${!this.showFontLicense_}"
 +            >${this.fontLicenseText_}</pre>
 +      ` : ''}
-+    </div>
-+
-     <div class="info-section">
-       <div class="secondary">$i18nRaw{aboutProductLicense}</div>
      </div>
+ 
+     <div class="info-section">

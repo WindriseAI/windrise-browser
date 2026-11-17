@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-index 0bdda85eaa..fe8a3d913d 100644
+index 0bdda85eaa..386fc206d5 100644
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 @@ -14,6 +14,7 @@
@@ -18,7 +18,7 @@ index 0bdda85eaa..fe8a3d913d 100644
        {"aboutLearnMoreUpdatingErrors",
         IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATE_ERRORS},
        {"aboutLearnMoreSystemRequirements",
-@@ -359,6 +361,29 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+@@ -359,6 +361,48 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
  
    html_source->AddString("managementPage",
                           GetDeviceManagedUiHelpLabel(profile));
@@ -42,13 +42,32 @@ index 0bdda85eaa..fe8a3d913d 100644
 +      "aboutTermsUrl", base::ASCIIToUTF16(windrise_is_chinese
 +                                              ? kWindriseTermsChineseURL
 +                                              : kWindriseTermsURL));
++  const std::u16string windrise_operator =
++      u"邯郸市丛台区风起网络科技工作室（个体工商户）";
++  const std::u16string windrise_icp = u"冀ICP备2026049007号-1";
++  html_source->AddString("aboutOperator", windrise_operator);
++  html_source->AddString("aboutIcp", windrise_icp);
++  // 关于页显示用：两条链接行的字、运营主体和备案号两行小字（只在中文界面显示，
++  // 英文官网页脚同样不放这两行，英文界面也不出现汉字）、浏览器更新由风桥负责那一行。
++  html_source->AddLocalizedString("aboutPrivacyLabel",
++                                  IDS_SETTINGS_ABOUT_PAGE_WINDRISE_PRIVACY);
++  html_source->AddLocalizedString("aboutTermsLabel",
++                                  IDS_SETTINGS_ABOUT_PAGE_WINDRISE_TERMS);
 +  html_source->AddString(
-+      "aboutOperator", u"邯郸市丛台区风起网络科技工作室（个体工商户）");
-+  html_source->AddString("aboutIcp", u"冀ICP备2026049007号-1");
++      "aboutOperatorLine",
++      l10n_util::GetStringFUTF16(IDS_SETTINGS_ABOUT_PAGE_WINDRISE_OPERATOR,
++                                 windrise_operator));
++  html_source->AddString(
++      "aboutIcpLine",
++      l10n_util::GetStringFUTF16(IDS_SETTINGS_ABOUT_PAGE_WINDRISE_ICP,
++                                 windrise_icp));
++  html_source->AddBoolean("aboutShowIcp", windrise_is_chinese);
++  html_source->AddLocalizedString("aboutWindriseUpdates",
++                                  IDS_SETTINGS_ABOUT_PAGE_WINDRISE_UPDATES);
    html_source->AddString(
        "aboutUpgradeUpToDate",
  #if BUILDFLAG(IS_CHROMEOS)
-@@ -1278,6 +1303,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
+@@ -1278,6 +1322,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
        {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
        {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
        {"importSuccess", IDS_SETTINGS_IMPORT_SUCCESS},
