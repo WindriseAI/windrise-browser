@@ -1,5 +1,6 @@
-"""视觉一批 1117 的纯文本口径验收（不编译、不起界面）：关于页四行合规信息和
-「更新由风桥负责」一行接上了、译文编号对得上、侧栏光效的光粒还在。
+"""视觉一批 1117 的纯文本口径验收（不编译、不起界面）：关于页隐私政策、用户协议
+两条链接和中文界面最下面的备案号一行接上了（运营主体行、「更新由风桥负责」行按协调人
+1117 裁定不显示），译文编号对得上，侧栏光效的光粒还在。
 跑法：python packages/browseros/tools/windrise/visual_1117_accept_test.py"""
 import re
 import unittest
@@ -21,10 +22,13 @@ class AboutPageRows(unittest.TestCase):
         html = read(self.HTML)
         for needle in ('id="windrisePrivacy"', 'id="windriseTerms"',
                        "$i18n{aboutPrivacyLabel}", "$i18n{aboutTermsLabel}",
-                       "$i18n{aboutOperatorLine}", "$i18n{aboutIcpLine}",
-                       "this.showIcp_", 'id="windriseUpdates"',
-                       "$i18n{aboutWindriseUpdates}"):
+                       "$i18n{aboutIcpLine}", "this.showIcp_"):
             self.assertIn(needle, html, needle)
+        # 整页要短：不显示运营主体、不加没有出处的更新说明
+        for gone in ("aboutOperatorLine", "aboutWindriseUpdates"):
+            self.assertNotIn(gone, html, gone)
+        # 备案号是整页最下面一行：在许可证那段之后
+        self.assertLess(html.index("aboutProductLicense"), html.index("aboutIcpLine"))
 
     def test_links_read_urls_from_data_source_only(self):
         ts = read(self.TS)
@@ -35,8 +39,7 @@ class AboutPageRows(unittest.TestCase):
 
     def test_provider_keys(self):
         cc = read(self.PROVIDER)
-        for key in ("aboutPrivacyLabel", "aboutTermsLabel", "aboutOperatorLine",
-                    "aboutIcpLine", "aboutWindriseUpdates"):
+        for key in ("aboutPrivacyLabel", "aboutTermsLabel", "aboutIcpLine"):
             self.assertIn('"%s"' % key, cc, key)
         self.assertRegex(cc, r'AddBoolean\("aboutShowIcp", windrise_is_chinese\)')
 
@@ -47,9 +50,7 @@ class ChineseStrings(unittest.TestCase):
     EXPECTED = {
         "8804164990146287819": "隐私政策",
         "5227175505375620501": "用户协议",
-        "1082780094008919076": '运营主体 <ph name="OPERATOR" />',
         "3711678947804234161": '备案号 <ph name="NUMBER" />',
-        "1924827426511278125": "浏览器更新由风桥检查和安装",
     }
 
     def test_translations(self):
@@ -59,7 +60,7 @@ class ChineseStrings(unittest.TestCase):
 
     def test_grdp_messages(self):
         grdp = read("chrome/app/settings_strings.grdp")
-        for name in ("PRIVACY", "TERMS", "OPERATOR", "ICP", "UPDATES"):
+        for name in ("PRIVACY", "TERMS", "ICP"):
             self.assertIn("IDS_SETTINGS_ABOUT_PAGE_WINDRISE_" + name, grdp)
         self.assertIn('meaning="Windrise About page legal row"', grdp)
 

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/settings/about_page/about_page.ts b/chrome/browser/resources/settings/about_page/about_page.ts
-index 30855eca88e6139226d36767e57cda53c44f72aa..99c03676c1bd75e50d100c4006b8b5352343d84c 100644
+index 30855eca88e6139226d36767e57cda53c44f72aa..6bbe1e8d5ae8eb6a72e3932117c0d38cb9bef26b 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.ts
 @@ -93,6 +93,9 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
@@ -18,7 +18,7 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..99c03676c1bd75e50d100c4006b8b535
        chrome.settingsPrivate.PrefObject<boolean>|undefined;
 +  protected accessor fontLicenseText_: string = '';
 +  protected accessor showFontLicense_: boolean = false;
-+  // 运营主体、备案号两行只在中文界面显示（判法在 settings_localized_strings_provider.cc）。
++  // 备案号只在中文界面显示，放在整页最下面一行（判法在 settings_localized_strings_provider.cc）。
 +  protected accessor showIcp_: boolean = loadTimeData.getBoolean('aboutShowIcp');
  
    private aboutBrowserProxy_: AboutPageBrowserProxy =

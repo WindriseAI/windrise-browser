@@ -758,7 +758,7 @@ features:
       - "chrome/common/url_constants.h"
       - "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc"
   windrise-browser-visual-1117:
-    description: "feat: About page rows for privacy policy / terms (all languages) and operator / ICP lines (Chinese UI only), a line saying Windrise Bridge updates the browser; light motes riding the AI group operating glow"
+    description: "feat: About page rows for privacy policy / terms (all languages) and an ICP filing line at the very bottom (Chinese UI only); light motes riding the AI group operating glow"
     files:
       - "chrome/browser/resources/settings/about_page/about_page.html.ts"
       - "chrome/browser/resources/settings/about_page/about_page.ts"
