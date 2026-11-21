@@ -19,7 +19,7 @@ index 7ff5fb309529d5a776f0fdb29e07ef1e001f06f4..276eb347ba2d61fca627ad34b68b28a4
 +  // transiently uninstalled during update cycles (e.g., when both bundled CRX
 +  // and remote config fail on startup). User configuration must survive.
 +  if (browseros::IsKnownBrowserOSExtension(extension->id())) {
-+    LOG(INFO) << "browseros: Preserving storage for extension "
++    LOG(INFO) << "windrise: Preserving storage for extension "
 +              << extension->id();
 +    subtask_done_callback.Run();
 +  } else {
@@ -33,10 +33,10 @@ index 7ff5fb309529d5a776f0fdb29e07ef1e001f06f4..276eb347ba2d61fca627ad34b68b28a4
      return true;
    }
  
-+  // - BrowserOS extensions cannot be disabled by users
++  // - Managed built-in extensions cannot be disabled by users
 +  if (browseros::IsActiveBrowserOSExtension(extension->id())) {
-+    LOG(INFO) << "browseros: Extension " << extension->id()
-+              << " cannot be disabled (BrowserOS extension)";
++    LOG(INFO) << "windrise: Extension " << extension->id()
++              << " cannot be disabled (managed extension)";
 +    return false;
 +  }
 +

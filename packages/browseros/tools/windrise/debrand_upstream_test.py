@@ -194,6 +194,15 @@ class DebrandUpstreamTest(unittest.TestCase):
         for dead in ('"/mcp"', '"/onboarding"', '"/claw"', '"app.html"'):
             self.assertNotIn(dead, hdr)
 
+    def test_u20_extension_catalog_and_delegate_log_clean(self):
+        hdr = read_patch("chrome/browser/browseros/core/browseros_constants.h")
+        self.assertNotIn("kBrowserClawExtensionId", hdr)
+        delegate = read_patch(
+            "chrome/browser/extensions/chrome_extension_registrar_delegate.cc"
+        )
+        self.assertNotIn("BrowserOS extension", delegate)
+        self.assertIn('"windrise: Extension "', delegate)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -61,8 +61,8 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +BrowserOSExtensionLoader::BrowserOSExtensionLoader(Profile* profile)
 +    : profile_(profile),
 +      // Windrise's assistant is loaded separately from its signed local
-+      // directory. Only the BrowserClaw product has a catalog primary.
-+      primary_id_(IsBrowserClawProduct() ? kBrowserClawExtensionId : ""),
++      // directory; there is no bundled catalog primary extension.
++      primary_id_(""),
 +      installer_(std::make_unique<BrowserOSExtensionInstaller>()),
 +      maintainer_(std::make_unique<BrowserOSExtensionMaintainer>(profile)) {
 +  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

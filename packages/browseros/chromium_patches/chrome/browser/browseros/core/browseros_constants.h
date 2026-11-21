@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..c4e0bc478ab9b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_constants.h
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,268 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -11,6 +11,7 @@ index 0000000000000..c4e0bc478ab9b
 +#ifndef CHROME_BROWSER_BROWSEROS_CORE_BROWSEROS_CONSTANTS_H_
 +#define CHROME_BROWSER_BROWSEROS_CORE_BROWSEROS_CONSTANTS_H_
 +
++#include <array>
 +#include <cstddef>
 +#include <string>
 +#include <string_view>
@@ -31,9 +32,6 @@ index 0000000000000..c4e0bc478ab9b
 +
 +inline constexpr char kBugReporterExtensionId[] =
 +    "adlpneommgkgeanpaekgoaolcpncohkf";
-+
-+inline constexpr char kBrowserClawExtensionId[] =
-+    "pjimfkbpehlcllblajnpfamdfjhhlgkc";
 +
 +inline constexpr char kWindriseAssistantExtensionId[] =
 +    "amlnokjigkbgngdgkofikfphjbknfodp";
@@ -60,10 +58,8 @@ index 0000000000000..c4e0bc478ab9b
 +  BrowserOSExtensionProduct product;
 +};
 +
-+inline constexpr BrowserOSExtensionInfo kBrowserOSExtensions[] = {
-+    {kBrowserClawExtensionId, false, false,
-+     BrowserOSExtensionProduct::kBrowserClaw},
-+};
++inline constexpr std::array<BrowserOSExtensionInfo, 0> kBrowserOSExtensions =
++    {};
 +
 +// Product extensions that older builds installed and current builds must
 +// remove. They are not part of the active catalog, so nothing re-installs or
@@ -77,8 +73,7 @@ index 0000000000000..c4e0bc478ab9b
 +    sizeof(kRetiredBrowserOSExtensionIds) /
 +    sizeof(kRetiredBrowserOSExtensionIds[0]);
 +
-+inline constexpr size_t kBrowserOSExtensionsCount =
-+    sizeof(kBrowserOSExtensions) / sizeof(kBrowserOSExtensions[0]);
++inline constexpr size_t kBrowserOSExtensionsCount = kBrowserOSExtensions.size();
 +
 +inline bool IsBrowserOSExtensionProductActive(
 +    BrowserOSExtensionProduct product) {
