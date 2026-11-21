@@ -53,6 +53,22 @@ class DebrandUpstreamTest(unittest.TestCase):
             self.assertIn('FILE_PATH_LITERAL(".windrise-server")', text)
             self.assertNotIn('FILE_PATH_LITERAL(".browseros")', text)
 
+    def test_u05_server_disabled_by_default_and_switches_rebranded(self):
+        switches = read_patch(
+            "chrome/browser/browseros/core/browseros_switches.h"
+        )
+        self.assertIn('"enable-windrise-server"', switches)
+        self.assertIn('"disable-windrise-server"', switches)
+        self.assertIn('"disable-browseros-server"', switches)
+        self.assertIn('"windrise-cdp-port"', switches)
+        self.assertIn('"windrise-dock-icon"', switches)
+
+        mgr = read_patch(
+            "chrome/browser/browseros/server/browseros_server_manager.cc"
+        )
+        self.assertIn("!command_line->HasSwitch(browseros::kEnableServer)", mgr)
+        self.assertIn("browseros::kLegacyDisableServer", mgr)
+
 
 if __name__ == "__main__":
     unittest.main()

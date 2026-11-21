@@ -20,7 +20,7 @@ index ba8b69a1b094c86d659991b5f2d73bede372ae13..7793e5ccc3e2e8ae0886641df4d94648
      } else {                       // if (external_update_url)
        CHECK(external_update_url);  // Checking of keys above ensures this.
        if (download_location_ == ManifestLocation::kInvalidLocation) {
-@@ -967,6 +969,52 @@ void ExternalProviderImpl::CreateExternalProviders(
+@@ -967,6 +969,54 @@ void ExternalProviderImpl::CreateExternalProviders(
      provider_list->push_back(std::move(initial_external_extensions_provider));
    }
  #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -31,7 +31,9 @@ index ba8b69a1b094c86d659991b5f2d73bede372ae13..7793e5ccc3e2e8ae0886641df4d94648
 +
 +  // Allow disabling via command line flag if needed
 +  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-+          browseros::kDisableExtensions)) {
++          browseros::kDisableExtensions) &&
++      !base::CommandLine::ForCurrentProcess()->HasSwitch(
++          browseros::kLegacyDisableExtensions)) {
 +    // Keep the existing privileged local CRX install location. This provider
 +    // cannot accept remote update URLs.
 +    auto browseros_provider = std::make_unique<ExternalProviderImpl>(

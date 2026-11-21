@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b341c559880
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_manager.cc
-@@ -0,0 +1,1562 @@
+@@ -0,0 +1,1566 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -518,8 +518,10 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  }
 +
 +  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(browseros::kDisableServer)) {
-+    LOG(INFO) << "browseros: Managed server disabled via command line";
++  if (!command_line->HasSwitch(browseros::kEnableServer) ||
++      command_line->HasSwitch(browseros::kDisableServer) ||
++      command_line->HasSwitch(browseros::kLegacyDisableServer)) {
++    LOG(INFO) << "browseros: Managed server disabled by default";
 +    return;
 +  }
 +
@@ -877,6 +879,8 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  if (!updater_) {
 +    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
 +            browseros::kDisableServerUpdater) ||
++        base::CommandLine::ForCurrentProcess()->HasSwitch(
++            browseros::kLegacyDisableServerUpdater) ||
 +        !descriptor.enable_updater) {
 +      return;
 +    }
