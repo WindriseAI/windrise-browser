@@ -1536,7 +1536,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  }
 +
 +  base::FilePath exec_dir =
-+      user_data_dir.Append(FILE_PATH_LITERAL(".browseros"));
++      user_data_dir.Append(FILE_PATH_LITERAL(".windrise-server"));
 +
 +  base::ScopedAllowBlocking allow_blocking;
 +  if (!base::PathExists(exec_dir)) {

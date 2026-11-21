@@ -44,6 +44,15 @@ class DebrandUpstreamTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("WINDRISE_BROWSER_DIR", dir_ts)
 
+    def test_u03_server_execution_dir_uses_windrise_server(self):
+        for rel in (
+            "chrome/browser/browseros/server/browseros_server_manager.cc",
+            "chrome/browser/browseros/server/browseros_server_utils.cc",
+        ):
+            text = read_patch(rel)
+            self.assertIn('FILE_PATH_LITERAL(".windrise-server")', text)
+            self.assertNotIn('FILE_PATH_LITERAL(".browseros")', text)
+
 
 if __name__ == "__main__":
     unittest.main()
