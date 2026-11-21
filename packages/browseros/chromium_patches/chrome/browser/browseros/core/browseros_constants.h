@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..c4e0bc478ab9b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_constants.h
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,277 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -35,7 +35,10 @@ index 0000000000000..c4e0bc478ab9b
 +inline constexpr char kBrowserClawExtensionId[] =
 +    "pjimfkbpehlcllblajnpfamdfjhhlgkc";
 +
-+inline constexpr char kBrowserOSHost[] = "browseros";
++inline constexpr char kWindriseAssistantExtensionId[] =
++    "amlnokjigkbgngdgkofikfphjbknfodp";
++
++inline constexpr char kBrowserOSHost[] = "windrise";
 +
 +struct BrowserOSURLRoute {
 +  const char* virtual_path;
@@ -155,6 +158,7 @@ index 0000000000000..c4e0bc478ab9b
 +}
 +
 +inline constexpr BrowserOSURLRoute kBrowserOSURLRoutes[] = {
++    {"/settings", kWindriseAssistantExtensionId, "settings.html", ""},
 +    {"/settings", kAgentExtensionId, "app.html", "/settings"},
 +    {"/mcp", kAgentExtensionId, "app.html", "/mcp"},
 +    {"/onboarding", kAgentExtensionId, "app.html", "/onboarding"},
@@ -164,10 +168,22 @@ index 0000000000000..c4e0bc478ab9b
 +inline constexpr size_t kBrowserOSURLRoutesCount =
 +    sizeof(kBrowserOSURLRoutes) / sizeof(kBrowserOSURLRoutes[0]);
 +
++// The Windrise assistant is loaded from its signed local directory and never
++// joins kBrowserOSExtensions, so virtual URL routing gates it separately.
++inline bool IsActiveURLRouteExtension(std::string_view extension_id) {
++  if (extension_id == kWindriseAssistantExtensionId) {
++    return IsBrowserOSProduct();
++  }
++  return IsActiveBrowserOSExtension(std::string(extension_id));
++}
++
 +inline const BrowserOSURLRoute* FindBrowserOSRoute(std::string_view path) {
++  if (path.size() > 1 && path.back() == '/') {
++    path.remove_suffix(1);
++  }
 +  for (const auto& route : kBrowserOSURLRoutes) {
 +    if (path == route.virtual_path &&
-+        IsActiveBrowserOSExtension(route.extension_id)) {
++        IsActiveURLRouteExtension(route.extension_id)) {
 +      return &route;
 +    }
 +  }
@@ -207,7 +223,7 @@ index 0000000000000..c4e0bc478ab9b
 +  const BrowserOSURLRoute* fallback_route = nullptr;
 +
 +  for (const auto& route : kBrowserOSURLRoutes) {
-+    if (!IsActiveBrowserOSExtension(route.extension_id)) {
++    if (!IsActiveURLRouteExtension(route.extension_id)) {
 +      continue;
 +    }
 +
