@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..ff3eb74f4b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.h
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,215 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -162,7 +162,7 @@ index 0000000000..ff3eb74f4b
 +// 侧栏两段碰到时，下段（AI）占两段可用高的比例。用户拖分隔条松手时写，
 +// 范围 0.1–0.9，默认 0.4。
 +inline constexpr char kAiSectionRatioPref[] =
-+    "browseros.windrise.layout.ai_section_ratio";
++    "windrise.layout.ai_section_ratio";
 +
 +// 窄窗（/ 方案「窄窗」行：窗口宽 < 900 时侧栏自动收起、格子按钮收成只剩
 +// 图标）。两处共用这一个阈值：竖向侧栏（VerticalTabStripRegionView）和工具栏
@@ -175,8 +175,12 @@ index 0000000000..ff3eb74f4b
 +                    : window_width < kNarrowWindowEnterWidth;
 +}
 +
-+// 注册风桥外观偏好（颜色 + 布局）。由 browseros::RegisterProfilePrefs 调用。
++// 注册风桥外观偏好（颜色 + 布局，含旧 browseros.windrise.* 迁移键）。由
++// browseros::RegisterProfilePrefs 调用。
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
++
++// 一次性把旧 browseros.windrise.{theme,layout}.* 偏好值迁到 windrise.* 并清旧键。
++void MigrateProfilePrefs(PrefService* prefs);
 +
 +// 把 `prefs` 里的外观数值装进进程级快照（UI 线程）。返回是否有值发生变化。
 +bool LoadFromPrefs(const PrefService& prefs);

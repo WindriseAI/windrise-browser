@@ -18,13 +18,13 @@ index 0000000000000000000000000000000000000000..ca13b8c417f11266b03602e8a379c1c1
 +namespace browseros::prefs {
 +
 +// Boolean profile pref: show the profile avatar button in the toolbar.
-+inline constexpr char kShowAvatarButton[] = "browseros.show_avatar_button";
++inline constexpr char kShowAvatarButton[] = "windrise.show_avatar_button";
 +
 +// Boolean profile pref: keep the toolbar's extensions area (the extensions menu
 +// button and pinned extension icons) on screen. When off, the area appears
 +// only while an extension popup or the extensions menu needs it.
 +inline constexpr char kShowExtensionsToolbar[] =
-+    "browseros.show_extensions_toolbar";
++    "windrise.show_extensions_toolbar";
 +
 +}  // namespace browseros::prefs
 +

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..3c3d52dcbb
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,795 @@
+@@ -0,0 +1,798 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -194,11 +194,14 @@ index 0000000000..3c3d52dcbb
 +      windrise::SetPref::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
-+  // Security: only allow modifying browseros.* prefs
-+  if (!params->name.starts_with("browseros.")) {
-+    return RespondNow(Error("Only browseros.* preferences can be modified"));
++  // Security: only allow modifying windrise.* prefs
++  if (!params->name.starts_with("windrise.")) {
++    return RespondNow(Error("Only windrise.* preferences can be modified"));
 +  }
-+  if (params->name.starts_with("browseros.windrise.") &&
++  if ((params->name.starts_with("windrise.theme.") ||
++       params->name.starts_with("windrise.layout.") ||
++       params->name == browseros::prefs::kWindriseEdgeLightMode ||
++       params->name == browseros::prefs::kWindriseEdgeLightExtensionId) &&
 +      !IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }

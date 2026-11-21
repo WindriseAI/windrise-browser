@@ -84,7 +84,7 @@ index cfe5a46..d02dd81 100644
  
    // Initialize components that depend on the current value.
    UpdateSupervisedUserIdInStorage();
-@@ -1299,6 +1324,18 @@ void ProfileImpl::OnSyncToSigninMigrationMaybeCompleted(
+@@ -1299,6 +1324,21 @@ void ProfileImpl::OnSyncToSigninMigrationMaybeCompleted(
  
  void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
    TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded");
@@ -99,6 +99,9 @@ index cfe5a46..d02dd81 100644
 +    success = base::DirectoryExists(path_) &&
 +              GetPrefs()->GetInitializationStatus() ==
 +                  PrefService::INITIALIZATION_STATUS_SUCCESS;
++  }
++  if (success) {
++    MigrateBrowserOSProfilePrefs(GetPrefs());
 +  }
    if (!success) {
      if (delegate_)

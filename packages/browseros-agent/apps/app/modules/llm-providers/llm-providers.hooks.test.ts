@@ -71,7 +71,7 @@ mock.module('@/lib/browseros/adapter', () => ({
 mock.module('@/lib/browseros/prefs', () => ({
   BROWSEROS_PREFS: {
     PROVIDERS: 'browseros.providers',
-    MCP_PORT: 'browseros.server.mcp_port',
+    MCP_PORT: 'windrise.server.mcp_port',
   },
 }))
 

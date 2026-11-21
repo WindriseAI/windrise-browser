@@ -76,7 +76,7 @@ describe('buildCanonicalMcpEndpointUrl', () => {
 
   it('uses the BrowserOS proxy port pref when available', async () => {
     installWindow('')
-    installBrowserOSPrefs({ 'browseros.server.proxy_port': 9512 })
+    installBrowserOSPrefs({ 'windrise.server.proxy_port': 9512 })
 
     await expect(resolveCanonicalMcpEndpointUrl()).resolves.toBe(
       'http://127.0.0.1:9512/mcp',

@@ -1,7 +1,7 @@
 import { env } from '../env'
 import { BrowserOSAdapter } from './adapter'
 
-const SERVER_VERSION_PREF = 'browseros.server.version'
+const SERVER_VERSION_PREF = 'windrise.server.version'
 
 type FeatureConfig = {
   minBrowserOSVersion?: string

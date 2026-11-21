@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..07aaedd176d1c9cab3a7f36a9086f22ce46bf1c8
 --- /dev/null
 +++ b/chrome/browser/browseros/customization/BUILD.gn
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,41 @@
 +# Copyright 2026 The Chromium Authors
 +# Use of this source code is governed by a BSD-style license that can be
 +# found in the LICENSE file.
@@ -19,7 +19,11 @@ index 0000000000000000000000000000000000000000..07aaedd176d1c9cab3a7f36a9086f22c
 +    "customization_prefs.h",
 +  ]
 +
-+  deps = [ "//components/pref_registry" ]
++  deps = [
++    "//base",
++    "//components/pref_registry",
++    "//components/prefs",
++  ]
 +}
 +
 +# Linked into Chromium's command-line pref store, so it should depend on pref

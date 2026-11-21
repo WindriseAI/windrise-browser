@@ -8,8 +8,8 @@ import {
   resolveApiBaseUrlFromSources,
 } from './client.helpers'
 
-const BROWSEROS_SERVER_PORT_PREF = 'browseros.server.server_port'
-const BROWSEROS_PROXY_PORT_PREF = 'browseros.server.proxy_port'
+const BROWSEROS_SERVER_PORT_PREF = 'windrise.server.server_port'
+const BROWSEROS_PROXY_PORT_PREF = 'windrise.server.proxy_port'
 
 export function fallbackClawApiBaseUrl(): string {
   return `http://127.0.0.1:${CLAW_API_PORT_DEFAULT}`

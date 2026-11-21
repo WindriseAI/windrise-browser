@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..6b59362a95ac0d1b3590b5d12d2e8e002877a783
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_manager_unittest.cc
-@@ -0,0 +1,464 @@
+@@ -0,0 +1,482 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -216,6 +216,24 @@ index 0000000000000000000000000000000000000000..6b59362a95ac0d1b3590b5d12d2e8e00
 +      std::move(process_controller), std::move(state_store),
 +      std::move(health_checker), std::move(updater), &prefs_);
 +  manager->Shutdown();
++}
++
++TEST_F(BrowserOSServerManagerTest, MigrateLocalStatePrefsMovesAndClearsLegacy) {
++  prefs_.SetInteger("browseros.server.cdp_port", 9400);
++  prefs_.SetInteger("browseros.server.proxy_port", 9500);
++  prefs_.SetBoolean("browseros.server.allow_remote_in_mcp", true);
++  // Pre-existing new key must not be overwritten.
++  prefs_.SetInteger(browseros_server::kProxyPort, 9600);
++
++  browseros_server::MigrateLocalStatePrefs(&prefs_);
++
++  EXPECT_EQ(9400, prefs_.GetInteger(browseros_server::kCDPServerPort));
++  EXPECT_EQ(9600, prefs_.GetInteger(browseros_server::kProxyPort));
++  EXPECT_TRUE(prefs_.GetBoolean(browseros_server::kAllowRemoteInMCP));
++  EXPECT_EQ(nullptr, prefs_.GetUserPrefValue("browseros.server.cdp_port"));
++  EXPECT_EQ(nullptr, prefs_.GetUserPrefValue("browseros.server.proxy_port"));
++  EXPECT_EQ(nullptr,
++            prefs_.GetUserPrefValue("browseros.server.allow_remote_in_mcp"));
 +}
 +
 +TEST_F(BrowserOSServerManagerTest, MigratesOldMCPPortToProxy) {

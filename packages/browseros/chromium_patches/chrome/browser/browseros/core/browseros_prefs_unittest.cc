@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..88f9feadd5d8d
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs_unittest.cc
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,176 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -131,6 +131,51 @@ index 0000000000000..88f9feadd5d8d
 +  ApplyShowTabGroupsInBookmarkBarPref(&pref_service);
 +  EXPECT_TRUE(
 +      pref_service.GetBoolean(bookmarks::prefs::kShowTabGroupsInBookmarkBar));
++}
++
++TEST(BrowserOSPrefsTest, MigrateProfilePrefsMovesOldUserValuesAndClearsOldKeys) {
++  sync_preferences::TestingPrefServiceSyncable pref_service;
++  RegisterPrefs(&pref_service);
++
++  pref_service.SetBoolean("browseros.vertical_tabs_start_collapsed", true);
++  pref_service.SetString("browseros.windrise.edge_light_mode", "layer");
++  pref_service.SetInteger("browseros.windrise.theme.light.tile", 0x112233);
++  pref_service.SetInteger("browseros.windrise.layout.tab_height", 40);
++  pref_service.SetDouble("browseros.windrise.layout.ai_section_ratio", 0.55);
++
++  MigrateProfilePrefs(&pref_service);
++
++  EXPECT_TRUE(pref_service.GetBoolean(prefs::kVerticalTabsStartCollapsed));
++  EXPECT_EQ("layer", pref_service.GetString(prefs::kWindriseEdgeLightMode));
++  EXPECT_EQ(0x112233, pref_service.GetInteger("windrise.theme.light.tile"));
++  EXPECT_EQ(40, pref_service.GetInteger("windrise.layout.tab_height"));
++  EXPECT_DOUBLE_EQ(0.55,
++                   pref_service.GetDouble("windrise.layout.ai_section_ratio"));
++
++  EXPECT_EQ(nullptr, pref_service.GetUserPrefValue(
++                         "browseros.vertical_tabs_start_collapsed"));
++  EXPECT_EQ(nullptr,
++            pref_service.GetUserPrefValue("browseros.windrise.edge_light_mode"));
++  EXPECT_EQ(nullptr, pref_service.GetUserPrefValue(
++                         "browseros.windrise.theme.light.tile"));
++  EXPECT_EQ(nullptr, pref_service.GetUserPrefValue(
++                         "browseros.windrise.layout.tab_height"));
++  EXPECT_EQ(nullptr, pref_service.GetUserPrefValue(
++                         "browseros.windrise.layout.ai_section_ratio"));
++}
++
++TEST(BrowserOSPrefsTest, MigrateProfilePrefsDoesNotOverwriteExistingNewKey) {
++  sync_preferences::TestingPrefServiceSyncable pref_service;
++  RegisterPrefs(&pref_service);
++
++  pref_service.SetBoolean("browseros.vertical_tabs_start_collapsed", true);
++  pref_service.SetBoolean(prefs::kVerticalTabsStartCollapsed, false);
++
++  MigrateProfilePrefs(&pref_service);
++
++  EXPECT_FALSE(pref_service.GetBoolean(prefs::kVerticalTabsStartCollapsed));
++  EXPECT_EQ(nullptr, pref_service.GetUserPrefValue(
++                         "browseros.vertical_tabs_start_collapsed"));
 +}
 +
 +}  // namespace

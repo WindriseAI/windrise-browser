@@ -359,6 +359,51 @@ class DebrandUpstreamTest(unittest.TestCase):
                 hits.append(path.relative_to(PATCHES).as_posix())
         self.assertEqual(hits, [])
 
+    def test_prefs_renamed_to_windrise_with_migration(self):
+        prefs_h = read_patch("chrome/browser/browseros/core/browseros_prefs.h")
+        self.assertIn('"windrise.vertical_tabs_start_collapsed"', prefs_h)
+        self.assertIn('"windrise.edge_light_mode"', prefs_h)
+        self.assertIn('"windrise.edge_light_extension_id"', prefs_h)
+        self.assertNotIn('"browseros.', prefs_h)
+        self.assertNotIn("windrise.windrise.", prefs_h)
+
+        theme_cc = read_patch("chrome/browser/browseros/core/windrise_theme.cc")
+        self.assertIn('"windrise.theme.light.tile"', theme_cc)
+        self.assertIn('"windrise.layout.tab_height"', theme_cc)
+        self.assertNotIn('"browseros.windrise.', theme_cc)
+        self.assertNotIn("windrise.windrise.", theme_cc)
+        self.assertIn("void MigrateProfilePrefs(PrefService* prefs)", theme_cc)
+
+        theme_h = read_patch("chrome/browser/browseros/core/windrise_theme.h")
+        self.assertIn('"windrise.layout.ai_section_ratio"', theme_h)
+        self.assertNotIn('"browseros.', theme_h)
+
+        cust_h = read_patch(
+            "chrome/browser/browseros/customization/customization_pref_names.h"
+        )
+        self.assertIn('"windrise.show_avatar_button"', cust_h)
+        self.assertIn('"windrise.show_extensions_toolbar"', cust_h)
+        self.assertNotIn('"browseros.', cust_h)
+
+        server_cc = read_patch(
+            "chrome/browser/browseros/server/browseros_server_prefs.cc"
+        )
+        self.assertIn('const char kCDPServerPort[] = "windrise.server.cdp_port";', server_cc)
+        self.assertIn("void MigrateLocalStatePrefs(PrefService* local_state)", server_cc)
+
+        profile_cc = read_patch("chrome/browser/profiles/profile_impl.cc")
+        self.assertIn("+    MigrateBrowserOSProfilePrefs(GetPrefs());", profile_cc)
+
+        main_cc = read_patch("chrome/browser/chrome_browser_main.cc")
+        self.assertIn("+    browseros_server::MigrateLocalStatePrefs(local_state);", main_cc)
+
+        api_cc = read_patch(
+            "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+        )
+        self.assertIn('!params->name.starts_with("windrise.")', api_cc)
+        self.assertIn('params->name.starts_with("windrise.theme.")', api_cc)
+        self.assertIn('params->name.starts_with("windrise.layout.")', api_cc)
+
     def test_r728_default_google_service_prefs_disabled(self):
         prefs_cc = read_patch("chrome/browser/prefs/browser_prefs.cc")
         self.assertIn(

@@ -6,7 +6,7 @@
  * BrowserOS base-URL resolution and client caching for the claw-app.
  *
  * Resolution order:
- *   1. BrowserOS `browseros.server.server_port` pref
+ *   1. BrowserOS `windrise.server.server_port` pref
  *   2. `?apiUrl=…` on window.location (dev launcher publishes this)
  *   3. sessionStorage cache of (2)
  *   4. VITE_BROWSEROS_CLAW_API_URL from the dev watcher
