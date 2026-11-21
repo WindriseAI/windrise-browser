@@ -6,7 +6,7 @@ index 2bb5375..9fb4de5 100644
      {APIPermissionID::kBookmark, "bookmarks"},
      {APIPermissionID::kBrailleDisplayPrivate, "brailleDisplayPrivate",
       APIPermissionInfo::kFlagCannotBeOptional},
-+    {APIPermissionID::kBrowserOS, "browserOS"},
++    {APIPermissionID::kWindrise, "windrise"},
      {APIPermissionID::kBrowsingData, "browsingData",
       APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
      {APIPermissionID::kContentSettings, "contentSettings"},

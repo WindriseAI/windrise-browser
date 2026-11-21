@@ -44,8 +44,8 @@ describe('BrowserOS helper URLs', () => {
     Object.assign(globalThis, {
       chrome: {
         ...originalChrome,
-        browserOS: {
-          ...originalChrome?.browserOS,
+        windrise: {
+          ...originalChrome?.windrise,
           getPref: (
             name: string,
             resolve: (result: { value: unknown }) => void,

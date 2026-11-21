@@ -6,18 +6,18 @@ index 72a88888eb9fc..3f0779a57b615 100644
    ResponseAction RunFunction() override;
  };
  
-+class SidePanelBrowserosToggleFunction : public SidePanelApiFunction {
++class SidePanelWindriseToggleFunction : public SidePanelApiFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("sidePanel.browserosToggle",
-+                             SIDEPANEL_BROWSEROSTOGGLE)
-+  SidePanelBrowserosToggleFunction() = default;
-+  SidePanelBrowserosToggleFunction(const SidePanelBrowserosToggleFunction&) =
++  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseToggle",
++                             SIDEPANEL_WINDRISETOGGLE)
++  SidePanelWindriseToggleFunction() = default;
++  SidePanelWindriseToggleFunction(const SidePanelWindriseToggleFunction&) =
 +      delete;
-+  SidePanelBrowserosToggleFunction& operator=(
-+      const SidePanelBrowserosToggleFunction&) = delete;
++  SidePanelWindriseToggleFunction& operator=(
++      const SidePanelWindriseToggleFunction&) = delete;
 +
 + private:
-+  ~SidePanelBrowserosToggleFunction() override = default;
++  ~SidePanelWindriseToggleFunction() override = default;
 +  ResponseAction RunFunction() override;
 +};
 +

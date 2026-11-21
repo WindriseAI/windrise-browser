@@ -54,8 +54,8 @@ index 0000000000..51be809ca6
 +constexpr size_t kMaxShownAiIcons = 3;
 +
 +// 面板底部按钮点了以后发给扩展的事件名，扩展侧监听
-+// chrome.browserOS.onAiPanelAction（见 browser_os.idl）。
-+constexpr char kPanelActionEventName[] = "browserOS.onAiPanelAction";
++// chrome.windrise.onAiPanelAction（见 windrise.idl）。
++constexpr char kPanelActionEventName[] = "windrise.onAiPanelAction";
 +
 +// 每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
 +constexpr base::TimeDelta kContentFadeDuration = base::Milliseconds(180);

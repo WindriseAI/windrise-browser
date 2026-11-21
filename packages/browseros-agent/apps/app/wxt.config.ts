@@ -68,7 +68,7 @@ export default defineConfig({
       'sidePanel',
       'bookmarks',
       'history',
-      'browserOS',
+      'windrise',
       'alarms',
       'webNavigation',
       'downloads',

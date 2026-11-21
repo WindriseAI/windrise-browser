@@ -1,15 +1,15 @@
-diff --git a/chrome/common/extensions/api/browser_os.idl b/chrome/common/extensions/api/browser_os.idl
+diff --git a/chrome/common/extensions/api/windrise.idl b/chrome/common/extensions/api/windrise.idl
 new file mode 100644
 index 0000000000..426ba49623
 --- /dev/null
-+++ b/chrome/common/extensions/api/browser_os.idl
++++ b/chrome/common/extensions/api/windrise.idl
 @@ -0,0 +1,280 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
 +
-+// browserOS API for accessing system-level browser functionality
-+namespace browserOS {
++// windrise API for accessing system-level browser functionality
++namespace windrise {
 +
 +  // Selection type for choosePath.
 +  // file: Only files can be selected (default).
@@ -197,7 +197,7 @@ index 0000000000..426ba49623
 +    static void getVersionNumber(
 +        GetVersionNumberCallback callback);
 +
-+    // Gets the BrowserOS version number
++    // Gets the Windrise browser version number
 +    // |callback|: Called with the version string.
 +    static void getBrowserosVersionNumber(
 +        GetVersionNumberCallback callback);

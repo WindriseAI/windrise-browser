@@ -54,7 +54,7 @@ index 413b2f626d..ec39e2c502 100644
 +  // 风桥 独立层：和光效层同一个位置、在它上面；平时不建网页视图（第一次显示才建）。
 +  edge_light_web_view_ = AddChildView(
 +      std::make_unique<WindriseEdgeLightWebView>(browser_view->browser()));
-+  // 光效画在哪由偏好定，扩展经 browserOS.setEdgeLightMode 写；改了立刻生效。
++  // 光效画在哪由偏好定，扩展经 windrise.setEdgeLightMode 写；改了立刻生效。
 +  edge_light_prefs_.Init(browser_view->GetProfile()->GetPrefs());
 +  edge_light_prefs_.Add(
 +      browseros::prefs::kWindriseEdgeLightMode,

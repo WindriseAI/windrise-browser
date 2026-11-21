@@ -23,7 +23,7 @@ beforeEach(() => {
       },
       browserosIsOpen: async ({ tabId }: { tabId: number }) =>
         opened.has(tabId),
-      browserosToggle: async ({
+      windriseToggle: async ({
         tabId,
         open,
       }: {

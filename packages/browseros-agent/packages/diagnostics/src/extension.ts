@@ -64,7 +64,7 @@ export async function collectBrowserDiagnostics(
   product: Product,
   resolveServerUrl: () => Promise<string>,
 ): Promise<DiagnosticsSnapshot> {
-  const api = (chrome as unknown as { browserOS?: NativeVersions }).browserOS
+  const api = (chrome as unknown as { windrise?: NativeVersions }).windrise
   const safe = <T>(task: () => Promise<T>) =>
     within(task, 2000).catch(() => null)
   const [browseros, chromium, platform, cpu, memory, server, reporter] =

@@ -117,7 +117,7 @@ const browserOSAdapter = {
         resolve({ value: prefValues.get(name) })
         return
       }
-      const getPref = globalThis.chrome?.browserOS?.getPref
+      const getPref = globalThis.chrome?.windrise?.getPref
       if (getPref) {
         getPref(name, resolve)
         return

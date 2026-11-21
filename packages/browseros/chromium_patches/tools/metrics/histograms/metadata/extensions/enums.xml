@@ -2,26 +2,26 @@ diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metr
 index 4bcc6c1f81..587a940536 100644
 --- a/tools/metrics/histograms/metadata/extensions/enums.xml
 +++ b/tools/metrics/histograms/metadata/extensions/enums.xml
-@@ -2952,6 +2952,40 @@ Called by update_extension_histograms.py.-->
+@@ -2952,6 +2952,56 @@ Called by update_extension_histograms.py.-->
    <int value="1991" label="AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS"/>
    <int value="1992" label="EXPERIMENTALAIDATA_GETAPCSNAPSHOT"/>
    <int value="1993" label="EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION"/>
 +  <int value="1994" label="DELETED_BROWSER_OS_CAPTURESCREENSHOT"/>
 +  <int value="1995" label="DELETED_BROWSER_OS_GETSNAPSHOT"/>
-+  <int value="1996" label="BROWSER_OS_GETPREF"/>
-+  <int value="1997" label="BROWSER_OS_SETPREF"/>
++  <int value="1996" label="DELETED_BROWSER_OS_GETPREF"/>
++  <int value="1997" label="DELETED_BROWSER_OS_SETPREF"/>
 +  <int value="1998" label="DELETED_BROWSER_OS_GETALLPREFS"/>
-+  <int value="1999" label="BROWSER_OS_LOGMETRIC"/>
-+  <int value="2000" label="BROWSER_OS_GETVERSIONNUMBER"/>
++  <int value="1999" label="DELETED_BROWSER_OS_LOGMETRIC"/>
++  <int value="2000" label="DELETED_BROWSER_OS_GETVERSIONNUMBER"/>
 +  <int value="2001" label="DELETED_BROWSER_OS_EXECUTEJAVASCRIPT"/>
 +  <int value="2002" label="DELETED_BROWSER_OS_CLICKCOORDINATES"/>
 +  <int value="2003" label="DELETED_BROWSER_OS_TYPEATCOORDINATES"/>
-+  <int value="2004" label="SIDEPANEL_BROWSEROSTOGGLE"/>
++  <int value="2004" label="DELETED_SIDEPANEL_BROWSEROSTOGGLE"/>
 +  <int value="2005" label="SIDEPANEL_BROWSEROSISOPEN"/>
-+  <int value="2006" label="BROWSER_OS_GETBROWSEROSVERSIONNUMBER"/>
-+  <int value="2007" label="BROWSER_OS_CHOOSEPATH"/>
-+  <int value="2008" label="BROWSER_OS_SHOWTOAST"/>
-+  <int value="2009" label="BROWSER_OS_SHOWINFOBAR"/>
++  <int value="2006" label="DELETED_BROWSER_OS_GETBROWSEROSVERSIONNUMBER"/>
++  <int value="2007" label="DELETED_BROWSER_OS_CHOOSEPATH"/>
++  <int value="2008" label="DELETED_BROWSER_OS_SHOWTOAST"/>
++  <int value="2009" label="DELETED_BROWSER_OS_SHOWINFOBAR"/>
 +  <int value="2010" label="DELETED_BROWSER_OS_GETACCESSIBILITYTREE"/>
 +  <int value="2011" label="DELETED_BROWSER_OS_GETINTERACTIVESNAPSHOT"/>
 +  <int value="2012" label="DELETED_BROWSER_OS_CLICK"/>
@@ -33,21 +33,38 @@ index 4bcc6c1f81..587a940536 100644
 +  <int value="2018" label="DELETED_BROWSER_OS_SCROLLTONODE"/>
 +  <int value="2019" label="DELETED_BROWSER_OS_SENDKEYS"/>
 +  <int value="2020" label="DELETED_BROWSER_OS_GETPAGESTRUCTURE"/>
-+  <int value="2021" label="BROWSER_OS_SETADDRESSBARSLOT"/>
-+  <int value="2022" label="BROWSER_OS_SETAITABS"/>
-+  <int value="2023" label="BROWSER_OS_SETCONNECTEDAIS"/>
-+  <int value="2024" label="BROWSER_OS_SETAIACTIVITY"/>
-+  <int value="2025" label="BROWSER_OS_PULSEAIACTIVITY"/>
-+  <int value="2026" label="BROWSER_OS_SETEDGELIGHTMODE"/>
-+  <int value="2027" label="BROWSER_OS_GETDEFAULTSEARCHENGINE"/>
++  <int value="2021" label="DELETED_BROWSER_OS_SETADDRESSBARSLOT"/>
++  <int value="2022" label="DELETED_BROWSER_OS_SETAITABS"/>
++  <int value="2023" label="DELETED_BROWSER_OS_SETCONNECTEDAIS"/>
++  <int value="2024" label="DELETED_BROWSER_OS_SETAIACTIVITY"/>
++  <int value="2025" label="DELETED_BROWSER_OS_PULSEAIACTIVITY"/>
++  <int value="2026" label="DELETED_BROWSER_OS_SETEDGELIGHTMODE"/>
++  <int value="2027" label="DELETED_BROWSER_OS_GETDEFAULTSEARCHENGINE"/>
++  <int value="2028" label="WINDRISE_GETPREF"/>
++  <int value="2029" label="WINDRISE_SETPREF"/>
++  <int value="2030" label="WINDRISE_LOGMETRIC"/>
++  <int value="2031" label="WINDRISE_GETVERSIONNUMBER"/>
++  <int value="2032" label="WINDRISE_GETBROWSEROSVERSIONNUMBER"/>
++  <int value="2033" label="WINDRISE_CHOOSEPATH"/>
++  <int value="2034" label="WINDRISE_SHOWTOAST"/>
++  <int value="2035" label="WINDRISE_SHOWINFOBAR"/>
++  <int value="2036" label="WINDRISE_SETADDRESSBARSLOT"/>
++  <int value="2037" label="WINDRISE_SETAITABS"/>
++  <int value="2038" label="WINDRISE_SETCONNECTEDAIS"/>
++  <int value="2039" label="WINDRISE_SETAIACTIVITY"/>
++  <int value="2040" label="WINDRISE_PULSEAIACTIVITY"/>
++  <int value="2041" label="WINDRISE_SETEDGELIGHTMODE"/>
++  <int value="2042" label="WINDRISE_GETDEFAULTSEARCHENGINE"/>
++  <int value="2043" label="SIDEPANEL_WINDRISETOGGLE"/>
  </enum>
  
  <!-- LINT.ThenChange(//extensions/browser/extension_function_histogram_value.h:HistogramValue) -->
-@@ -3353,6 +3387,7 @@ Called by update_extension_permission.py.-->
+@@ -3353,6 +3403,8 @@ Called by update_extension_permission.py.-->
    <int value="273" label="kPublicSuffix"/>
    <int value="274" label="kEnterpriseWebrtc"/>
    <int value="275" label="kMimeTypesHandlerPdf"/>
-+  <int value="276" label="kBrowserOS"/>
++  <int value="276" label="kDeleted_BrowserOS"/>
++  <int value="277" label="kWindrise"/>
  </enum>
  
  <enum name="ExtensionPinReason">

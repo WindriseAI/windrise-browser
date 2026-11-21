@@ -49,7 +49,7 @@ export interface UpdateHost {
       ),
     ): Promise<Array<{ result?: unknown }>>
   }
-  browserOS?: {
+  windrise?: {
     getPref(name: string, callback: (pref: { value: unknown }) => void): void
   }
 }

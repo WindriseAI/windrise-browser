@@ -27,7 +27,7 @@ index 0000000000..f4faf00bc1
 +// ntp-zh-panel / ntp-en-panel）。
 +// 从上到下：标题「已连接 N 个 AI」、每家 AI 一行（名字 + 上次调用时间）、
 +// 「接一个 AI」白底宽按钮、.5px 线、底部文字行「打开风桥 / 闪办广场 / 设置」。
-+// 按钮发给扩展（browserOS.onAiPanelAction）。不放额度、剩余时长、公网地址。
++// 按钮发给扩展（windrise.onAiPanelAction）。不放额度、剩余时长、公网地址。
 +// 数据全部来自扩展推的状态。
 +class WindriseAiPanelView : public views::BubbleDialogDelegateView {
 +  METADATA_HEADER(WindriseAiPanelView, views::BubbleDialogDelegateView)

@@ -141,9 +141,9 @@ export default function createExtensionUpdateApi(chrome, options = {}) {
     // write it or use a requestUpdateCheck response as proof of a staged CRX.
     const settings = await withTimeout(
       new Promise((resolve, reject) => {
-        if (!chrome.browserOS?.getPref)
+        if (!chrome.windrise?.getPref)
           return reject(new Error('Native update status unavailable'))
-        chrome.browserOS.getPref('extensions.settings', (pref) => {
+        chrome.windrise.getPref('extensions.settings', (pref) => {
           const error = chrome.runtime.lastError?.message
           if (error) reject(new Error(error))
           else if (!pref?.value || typeof pref.value !== 'object')

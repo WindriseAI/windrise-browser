@@ -19,76 +19,76 @@ index 0000000000..07b0e3fad7
 +
 +namespace extensions::api {
 +
-+class BrowserOSGetPrefFunction : public ExtensionFunction {
++class WindriseGetPrefFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.getPref", BROWSER_OS_GETPREF)
++  DECLARE_EXTENSION_FUNCTION("windrise.getPref", WINDRISE_GETPREF)
 +
-+  BrowserOSGetPrefFunction() = default;
++  WindriseGetPrefFunction() = default;
 +
 + protected:
-+  ~BrowserOSGetPrefFunction() override = default;
++  ~WindriseGetPrefFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetPrefFunction : public ExtensionFunction {
++class WindriseSetPrefFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setPref", BROWSER_OS_SETPREF)
++  DECLARE_EXTENSION_FUNCTION("windrise.setPref", WINDRISE_SETPREF)
 +
-+  BrowserOSSetPrefFunction() = default;
++  WindriseSetPrefFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetPrefFunction() override = default;
++  ~WindriseSetPrefFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSLogMetricFunction : public ExtensionFunction {
++class WindriseLogMetricFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.logMetric", BROWSER_OS_LOGMETRIC)
++  DECLARE_EXTENSION_FUNCTION("windrise.logMetric", WINDRISE_LOGMETRIC)
 +
-+  BrowserOSLogMetricFunction() = default;
++  WindriseLogMetricFunction() = default;
 +
 + protected:
-+  ~BrowserOSLogMetricFunction() override = default;
++  ~WindriseLogMetricFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSGetVersionNumberFunction : public ExtensionFunction {
++class WindriseGetVersionNumberFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.getVersionNumber",
-+                             BROWSER_OS_GETVERSIONNUMBER)
++  DECLARE_EXTENSION_FUNCTION("windrise.getVersionNumber",
++                             WINDRISE_GETVERSIONNUMBER)
 +
-+  BrowserOSGetVersionNumberFunction() = default;
++  WindriseGetVersionNumberFunction() = default;
 +
 + protected:
-+  ~BrowserOSGetVersionNumberFunction() override = default;
++  ~WindriseGetVersionNumberFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSGetBrowserosVersionNumberFunction : public ExtensionFunction {
++class WindriseGetBrowserosVersionNumberFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.getBrowserosVersionNumber",
-+                             BROWSER_OS_GETBROWSEROSVERSIONNUMBER)
++  DECLARE_EXTENSION_FUNCTION("windrise.getBrowserosVersionNumber",
++                             WINDRISE_GETBROWSEROSVERSIONNUMBER)
 +
-+  BrowserOSGetBrowserosVersionNumberFunction() = default;
++  WindriseGetBrowserosVersionNumberFunction() = default;
 +
 + protected:
-+  ~BrowserOSGetBrowserosVersionNumberFunction() override = default;
++  ~WindriseGetBrowserosVersionNumberFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSChoosePathFunction : public ExtensionFunction,
-+                                    public ui::SelectFileDialog::Listener {
++class WindriseChoosePathFunction : public ExtensionFunction,
++                                   public ui::SelectFileDialog::Listener {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.choosePath", BROWSER_OS_CHOOSEPATH)
++  DECLARE_EXTENSION_FUNCTION("windrise.choosePath", WINDRISE_CHOOSEPATH)
 +
-+  BrowserOSChoosePathFunction();
-+  BrowserOSChoosePathFunction(const BrowserOSChoosePathFunction&) = delete;
-+  BrowserOSChoosePathFunction& operator=(const BrowserOSChoosePathFunction&) =
++  WindriseChoosePathFunction();
++  WindriseChoosePathFunction(const WindriseChoosePathFunction&) = delete;
++  WindriseChoosePathFunction& operator=(const WindriseChoosePathFunction&) =
 +      delete;
 +
 +  // ui::SelectFileDialog::Listener:
@@ -96,7 +96,7 @@ index 0000000000..07b0e3fad7
 +  void FileSelectionCanceled() override;
 +
 + protected:
-+  ~BrowserOSChoosePathFunction() override;
++  ~WindriseChoosePathFunction() override;
 +
 +  ResponseAction Run() override;
 +
@@ -104,114 +104,114 @@ index 0000000000..07b0e3fad7
 +  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 +};
 +
-+class BrowserOSShowToastFunction : public ExtensionFunction {
++class WindriseShowToastFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.showToast", BROWSER_OS_SHOWTOAST)
++  DECLARE_EXTENSION_FUNCTION("windrise.showToast", WINDRISE_SHOWTOAST)
 +
-+  BrowserOSShowToastFunction() = default;
++  WindriseShowToastFunction() = default;
 +
 + protected:
-+  ~BrowserOSShowToastFunction() override = default;
++  ~WindriseShowToastFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSShowInfoBarFunction : public ExtensionFunction {
++class WindriseShowInfoBarFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.showInfoBar", BROWSER_OS_SHOWINFOBAR)
++  DECLARE_EXTENSION_FUNCTION("windrise.showInfoBar", WINDRISE_SHOWINFOBAR)
 +
-+  BrowserOSShowInfoBarFunction() = default;
++  WindriseShowInfoBarFunction() = default;
 +
 + protected:
-+  ~BrowserOSShowInfoBarFunction() override = default;
++  ~WindriseShowInfoBarFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetAddressBarSlotFunction : public ExtensionFunction {
++class WindriseSetAddressBarSlotFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setAddressBarSlot",
-+                             BROWSER_OS_SETADDRESSBARSLOT)
++  DECLARE_EXTENSION_FUNCTION("windrise.setAddressBarSlot",
++                             WINDRISE_SETADDRESSBARSLOT)
 +
-+  BrowserOSSetAddressBarSlotFunction() = default;
++  WindriseSetAddressBarSlotFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetAddressBarSlotFunction() override = default;
++  ~WindriseSetAddressBarSlotFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetAiTabsFunction : public ExtensionFunction {
++class WindriseSetAiTabsFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setAiTabs", BROWSER_OS_SETAITABS)
++  DECLARE_EXTENSION_FUNCTION("windrise.setAiTabs", WINDRISE_SETAITABS)
 +
-+  BrowserOSSetAiTabsFunction() = default;
++  WindriseSetAiTabsFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetAiTabsFunction() override = default;
++  ~WindriseSetAiTabsFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetConnectedAisFunction : public ExtensionFunction {
++class WindriseSetConnectedAisFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setConnectedAis",
-+                             BROWSER_OS_SETCONNECTEDAIS)
++  DECLARE_EXTENSION_FUNCTION("windrise.setConnectedAis",
++                             WINDRISE_SETCONNECTEDAIS)
 +
-+  BrowserOSSetConnectedAisFunction() = default;
++  WindriseSetConnectedAisFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetConnectedAisFunction() override = default;
++  ~WindriseSetConnectedAisFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetAiActivityFunction : public ExtensionFunction {
++class WindriseSetAiActivityFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setAiActivity",
-+                             BROWSER_OS_SETAIACTIVITY)
++  DECLARE_EXTENSION_FUNCTION("windrise.setAiActivity",
++                             WINDRISE_SETAIACTIVITY)
 +
-+  BrowserOSSetAiActivityFunction() = default;
++  WindriseSetAiActivityFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetAiActivityFunction() override = default;
++  ~WindriseSetAiActivityFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSSetEdgeLightModeFunction : public ExtensionFunction {
++class WindriseSetEdgeLightModeFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.setEdgeLightMode",
-+                             BROWSER_OS_SETEDGELIGHTMODE)
++  DECLARE_EXTENSION_FUNCTION("windrise.setEdgeLightMode",
++                             WINDRISE_SETEDGELIGHTMODE)
 +
-+  BrowserOSSetEdgeLightModeFunction() = default;
++  WindriseSetEdgeLightModeFunction() = default;
 +
 + protected:
-+  ~BrowserOSSetEdgeLightModeFunction() override = default;
++  ~WindriseSetEdgeLightModeFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSPulseAiActivityFunction : public ExtensionFunction {
++class WindrisePulseAiActivityFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.pulseAiActivity",
-+                             BROWSER_OS_PULSEAIACTIVITY)
++  DECLARE_EXTENSION_FUNCTION("windrise.pulseAiActivity",
++                             WINDRISE_PULSEAIACTIVITY)
 +
-+  BrowserOSPulseAiActivityFunction() = default;
++  WindrisePulseAiActivityFunction() = default;
 +
 + protected:
-+  ~BrowserOSPulseAiActivityFunction() override = default;
++  ~WindrisePulseAiActivityFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};
 +
-+class BrowserOSGetDefaultSearchEngineFunction : public ExtensionFunction {
++class WindriseGetDefaultSearchEngineFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("browserOS.getDefaultSearchEngine",
-+                             BROWSER_OS_GETDEFAULTSEARCHENGINE)
++  DECLARE_EXTENSION_FUNCTION("windrise.getDefaultSearchEngine",
++                             WINDRISE_GETDEFAULTSEARCHENGINE)
 +
 + protected:
-+  ~BrowserOSGetDefaultSearchEngineFunction() override = default;
++  ~WindriseGetDefaultSearchEngineFunction() override = default;
 +  ResponseAction Run() override;
 +
 + private:

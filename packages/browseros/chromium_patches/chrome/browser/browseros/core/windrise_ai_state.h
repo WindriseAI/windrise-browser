@@ -44,7 +44,7 @@ index 0000000000..1dfbf1a88b
 +};
 +
 +// 侧边栏下段里的一个 AI。每个 AI 一组（组名 = AI 名），由
-+// browserOS.setAiTabs 按 aiName 建立 / 整组替换 / 传空数组清掉；不同 AI 互不影响。
++// windrise.setAiTabs 按 aiName 建立 / 整组替换 / 传空数组清掉；不同 AI 互不影响。
 +struct AiSection {
 +  std::u16string name;
 +  // 扩展声明属于这个 AI 的标签（ExtensionTabUtil::GetTabId 的口径）。
@@ -67,7 +67,7 @@ index 0000000000..1dfbf1a88b
 +};
 +
 +// 侧边栏下段各个 AI 对应的标签组。分组本身由扩展推的标签列表决定（见
-+// browserOS.setAiTabs），浏览器只记下哪几个组是 AI 的：竖向标签条在上段里不画
++// windrise.setAiTabs），浏览器只记下哪几个组是 AI 的：竖向标签条在上段里不画
 +// 这些组（由下段 WindriseAiSectionView 画），横向标签条里组头按段标题配色。
 +// 组 id 全进程唯一，所以放在一个进程级集合里，各窗口各 AI 的组都在里面。
 +class AiGroups {

@@ -46,7 +46,7 @@ index 0000000000..3c3d52dcbb
 +#include "chrome/browser/ui/tabs/tab_strip_model.h"
 +#include "chrome/browser/ui/toasts/api/toast_id.h"
 +#include "chrome/browser/ui/toasts/toast_controller.h"
-+#include "chrome/common/extensions/api/browser_os.h"
++#include "chrome/common/extensions/api/windrise.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "components/infobars/content/content_infobar_manager.h"
 +#include "components/infobars/core/infobar.h"
@@ -163,9 +163,9 @@ index 0000000000..3c3d52dcbb
 +
 +}  // namespace
 +
-+ExtensionFunction::ResponseAction BrowserOSGetPrefFunction::Run() {
-+  std::optional<browser_os::GetPref::Params> params =
-+      browser_os::GetPref::Params::Create(args());
++ExtensionFunction::ResponseAction WindriseGetPrefFunction::Run() {
++  std::optional<windrise::GetPref::Params> params =
++      windrise::GetPref::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -175,7 +175,7 @@ index 0000000000..3c3d52dcbb
 +    return RespondNow(Error("Preference not found: " + params->name));
 +  }
 +
-+  browser_os::PrefObject pref_obj;
++  windrise::PrefObject pref_obj;
 +  pref_obj.key = params->name;
 +
 +  // The effective value, so values forced by policy or the command line
@@ -186,12 +186,12 @@ index 0000000000..3c3d52dcbb
 +  pref_obj.value = value->Clone();
 +
 +  return RespondNow(
-+      ArgumentList(browser_os::GetPref::Results::Create(pref_obj)));
++      ArgumentList(windrise::GetPref::Results::Create(pref_obj)));
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSSetPrefFunction::Run() {
-+  std::optional<browser_os::SetPref::Params> params =
-+      browser_os::SetPref::Params::Create(args());
++ExtensionFunction::ResponseAction WindriseSetPrefFunction::Run() {
++  std::optional<windrise::SetPref::Params> params =
++      windrise::SetPref::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  // Security: only allow modifying browseros.* prefs
@@ -212,12 +212,12 @@ index 0000000000..3c3d52dcbb
 +
 +  prefs->Set(params->name, params->value);
 +
-+  return RespondNow(ArgumentList(browser_os::SetPref::Results::Create(true)));
++  return RespondNow(ArgumentList(windrise::SetPref::Results::Create(true)));
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSLogMetricFunction::Run() {
-+  std::optional<browser_os::LogMetric::Params> params =
-+      browser_os::LogMetric::Params::Create(args());
++ExtensionFunction::ResponseAction WindriseLogMetricFunction::Run() {
++  std::optional<windrise::LogMetric::Params> params =
++      windrise::LogMetric::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  const std::string& event_name = params->event_name;
@@ -245,19 +245,19 @@ index 0000000000..3c3d52dcbb
 +  return RespondNow(NoArguments());
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSGetVersionNumberFunction::Run() {
++ExtensionFunction::ResponseAction WindriseGetVersionNumberFunction::Run() {
 +  std::string version = std::string(version_info::GetVersionNumber());
 +
 +  return RespondNow(
-+      ArgumentList(browser_os::GetVersionNumber::Results::Create(version)));
++      ArgumentList(windrise::GetVersionNumber::Results::Create(version)));
 +}
 +
 +ExtensionFunction::ResponseAction
-+BrowserOSGetBrowserosVersionNumberFunction::Run() {
++WindriseGetBrowserosVersionNumberFunction::Run() {
 +  std::string version = std::string(version_info::GetBrowserOSVersionNumber());
 +
 +  return RespondNow(ArgumentList(
-+      browser_os::GetBrowserosVersionNumber::Results::Create(version)));
++      windrise::GetBrowserosVersionNumber::Results::Create(version)));
 +}
 +
 +namespace {
@@ -266,8 +266,8 @@ index 0000000000..3c3d52dcbb
 +    "Could not show file dialog";
 +
 +ui::SelectFileDialog::Type GetDialogType(
-+    const std::optional<browser_os::SelectionType>& type) {
-+  if (type.has_value() && *type == browser_os::SelectionType::kFolder) {
++    const std::optional<windrise::SelectionType>& type) {
++  if (type.has_value() && *type == windrise::SelectionType::kFolder) {
 +    return ui::SelectFileDialog::SELECT_FOLDER;
 +  }
 +  return ui::SelectFileDialog::SELECT_OPEN_FILE;
@@ -275,18 +275,18 @@ index 0000000000..3c3d52dcbb
 +
 +}  // namespace
 +
-+BrowserOSChoosePathFunction::BrowserOSChoosePathFunction() = default;
++WindriseChoosePathFunction::WindriseChoosePathFunction() = default;
 +
-+BrowserOSChoosePathFunction::~BrowserOSChoosePathFunction() {
++WindriseChoosePathFunction::~WindriseChoosePathFunction() {
 +  // Clean up pending file dialogs to prevent callbacks to a destroyed object.
 +  if (select_file_dialog_.get()) {
 +    select_file_dialog_->ListenerDestroyed();
 +  }
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSChoosePathFunction::Run() {
-+  std::optional<browser_os::ChoosePath::Params> params =
-+      browser_os::ChoosePath::Params::Create(args());
++ExtensionFunction::ResponseAction WindriseChoosePathFunction::Run() {
++  std::optional<windrise::ChoosePath::Params> params =
++      windrise::ChoosePath::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  content::WebContents* web_contents = GetSenderWebContents();
@@ -334,17 +334,17 @@ index 0000000000..3c3d52dcbb
 +  return RespondLater();
 +}
 +
-+void BrowserOSChoosePathFunction::FileSelected(const ui::SelectedFileInfo& file,
++void WindriseChoosePathFunction::FileSelected(const ui::SelectedFileInfo& file,
 +                                               int index) {
-+  browser_os::SelectedPath result;
++  windrise::SelectedPath result;
 +  result.path = file.path().AsUTF8Unsafe();
 +  result.name = file.path().BaseName().AsUTF8Unsafe();
 +
-+  Respond(ArgumentList(browser_os::ChoosePath::Results::Create(result)));
++  Respond(ArgumentList(windrise::ChoosePath::Results::Create(result)));
 +  Release();
 +}
 +
-+void BrowserOSChoosePathFunction::FileSelectionCanceled() {
++void WindriseChoosePathFunction::FileSelectionCanceled() {
 +  // Return null to indicate cancellation (not an error)
 +  base::ListValue results;
 +  results.Append(base::Value());
@@ -352,9 +352,9 @@ index 0000000000..3c3d52dcbb
 +  Release();
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSShowToastFunction::Run() {
-+  std::optional<browser_os::ShowToast::Params> params =
-+      browser_os::ShowToast::Params::Create(args());
++ExtensionFunction::ResponseAction WindriseShowToastFunction::Run() {
++  std::optional<windrise::ShowToast::Params> params =
++      windrise::ShowToast::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  if (params->message.empty()) {
@@ -386,13 +386,13 @@ index 0000000000..3c3d52dcbb
 +
 +  const bool shown = toast_controller->MaybeShowToast(std::move(toast_params));
 +  return RespondNow(
-+      ArgumentList(browser_os::ShowToast::Results::Create(shown)));
++      ArgumentList(windrise::ShowToast::Results::Create(shown)));
 +}
 +
-+// Bridges chrome.browserOS.showInfoBar to Chrome's tab-scoped alert infobar.
-+ExtensionFunction::ResponseAction BrowserOSShowInfoBarFunction::Run() {
-+  std::optional<browser_os::ShowInfoBar::Params> params =
-+      browser_os::ShowInfoBar::Params::Create(args());
++// Bridges chrome.windrise.showInfoBar to Chrome's tab-scoped alert infobar.
++ExtensionFunction::ResponseAction WindriseShowInfoBarFunction::Run() {
++  std::optional<windrise::ShowInfoBar::Params> params =
++      windrise::ShowInfoBar::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  if (params->message.empty()) {
@@ -432,17 +432,17 @@ index 0000000000..3c3d52dcbb
 +          != nullptr;
 +
 +  return RespondNow(
-+      ArgumentList(browser_os::ShowInfoBar::Results::Create(shown)));
++      ArgumentList(windrise::ShowInfoBar::Results::Create(shown)));
 +}
 +
-+// Bridges chrome.browserOS.setAddressBarSlot to the tab-scoped page action
++// Bridges chrome.windrise.setAddressBarSlot to the tab-scoped page action
 +// controller. State is kept per tab, so switching tabs preserves each slot.
-+ExtensionFunction::ResponseAction BrowserOSSetAddressBarSlotFunction::Run() {
++ExtensionFunction::ResponseAction WindriseSetAddressBarSlotFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::SetAddressBarSlot::Params> params =
-+      browser_os::SetAddressBarSlot::Params::Create(args());
++  std::optional<windrise::SetAddressBarSlot::Params> params =
++      windrise::SetAddressBarSlot::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -506,12 +506,12 @@ index 0000000000..3c3d52dcbb
 +// 下段把每个组画成一个可展开的「组合页」（WindriseAiSectionView），上段不画它们。
 +// 按 aiName 区分：同一个 AI 再调一次是整组替换，tabIds 传空数组只清这个 AI 的
 +// 一组，不影响别的 AI。浏览器只动这些 AI 组，不碰用户自己的组与固定标签。
-+ExtensionFunction::ResponseAction BrowserOSSetAiTabsFunction::Run() {
++ExtensionFunction::ResponseAction WindriseSetAiTabsFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::SetAiTabs::Params> params =
-+      browser_os::SetAiTabs::Params::Create(args());
++  std::optional<windrise::SetAiTabs::Params> params =
++      windrise::SetAiTabs::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -621,12 +621,12 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +// 风桥 卡片 / 面板的数据。图标是 base64 PNG，原生自己解码，不联网。
-+ExtensionFunction::ResponseAction BrowserOSSetConnectedAisFunction::Run() {
++ExtensionFunction::ResponseAction WindriseSetConnectedAisFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::SetConnectedAis::Params> params =
-+      browser_os::SetConnectedAis::Params::Create(args());
++  std::optional<windrise::SetConnectedAis::Params> params =
++      windrise::SetConnectedAis::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -646,7 +646,7 @@ index 0000000000..3c3d52dcbb
 +  constexpr size_t kMaxConnections = 8;
 +  constexpr size_t kMaxIconBytes = 64 * 1024;
 +  std::vector<browseros::windrise::AiConnection> connections;
-+  for (const browser_os::AiConnection& input : params->options.connections) {
++  for (const windrise::AiConnection& input : params->options.connections) {
 +    if (connections.size() >= kMaxConnections) {
 +      break;
 +    }
@@ -669,12 +669,12 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +// 风桥 开关某个标签的银色海浪。
-+ExtensionFunction::ResponseAction BrowserOSSetAiActivityFunction::Run() {
++ExtensionFunction::ResponseAction WindriseSetAiActivityFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::SetAiActivity::Params> params =
-+      browser_os::SetAiActivity::Params::Create(args());
++  std::optional<windrise::SetAiActivity::Params> params =
++      windrise::SetAiActivity::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -699,12 +699,12 @@ index 0000000000..3c3d52dcbb
 +  return RespondNow(NoArguments());
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSSetEdgeLightModeFunction::Run() {
++ExtensionFunction::ResponseAction WindriseSetEdgeLightModeFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::SetEdgeLightMode::Params> params =
-+      browser_os::SetEdgeLightMode::Params::Create(args());
++  std::optional<windrise::SetEdgeLightMode::Params> params =
++      windrise::SetEdgeLightMode::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +  // 只有 page / layer 两种；原生 Skia 画法已摘除（11-13），收到 skia 按 page 处理。
 +  const std::string& requested = params->options.mode;
@@ -721,12 +721,12 @@ index 0000000000..3c3d52dcbb
 +  return RespondNow(NoArguments());
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSPulseAiActivityFunction::Run() {
++ExtensionFunction::ResponseAction WindrisePulseAiActivityFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  std::optional<browser_os::PulseAiActivity::Params> params =
-+      browser_os::PulseAiActivity::Params::Create(args());
++  std::optional<windrise::PulseAiActivity::Params> params =
++      windrise::PulseAiActivity::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -752,11 +752,11 @@ index 0000000000..3c3d52dcbb
 +  return RespondNow(NoArguments());
 +}
 +
-+ExtensionFunction::ResponseAction BrowserOSGetDefaultSearchEngineFunction::Run() {
++ExtensionFunction::ResponseAction WindriseGetDefaultSearchEngineFunction::Run() {
 +  if (!IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
-+  auto params = browser_os::GetDefaultSearchEngine::Params::Create(args());
++  auto params = windrise::GetDefaultSearchEngine::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +  query_ = std::move(params->query);
 +  auto* service = TemplateURLServiceFactory::GetForProfile(
@@ -769,16 +769,16 @@ index 0000000000..3c3d52dcbb
 +    return RespondNow(BuildResponse());
 +  }
 +  loaded_subscription_ = service->RegisterOnLoadedCallback(base::BindOnce(
-+      &BrowserOSGetDefaultSearchEngineFunction::OnLoaded, this));
++      &WindriseGetDefaultSearchEngineFunction::OnLoaded, this));
 +  return RespondLater();
 +}
 +
-+void BrowserOSGetDefaultSearchEngineFunction::OnLoaded() {
++void WindriseGetDefaultSearchEngineFunction::OnLoaded() {
 +  Respond(BuildResponse());
 +}
 +
 +ExtensionFunction::ResponseValue
-+BrowserOSGetDefaultSearchEngineFunction::BuildResponse() {
++WindriseGetDefaultSearchEngineFunction::BuildResponse() {
 +  auto* service = TemplateURLServiceFactory::GetForProfile(
 +      Profile::FromBrowserContext(browser_context()));
 +  const TemplateURL* provider = service ? service->GetDefaultSearchProvider() : nullptr;
@@ -789,12 +789,12 @@ index 0000000000..3c3d52dcbb
 +  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
 +    return Error("Search URL unavailable");
 +  }
-+  browser_os::DefaultSearchEngine result;
++  windrise::DefaultSearchEngine result;
 +  result.name = base::UTF16ToUTF8(provider->short_name());
 +  result.icon_url = provider->favicon_url().SchemeIsHTTPOrHTTPS()
 +                        ? provider->favicon_url().spec() : std::string();
 +  result.search_url = url.spec();
-+  return ArgumentList(browser_os::GetDefaultSearchEngine::Results::Create(result));
++  return ArgumentList(windrise::GetDefaultSearchEngine::Results::Create(result));
 +}
 +
 +}  // namespace api

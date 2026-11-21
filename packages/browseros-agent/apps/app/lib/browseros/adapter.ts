@@ -1,9 +1,9 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Low-level browser API adapter requires flexible types
 /// <reference path="./chrome-browser-os.d.ts" />
 
-export type PrefObject = chrome.browserOS.PrefObject
-export type ChoosePathOptions = chrome.browserOS.ChoosePathOptions
-export type SelectedPath = chrome.browserOS.SelectedPath
+export type PrefObject = chrome.windrise.PrefObject
+export type ChoosePathOptions = chrome.windrise.ChoosePathOptions
+export type SelectedPath = chrome.windrise.SelectedPath
 
 export class BrowserOSAdapter {
   private static instance: BrowserOSAdapter | null = null
@@ -19,12 +19,12 @@ export class BrowserOSAdapter {
 
   async getVersion(): Promise<string | null> {
     return new Promise<string | null>((resolve, reject) => {
-      if (typeof chrome.browserOS.getVersionNumber !== 'function') {
+      if (typeof chrome.windrise.getVersionNumber !== 'function') {
         resolve(null)
         return
       }
 
-      chrome.browserOS.getVersionNumber((version: string) => {
+      chrome.windrise.getVersionNumber((version: string) => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message || 'Unknown error'))
         } else {
@@ -36,12 +36,12 @@ export class BrowserOSAdapter {
 
   async getBrowserosVersion(): Promise<string | null> {
     return new Promise<string | null>((resolve, reject) => {
-      if (typeof chrome.browserOS.getBrowserosVersionNumber !== 'function') {
+      if (typeof chrome.windrise.getBrowserosVersionNumber !== 'function') {
         resolve(null)
         return
       }
 
-      chrome.browserOS.getBrowserosVersionNumber((version: string) => {
+      chrome.windrise.getBrowserosVersionNumber((version: string) => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message || 'Unknown error'))
         } else {
@@ -55,7 +55,7 @@ export class BrowserOSAdapter {
     eventName: string,
     properties?: Record<string, any>,
   ): Promise<void> {
-    if (typeof chrome.browserOS.logMetric !== 'function') {
+    if (typeof chrome.windrise.logMetric !== 'function') {
       return
     }
 
@@ -69,20 +69,20 @@ export class BrowserOSAdapter {
       }
 
       if (properties) {
-        chrome.browserOS.logMetric(eventName, properties, callback)
+        chrome.windrise.logMetric(eventName, properties, callback)
       } else {
-        chrome.browserOS.logMetric(eventName, callback)
+        chrome.windrise.logMetric(eventName, callback)
       }
     })
   }
 
   async getPref(name: string): Promise<PrefObject> {
-    if (typeof chrome.browserOS?.getPref !== 'function') {
+    if (typeof chrome.windrise?.getPref !== 'function') {
       throw new Error('getPref API not available')
     }
 
     return new Promise<PrefObject>((resolve, reject) => {
-      chrome.browserOS.getPref(name, (pref: PrefObject) => {
+      chrome.windrise.getPref(name, (pref: PrefObject) => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message || 'Unknown error'))
         } else {
@@ -93,7 +93,7 @@ export class BrowserOSAdapter {
   }
 
   async setPref(name: string, value: any, pageId?: string): Promise<boolean> {
-    if (typeof chrome.browserOS?.setPref !== 'function') {
+    if (typeof chrome.windrise?.setPref !== 'function') {
       throw new Error('setPref API not available')
     }
 
@@ -107,15 +107,15 @@ export class BrowserOSAdapter {
       }
 
       if (pageId !== undefined) {
-        chrome.browserOS.setPref(name, value, pageId, callback)
+        chrome.windrise.setPref(name, value, pageId, callback)
       } else {
-        chrome.browserOS.setPref(name, value, callback)
+        chrome.windrise.setPref(name, value, callback)
       }
     })
   }
 
   async choosePath(options?: ChoosePathOptions): Promise<SelectedPath | null> {
-    if (typeof chrome.browserOS?.choosePath !== 'function') {
+    if (typeof chrome.windrise?.choosePath !== 'function') {
       throw new Error('choosePath API not available')
     }
 
@@ -129,20 +129,20 @@ export class BrowserOSAdapter {
       }
 
       if (options) {
-        chrome.browserOS.choosePath(options, callback)
+        chrome.windrise.choosePath(options, callback)
       } else {
-        chrome.browserOS.choosePath(callback)
+        chrome.windrise.choosePath(callback)
       }
     })
   }
 
   isAPIAvailable(method: string): boolean {
-    return method in chrome.browserOS
+    return method in chrome.windrise
   }
 
   getAvailableAPIs(): string[] {
-    return Object.keys(chrome.browserOS).filter(
-      (key) => typeof (chrome.browserOS as any)[key] === 'function',
+    return Object.keys(chrome.windrise).filter(
+      (key) => typeof (chrome.windrise as any)[key] === 'function',
     )
   }
 }

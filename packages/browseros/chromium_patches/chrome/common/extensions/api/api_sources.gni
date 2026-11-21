@@ -6,7 +6,7 @@ index 194386bf5e2a788140a888a1dc9f58e4625538d2..c44cf6d6dd8b15ff324fc0b2ebc4ac74
      "autotest_private.webidl",
      "bookmark_manager_private.json",
      "braille_display_private.webidl",
-+    "browser_os.idl",
++    "windrise.idl",
      "command_line_private.json",
      "crash_report_private.webidl",
      "dictation_private.webidl",

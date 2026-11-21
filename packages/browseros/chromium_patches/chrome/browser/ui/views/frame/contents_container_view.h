@@ -40,11 +40,11 @@ index e3ae9d104d..64dc12d039 100644
    void UpdateBorderRoundedCorners();
    void SetBorderRoundedCornersFrom(const gfx::RoundedCornersF& corner_radii);
  
-+  // 风桥 按 AI 状态（browserOS.setAiActivity）开 / 关网页四周的边缘光效。
++  // 风桥 按 AI 状态（windrise.setAiActivity）开 / 关网页四周的边缘光效。
 +  void UpdateEdgeLight();
 +  // 只同步开 / 关，不动布局（Layout 里调，避免 InvalidateLayout 递归）。
 +  void SyncEdgeLight();
-+  // AI 的一次动作（browserOS.pulseAiActivity）。
++  // AI 的一次动作（windrise.pulseAiActivity）。
 +  void OnAiPulse(const browseros::windrise::AiPulse& pulse);
 +  // 光效画在哪（偏好 browseros.windrise.edge_light_mode）：page / layer。
 +  void ApplyEdgeLightMode();

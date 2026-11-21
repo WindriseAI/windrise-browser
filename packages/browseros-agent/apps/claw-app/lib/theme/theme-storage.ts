@@ -84,15 +84,15 @@ export function setCachedBrowserScheme(scheme: ResolvedTheme | null): void {
 export async function readBrowserColorScheme(): Promise<ResolvedTheme | null> {
   if (
     typeof chrome === 'undefined' ||
-    typeof chrome.browserOS?.getPref !== 'function'
+    typeof chrome.windrise?.getPref !== 'function'
   ) {
     return null
   }
 
   try {
-    const pref = await new Promise<chrome.browserOS.PrefObject>(
+    const pref = await new Promise<chrome.windrise.PrefObject>(
       (resolve, reject) => {
-        chrome.browserOS.getPref(BROWSER_COLOR_SCHEME_PREF, (value) => {
+        chrome.windrise.getPref(BROWSER_COLOR_SCHEME_PREF, (value) => {
           const message = chrome.runtime?.lastError?.message
           if (message) {
             reject(new Error(message))

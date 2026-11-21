@@ -37,7 +37,7 @@ const browserOSAdapter = {
   getBrowserosVersion: async () => null,
   getPref: async (name: string) =>
     new Promise<{ value?: unknown }>((resolve) => {
-      const getPref = globalThis.chrome?.browserOS?.getPref
+      const getPref = globalThis.chrome?.windrise?.getPref
       if (!getPref) {
         resolve({ value: null })
         return

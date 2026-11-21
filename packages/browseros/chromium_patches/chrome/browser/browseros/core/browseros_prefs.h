@@ -76,7 +76,7 @@ index 0000000000..0cf77879a1
 +//   "layer" - a transparent, input-less web view over the web contents loads
 +//             the extension's edge-light/frame.html (same drawing code).
 +// Any other value is treated as "page" (the native Skia drawing was removed).
-+// Written by the Windrise extension through browserOS.setEdgeLightMode.
++// Written by the Windrise extension through windrise.setEdgeLightMode.
 +inline constexpr char kWindriseEdgeLightMode[] =
 +    "browseros.windrise.edge_light_mode";
 +// String: id of the extension that last set kWindriseEdgeLightMode; the

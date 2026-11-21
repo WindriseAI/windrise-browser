@@ -208,7 +208,7 @@ HOOKS_REGISTRY = [
             "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
             "chrome/browser/extensions/api/browser_os/browser_os_api.h",
             "chrome/browser/ui/browser_actions.cc",
-            "chrome/common/extensions/api/browser_os.idl",
+            "chrome/common/extensions/api/windrise.idl",
         ],
         "recompile_scope": "[INFERENCE] 扩展API/UI局部编译并链接",
         "plugin_dependency": "每标签文字/显隐/图标及定向事件，仅受限内置扩展可用",
@@ -297,7 +297,7 @@ HOOKS_REGISTRY = [
         "key_files": [
             "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
             "chrome/browser/extensions/api/browser_os/browser_os_attention_mac.mm",
-            "chrome/common/extensions/api/browser_os.idl",
+            "chrome/common/extensions/api/windrise.idl",
         ],
         "recompile_scope": "[INFERENCE] 扩展API及mac helper局部编译并链接",
         "plugin_dependency": "只移植指定片段，mac走新能力，Windows继续drawAttention",

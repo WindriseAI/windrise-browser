@@ -68,15 +68,15 @@ export async function resolveBrowserOSMcpBaseUrl(
 async function readBrowserOSPort(prefName: string): Promise<number | null> {
   if (
     typeof chrome === 'undefined' ||
-    typeof chrome.browserOS?.getPref !== 'function'
+    typeof chrome.windrise?.getPref !== 'function'
   ) {
     return null
   }
 
   try {
-    const pref = await new Promise<chrome.browserOS.PrefObject>(
+    const pref = await new Promise<chrome.windrise.PrefObject>(
       (resolve, reject) => {
-        chrome.browserOS.getPref(prefName, (value) => {
+        chrome.windrise.getPref(prefName, (value) => {
           const message = chrome.runtime?.lastError?.message
           if (message) {
             reject(new Error(message))

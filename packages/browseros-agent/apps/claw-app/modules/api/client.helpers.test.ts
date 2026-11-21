@@ -16,10 +16,10 @@ function installBrowserOSPrefs(values: Record<string, unknown>) {
     configurable: true,
     value: {
       runtime: {},
-      browserOS: {
+      windrise: {
         getPref(
           name: string,
-          callback: (pref: chrome.browserOS.PrefObject) => void,
+          callback: (pref: chrome.windrise.PrefObject) => void,
         ) {
           callback({
             key: name,
