@@ -1,6 +1,8 @@
 use crate::{
-    BrowserView, CoreError, NativeCapabilities, PageId, ProtocolSession, TabId, TargetBinding,
+    BrowserView, CoreError, NativeCapabilities, PageId, PageJs, ProtocolSession, TabId,
+    TargetBinding,
     connection::CdpConnection,
+    overlay,
     pages::PageInfo,
     pointer,
     screenshot::ScreenshotFormat,
@@ -143,63 +145,30 @@ impl Browser {
             params.insert("quality".to_string(), Value::from(quality));
         }
         let hidden = pointer::hide_for_capture(&session).await;
+        let overlay_hidden = overlay::hide_for_capture(&session).await;
         let screenshot = session
             .send::<_, CaptureScreenshotResult>("Page.captureScreenshot", Value::Object(params))
             .await;
         if hidden {
             pointer::restore_after_capture(&session).await;
         }
+        if overlay_hidden {
+            overlay::restore_after_capture(&session).await;
+        }
         let screenshot = screenshot?;
-        let dpr_result = session
-            .send::<_, EvaluateResult>(
-                "Runtime.evaluate",
-                json!({"expression":"window.devicePixelRatio","returnByValue":true}),
-            )
+        let dpr_result = PageJs::isolated(&session)
+            .eval::<Option<f64>>("window.devicePixelRatio")
             .await;
         // DPR is advisory for an unbound transport failure, but a target admission error must
         // invalidate the whole capture instead of publishing bytes from an expired capability.
         let dpr = match dpr_result {
             Err(error @ CoreError::Target(_)) => return Err(error),
-            result => result
-                .ok()
-                .and_then(|result| result.result.value.and_then(|value| value.as_f64()))
-                .unwrap_or(1.0),
+            result => result.ok().flatten().unwrap_or(1.0),
         };
         Ok(BrowserScreenshot {
             data: screenshot.data,
             mime_type: format!("image/{}", format.as_str()),
             device_pixel_ratio: dpr,
-        })
-    }
-
-    pub async fn evaluate(
-        &self,
-        page_id: PageId,
-        expression: &str,
-    ) -> Result<EvaluateOutput, CoreError> {
-        let session = self.resolve_session(page_id).await?;
-        let result: EvaluateResult = session
-            .send(
-                "Runtime.evaluate",
-                json!({ "expression": expression, "returnByValue": true, "awaitPromise": true }),
-            )
-            .await?;
-        if let Some(exception) = result.exception_details {
-            return Ok(EvaluateOutput {
-                value: None,
-                error: Some(
-                    exception
-                        .exception
-                        .and_then(|exception| exception.description)
-                        .unwrap_or(exception.text),
-                ),
-                description: None,
-            });
-        }
-        Ok(EvaluateOutput {
-            value: result.result.value,
-            error: None,
-            description: result.result.description,
         })
     }
 
@@ -230,33 +199,7 @@ pub struct BrowserScreenshot {
     pub device_pixel_ratio: f64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct EvaluateOutput {
-    pub value: Option<Value>,
-    pub error: Option<String>,
-    pub description: Option<String>,
-}
-
 #[derive(Debug, Deserialize)]
 struct CaptureScreenshotResult {
     data: String,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct EvaluateResult {
-    result: RemoteObject,
-    exception_details: Option<ExceptionDetails>,
-}
-
-#[derive(Debug, Deserialize)]
-struct RemoteObject {
-    value: Option<Value>,
-    description: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ExceptionDetails {
-    text: String,
-    exception: Option<RemoteObject>,
 }

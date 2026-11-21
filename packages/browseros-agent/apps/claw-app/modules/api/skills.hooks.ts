@@ -12,6 +12,8 @@ import type {
   Skill,
   SkillCreate,
   SkillDetail,
+  SkillDraftStatus,
+  SkillFlowSource,
   SkillList,
   SkillRunList,
 } from '@browseros/claw-api'
@@ -47,4 +49,47 @@ export const useUpdateSkill = createMutation<SkillDetail, UpdateSkillRequest>({
 
 export const useDeleteSkill = createMutation<void, SkillNameRequest>({
   mutationFn: async (request) => (await apiClient()).deleteSkill(request),
+})
+
+/** The skill's ultrafast flow file, for reading on the skill page. */
+export const useSkillFlow = createQuery<
+  SkillFlowSource,
+  { name: string },
+  Error
+>({
+  queryKey: ['api', 'skill-flow'],
+  fetcher: async ({ name }) => (await apiClient()).getSkillFlow({ name }),
+})
+
+/** Runs a write skill without the agent: neo does it by itself, including its one click. */
+export const useRunWithoutAgent = createMutation<Skill, SkillNameRequest>({
+  mutationFn: async (request) => (await apiClient()).approveSkillWrite(request),
+})
+
+/** Runs a write skill with the agent again, so it reads each page as it goes. */
+export const useRunWithAgent = createMutation<Skill, SkillNameRequest>({
+  mutationFn: async (request) => (await apiClient()).revokeSkillWrite(request),
+})
+
+/**
+ * Where making a skill from one finished task stands. Every view of the task (its Home row, its
+ * History row, its page) reads this one entry, so a click on one shows on all of them.
+ */
+export const useSkillDraftStatus = createQuery<
+  SkillDraftStatus,
+  { sessionId: string },
+  Error
+>({
+  queryKey: ['api', 'skill-draft'],
+  fetcher: async ({ sessionId }) =>
+    (await apiClient()).getSkillDraft({ sessionId }),
+})
+
+/** Writes a skill draft from a finished task, or returns the one already written. */
+export const useDraftSkill = createMutation<
+  SkillDraftStatus,
+  { sessionId: string }
+>({
+  mutationFn: async ({ sessionId }) =>
+    (await apiClient()).draftSkillFromSession({ sessionId }),
 })

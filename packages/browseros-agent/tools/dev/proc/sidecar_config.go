@@ -34,8 +34,11 @@ type sidecarDirectories struct {
 	Execution string `json:"execution"`
 }
 
+// sidecarFlags mixes key styles: BrowserOS reads allow_remote_in_mcp and claw-server reads
+// devMode. Every dev launch is a guest beside the installed app, even in a release build.
 type sidecarFlags struct {
 	AllowRemoteInMCP bool `json:"allow_remote_in_mcp"`
+	DevMode          bool `json:"devMode"`
 }
 
 type sidecarInstance struct {
@@ -68,6 +71,7 @@ func WriteSidecarConfig(path string, opts SidecarConfigOptions) error {
 		},
 		Flags: sidecarFlags{
 			AllowRemoteInMCP: false,
+			DevMode:          true,
 		},
 		Instance: sidecarInstance{
 			BrowserOSVersion: NativeBrowserOSVersion(opts.BrowserBinary),

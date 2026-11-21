@@ -8,7 +8,7 @@ use super::{error, internal};
 use crate::{
     AppState,
     clock::now_epoch_ms,
-    db::DATABASE_FILENAME,
+    db::{DATABASE_FILENAME, ultrafast_ledger::UltrafastRecord},
     error::{AppResult, CanonicalError, RequestId},
     services::audit_settings::AuditRetention,
 };
@@ -18,8 +18,8 @@ use axum::{
     http::StatusCode,
 };
 use claw_api::models::{
-    AuditCleanupResult, AuditRetention as ApiRetention, AuditRetentionMode, AuditStorageState,
-    AuditStorageUsage, SetAuditRetentionRequest,
+    AuditAgent, AuditAgentList, AuditCleanupResult, AuditRetention as ApiRetention,
+    AuditRetentionMode, AuditStorageState, AuditStorageUsage, SetAuditRetentionRequest,
 };
 use std::{collections::HashSet, path::Path, time::UNIX_EPOCH};
 
@@ -40,6 +40,31 @@ pub(super) async fn storage(
         .map_err(|source| internal(&request_id, source))?;
     let retention = to_api_retention(state.audit_settings.get().await);
     Ok(Json(AuditStorageState::new(usage, retention)))
+}
+
+/// GET /api/v1/audit/agents
+pub(super) async fn agents(
+    Extension(request_id): Extension<RequestId>,
+    State(state): State<AppState>,
+) -> Result<Json<AuditAgentList>, CanonicalError> {
+    let agents = state
+        .audit_log
+        .list_agents()
+        .await
+        .map_err(|source| internal(&request_id, source))?;
+    Ok(Json(AuditAgentList::new(
+        agents
+            .into_iter()
+            .map(|agent| {
+                AuditAgent::new(
+                    agent.slug,
+                    agent.label,
+                    agent.task_count,
+                    agent.last_started_at,
+                )
+            })
+            .collect(),
+    )))
 }
 
 /// PUT /api/v1/audit/retention
@@ -115,6 +140,17 @@ pub(crate) async fn sweep_audit_retention(state: &AppState, now: i64) -> AppResu
         let cutoff = now.saturating_sub(i64::from(days).saturating_mul(MS_PER_DAY));
         let sessions = state.audit_log.sessions_older_than(cutoff).await?;
         if !sessions.is_empty() {
+            // Keep what ultrafast did in these tasks before their rows go.
+            let ultrafast = state.audit_log.ultrafast_sessions_in(&sessions).await?;
+            state
+                .ultrafast_ledger
+                .record(
+                    &ultrafast
+                        .iter()
+                        .map(UltrafastRecord::from)
+                        .collect::<Vec<_>>(),
+                )
+                .await?;
             let shots = state
                 .audit_log
                 .screenshot_dispatches_for_sessions(&sessions)

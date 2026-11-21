@@ -125,6 +125,8 @@ pub struct Skill {
     pub updated_at: i64,
     #[serde(rename = "tokenSavings", skip_serializing_if = "Option::is_none")]
     pub token_savings: Option<Box<models::SkillTokenSavings>>,
+    #[serde(rename = "ultrafast", skip_serializing_if = "Option::is_none")]
+    pub ultrafast: Option<Box<models::SkillUltrafast>>,
 }
 
 impl Skill {
@@ -155,6 +157,7 @@ impl Skill {
             created_at,
             updated_at,
             token_savings: None,
+            ultrafast: None,
         }
     }
 }
@@ -174,6 +177,15 @@ pub struct SkillCreate {
     /// Agents to link into. Defaults to every connected agent when omitted.
     #[serde(rename = "linkAgents", skip_serializing_if = "Option::is_none")]
     pub link_agents: Option<Vec<models::Harness>>,
+    /// The finished task this skill is made from. Saving twice for one task returns the skill already saved.
+    #[serde(rename = "sourceSessionId", skip_serializing_if = "Option::is_none")]
+    pub source_session_id: Option<String>,
+    /// One sentence on what the skill does, written above its steps.
+    #[serde(rename = "summary", skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
+    /// The parts that change between runs, each with an example.
+    #[serde(rename = "inputs", skip_serializing_if = "Option::is_none")]
+    pub inputs: Option<Vec<models::SkillDraftInput>>,
 }
 
 impl SkillCreate {
@@ -185,6 +197,9 @@ impl SkillCreate {
             steps: None,
             learned_notes: None,
             link_agents: None,
+            source_session_id: None,
+            summary: None,
+            inputs: None,
         }
     }
 }
@@ -219,6 +234,313 @@ impl SkillDetail {
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillDraft {
+    /// The skill's slug, without the neo- prefix.
+    #[serde(rename = "name")]
+    pub name: String,
+    #[serde(rename = "title")]
+    pub title: String,
+    #[serde(rename = "description")]
+    pub description: String,
+    #[serde(rename = "site")]
+    pub site: String,
+    #[serde(rename = "steps")]
+    pub steps: Vec<String>,
+    #[serde(rename = "inputs")]
+    pub inputs: Vec<models::SkillDraftInput>,
+    #[serde(rename = "notes")]
+    pub notes: Vec<String>,
+    #[serde(rename = "effects")]
+    pub effects: models::SkillDraftEffects,
+    #[serde(rename = "confidence")]
+    pub confidence: models::SkillDraftConfidence,
+}
+
+impl SkillDraft {
+    pub fn new(
+        name: String,
+        title: String,
+        description: String,
+        site: String,
+        steps: Vec<String>,
+        inputs: Vec<models::SkillDraftInput>,
+        notes: Vec<String>,
+        effects: models::SkillDraftEffects,
+        confidence: models::SkillDraftConfidence,
+    ) -> SkillDraft {
+        SkillDraft {
+            name,
+            title,
+            description,
+            site,
+            steps,
+            inputs,
+            notes,
+            effects,
+            confidence,
+        }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftConfidence {
+    #[serde(rename = "high")]
+    High,
+    #[serde(rename = "low")]
+    Low,
+}
+
+impl std::fmt::Display for SkillDraftConfidence {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::High => write!(f, "high"),
+            Self::Low => write!(f, "low"),
+        }
+    }
+}
+
+impl Default for SkillDraftConfidence {
+    fn default() -> SkillDraftConfidence {
+        Self::High
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftEffects {
+    #[serde(rename = "read")]
+    Read,
+    #[serde(rename = "write")]
+    Write,
+}
+
+impl std::fmt::Display for SkillDraftEffects {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Read => write!(f, "read"),
+            Self::Write => write!(f, "write"),
+        }
+    }
+}
+
+impl Default for SkillDraftEffects {
+    fn default() -> SkillDraftEffects {
+        Self::Read
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillDraftFailure {
+    #[serde(rename = "code")]
+    pub code: models::SkillDraftFailureCode,
+    #[serde(rename = "scope", skip_serializing_if = "Option::is_none")]
+    pub scope: Option<models::SkillDraftLimitScope>,
+    /// When the limit resets, as an ISO 8601 UTC time.
+    #[serde(rename = "resetsAt", skip_serializing_if = "Option::is_none")]
+    pub resets_at: Option<String>,
+}
+
+impl SkillDraftFailure {
+    pub fn new(code: models::SkillDraftFailureCode) -> SkillDraftFailure {
+        SkillDraftFailure {
+            code,
+            scope: None,
+            resets_at: None,
+        }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftFailureCode {
+    #[serde(rename = "limit_reached")]
+    LimitReached,
+    #[serde(rename = "drafts_paused")]
+    DraftsPaused,
+    #[serde(rename = "draft_unusable")]
+    DraftUnusable,
+    #[serde(rename = "upstream_error")]
+    UpstreamError,
+    #[serde(rename = "in_progress")]
+    InProgress,
+}
+
+impl std::fmt::Display for SkillDraftFailureCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::LimitReached => write!(f, "limit_reached"),
+            Self::DraftsPaused => write!(f, "drafts_paused"),
+            Self::DraftUnusable => write!(f, "draft_unusable"),
+            Self::UpstreamError => write!(f, "upstream_error"),
+            Self::InProgress => write!(f, "in_progress"),
+        }
+    }
+}
+
+impl Default for SkillDraftFailureCode {
+    fn default() -> SkillDraftFailureCode {
+        Self::LimitReached
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillDraftInput {
+    #[serde(rename = "name")]
+    pub name: String,
+    #[serde(rename = "label")]
+    pub label: String,
+    #[serde(rename = "example")]
+    pub example: String,
+    #[serde(rename = "kind")]
+    pub kind: models::SkillDraftInputKind,
+}
+
+impl SkillDraftInput {
+    pub fn new(
+        name: String,
+        label: String,
+        example: String,
+        kind: models::SkillDraftInputKind,
+    ) -> SkillDraftInput {
+        SkillDraftInput {
+            name,
+            label,
+            example,
+            kind,
+        }
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftInputKind {
+    #[serde(rename = "text")]
+    Text,
+    #[serde(rename = "number")]
+    Number,
+    #[serde(rename = "date")]
+    Date,
+}
+
+impl std::fmt::Display for SkillDraftInputKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Text => write!(f, "text"),
+            Self::Number => write!(f, "number"),
+            Self::Date => write!(f, "date"),
+        }
+    }
+}
+
+impl Default for SkillDraftInputKind {
+    fn default() -> SkillDraftInputKind {
+        Self::Text
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftLimitScope {
+    #[serde(rename = "day")]
+    Day,
+    #[serde(rename = "month")]
+    Month,
+}
+
+impl std::fmt::Display for SkillDraftLimitScope {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Day => write!(f, "day"),
+            Self::Month => write!(f, "month"),
+        }
+    }
+}
+
+impl Default for SkillDraftLimitScope {
+    fn default() -> SkillDraftLimitScope {
+        Self::Day
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillDraftState {
+    #[serde(rename = "none")]
+    None,
+    #[serde(rename = "writing")]
+    Writing,
+    #[serde(rename = "ready")]
+    Ready,
+    #[serde(rename = "failed")]
+    Failed,
+    #[serde(rename = "saved")]
+    Saved,
+}
+
+impl std::fmt::Display for SkillDraftState {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "none"),
+            Self::Writing => write!(f, "writing"),
+            Self::Ready => write!(f, "ready"),
+            Self::Failed => write!(f, "failed"),
+            Self::Saved => write!(f, "saved"),
+        }
+    }
+}
+
+impl Default for SkillDraftState {
+    fn default() -> SkillDraftState {
+        Self::None
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillDraftStatus {
+    #[serde(rename = "status")]
+    pub status: models::SkillDraftState,
+    #[serde(rename = "draftId", skip_serializing_if = "Option::is_none")]
+    pub draft_id: Option<String>,
+    #[serde(rename = "draft", skip_serializing_if = "Option::is_none")]
+    pub draft: Option<Box<models::SkillDraft>>,
+    /// The skill saved from this task, once it is saved.
+    #[serde(rename = "skillName", skip_serializing_if = "Option::is_none")]
+    pub skill_name: Option<String>,
+    /// Epoch ms after which a draft that was not saved is written again.
+    #[serde(rename = "expiresAt", skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<i64>,
+    #[serde(rename = "failure", skip_serializing_if = "Option::is_none")]
+    pub failure: Option<Box<models::SkillDraftFailure>>,
+}
+
+impl SkillDraftStatus {
+    pub fn new(status: models::SkillDraftState) -> SkillDraftStatus {
+        SkillDraftStatus {
+            status,
+            draft_id: None,
+            draft: None,
+            skill_name: None,
+            expires_at: None,
+            failure: None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillFlowSource {
+    /// The flow.md file as stored beside SKILL.md.
+    #[serde(rename = "source")]
+    pub source: String,
+}
+
+impl SkillFlowSource {
+    pub fn new(source: String) -> SkillFlowSource {
+        SkillFlowSource { source }
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SkillList {
     #[serde(rename = "items")]
     pub items: Vec<models::Skill>,
@@ -230,8 +552,8 @@ impl SkillList {
     }
 }
 
-/// SkillOrigin : How the skill came to exist. `agent` authored via the MCP tool, `manual` created or edited by the user, `directory` installed from the catalog.
-/// How the skill came to exist. `agent` authored via the MCP tool, `manual` created or edited by the user, `directory` installed from the catalog.
+/// SkillOrigin : How the skill came to exist. `agent` authored via the MCP tool, `manual` created or edited by the user, `directory` installed from the catalog, `history` made in the app from a finished task.
+/// How the skill came to exist. `agent` authored via the MCP tool, `manual` created or edited by the user, `directory` installed from the catalog, `history` made in the app from a finished task.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum SkillOrigin {
     #[serde(rename = "agent")]
@@ -240,6 +562,8 @@ pub enum SkillOrigin {
     Manual,
     #[serde(rename = "directory")]
     Directory,
+    #[serde(rename = "history")]
+    History,
 }
 
 impl std::fmt::Display for SkillOrigin {
@@ -248,6 +572,7 @@ impl std::fmt::Display for SkillOrigin {
             Self::Agent => write!(f, "agent"),
             Self::Manual => write!(f, "manual"),
             Self::Directory => write!(f, "directory"),
+            Self::History => write!(f, "history"),
         }
     }
 }
@@ -282,6 +607,13 @@ pub struct SkillRun {
     /// The tool that failed, when the run is not clean.
     #[serde(rename = "erroredTool", skip_serializing_if = "Option::is_none")]
     pub errored_tool: Option<String>,
+    #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
+    pub mode: Option<models::SkillRunMode>,
+    /// The step the flow handed back at, for a handed_back run.
+    #[serde(rename = "handoverStep", skip_serializing_if = "Option::is_none")]
+    pub handover_step: Option<i64>,
+    #[serde(rename = "handoverCause", skip_serializing_if = "Option::is_none")]
+    pub handover_cause: Option<SkillRunHandoverCause>,
     #[serde(rename = "createdAt")]
     pub created_at: i64,
 }
@@ -307,9 +639,34 @@ impl SkillRun {
             tool_count: None,
             clean,
             errored_tool: None,
+            mode: None,
+            handover_step: None,
+            handover_cause: None,
             created_at,
         }
     }
+}
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillRunHandoverCause {
+    #[serde(rename = "site_changed")]
+    SiteChanged,
+    #[serde(rename = "input_only")]
+    InputOnly,
+    #[serde(rename = "transient")]
+    Transient,
+    #[serde(rename = "unknown")]
+    Unknown,
+}
+
+impl Default for SkillRunHandoverCause {
+    fn default() -> SkillRunHandoverCause {
+        Self::SiteChanged
+    }
+}
+
+pub mod skill_run {
+    pub use super::SkillRunHandoverCause as HandoverCause;
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -327,6 +684,34 @@ impl SkillRunList {
             items,
             next_cursor: None,
         }
+    }
+}
+
+/// SkillRunMode : How the run was carried out. `handed_back` means the flow stopped and the agent finished the task.
+/// How the run was carried out. `handed_back` means the flow stopped and the agent finished the task.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillRunMode {
+    #[serde(rename = "ultrafast")]
+    Ultrafast,
+    #[serde(rename = "handed_back")]
+    HandedBack,
+    #[serde(rename = "agent")]
+    Agent,
+}
+
+impl std::fmt::Display for SkillRunMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Ultrafast => write!(f, "ultrafast"),
+            Self::HandedBack => write!(f, "handed_back"),
+            Self::Agent => write!(f, "agent"),
+        }
+    }
+}
+
+impl Default for SkillRunMode {
+    fn default() -> SkillRunMode {
+        Self::Ultrafast
     }
 }
 
@@ -359,6 +744,243 @@ impl SkillTokenSavings {
             used,
             measured_run_count,
         }
+    }
+}
+
+/// SkillUltrafast : The skill's ultrafast flow. Present while ultrafast skills are enabled, and after the plan that turned them on ends (then `locked`).
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillUltrafast {
+    #[serde(rename = "status")]
+    pub status: models::SkillUltrafastStatus,
+    /// Why the flow is off or broken, in plain words.
+    #[serde(rename = "reason", skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(rename = "flowVersion")]
+    pub flow_version: i64,
+    #[serde(rename = "effects", skip_serializing_if = "Option::is_none")]
+    pub effects: Option<SkillUltrafastEffects>,
+    /// Whether this write flow runs without the agent, by the user's choice for its current click.
+    #[serde(rename = "writeApproved")]
+    pub write_approved: bool,
+    #[serde(rename = "p50Ms", skip_serializing_if = "Option::is_none")]
+    pub p50_ms: Option<i64>,
+    #[serde(rename = "verifiedAt", skip_serializing_if = "Option::is_none")]
+    pub verified_at: Option<i64>,
+    #[serde(rename = "repairedAt", skip_serializing_if = "Option::is_none")]
+    pub repaired_at: Option<i64>,
+    /// Ultrafast skills are off for this computer, so every skill runs with the agent and the choice can't change.
+    #[serde(rename = "locked", skip_serializing_if = "Option::is_none")]
+    pub locked: Option<bool>,
+    #[serde(rename = "runs", skip_serializing_if = "Option::is_none")]
+    pub runs: Option<Box<models::SkillUltrafastRuns>>,
+}
+
+impl SkillUltrafast {
+    /// The skill's ultrafast flow. Present while ultrafast skills are enabled, and after the plan that turned them on ends (then `locked`).
+    pub fn new(
+        status: models::SkillUltrafastStatus,
+        flow_version: i64,
+        write_approved: bool,
+    ) -> SkillUltrafast {
+        SkillUltrafast {
+            status,
+            reason: None,
+            flow_version,
+            effects: None,
+            write_approved,
+            p50_ms: None,
+            verified_at: None,
+            repaired_at: None,
+            locked: None,
+            runs: None,
+        }
+    }
+}
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillUltrafastEffects {
+    #[serde(rename = "read")]
+    Read,
+    #[serde(rename = "write")]
+    Write,
+}
+
+impl Default for SkillUltrafastEffects {
+    fn default() -> SkillUltrafastEffects {
+        Self::Read
+    }
+}
+
+pub mod skill_ultrafast {
+    pub use super::SkillUltrafastEffects as Effects;
+}
+
+/// SkillUltrafastAlwaysWith : Why the skill always runs with the agent, whatever the user chose.
+/// Why the skill always runs with the agent, whatever the user chose.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillUltrafastAlwaysWith {
+    #[serde(rename = "pay")]
+    Pay,
+    #[serde(rename = "order")]
+    Order,
+    #[serde(rename = "send")]
+    Send,
+    #[serde(rename = "delete")]
+    Delete,
+}
+
+impl std::fmt::Display for SkillUltrafastAlwaysWith {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Pay => write!(f, "pay"),
+            Self::Order => write!(f, "order"),
+            Self::Send => write!(f, "send"),
+            Self::Delete => write!(f, "delete"),
+        }
+    }
+}
+
+impl Default for SkillUltrafastAlwaysWith {
+    fn default() -> SkillUltrafastAlwaysWith {
+        Self::Pay
+    }
+}
+
+///
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillUltrafastChoiceVia {
+    #[serde(rename = "chat")]
+    Chat,
+    #[serde(rename = "app")]
+    App,
+}
+
+impl std::fmt::Display for SkillUltrafastChoiceVia {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Chat => write!(f, "chat"),
+            Self::App => write!(f, "app"),
+        }
+    }
+}
+
+impl Default for SkillUltrafastChoiceVia {
+    fn default() -> SkillUltrafastChoiceVia {
+        Self::Chat
+    }
+}
+
+/// SkillUltrafastRuns : How a skill that changes something runs when the user asks for it. Absent for a skill that only reads pages.
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SkillUltrafastRuns {
+    #[serde(rename = "mode")]
+    pub mode: models::SkillUltrafastRunsMode,
+    /// Whether the user chose for the skill's current click. Until then it runs with the agent.
+    #[serde(rename = "chosen")]
+    pub chosen: bool,
+    /// An earlier choice covered a different click, so the agent asks again.
+    #[serde(rename = "reask")]
+    pub reask: bool,
+    #[serde(rename = "alwaysWithAgent", skip_serializing_if = "Option::is_none")]
+    pub always_with_agent: Option<models::SkillUltrafastAlwaysWith>,
+    /// The step that changes something, in the skill's own words.
+    #[serde(rename = "click", skip_serializing_if = "Option::is_none")]
+    pub click: Option<String>,
+    #[serde(rename = "site", skip_serializing_if = "Option::is_none")]
+    pub site: Option<String>,
+    #[serde(rename = "via", skip_serializing_if = "Option::is_none")]
+    pub via: Option<models::SkillUltrafastChoiceVia>,
+    #[serde(rename = "chosenAt", skip_serializing_if = "Option::is_none")]
+    pub chosen_at: Option<i64>,
+    /// The user's own words when they chose in chat.
+    #[serde(rename = "answer", skip_serializing_if = "Option::is_none")]
+    pub answer: Option<String>,
+    /// The agent that relayed a chat answer.
+    #[serde(rename = "client", skip_serializing_if = "Option::is_none")]
+    pub client: Option<String>,
+}
+
+impl SkillUltrafastRuns {
+    /// How a skill that changes something runs when the user asks for it. Absent for a skill that only reads pages.
+    pub fn new(
+        mode: models::SkillUltrafastRunsMode,
+        chosen: bool,
+        reask: bool,
+    ) -> SkillUltrafastRuns {
+        SkillUltrafastRuns {
+            mode,
+            chosen,
+            reask,
+            always_with_agent: None,
+            click: None,
+            site: None,
+            via: None,
+            chosen_at: None,
+            answer: None,
+            client: None,
+        }
+    }
+}
+
+/// SkillUltrafastRunsMode : Whether the skill runs with the user's agent reading each page, or neo runs it by itself.
+/// Whether the skill runs with the user's agent reading each page, or neo runs it by itself.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillUltrafastRunsMode {
+    #[serde(rename = "with_agent")]
+    WithAgent,
+    #[serde(rename = "without_agent")]
+    WithoutAgent,
+}
+
+impl std::fmt::Display for SkillUltrafastRunsMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::WithAgent => write!(f, "with_agent"),
+            Self::WithoutAgent => write!(f, "without_agent"),
+        }
+    }
+}
+
+impl Default for SkillUltrafastRunsMode {
+    fn default() -> SkillUltrafastRunsMode {
+        Self::WithAgent
+    }
+}
+
+/// SkillUltrafastStatus : Where the skill's ultrafast flow stands. `none` means it has no flow and has not been offered one.
+/// Where the skill's ultrafast flow stands. `none` means it has no flow and has not been offered one.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum SkillUltrafastStatus {
+    #[serde(rename = "none")]
+    None,
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "verified")]
+    Verified,
+    #[serde(rename = "degraded")]
+    Degraded,
+    #[serde(rename = "broken")]
+    Broken,
+    #[serde(rename = "off")]
+    Off,
+}
+
+impl std::fmt::Display for SkillUltrafastStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "none"),
+            Self::Pending => write!(f, "pending"),
+            Self::Verified => write!(f, "verified"),
+            Self::Degraded => write!(f, "degraded"),
+            Self::Broken => write!(f, "broken"),
+            Self::Off => write!(f, "off"),
+        }
+    }
+}
+
+impl Default for SkillUltrafastStatus {
+    fn default() -> SkillUltrafastStatus {
+        Self::None
     }
 }
 

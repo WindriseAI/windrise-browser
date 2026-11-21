@@ -3,10 +3,11 @@
 # BrowserOS neo on a virtual display, streamed to a browser tab over noVNC,
 # with Neo's MCP server reachable from outside the container.
 #
-#   docker build --no-cache-filter neo --build-arg NEO_VERSION=0.51.1.4 -t neo .
+#   docker build --no-cache-filter neo --build-arg NEO_VERSION=0.51.2.5 -t neo .
 #
 # The runtime contract (ports 6080/9010, /data, env vars) is documented in
-# README.md; entrypoint.sh implements it.
+# README.md; entrypoint.sh implements it. Use Neo 0.51.2.5 or later: older
+# browsers ignore the switch that gives the viewer its minimal frame.
 
 # Optional local package. Empty by default; `--build-context neo-deb=<dir>` with
 # one .deb in <dir> installs that build instead of downloading NEO_VERSION. This
@@ -84,27 +85,40 @@ RUN userdel -r ubuntu \
 COPY openbox-rc.xml /etc/neo/openbox-rc.xml
 # Server behaviour knobs live in this file rather than in more environment
 # variables. The shipped copy only documents the defaults; deployments mount or
-# COPY their own over it (README).
+# COPY their own over it (README), including [run] wall_timeout_seconds (default 60).
 COPY neo.toml /etc/neo/neo.toml
 COPY novnc-index.html /usr/share/novnc/index.html
+# Load the clipboard bridge from vnc.html too: embedded viewers bypass index.html.
+COPY clipboard.js /usr/share/novnc/app/clipboard.js
+RUN sed -i '/<\/body>/i\    <script type="module" src="app/clipboard.js"></script>' /usr/share/novnc/vnc.html
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/neo-entrypoint
 COPY --chmod=0755 healthcheck.sh /usr/local/bin/neo-healthcheck
 COPY --chmod=0755 neo-quit.py /usr/local/bin/neo-quit
 
+# CLAW_ANALYTICS_ENABLED=0 turns off the bundled server's product analytics:
+# every container would otherwise report to the desktop PostHog project as a
+# separate install. The browser's native metrics do not read it.
 ENV NEO_SCREEN=1600x1000 \
     NEO_DATA_DIR=/data \
+    NEO_DOWNLOAD_DIR="" \
+    NEO_OUTPUT_DIR="" \
     BROWSERCLAW_HOSTED_MODE=1 \
     BROWSERCLAW_CONFIG_FILE=/etc/neo/neo.toml \
+    CLAW_ANALYTICS_ENABLED=0 \
     NEO_SANDBOX=false \
+    NEO_SOFTWARE_GRAPHICS=true \
     BROWSEROS_CAPSOLVER_API_KEY_FILE=/home/neo/.config/browseros/captcha/capsolver-api-key \
     BROWSEROS_2CAPTCHA_API_KEY_FILE=/home/neo/.config/browseros/captcha/2captcha-api-key \
-    NEO_DISABLE_BROWSEROS_EXTENSIONS=false \
+    NEO_DISABLE_BROWSEROS_EXTENSIONS=true \
     NEO_ARGS="" \
     PUID=1000 \
     PGID=1000
 
 # Callers choose their persistent mount; declaring VOLUME here would also create
 # an anonymous /data volume for every image built FROM Neo.
+# NEO_OUTPUT_DIR defaults at startup to $NEO_DATA_DIR/tool-output and is passed to
+# the MCP server as BROWSEROS_OUTPUT_DIR. Its private layout is session/output/parts;
+# use read_output IDs to retrieve artifacts rather than mounting the browser profile.
 EXPOSE 6080 9010
 
 HEALTHCHECK --interval=5s --timeout=5s --start-period=90s --retries=3 \

@@ -38,21 +38,29 @@ Do not fall back to another browser tool because the connection is missing. Say 
 - When an action fails, fix the cause reported by the error instead of retrying blindly.
 - Refs go stale when the page changes. Take another snapshot before reusing them.
 - If the page is still loading, wait for expected text or a selector instead of using a bare timed wait.
-- Readiness is handled for you. `tabs` action `"new"`, `navigate`, and an `evaluate` that changes the page all return once the page has stopped changing, not merely once it has loaded. Never pause afterwards to let a page catch up.
+- Readiness is handled for you. `tabs` action `"new"`, `navigate`, and an `evaluate_in_page` that changes the page all return once the page has stopped changing, not merely once it has loaded. Never pause afterwards to let a page catch up.
 
 ## Tool choice
 
-Reach for `run` first; the granular tools are the fallback. One `run` script composes the whole snapshot -> act -> verify loop, bulk extraction, and helper reuse in a single call, and it is the only place saved helpers work. Compose anything multi-step inside one `run` script rather than chaining granular calls. Use a single granular tool (`act`, `snapshot`, `navigate`, `evaluate`, `read`) directly only for a one-off step, step-by-step debugging, or something a `run` script cannot express.
+Reach for `run` first; the granular tools are the fallback. One `run` script composes the whole snapshot -> act -> verify loop, bulk extraction, and helper reuse in a single call, and it is the only place saved helpers work. Compose anything multi-step inside one `run` script rather than chaining granular calls. Use a single granular tool (`act`, `snapshot`, `navigate`, `read`) directly only for a one-off step, step-by-step debugging, or something a `run` script cannot express.
 
 Derive the page you work on inside the same script that uses it. When you do carry something between calls, carry the URL rather than the page id: an id is only good while that tab is open and still yours.
 
+## With ultrafast: start with pursue
+
+If your BrowserOS neo lists a tool named `pursue` (it comes with ultrafast), pick the tool by the path, not the goal. If getting to what you need means clicking through a site (search, filters, pickers, modals, booking or checkout), open or find the page and give pursue the whole outcome, even when you only want to read what is at the end. Phrase it as a destination or an action, not a question: "open the seat map for tonight's 7 pm show", not "are any corner seats free?". Put any text you already know in `values`. neo decides each step and does it.
+
+If pursue says `completed`, read the page to confirm. If it says `handed_back`, carry on with one `run` script from the page and url it names. Skip the steps it lists as done, and do not call pursue again for that task.
+
+Go straight to `run` only when you already have a url that shows the data, or for work across many known pages. If the page draws what you need on a canvas, read it with a screenshot. A `run` call is capped by its `timeout`, 60 seconds by default, not the 30 seconds mentioned below. Without `pursue` in your tool list, skip this section.
+
 ## Writing a `run` script
 
-- **The sandbox is neither Node nor the page.** No `fetch`, `require` or `document` in scope; reach into the page through the SDK's evaluate, which runs there.
+- **The sandbox is neither Node nor the page.** No `fetch`, `require` or `document` in scope; read the page through `page.snapshot`, `page.read` and `page.grep`, which run no script in it. `page.evaluateInPage` runs your own script inside the page, where page scripts can watch it; use it only when the user explicitly asks to run code in the page or those cannot answer.
 - **One bounded chunk per call.** A run is hard-capped at 30 seconds and cannot be extended. Batching reads of loaded pages is cheap; batching fresh navigations is not, so keep to about five new pages per call.
 - **Re-derive handles, do not assume them.** A page id from an earlier turn may point at a tab that has closed or changed hands. List your own pages, or open a new one.
 - **Wait on the thing, not the clock.** Wait for the selector or text you need; it returns the moment it appears. Never loop, re-checking with a fixed pause between tries.
-- **Never pause after opening, navigating or a page-changing `evaluate`.** Each already returns settled, and `evaluate` reports `changed` so you can tell. `sleep(ms)` exists, but after any of those it only adds the time you picked. For an effect that is entirely asynchronous, pass `{ settle: true }` to `evaluate` rather than guessing a duration.
+- **Never pause after opening, navigating or a page-changing `evaluateInPage`.** Each already returns settled, and `evaluateInPage` reports `changed` so you can tell. `sleep(ms)` exists, but after any of those it only adds the time you picked. For an effect that is entirely asynchronous, pass `{ settle: true }` to `evaluateInPage` rather than guessing a duration.
 
 ## Reading and output
 
@@ -64,7 +72,11 @@ Derive the page you work on inside the same script that uses it. When you do car
 
 When you hit something only a person can do (a sign-in, a one-time code, a captcha, an account choice, or an approval you should not make), call `request_human_help` with a short `reason` and an optional `resumeHint` for what you will do after. It blocks for a short while and returns a status. While the status is `waiting`, call `await_human_help` again and do nothing else on the page; stop waiting only once the status is `resolved` (a human handed control back, continue the task), `cancelled`, or `timed_out`. The cockpit shows your request so a human can take over the tab and hand control back. Do not keep retrying the block on your own.
 
+Signing in counts: when `credentials` lists no saved account for the page, or several and the task does not say which, call `request_human_help` with `kind: "login"` instead of guessing or asking in your chat. Asking through neo alerts the person on their computer (a notification and the BrowserOS icon in the dock), which a question in your chat does not.
+
 If `request_human_help` is not among your tools, the user turned human help off: stop and tell them in your chat what you need.
+
+A person can also take over a page while you work on it, from the page itself. When a tool says the person took over a page, stop and check with the user before you act on that page again, and take a fresh snapshot when you do.
 
 ## Failure
 

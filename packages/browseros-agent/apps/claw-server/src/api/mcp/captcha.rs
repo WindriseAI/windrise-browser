@@ -1,3 +1,4 @@
+use browseros_core::{CoreError, viewport::ViewportLease};
 use rmcp::model::{CallToolResult, Tool, ToolAnnotations};
 use serde_json::{Value, json};
 use tokio_util::sync::CancellationToken;
@@ -9,7 +10,10 @@ use super::{
 use crate::{
     AppState,
     ids::DispatchId,
-    services::{captcha::SolveRefusal, sessions::Session},
+    services::{
+        captcha::{SolveRefusal, reservation::TabReservations},
+        sessions::Session,
+    },
 };
 
 pub(super) async fn call_solve_captcha(
@@ -42,12 +46,33 @@ pub(super) async fn call_solve_captcha(
             Ok(binding) => binding,
             Err(error) => return browseros_mcp::ToolResult::error(format!("solve_captcha: {error}")),
         };
-        let view = browseros_core::BrowserView::capture(browser, binding, None).await;
+        let held_browser = browser.clone();
+        let view = super::hosted::with_viewports(
+            browseros_core::BrowserView::capture(browser, binding, None).await,
+            state.viewports.as_ref(),
+        );
         let cancel = linked_cancel_token(session.child_token(), client_cancel, dispatch_cancel);
         let Some(captcha) = &state.captcha else {
             return browseros_mcp::ToolResult::error("solve_captcha: no provider is configured");
         };
-        match captcha.solve(view, browseros_core::PageId(page), cancel, human_help_on).await {
+        let prepare = view.prepare_viewport(browseros_core::PageId(page));
+        let _viewport = match prepare_page(captcha.reservations(), page, &cancel, prepare).await {
+            Ok(lease) => lease,
+            Err(message) => return browseros_mcp::ToolResult::error(message),
+        };
+        if let Err(refusal) = state.page_hold.begin_action(
+            &held_browser,
+            browseros_core::PageId(page),
+            session.id(),
+            &dispatch_id,
+            crate::services::page_hold::labels::for_tool("solve_captcha", raw_args, None),
+            None,
+        ).await {
+            return browseros_mcp::ToolResult::error(refusal);
+        }
+        let solved = captcha.solve(view, browseros_core::PageId(page), cancel, human_help_on).await;
+        state.page_hold.end_action(&held_browser, browseros_core::PageId(page), &dispatch_id).await;
+        match solved {
             Ok(outcome) => {
                 let value = json!(outcome);
                 browseros_mcp::ToolResult {
@@ -83,6 +108,25 @@ pub(super) async fn call_solve_captcha(
     result.into_call_tool_result()
 }
 
+/// The solver reads, captures and clicks the page like any other page operation, so it first
+/// waits for the page's viewport. A page another solve owns is refused at once rather than
+/// queued behind that solve, and a cancelled call stops waiting.
+async fn prepare_page(
+    reservations: &TabReservations,
+    page: u32,
+    cancel: &CancellationToken,
+    prepare: impl Future<Output = Result<ViewportLease, CoreError>>,
+) -> Result<ViewportLease, String> {
+    if let Some(busy) = reservations.busy_message(page) {
+        return Err(busy);
+    }
+    tokio::select! {
+        biased;
+        () = cancel.cancelled() => Err("solve_captcha: cancelled while waiting for the page".to_string()),
+        lease = prepare => lease.map_err(|error| format!("solve_captcha: {error}")),
+    }
+}
+
 pub fn solve_captcha_tool() -> Tool {
     let schema = serde_json::Map::from_iter([
         ("type".into(), json!("object")),
@@ -94,7 +138,7 @@ pub fn solve_captcha_tool() -> Tool {
     ]);
     let output = json!({
         "type":"object",
-        "required":["status","type","method","reason","requestId","page","durationMs","attempts","paidTasks","costUsd","message","events"],
+        "required":["status","type","method","reason","requestId","page","durationMs","attempts","paidTasks","provider","costUsd","message","events"],
         "properties": {
             "status":{"type":"string","enum":["solved","token_applied","already_clear","unsupported","failed","cancelled","needs_human"]},
             "type":{"type":["string","null"],"enum":["recaptcha_v2","recaptcha_v3","turnstile","cloudflare_challenge","hcaptcha","geetest","aws_waf","arkose","unknown",null]},
@@ -106,6 +150,7 @@ pub fn solve_captcha_tool() -> Tool {
             "attempts":{"type":"object","required":["checkbox","tileRounds","token"],"properties":{
                 "checkbox":{"type":"integer","minimum":0},"tileRounds":{"type":"integer","minimum":0},"token":{"type":"integer","minimum":0}}},
             "paidTasks":{"type":"integer","minimum":0},
+            "provider":{"type":["string","null"],"enum":["capsolver","2captcha",null]},
             "costUsd":{"type":"number","minimum":0},
             "message":{"type":"string"},
             "events":{"type":"array","items":{"type":"object","required":["event","requestId","page","atMs","data"],"properties":{
@@ -128,6 +173,50 @@ pub fn solve_captcha_tool() -> Tool {
 mod tests {
     use super::*;
     use serde_json::json;
+    use std::{sync::Arc, time::Duration};
+
+    fn never_ready() -> impl Future<Output = Result<ViewportLease, CoreError>> {
+        std::future::pending()
+    }
+
+    #[tokio::test]
+    async fn tests_that_a_page_another_solve_owns_is_refused_without_waiting() -> anyhow::Result<()>
+    {
+        let reservations = Arc::new(TabReservations::default());
+        let _first = reservations.try_reserve(7, "cap_first").map_err(|active| {
+            anyhow::anyhow!("page 7 already reserved by {}", active.request_id)
+        })?;
+        let outcome = tokio::time::timeout(
+            Duration::from_secs(1),
+            prepare_page(&reservations, 7, &CancellationToken::new(), never_ready()),
+        )
+        .await?;
+        assert!(
+            outcome
+                .as_ref()
+                .is_err_and(|message| message.contains("busy")),
+            "{:?}",
+            outcome.err()
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn tests_that_a_cancelled_solve_stops_waiting_for_the_page() -> anyhow::Result<()> {
+        let reservations = Arc::new(TabReservations::default());
+        let cancel = CancellationToken::new();
+        let waiting = prepare_page(&reservations, 7, &cancel, never_ready());
+        cancel.cancel();
+        let outcome = tokio::time::timeout(Duration::from_secs(1), waiting).await?;
+        assert!(
+            outcome
+                .as_ref()
+                .is_err_and(|message| message.contains("cancelled")),
+            "{:?}",
+            outcome.err()
+        );
+        Ok(())
+    }
 
     #[test]
     fn tests_that_tool_schema_requires_a_positive_integer_page() {
@@ -145,6 +234,10 @@ mod tests {
     fn tests_that_output_schema_accepts_token_applied() -> anyhow::Result<()> {
         let tool = solve_captcha_tool();
         let output = serde_json::to_value(tool.output_schema)?;
+        assert_eq!(
+            output.pointer("/properties/provider/enum"),
+            Some(&json!(["capsolver", "2captcha", null]))
+        );
         for (pointer, value) in [
             ("/properties/status/enum", "token_applied"),
             ("/properties/reason/enum", "awaiting_submit"),

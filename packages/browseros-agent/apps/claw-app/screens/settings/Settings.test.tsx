@@ -15,22 +15,23 @@ import {
 } from 'bun:test'
 import type {
   AgentSettings,
-  SaveJevTokenRequest,
+  AuditCleanupResult,
+  AuditStorageState,
   UpdateAgentSettingsRequest,
 } from '@browseros/claw-api'
-import { JevTokenSource } from '@browseros/claw-api'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { parseHTML } from 'linkedom'
-import { act, type ComponentProps } from 'react'
+import { act } from 'react'
 import type { Root } from 'react-dom/client'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router'
 import * as posthog from '@/modules/analytics/posthog'
 import * as api from '@/modules/api/client'
 
 const settingsOf = (overrides: Partial<AgentSettings> = {}): AgentSettings => ({
   humanHelpEnabled: true,
   taskCleanupTipEnabled: false,
-  jevTokenSource: JevTokenSource.None,
+  workingOverlayEnabled: true,
   ...overrides,
 })
 
@@ -38,19 +39,20 @@ const server: {
   read: () => Promise<AgentSettings>
   save: (body: UpdateAgentSettingsRequest) => Promise<AgentSettings>
   saves: UpdateAgentSettingsRequest[]
-  saveToken: (body: SaveJevTokenRequest) => Promise<AgentSettings>
-  removeToken: () => Promise<AgentSettings>
-  tokenSaves: SaveJevTokenRequest[]
-  tokenRemovals: number
+  storage: () => Promise<AuditStorageState>
+  cleanup: () => Promise<AuditCleanupResult>
 } = {
   read: async () => settingsOf(),
   save: async (body) => settingsOf(body),
   saves: [],
-  saveToken: async () =>
-    settingsOf({ jevTokenSource: JevTokenSource.Settings }),
-  removeToken: async () => settingsOf(),
-  tokenSaves: [],
-  tokenRemovals: 0,
+  storage: () => new Promise(() => {}),
+  cleanup: async () => ({
+    sessionsDeleted: 2,
+    screenshotsDeleted: 0,
+    recordingsDeleted: 0,
+    bytesReclaimed: 0,
+    usage: { recordingBytes: 0, screenshotBytes: 0, totalBytes: 0 },
+  }),
 }
 const captured: { event: string; properties?: Record<string, unknown> }[] = []
 
@@ -62,21 +64,11 @@ mock.module('@/modules/api/client', () => ({
       server.saves.push(body)
       return server.save(body)
     },
-    saveJevToken: (body: SaveJevTokenRequest) => {
-      server.tokenSaves.push(body)
-      return server.saveToken(body)
-    },
-    removeJevToken: () => {
-      server.tokenRemovals += 1
-      return server.removeToken()
-    },
+    getAuditStorage: () => server.storage(),
+    runAuditCleanup: () => server.cleanup(),
   }),
 }))
 
-// Only the transport is replaced. The flag reader is the real one, driven
-// through the same function PostHog's callback drives it with, because
-// `mock.module` is process wide and a stubbed reader here would fight the
-// module's own tests over which implementation is the real one.
 mock.module('@/modules/analytics/posthog', () => ({
   ...posthog,
   capture: (event: string, properties?: Record<string, unknown>) => {
@@ -84,35 +76,49 @@ mock.module('@/modules/analytics/posthog', () => ({
   },
 }))
 
-/** What an `onFeatureFlags` arrival looks like, for one flag. */
-function setFlag(key: string, enabled: boolean): void {
-  posthog.applyFlags(enabled ? [key] : [])
-}
-
-const TOKEN_FIELD_FLAG = 'ultrafast-token-field'
-
-// base-ui's switch toggles a hidden checkbox with a PointerEvent, which
-// linkedom lacks. A plain button keeps the props the screen relies on.
-mock.module('@/components/ui/switch', () => ({
+// The beUI switch animates through motion, which linkedom cannot drive. A
+// plain button keeps the props the screen relies on.
+mock.module('@/components/motion/switch', () => ({
   Switch: ({
     checked,
     onCheckedChange,
-    ...props
-  }: ComponentProps<'button'> & {
+    disabled,
+    ariaLabel,
+    ariaDescribedBy,
+  }: {
     checked: boolean
     onCheckedChange: (checked: boolean) => void
+    disabled?: boolean
+    ariaLabel?: string
+    ariaDescribedBy?: string
   }) => (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
+      disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
-      {...props}
     />
   ),
 }))
 
+// The theme lives in a provider that reads browser storage; the screen only
+// needs its value and setter.
+mock.module('@/components/theme-provider', () => ({
+  useTheme: () => ({
+    theme: 'system',
+    resolvedTheme: 'light',
+    setTheme: () => undefined,
+  }),
+}))
+
+const CLEANUP_SWITCH = '[aria-label="Tidy up when a task finishes"]'
+const OVERLAY_SWITCH = '[aria-label="Show when neo is working on a page"]'
+
 const { useAgentSettings } = await import('@/modules/api/agent-settings.hooks')
+const { useAuditAgents } = await import('@/modules/api/audit.hooks')
 const { Settings } = await import('./Settings')
 
 afterAll(() => mock.restore())
@@ -122,7 +128,9 @@ function renderPage(settings?: AgentSettings): Document {
   if (settings) client.setQueryData(useAgentSettings.getKey(), settings)
   const html = renderToStaticMarkup(
     <QueryClientProvider client={client}>
-      <Settings />
+      <MemoryRouter>
+        <Settings />
+      </MemoryRouter>
     </QueryClientProvider>,
   )
   const page = parseHTML(`<!doctype html><html><body>${html}</body></html>`)
@@ -141,10 +149,10 @@ function switchIn(
 describe('Settings screen', () => {
   it('tests that the cleanup tip switch is off by default and explains the tip', () => {
     const page = renderPage(settingsOf())
-    const toggle = switchIn(page, '#task-cleanup-tip-switch')
+    const toggle = switchIn(page, CLEANUP_SWITCH)
     expect(toggle.getAttribute('aria-checked')).toBe('false')
     expect(page.body.textContent).toContain(
-      'When you finish this task, close your task’s tab group.',
+      'Your AI agents close the pages they opened once they’re done.',
     )
   })
 
@@ -163,20 +171,24 @@ describe('Settings screen', () => {
     const textOf = (id: string | null) =>
       id ? page.getElementById(id)?.textContent : undefined
 
-    expect(page.querySelector(`label[for="${toggle.id}"]`)).not.toBeNull()
-    expect(textOf(toggle.getAttribute('aria-labelledby'))).toBe(
-      'Ask for human help',
-    )
+    expect(toggle.getAttribute('aria-label')).toBe('Ask me when it gets stuck')
     expect(textOf(toggle.getAttribute('aria-describedby'))).toBe(
-      'Lets agents pause and ask you to take over the page for a sign-in, a code, or a captcha. When off, agents tell you what they need in their own chat instead.',
+      'If an agent needs you to sign in, type a code or solve a captcha, it waits and you get a notification. When this is off, agents ask you in their own app instead.',
     )
   })
 })
 
 const globalDescriptors = new Map(
-  ['window', 'document', 'navigator', 'HTMLElement', 'Node', 'Event'].map(
-    (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)],
-  ),
+  [
+    'window',
+    'document',
+    'navigator',
+    'HTMLElement',
+    'Node',
+    'Event',
+    'ResizeObserver',
+    'getComputedStyle',
+  ].map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)]),
 )
 
 describe('Settings screen interactions', () => {
@@ -188,15 +200,8 @@ describe('Settings screen interactions', () => {
     server.read = async () => settingsOf({ humanHelpEnabled: true })
     server.save = async (body) => settingsOf(body)
     server.saves = []
-    server.saveToken = async () =>
-      settingsOf({ jevTokenSource: JevTokenSource.Settings })
-    server.removeToken = async () => settingsOf()
-    server.tokenSaves = []
-    server.tokenRemovals = 0
+    server.storage = () => new Promise(() => {})
     captured.length = 0
-    // The field is behind a flag; the tests below are about the field, and the
-    // gate itself is tested separately.
-    setFlag(TOKEN_FIELD_FLAG, true)
 
     const dom = parseHTML(
       '<!doctype html><html><body><div id="root"></div></body></html>',
@@ -208,6 +213,12 @@ describe('Settings screen interactions', () => {
       HTMLElement: dom.window.HTMLElement,
       Node: dom.window.Node,
       Event: dom.window.Event,
+      // linkedom has no layout; the theme tabs only measure with this.
+      ResizeObserver: class {
+        observe() {}
+        disconnect() {}
+      },
+      getComputedStyle: () => ({ getPropertyValue: () => '' }),
     }
     for (const [name, value] of Object.entries(globals)) {
       Object.defineProperty(globalThis, name, {
@@ -249,7 +260,9 @@ describe('Settings screen interactions', () => {
     await act(async () => {
       root.render(
         <QueryClientProvider client={client}>
-          <Settings />
+          <MemoryRouter>
+            <Settings />
+          </MemoryRouter>
         </QueryClientProvider>,
       )
     })
@@ -269,6 +282,48 @@ describe('Settings screen interactions', () => {
     return container.querySelector('[role="alert"]')?.textContent
   }
 
+  it('tests that cleaning up history also refreshes History’s agent list', async () => {
+    // The confirm dialog animates; linkedom has no animation frames.
+    Object.assign(globalThis, {
+      requestAnimationFrame: (run: FrameRequestCallback) =>
+        setTimeout(() => run(0), 0),
+      cancelAnimationFrame: (id: number) => clearTimeout(id),
+    })
+    client.setQueryData(useAuditAgents.getKey(), {
+      items: [
+        { slug: 'codex', label: 'Codex', taskCount: 2, lastStartedAt: 1 },
+      ],
+    })
+    await mount()
+
+    // StatefulButton repeats its label in hidden sizing spans.
+    const buttonNamed = (text: string) => {
+      const match = [...document.querySelectorAll('button')].find((el) => {
+        const label = el.textContent ?? ''
+        return label !== '' && label.split(text).join('') === ''
+      })
+      if (!match) throw new Error(`missing button: ${text}`)
+      return match
+    }
+    await act(async () => {
+      buttonNamed('Clean up now').dispatchEvent(
+        new window.Event('click', { bubbles: true }),
+      )
+    })
+    await act(async () => {
+      buttonNamed('Clean up').dispatchEvent(
+        new window.Event('click', { bubbles: true }),
+      )
+    })
+    await settle()
+
+    expect(client.getQueryState(useAuditAgents.getKey())?.isInvalidated).toBe(
+      true,
+    )
+    Reflect.deleteProperty(globalThis, 'requestAnimationFrame')
+    Reflect.deleteProperty(globalThis, 'cancelAnimationFrame')
+  })
+
   it('tests that both cleanup tip states preserve human-help changes made in another settings page', async () => {
     let saved = settingsOf()
     server.read = async () => ({ ...saved })
@@ -284,7 +339,7 @@ describe('Settings screen interactions', () => {
     ] as const) {
       // The other page changes human help after this page loaded its value.
       saved = { ...saved, humanHelpEnabled }
-      await clickSwitch('#task-cleanup-tip-switch')
+      await clickSwitch(CLEANUP_SWITCH)
 
       expect(server.saves.at(-1)).toEqual({ taskCleanupTipEnabled })
       expect(saved).toMatchObject({ humanHelpEnabled, taskCleanupTipEnabled })
@@ -292,11 +347,63 @@ describe('Settings screen interactions', () => {
         String(humanHelpEnabled),
       )
       expect(
-        switchIn(container, '#task-cleanup-tip-switch').getAttribute(
-          'aria-checked',
-        ),
+        switchIn(container, CLEANUP_SWITCH).getAttribute('aria-checked'),
       ).toBe(String(taskCleanupTipEnabled))
     }
+  })
+
+  it('tests that the working overlay switch is on by default and says what it does', () => {
+    const page = renderPage(settingsOf())
+    const toggle = switchIn(page, OVERLAY_SWITCH)
+    expect(toggle.getAttribute('aria-checked')).toBe('true')
+    const description = page.getElementById(
+      toggle.getAttribute('aria-describedby') ?? '',
+    )
+    expect(description?.textContent).toContain('holds your clicks and typing')
+  })
+
+  it('tests that turning the working overlay off saves only that switch', async () => {
+    let saved = settingsOf({ humanHelpEnabled: false })
+    server.read = async () => ({ ...saved })
+    server.save = async (body) => {
+      saved = { ...saved, ...body }
+      return saved
+    }
+    await mount()
+
+    await clickSwitch(OVERLAY_SWITCH)
+
+    expect(server.saves.at(-1)).toEqual({ workingOverlayEnabled: false })
+    expect(saved).toMatchObject({
+      humanHelpEnabled: false,
+      taskCleanupTipEnabled: false,
+      workingOverlayEnabled: false,
+    })
+    expect(
+      switchIn(container, OVERLAY_SWITCH).getAttribute('aria-checked'),
+    ).toBe('false')
+  })
+
+  it('tests that a saved custom history period shows its own days once it loads', async () => {
+    let resolveStorage: (state: AuditStorageState) => void = () => {}
+    server.storage = () =>
+      new Promise((resolve) => {
+        resolveStorage = resolve
+      })
+    await mount()
+
+    await act(async () =>
+      resolveStorage({
+        retention: { mode: 'deleteAfterDays', days: 90 },
+        usage: { recordingBytes: 0, screenshotBytes: 0, totalBytes: 0 },
+      }),
+    )
+    await settle()
+
+    const days = container.querySelector(
+      'input[aria-label="Days to keep task history"]',
+    ) as HTMLInputElement | null
+    expect(days?.value).toBe('90')
   })
 
   it('tests that the switch is disabled until settings load', async () => {
@@ -322,9 +429,11 @@ describe('Settings screen interactions', () => {
     await mount()
 
     expect(container.textContent).toContain(
-      'Could not load settings. Check that BrowserOS neo is running and try again.',
+      'Couldn’t load these settings. Check that BrowserOS is running, then open this page again.',
     )
-    expect(container.querySelector('[role="switch"]')).toBeNull()
+    expect(
+      container.querySelector('[aria-label="Ask me when it gets stuck"]'),
+    ).toBeNull()
   })
 
   it('tests that turning the switch off saves it and tracks the saved value', async () => {
@@ -373,7 +482,7 @@ describe('Settings screen interactions', () => {
     await mount()
     await clickSwitch()
 
-    expect(saveError()).toBe('Could not save this setting. Try again.')
+    expect(saveError()).toBe('Couldn’t save that setting. Try again.')
     expect(switchIn(container).getAttribute('aria-checked')).toBe('true')
     expect(switchIn(container).hasAttribute('disabled')).toBe(false)
     expect(captured).toEqual([])
@@ -385,7 +494,7 @@ describe('Settings screen interactions', () => {
     }
     await mount()
     await clickSwitch()
-    expect(saveError()).toBe('Could not save this setting. Try again.')
+    expect(saveError()).toBe('Couldn’t save that setting. Try again.')
 
     server.save = async (body) => settingsOf(body)
     await clickSwitch()
@@ -395,195 +504,5 @@ describe('Settings screen interactions', () => {
     expect(captured).toEqual([
       { event: 'human_help_toggled', properties: { enabled: false } },
     ])
-  })
-  // --- the decision model credential ---------------------------------------
-
-  function tokenField(): HTMLInputElement | null {
-    return container.querySelector(
-      '#jev-token-input',
-    ) as unknown as HTMLInputElement | null
-  }
-
-  function buttonNamed(label: string): HTMLElement | null {
-    return (Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === label,
-    ) ?? null) as unknown as HTMLElement | null
-  }
-
-  // The field is uncontrolled, so setting its value is all a user does.
-  async function type(value: string) {
-    const field = tokenField()
-    if (!field) throw new Error('no token field')
-    field.value = value
-  }
-
-  async function click(label: string) {
-    const button = buttonNamed(label)
-    if (!button) throw new Error(`no ${label} button`)
-    await act(async () => {
-      button.dispatchEvent(new window.Event('click', { bubbles: true }))
-    })
-    await settle()
-  }
-
-  async function submitToken() {
-    const form = container.querySelector('form')
-    if (!form) throw new Error('no token form')
-    await act(async () => {
-      form.dispatchEvent(new window.Event('submit', { bubbles: true }))
-    })
-    await settle()
-  }
-
-  it('tests that a server with no token offers a field to paste one into', async () => {
-    await mount()
-
-    expect(tokenField()).not.toBeNull()
-    expect(tokenField()?.getAttribute('type')).toBe('password')
-    expect(container.textContent).toContain(
-      'Without one the tool is not offered',
-    )
-    expect(buttonNamed('Remove')).toBeNull()
-  })
-
-  it('tests that a blank field saves nothing rather than storing a blank', async () => {
-    await mount()
-
-    await submitToken()
-    expect(server.tokenSaves).toEqual([])
-    await type('   ')
-    await submitToken()
-    expect(server.tokenSaves).toEqual([])
-  })
-
-  it('tests that a pasted token is sent trimmed and the field is cleared', async () => {
-    await mount()
-    await type('  jev-a-token  ')
-    await submitToken()
-
-    expect(server.tokenSaves).toEqual([{ token: 'jev-a-token' }])
-    // The reply said a token is saved, so the field gives way to it.
-    expect(tokenField()).toBeNull()
-    expect(container.textContent).toContain('A token is saved')
-  })
-
-  it('tests that a saved token can be removed', async () => {
-    server.read = async () =>
-      settingsOf({ jevTokenSource: JevTokenSource.Settings })
-    await mount()
-
-    expect(tokenField()).toBeNull()
-    await click('Remove')
-
-    expect(server.tokenRemovals).toBe(1)
-    expect(tokenField()).not.toBeNull()
-  })
-
-  it('tests that replacing a saved token asks for the new one first', async () => {
-    server.read = async () =>
-      settingsOf({ jevTokenSource: JevTokenSource.Settings })
-    await mount()
-    await click('Replace')
-
-    expect(tokenField()).not.toBeNull()
-    expect(server.tokenRemovals).toBe(0)
-    expect(server.tokenSaves).toEqual([])
-  })
-
-  /// The case a boolean could not have expressed, and the reason the reply
-  /// carries a source instead.
-  it('tests that a token in the environment is named rather than ignored', async () => {
-    server.read = async () =>
-      settingsOf({ jevTokenSource: JevTokenSource.Environment })
-    await mount()
-
-    expect(container.textContent).toContain('token in the server')
-    expect(container.textContent).toContain('takes precedence')
-    // And a token may still be pasted over it.
-    expect(tokenField()).not.toBeNull()
-  })
-
-  it('tests that a failed token save says so and keeps what was typed', async () => {
-    server.saveToken = async () => {
-      throw new Error('nope')
-    }
-    await mount()
-    await type('jev-a-token')
-    await submitToken()
-
-    expect(container.textContent).toContain('Could not save that')
-    expect(tokenField()?.value).toBe('jev-a-token')
-  })
-
-  it('tests that a saved token is not rendered back into the page', async () => {
-    const secret = 'not-a-real-token-0123456789'
-    await mount()
-    await type(secret)
-    await submitToken()
-
-    expect(server.tokenSaves).toEqual([{ token: secret }])
-    // The field gave way to Replace and Remove, and nothing carries the value.
-    expect(container.innerHTML).not.toContain(secret)
-    expect(container.querySelector('[value]')).toBeNull()
-  })
-  // --- the flag that reveals the field -------------------------------------
-
-  it('tests that the field is hidden when the flag is off', async () => {
-    setFlag(TOKEN_FIELD_FLAG, false)
-    await mount()
-
-    expect(tokenField()).toBeNull()
-    expect(buttonNamed('Save')).toBeNull()
-    expect(container.textContent).not.toContain('Ultrafast decision loop')
-    // The rest of the page is unaffected.
-    expect(switchIn(container)).not.toBeNull()
-  })
-
-  /// The field must be absent on the first render rather than appear a beat
-  /// later, which is the difference a user actually notices.
-  it('tests that the field is hidden before any flag has been evaluated', async () => {
-    setFlag(TOKEN_FIELD_FLAG, false)
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={client}>
-          <Settings />
-        </QueryClientProvider>,
-      )
-    })
-
-    // Read before settling, so this is the first paint and not the steady state.
-    expect(container.textContent).not.toContain('Ultrafast decision loop')
-    await settle()
-    expect(container.textContent).not.toContain('Ultrafast decision loop')
-  })
-
-  it('tests that the field appears when the flag turns on without a reload', async () => {
-    setFlag(TOKEN_FIELD_FLAG, false)
-    await mount()
-    expect(tokenField()).toBeNull()
-
-    // What onFeatureFlags arriving after the first render looks like.
-    await act(async () => {
-      setFlag(TOKEN_FIELD_FLAG, true)
-    })
-    await settle()
-
-    expect(tokenField()).not.toBeNull()
-  })
-
-  /// A flag that could strand a saved credential would be worse than the
-  /// thing it was hiding, so what the flag hides is only the field.
-  it('tests that the flag does not touch anything but the field', async () => {
-    server.read = async () =>
-      settingsOf({ jevTokenSource: JevTokenSource.Settings })
-    setFlag(TOKEN_FIELD_FLAG, false)
-    await mount()
-
-    // No way to remove it from here, which is the accepted cost, but the
-    // switch still works and the server was never asked to change.
-    expect(buttonNamed('Remove')).toBeNull()
-    expect(server.tokenRemovals).toBe(0)
-    await clickSwitch()
-    expect(server.saves).toEqual([{ humanHelpEnabled: false }])
   })
 })

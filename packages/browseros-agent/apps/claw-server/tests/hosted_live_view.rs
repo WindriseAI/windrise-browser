@@ -38,6 +38,7 @@ async fn app() -> anyhow::Result<TestApp> {
         resources_dir: dir.path().join("resources"),
         browserclaw_dir: dir.path().join("browserclaw"),
         session_idle: Duration::from_secs(300),
+        session_complete_idle: Duration::from_secs(300),
         session_retention: Duration::from_secs(7_200),
         session_sweep_interval: Duration::from_secs(60),
         replay_retention_days: 7,
@@ -45,6 +46,7 @@ async fn app() -> anyhow::Result<TestApp> {
         native: Default::default(),
         mode: ServerMode::Hosted,
         behavior: claw_server::config::Behavior::defaults(ServerMode::Hosted),
+        behavior_ignored: Vec::new(),
     });
     let mut state = AppState::new_with_home(config, dir.path().join("home")).await?;
     let browser = ScriptedCdp::new();
@@ -128,7 +130,7 @@ async fn screencast_streams_multipart_jpeg_frames_with_tab_headers() -> anyhow::
         Some("no-store")
     );
     let start = app.browser.wait_for("Page.startScreencast", 1).await;
-    assert_eq!(start[0].params["maxWidth"], 480);
+    assert_eq!(start[0].params["maxWidth"], 640);
 
     app.browser
         .emit_frame("capture-1", b"JPEGDATA", 1_800_000_000.25);

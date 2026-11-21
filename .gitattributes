@@ -18,3 +18,7 @@ packages/browseros-agent/crates/browseros-cdp/protocol/protocol.json -text
 lefthook.yml text eol=lf
 **/lefthook.yml text eol=lf
 scripts/lefthook/*.sh text eol=lf
+
+# Vendored Playwright sources are kept byte-identical to upstream (sync.sh, the engine
+# freshness test). Upstream's LICENSE has CRLF line endings, so no conversion, no whitespace checks.
+packages/browseros-agent/crates/neo-sdk/neo-playwright/third_party/playwright/** -text -whitespace

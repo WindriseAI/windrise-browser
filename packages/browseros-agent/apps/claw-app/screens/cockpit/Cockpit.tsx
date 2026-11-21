@@ -1,28 +1,32 @@
-import { CockpitHero } from '@/components/cockpit/CockpitHero'
+import { skipToken } from '@tanstack/react-query'
 import { CockpitOnboarding } from '@/components/cockpit/CockpitOnboarding'
-import { FeedbackInviteCard } from '@/components/cockpit/FeedbackInviteCard'
 import { InControlBar } from '@/components/cockpit/InControlBar'
 import { NeedsYouBanner } from '@/components/cockpit/NeedsYouBanner'
-import { ProductHuntBanner } from '@/components/cockpit/ProductHuntBanner'
+import { PromoSlot, usePromoSlot } from '@/components/cockpit/PromoSlot'
 import { RecentActivity } from '@/components/cockpit/RecentActivity'
 import { RunningGrid } from '@/components/cockpit/RunningGrid'
-import { SavedStatsBand } from '@/components/cockpit/SavedStatsBand'
-import { UltrafastBanner } from '@/components/cockpit/UltrafastBanner'
+import { SavingsCard } from '@/components/cockpit/SavingsCard'
+import { UltrafastSummary } from '@/components/cockpit/UltrafastSummary'
 import { isUserFacingHarness } from '@/components/harness/harness.types'
+import { Page } from '@/components/layout/Page'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useSessions } from '@/modules/api/audit.hooks'
 import { useCockpitStats } from '@/modules/api/cockpit.hooks'
 import { useConnections } from '@/modules/api/connections.hooks'
+import { usePlan, usePlanSavings } from '@/modules/api/plan.hooks'
 import { useCockpitData } from './cockpit.data'
-import { useHelpTakeover } from './cockpit.hooks'
+import { homeLede, partOfDay } from './cockpit.helpers'
+import { useCurrentHour, useHelpTakeover } from './cockpit.hooks'
 import { getOnboardingState } from './cockpit-onboarding.helpers'
 
 const ONBOARDING_PROBE_LIMIT = 1
-// Pause the waitlist promotion across both cockpit layouts until re-enabled.
-const SHOW_ULTRAFAST_BANNER = false
+const ULTRAFAST_FEATURE = 'claw.ultrafast'
 
 export function Cockpit() {
   const { sessions } = useCockpitData()
   const takeover = useHelpTakeover(sessions)
+  const hour = useCurrentHour()
+  const promo = usePromoSlot()
 
   // When no live session is connected, these probes decide which onboarding
   // shell to show. Their stable keys are shared with RecentActivity and MCP.
@@ -72,25 +76,35 @@ export function Cockpit() {
           hasActivity: hasHistoricalActivity,
         })
       : 'ready'
-  const shouldLoadStats =
-    probesResolved && state === 'ready' && !hasLiveSessions
   const stats = useCockpitStats({
-    enabled: shouldLoadStats,
-    refetchInterval: 3000,
+    enabled: probesResolved && state === 'ready',
+    refetchInterval: 60_000,
+  })
+  const plan = usePlan()
+  const ultrafast = plan.data?.features.includes(ULTRAFAST_FEATURE) === true
+  const savings = usePlanSavings({
+    variables: ultrafast && state === 'ready' ? undefined : skipToken,
+    refetchInterval: 60_000,
   })
 
   const content =
     state !== 'ready' ? (
-      // Tighter top than the ready cockpit (Paper: 26 px), so the prompt and
-      // the whole demo sit above an 800 px fold at 1280 wide.
-      <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-6 px-8 pt-[26px] pb-16">
-        {SHOW_ULTRAFAST_BANNER && <UltrafastBanner />}
-        <ProductHuntBanner />
-        <FeedbackInviteCard />
+      <Page>
         <CockpitOnboarding connectedHarnesses={connectedHarnesses} />
-      </div>
+      </Page>
     ) : (
-      <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-8 px-8 pt-12 pb-16">
+      <Page>
+        <PromoSlot {...promo} />
+        <PageHeader
+          title={`Good ${partOfDay(hour)}`}
+          lede={homeLede(sessions, takeover.inControlSession)}
+        />
+        {ultrafast ? (
+          <UltrafastSummary savings={savings} />
+        ) : stats.data && stats.data.allTime.sessionCount > 0 ? (
+          // Pulled up so the strip reads as part of the greeting, not the next section.
+          <SavingsCard stats={stats.data} className="-mt-3" />
+        ) : null}
         <NeedsYouBanner
           sessions={sessions}
           onTakeOver={takeover.takeOver}
@@ -98,25 +112,18 @@ export function Cockpit() {
           pendingTakeOverSessionId={takeover.pendingTakeOverSessionId}
           cancelPendingSessionId={takeover.stopPendingSessionId}
         />
-        {SHOW_ULTRAFAST_BANNER && <UltrafastBanner />}
-        <CockpitHero />
-        {shouldLoadStats && stats.data?.hasMeasuredStats ? (
-          <SavedStatsBand stats={stats.data} />
-        ) : (
-          <RunningGrid
-            sessions={sessions}
-            onTakeOver={takeover.takeOver}
-            takeOverPendingSessionId={takeover.pendingTakeOverSessionId}
-          />
-        )}
-        <ProductHuntBanner />
-        <FeedbackInviteCard />
+        <RunningGrid
+          sessions={sessions}
+          onTakeOver={takeover.takeOver}
+          takeOverPendingSessionId={takeover.pendingTakeOverSessionId}
+          inControlSessionId={takeover.inControlSession?.sessionId}
+        />
         <RecentActivity />
-      </div>
+      </Page>
     )
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       {content}
       {takeover.inControlSession && (
         <InControlBar
@@ -126,6 +133,6 @@ export function Cockpit() {
           isHandingBack={takeover.isHandingBack}
         />
       )}
-    </div>
+    </>
   )
 }

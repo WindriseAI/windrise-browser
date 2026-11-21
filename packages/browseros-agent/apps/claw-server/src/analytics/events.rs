@@ -34,6 +34,19 @@ const EFFICIENCY_ESTIMATOR_VERSION: &str = "efficiency_estimator_version";
 const SCREENSHOT_BASELINE_WIDTH: &str = "screenshot_baseline_width";
 const SCREENSHOT_BASELINE_HEIGHT: &str = "screenshot_baseline_height";
 const SCREENSHOT_TOKENS_PER_DISPATCH: &str = "screenshot_tokens_per_dispatch";
+const PHASE: &str = "phase";
+const VIA: &str = "via";
+const DAY: &str = "day";
+const TOTAL_CALLS: &str = "total_calls";
+const ERROR_CALLS: &str = "error_calls";
+const DISTINCT_TOOLS: &str = "distinct_tools";
+const BY_TOOL: &str = "by_tool";
+const BY_CLIENT: &str = "by_client";
+const OTHER_TOOL: &str = "other";
+const ORIGIN: &str = "origin";
+const DAYS_SINCE_SAVED: &str = "days_since_saved";
+const RUNS_BEFORE_VERIFY: &str = "runs_before_verify";
+const P50_BUCKET: &str = "p50_bucket";
 
 pub(crate) const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 
@@ -55,6 +68,36 @@ pub(crate) const HARNESS_VALUES: [&str; 7] = [
 ];
 
 pub(crate) const END_KIND_VALUES: [&str; 3] = ["closed", "errored", "cancelled"];
+
+/// How a skill came to exist, as stored on the skill.
+pub(crate) const SKILL_ORIGIN_VALUES: [&str; 4] = ["agent", "manual", "directory", "history"];
+
+/// A verified flow's median run time, in buckets, so no exact timing leaves the machine.
+pub(crate) const P50_BUCKET_VALUES: [&str; 5] = [
+    "under_2s",
+    "2s_to_5s",
+    "5s_to_10s",
+    "10s_to_30s",
+    "over_30s",
+];
+
+/// The bucket a verified flow's median run time falls in.
+#[must_use]
+pub fn p50_bucket(p50_ms: i64) -> &'static str {
+    match p50_ms {
+        ..2_000 => "under_2s",
+        2_000..5_000 => "2s_to_5s",
+        5_000..10_000 => "5s_to_10s",
+        10_000..30_000 => "10s_to_30s",
+        _ => "over_30s",
+    }
+}
+
+/// Where neo was when the person reached into a held page.
+pub(crate) const HOLD_PHASE_VALUES: [&str; 2] = ["working", "between"];
+
+/// How the person took a held page over.
+pub(crate) const TAKE_OVER_VIA_VALUES: [&str; 2] = ["button", "esc"];
 
 /// Fixed set of task kinds the agent may declare. Only these tokens leave the
 /// machine; the free-form session name never does. An unrecognized value is
@@ -81,9 +124,16 @@ enum PropertyKind {
     TaskSummary,
     Harness,
     EndKind,
+    SkillOrigin,
+    P50Bucket,
+    HoldPhase,
+    TakeOverVia,
     ToolName,
     UnsignedInteger,
     SignedInteger,
+    UtcDay,
+    ToolCounts,
+    ClientCounts,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -135,6 +185,10 @@ impl PropertyDefinition {
             }
             PropertyKind::Harness => normalize_token(value, &HARNESS_VALUES),
             PropertyKind::EndKind => normalize_token(value, &END_KIND_VALUES),
+            PropertyKind::SkillOrigin => normalize_token(value, &SKILL_ORIGIN_VALUES),
+            PropertyKind::P50Bucket => normalize_token(value, &P50_BUCKET_VALUES),
+            PropertyKind::HoldPhase => normalize_token(value, &HOLD_PHASE_VALUES),
+            PropertyKind::TakeOverVia => normalize_token(value, &TAKE_OVER_VIA_VALUES),
             PropertyKind::ToolName => {
                 let raw = value.as_str()?;
                 known_tool_names()
@@ -149,8 +203,64 @@ impl PropertyDefinition {
                 .as_i64()
                 .filter(|value| value.unsigned_abs() <= MAX_SAFE_INTEGER)
                 .map(Value::from),
+            PropertyKind::UtcDay => {
+                let raw = value.as_str()?;
+                is_calendar_day(raw).then(|| Value::String(raw.to_string()))
+            }
+            PropertyKind::ToolCounts => normalize_counts(value, |tool| {
+                if known_tool_names().contains(tool) || SERVER_TOOL_NAMES.contains(&tool) {
+                    tool.to_string()
+                } else {
+                    OTHER_TOOL.to_string()
+                }
+            }),
+            PropertyKind::ClientCounts => normalize_counts(value, bucket_client_name),
         }
     }
+}
+
+/// A real `YYYY-MM-DD` date, so only the day key and never free text reaches this property.
+fn is_calendar_day(raw: &str) -> bool {
+    let bytes = raw.as_bytes();
+    let digits_at = |range: std::ops::Range<usize>| bytes[range].iter().all(u8::is_ascii_digit);
+    if bytes.len() != 10
+        || bytes[4] != b'-'
+        || bytes[7] != b'-'
+        || !digits_at(0..4)
+        || !digits_at(5..7)
+        || !digits_at(8..10)
+    {
+        return false;
+    }
+    let (Ok(year), Ok(month), Ok(day)) = (
+        raw[0..4].parse::<i32>(),
+        raw[5..7].parse::<u8>(),
+        raw[8..10].parse::<u8>(),
+    ) else {
+        return false;
+    };
+    time::Month::try_from(month)
+        .ok()
+        .and_then(|month| time::Date::from_calendar_date(year, month, day).ok())
+        .is_some()
+}
+
+/// Re-keys a count map through `bucket`, summing counts that land on the same key. Bucketing
+/// an already bucketed key is a no-op, so a sanitized map passes the send-time check unchanged.
+fn normalize_counts(value: &Value, bucket: impl Fn(&str) -> String) -> Option<Value> {
+    let mut counts: Map<String, Value> = Map::new();
+    for (key, count) in value.as_object()? {
+        let count = count.as_u64().filter(|count| *count <= MAX_SAFE_INTEGER)?;
+        let key = bucket(key);
+        let total = counts
+            .get(&key)
+            .and_then(Value::as_u64)
+            .unwrap_or(0)
+            .checked_add(count)
+            .filter(|total| *total <= MAX_SAFE_INTEGER)?;
+        counts.insert(key, Value::from(total));
+    }
+    Some(Value::Object(counts))
 }
 
 fn normalize_token(value: &Value, accepted: &[&str]) -> Option<Value> {
@@ -159,6 +269,18 @@ fn normalize_token(value: &Value, accepted: &[&str]) -> Option<Value> {
         .contains(&raw)
         .then(|| Value::String(raw.to_string()))
 }
+
+/// Tools the server registers next to the shared browser catalog. Daily counts keep their names;
+/// anything else is reported as `other`.
+const SERVER_TOOL_NAMES: [&str; 7] = [
+    "pursue",
+    "save_skill",
+    "mark_skill_run",
+    "run_skill",
+    "request_human_help",
+    "await_human_help",
+    "solve_captcha",
+];
 
 fn known_tool_names() -> &'static HashSet<&'static str> {
     static KNOWN_TOOL_NAMES: OnceLock<HashSet<&'static str>> = OnceLock::new();
@@ -309,7 +431,61 @@ pub const AGENT_SESSION_EFFICIENCY_COMPUTED: EventDefinition = EventDefinition::
     ],
 );
 
-pub const ALL: [EventDefinition; 8] = [
+pub const PAGE_HOLD_STARTED: EventDefinition = EventDefinition::new(
+    "page_hold_started",
+    &[PropertyDefinition::new(
+        CLIENT_NAME,
+        PropertyKind::ClientName,
+    )],
+);
+pub const PAGE_REACH_IN: EventDefinition = EventDefinition::new(
+    "page_reach_in",
+    &[
+        PropertyDefinition::new(CLIENT_NAME, PropertyKind::ClientName),
+        PropertyDefinition::new(PHASE, PropertyKind::HoldPhase),
+    ],
+);
+pub const PAGE_TAKEN_OVER: EventDefinition = EventDefinition::new(
+    "page_taken_over",
+    &[
+        PropertyDefinition::new(CLIENT_NAME, PropertyKind::ClientName),
+        PropertyDefinition::new(VIA, PropertyKind::TakeOverVia),
+    ],
+);
+
+/// One per install and finished UTC day: how many tool calls it made, by tool and by client.
+pub const TOOL_CALLS_DAILY: EventDefinition = EventDefinition::new(
+    "tool_calls_daily",
+    &[
+        PropertyDefinition::new(DAY, PropertyKind::UtcDay),
+        PropertyDefinition::new(TOTAL_CALLS, PropertyKind::UnsignedInteger),
+        PropertyDefinition::new(ERROR_CALLS, PropertyKind::UnsignedInteger),
+        PropertyDefinition::new(DISTINCT_TOOLS, PropertyKind::UnsignedInteger),
+        PropertyDefinition::new(BY_TOOL, PropertyKind::ToolCounts),
+        PropertyDefinition::new(BY_CLIENT, PropertyKind::ClientCounts),
+    ],
+);
+
+/// A saved skill's first recorded run.
+pub const SKILL_FIRST_RUN: EventDefinition = EventDefinition::new(
+    "skill_first_run",
+    &[
+        PropertyDefinition::new(ORIGIN, PropertyKind::SkillOrigin),
+        PropertyDefinition::new(DAYS_SINCE_SAVED, PropertyKind::UnsignedInteger),
+    ],
+);
+
+/// A skill's ultrafast flow verified for the first time.
+pub const SKILL_FLOW_VERIFIED: EventDefinition = EventDefinition::new(
+    "skill_flow_verified",
+    &[
+        PropertyDefinition::new(ORIGIN, PropertyKind::SkillOrigin),
+        PropertyDefinition::new(RUNS_BEFORE_VERIFY, PropertyKind::UnsignedInteger),
+        PropertyDefinition::new(P50_BUCKET, PropertyKind::P50Bucket),
+    ],
+);
+
+pub const ALL: [EventDefinition; 14] = [
     SERVER_STARTED,
     AGENT_SESSION_STARTED,
     AGENT_SESSION_TASK_DECLARED,
@@ -318,6 +494,12 @@ pub const ALL: [EventDefinition; 8] = [
     HARNESS_DISCONNECTED,
     AGENT_SESSION_TOOL_USAGE,
     AGENT_SESSION_EFFICIENCY_COMPUTED,
+    PAGE_HOLD_STARTED,
+    PAGE_REACH_IN,
+    PAGE_TAKEN_OVER,
+    TOOL_CALLS_DAILY,
+    SKILL_FIRST_RUN,
+    SKILL_FLOW_VERIFIED,
 ];
 
 pub(crate) fn by_wire_name(name: &str) -> Option<EventDefinition> {
@@ -368,8 +550,18 @@ mod tests {
     use serde_json::json;
 
     #[test]
+    fn page_hold_tokens_are_fixed_sets() {
+        let via = PropertyDefinition::new(VIA, PropertyKind::TakeOverVia);
+        assert_eq!(via.normalize(&json!("esc")), Some(json!("esc")));
+        assert_eq!(via.normalize(&json!("keyboard")), None);
+        let phase = PropertyDefinition::new(PHASE, PropertyKind::HoldPhase);
+        assert_eq!(phase.normalize(&json!("between")), Some(json!("between")));
+        assert_eq!(phase.normalize(&json!("person")), None);
+    }
+
+    #[test]
     fn catalog_pins_wire_names_and_required_properties() {
-        assert_eq!(ALL.len(), 8);
+        assert_eq!(ALL.len(), 14);
         assert_eq!(
             ALL.map(EventDefinition::name),
             [
@@ -381,8 +573,35 @@ mod tests {
                 HARNESS_DISCONNECTED.name(),
                 AGENT_SESSION_TOOL_USAGE.name(),
                 AGENT_SESSION_EFFICIENCY_COMPUTED.name(),
+                PAGE_HOLD_STARTED.name(),
+                PAGE_REACH_IN.name(),
+                PAGE_TAKEN_OVER.name(),
+                TOOL_CALLS_DAILY.name(),
+                SKILL_FIRST_RUN.name(),
+                SKILL_FLOW_VERIFIED.name(),
             ]
         );
+        assert_eq!(
+            SKILL_FIRST_RUN.property_names(),
+            vec!["origin", "days_since_saved"]
+        );
+        assert_eq!(
+            SKILL_FLOW_VERIFIED.property_names(),
+            vec!["origin", "runs_before_verify", "p50_bucket"]
+        );
+        assert_eq!(
+            TOOL_CALLS_DAILY.property_names(),
+            vec![
+                "day",
+                "total_calls",
+                "error_calls",
+                "distinct_tools",
+                "by_tool",
+                "by_client",
+            ]
+        );
+        assert_eq!(PAGE_TAKEN_OVER.property_names(), vec!["client_name", "via"]);
+        assert_eq!(PAGE_REACH_IN.property_names(), vec!["client_name", "phase"]);
         assert_eq!(
             AGENT_SESSION_TASK_DECLARED.property_names(),
             vec!["task_category", "client_name", "task_summary"]
@@ -426,6 +645,30 @@ mod tests {
                 "screenshot_tokens_per_dispatch",
             ]
         );
+    }
+
+    #[test]
+    fn skill_events_keep_only_fixed_tokens_and_counts() {
+        assert_eq!(
+            SKILL_FLOW_VERIFIED.sanitize(&json!({
+                "origin": "history",
+                "runs_before_verify": 0,
+                "p50_bucket": p50_bucket(7_300),
+                "name": "neo-private-skill",
+            })),
+            Some(json!({
+                "origin": "history",
+                "runs_before_verify": 0,
+                "p50_bucket": "5s_to_10s",
+            }))
+        );
+        assert_eq!(
+            SKILL_FIRST_RUN.sanitize(&json!({ "origin": "made-up", "days_since_saved": 1 })),
+            None
+        );
+        assert_eq!(p50_bucket(900), "under_2s");
+        assert_eq!(p50_bucket(2_000), "2s_to_5s");
+        assert_eq!(p50_bucket(45_000), "over_30s");
     }
 
     #[test]
@@ -833,6 +1076,66 @@ mod tests {
                 "nested": { "prompt": "private" }
             })),
             Some(json!({ "harness": "Zed" }))
+        );
+    }
+
+    #[test]
+    fn daily_tool_calls_keep_only_known_tools_bucketed_clients_and_a_real_day() {
+        let sanitized = TOOL_CALLS_DAILY.sanitize(&json!({
+            "day": "2026-11-10",
+            "total_calls": 9,
+            "error_calls": 1,
+            "distinct_tools": 3,
+            "by_tool": {
+                "navigate": 4,
+                "save_skill": 1,
+                "https://example.com/private": 2,
+                "custom_tool": 3
+            },
+            "by_client": { "Claude Code": 6, "claude-code": 1, "Codex": 2 },
+            "url": "https://example.com"
+        }));
+        assert_eq!(
+            sanitized,
+            Some(json!({
+                "day": "2026-11-10",
+                "total_calls": 9,
+                "error_calls": 1,
+                "distinct_tools": 3,
+                "by_tool": { "navigate": 4, "other": 5, "save_skill": 1 },
+                "by_client": { "claude-code": 7, "codex": 2 }
+            }))
+        );
+        let Some(Value::Object(sanitized)) = sanitized else {
+            panic!("the daily event should sanitize");
+        };
+        let sanitized: HashMap<String, Value> = sanitized.into_iter().collect();
+        assert!(TOOL_CALLS_DAILY.required_values_are_normalized(&sanitized));
+
+        for day in ["2026-02-30", "2026-11-1", "yesterday", "+026-11-10"] {
+            assert_eq!(
+                TOOL_CALLS_DAILY.sanitize(&json!({
+                    "day": day,
+                    "total_calls": 1,
+                    "error_calls": 0,
+                    "distinct_tools": 1,
+                    "by_tool": { "tabs": 1 },
+                    "by_client": { "Codex": 1 }
+                })),
+                None,
+                "{day} is not a calendar day"
+            );
+        }
+        assert_eq!(
+            TOOL_CALLS_DAILY.sanitize(&json!({
+                "day": "2026-11-10",
+                "total_calls": 1,
+                "error_calls": 0,
+                "distinct_tools": 1,
+                "by_tool": { "tabs": "many" },
+                "by_client": { "Codex": 1 }
+            })),
+            None
         );
     }
 

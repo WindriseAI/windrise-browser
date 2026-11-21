@@ -7,7 +7,7 @@ use crate::{
     output_file::write_temp_tool_output_file,
     trust_boundary::wrap_untrusted,
 };
-use browseros_core::PageId;
+use browseros_core::{PageId, PageJs};
 use futures_util::future::BoxFuture;
 use regex::RegexBuilder;
 use schemars::JsonSchema;
@@ -38,16 +38,6 @@ struct GrepArgs {
     over: GrepOver,
     /// Max matching lines (default 50).
     limit: Option<f64>,
-}
-
-#[derive(Debug, Deserialize)]
-struct EvaluateResult {
-    result: RemoteObject,
-}
-
-#[derive(Debug, Deserialize)]
-struct RemoteObject {
-    value: Option<Value>,
 }
 
 pub fn definition() -> crate::framework::ToolDef {
@@ -87,20 +77,9 @@ fn handler<'a>(
             }
             GrepOver::Content => {
                 let page = ctx.browser.page_session(PageId(args.page)).await?;
-                let result: EvaluateResult = page
-                    .session
-                    .send(
-                        "Runtime.evaluate",
-                        json!({
-                            "expression": "(document.body?.innerText ?? '')",
-                            "returnByValue": true
-                        }),
-                    )
-                    .await?;
-                result
-                    .result
-                    .value
-                    .and_then(|value| value.as_str().map(ToString::to_string))
+                PageJs::isolated(&page.session)
+                    .eval::<Option<String>>("(document.body?.innerText ?? '')")
+                    .await?
                     .unwrap_or_default()
             }
         };
@@ -129,6 +108,14 @@ fn handler<'a>(
             .map(|line| clamp_text(line, GREP_MATCH_LINE_MAX_CHARS))
             .collect::<Vec<_>>();
         let full_matches_text = matches.join("\n");
+        if ctx.within_script {
+            // A script consumes the selected matches itself; only its outer return is
+            // bounded for the model, just like read/evaluate inside the SDK.
+            return Ok(Some(text_result(
+                wrap_untrusted(&full_matches_text, &origin),
+                Some(json!({ "page": args.page, "over": over, "count": matches.len() })),
+            )));
+        }
         let rendered_text = rendered_matches.join("\n");
         let line_truncated = rendered_matches
             .iter()

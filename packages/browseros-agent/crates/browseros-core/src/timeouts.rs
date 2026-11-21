@@ -16,17 +16,17 @@ pub const WAIT_FOR_CONNECTION_POLL: Duration = Duration::from_millis(50);
 /// by `ARRIVAL_READY_BUDGET` against the page's own content.
 pub const NEW_PAGE_ANSWERS_ATTEMPTS: usize = 10;
 pub const NEW_PAGE_READY_POLL: Duration = Duration::from_millis(100);
-/// Total automatic post-action settle budget.
+/// Automatic post-action settle budget when the action did not navigate.
 ///
-/// Has to clear the navigation detect window plus at least one quiet interval,
-/// or `wait_for_dom_quiet` runs out of budget before it can read the mutation
-/// counter a second time and the settle is inert. It was 50ms, below the 100ms
-/// quiet interval on its own, so every automatic settle returned
-/// `BudgetExpired` having installed an observer it never read twice.
+/// Has to clear more than one quiet interval, or the settle runs out before it
+/// can read the readiness counter a second time and is inert. It was once 50ms,
+/// below the 100ms interval on its own, so every settle expired unread. An
+/// action that starts a navigation gets `ARRIVAL_READY_BUDGET` instead.
 pub const ACTION_SETTLE_DEFAULT_TIMEOUT: Duration = Duration::from_millis(600);
-pub const ACTION_SETTLE_NAVIGATION_DETECT: Duration = Duration::from_millis(150);
-pub const ACTION_SETTLE_NAVIGATION_POLL: Duration = Duration::from_millis(50);
 pub const ACTION_SETTLE_DOM_QUIET: Duration = Duration::from_millis(100);
+/// How long a reload or history step may take to report its navigation starting before the
+/// load wait takes it to have stayed in the document (a fragment or pushState entry).
+pub const NAVIGATION_START_GRACE: Duration = Duration::from_millis(150);
 pub const ACTION_SETTLE_CDP_CALL_TIMEOUT: Duration = Duration::from_millis(250);
 
 /// Ceiling for deciding a freshly arrived page is ready to be acted on.
@@ -35,6 +35,15 @@ pub const ACTION_SETTLE_CDP_CALL_TIMEOUT: Duration = Duration::from_millis(250);
 /// load lifecycle finishing, so this is a ceiling rather than the usual cost.
 /// A settled page answers after one quiet interval.
 pub const ARRIVAL_READY_BUDGET: Duration = Duration::from_millis(1_500);
+
+/// How long check/uncheck wait for a clicked control to report its new state. Frameworks
+/// can apply it a tick after the click event, so one read straight after would misreport.
+pub const CHECK_STATE_SETTLE: Duration = Duration::from_millis(500);
+pub const CHECK_STATE_POLL: Duration = Duration::from_millis(50);
+
+/// Mouse moves a drag takes between press and release. Steps past the first are what turn
+/// a press into a drag for scripts that track movement, and give drop targets dragover.
+pub const DRAG_STEPS: u32 = 10;
 
 /// Agent pointer travel time: the page plays each move over about this long.
 pub const POINTER_TRAVEL: Duration = Duration::from_millis(400);
@@ -45,3 +54,16 @@ pub const POINTER_MOVE_DEADLINE: Duration = Duration::from_millis(1_000);
 pub const POINTER_EFFECT_DEADLINE: Duration = Duration::from_millis(250);
 /// The page removes its pointer this long after the last agent action.
 pub const POINTER_IDLE: Duration = Duration::from_millis(4_000);
+/// Cap on drawing or updating the working overlay. It never holds up the action it decorates
+/// for longer than this.
+pub const OVERLAY_DEADLINE: Duration = Duration::from_millis(500);
+/// Cap on the no-wait overlay calls: yield, resume and screenshot hide/show.
+pub const OVERLAY_EFFECT_DEADLINE: Duration = Duration::from_millis(250);
+/// A yield whose action never resumed it (the action was cancelled) lapses after this, so the
+/// person's input is held again. Long enough for neo to type a long text into a slow page.
+pub const OVERLAY_YIELD_EXPIRY: Duration = Duration::from_secs(30);
+/// The page removes the overlay and its shield on its own when no beat arrives for this long,
+/// so a server that died can never leave a person's page held.
+pub const OVERLAY_EXPIRY: Duration = Duration::from_secs(35);
+/// How long the "Finished" state stays before it fades.
+pub const OVERLAY_FINISHED: Duration = Duration::from_secs(3);
