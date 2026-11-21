@@ -67,6 +67,8 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
             "windrise_extensions\\*.*: %(VersionDir)s\\windrise_extensions\\",
             lines,
         )
+        self.assertIn("locales\\*.pak: %(VersionDir)s\\Locales", lines)
+        self.assertNotIn("locales\\en-US.pak: %(VersionDir)s\\Locales", lines)
 
     def test_gn_sources_follow_product_matrix(self) -> None:
         build = _patched_source("chrome/browser/browseros/bundled_extensions/BUILD.gn")
