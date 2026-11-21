@@ -190,13 +190,13 @@ class EnvConfig:
 
     @property
     def r2_bucket(self) -> str:
-        """R2 bucket name (default: browseros)"""
-        return os.environ.get("R2_BUCKET", "browseros")
+        """R2 bucket name (must be configured explicitly; no upstream default)"""
+        return os.environ.get("R2_BUCKET", "")
 
     @property
     def r2_cdn_base_url(self) -> str:
-        """CDN base URL for R2 artifacts (default: http://cdn.browseros.com)"""
-        return os.environ.get("R2_CDN_BASE_URL", "http://cdn.browseros.com")
+        """CDN base URL for R2 artifacts (must be configured explicitly; no upstream default)"""
+        return os.environ.get("R2_CDN_BASE_URL", "")
 
     @property
     def r2_endpoint_url(self) -> Optional[str]:

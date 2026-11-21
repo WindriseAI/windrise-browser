@@ -30,14 +30,14 @@ class GetAppPathTest(unittest.TestCase):
             "https://cdn.browseros.com/extensions/bundled-manifest.xml",
         )
 
-    def test_resource_mode_defaults_to_published(self):
+    def test_resource_mode_defaults_to_source(self):
         ctx = Context(
             chromium_src=Path("/nonexistent-src"),
             architecture="arm64",
             build_type="release",
         )
 
-        self.assertEqual(ctx.resource_mode, "published")
+        self.assertEqual(ctx.resource_mode, "source")
         self.assertIsNone(ctx.prepared_resources)
 
     def test_source_identity_is_carried_without_mutating_it(self):

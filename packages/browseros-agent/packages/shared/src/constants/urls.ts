@@ -14,9 +14,9 @@ export function canonicalMcpUrlForPort(port = CLAW_API_PORT_DEFAULT): string {
 }
 
 export const EXTERNAL_URLS = {
-  CDN: 'https://cdn.browseros.com',
+  CDN: '',
   HELP: 'https://www.windrisebridge.com/help',
-  POSTHOG_DEFAULT: 'https://us.i.posthog.com',
+  POSTHOG_DEFAULT: '',
   OPENAI_AUTH: 'https://auth.openai.com/oauth/authorize',
   OPENAI_TOKEN: 'https://auth.openai.com/oauth/token',
   GITHUB_DEVICE_CODE: 'https://github.com/login/device/code',

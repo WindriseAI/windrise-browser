@@ -86,7 +86,7 @@ class Context:
     # Per-invocation --gn-arg overrides; configure appends them last in
     # args.gn (GN last-write-wins). Never persisted to profiles.
     extra_gn_args: tuple[str, ...] = ()
-    resource_mode: str = "published"
+    resource_mode: str = "source"
     prepared_resources: Optional[Path] = None
     prepared_resources_supplied: bool = False
     source_sha: str = ""

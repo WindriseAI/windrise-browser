@@ -140,6 +140,18 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn('"windriseOnboarding.receiveState"', cc)
         self.assertNotIn("browserosOnboarding", cc)
 
+    def test_u17_no_upstream_updates_or_cdn_defaults(self):
+        self.assertFalse((REPO_ROOT / "updates").exists())
+        env_py = (
+            REPO_ROOT / "packages/browseros/bos_build/lib/env.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("cdn.browseros.com", env_py)
+        urls_ts = (
+            REPO_ROOT
+            / "packages/browseros-agent/packages/shared/src/constants/urls.ts"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("cdn.browseros.com", urls_ts)
+
 
 if __name__ == "__main__":
     unittest.main()
