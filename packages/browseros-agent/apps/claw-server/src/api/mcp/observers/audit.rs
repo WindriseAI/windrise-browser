@@ -60,6 +60,10 @@ pub async fn record_local_tool_dispatch(
     state: &AppState,
     dispatch: LocalToolDispatch<'_>,
 ) -> anyhow::Result<()> {
+    // An ephemeral probe leaves no task row, so its local dispatch is not recorded either.
+    if dispatch.session.is_ephemeral() {
+        return Ok(());
+    }
     state
         .audit_worker
         .submit(AuditEvent::without_preview(RecordToolDispatchInput {
@@ -109,6 +113,11 @@ async fn build_event(
         );
         return None;
     };
+    // An ephemeral session is a handle-less probe, not a task: recording its dispatch would
+    // give it a task row, the orphan this path exists to stop. The tool still runs.
+    if identity.session.is_ephemeral() {
+        return None;
+    }
     let page_id = if call.flags.new_page {
         result_page_id(result)
     } else {
@@ -122,7 +131,7 @@ async fn build_event(
     // A sensitive dispatch skips its screenshot: a password or payment form would
     // otherwise sit on disk as an image beside the redacted args.
     let sensitive_script = call
-        .sensitive_credentials
+        .sensitive_input
         .load(std::sync::atomic::Ordering::Relaxed);
     let script_hints = browseros_mcp::AuditHints {
         redact_all_values: true,
@@ -138,7 +147,7 @@ async fn build_event(
         result.audit_hints.as_ref()
     };
     let skip_screenshot = sensitive_script
-        || call.tool().name == "credentials"
+        || browseros_mcp::tools::sensitive::is_sensitive_tool(call.tool().name)
         || result
             .audit_hints
             .as_ref()
@@ -425,7 +434,7 @@ mod tests {
             LocalToolDispatch {
                 session,
                 agent_label: "Codex",
-                tool_name: "pursue",
+                tool_name: "save_skill",
                 raw_args: &json!({}),
                 result: &result,
                 duration_ms: 5_000,
@@ -567,6 +576,28 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn card_early_failure_redacts_card_without_runtime_hints() -> anyhow::Result<()> {
+        let call = crate::api::mcp::test_support::tool_call(
+            "payment_cards",
+            json!({
+                "action":"fill", "page":1,
+                "card":{"number":"4111111111111111","expiryMonth":12,"expiryYear":2030,"cvc":"987"}
+            }),
+        )
+        .await?;
+        let result = ToolResult::error("unsupported native browser");
+        let event = build_event(&call, &result, 1, true)
+            .await
+            .ok_or_else(|| anyhow::anyhow!("event missing"))?;
+        assert!(event.input.args_json.contains("\"action\":\"fill\""));
+        assert!(event.input.args_json.contains("[redacted]"));
+        assert!(!event.input.args_json.contains("4111111111111111"));
+        assert!(!event.input.args_json.contains("987"));
+        assert!(event.preview.is_none());
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn cancelled_credential_script_redacts_parent_source_and_suppresses_preview()
     -> anyhow::Result<()> {
         let call = crate::api::mcp::test_support::tool_call(
@@ -576,7 +607,7 @@ mod tests {
             }),
         )
         .await?;
-        call.sensitive_credentials
+        call.sensitive_input
             .store(true, std::sync::atomic::Ordering::Relaxed);
         let result = ToolResult::error("cancelled");
         let event = build_event(&call, &result, 1, true)

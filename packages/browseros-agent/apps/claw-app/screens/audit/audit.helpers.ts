@@ -1,177 +1,218 @@
-import type { TaskStatus, TaskSummary } from '@/modules/api/audit.hooks'
+import type {
+  AuditAgent,
+  SessionPursueRun,
+  SessionUltrafastRun,
+} from '@browseros/claw-api'
+import { agentIdentity } from '@/components/harness/harness.types'
+import type { TaskSummary } from '@/modules/api/audit.hooks'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function startOfDay(ms: number): number {
+  const day = new Date(ms)
+  day.setHours(0, 0, 0, 0)
+  return day.getTime()
+}
+
+function daysBefore(startedAt: number, now: number): number {
+  return Math.round((startOfDay(now) - startOfDay(startedAt)) / DAY_MS)
+}
+
+export interface AgentOption {
+  slug: string
+  name: string
+}
 
 /**
- * LIVE runs always float to the top of the list regardless of
- * `startedAt`; within each status group we sort newest-first. This
- * is the input sort applied BEFORE tanstack-table's own sorting
- * state so operator-triggered column sorts still work naturally
- * (an operator sort override replaces this pre-sort at render).
+ * The agents in the loaded tasks, shaped like the server's list: most tasks
+ * first, named by each agent's latest task. The picker falls back to these
+ * when the full list cannot be fetched.
  */
-export function orderByLiveThenRecency(tasks: TaskSummary[]): TaskSummary[] {
-  return [...tasks].sort((a, b) => {
-    if (a.status === 'live' && b.status !== 'live') return -1
-    if (b.status === 'live' && a.status !== 'live') return 1
-    return b.startedAt - a.startedAt
-  })
-}
-
-const DAY_HEADING_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-})
-
-/** `Wednesday, July 2` style label used as an audit-list day band. */
-export function formatDayHeading(ts: number): string {
-  return DAY_HEADING_FORMATTER.format(new Date(ts))
-}
-
-/** Local calendar-day equality (year + month + date), timezone-aware. */
-export function isSameLocalDay(a: number, b: number): boolean {
-  const da = new Date(a)
-  const db = new Date(b)
-  return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
+export function agentsInTasks(tasks: readonly TaskSummary[]): AuditAgent[] {
+  const seen = new Map<string, AuditAgent>()
+  for (const task of tasks) {
+    const known = seen.get(task.slug)
+    if (!known) {
+      seen.set(task.slug, {
+        slug: task.slug,
+        label: task.label,
+        taskCount: 1,
+        lastStartedAt: task.startedAt,
+      })
+      continue
+    }
+    known.taskCount += 1
+    if (task.startedAt > known.lastStartedAt) {
+      known.lastStartedAt = task.startedAt
+      known.label = task.label
+    }
+  }
+  return [...seen.values()].sort(
+    (left, right) =>
+      right.taskCount - left.taskCount ||
+      right.lastStartedAt - left.lastStartedAt,
   )
 }
 
-const NINE_SECONDS = 9_000
-const ONE_MINUTE = 60_000
-const ONE_HOUR = 3_600_000
-const ONE_DAY = 86_400_000
-
-export function formatRelative(createdAt: number, now: number): string {
-  const delta = now - createdAt
-  if (delta < NINE_SECONDS) return 'just now'
-  if (delta < ONE_MINUTE) return `${Math.floor(delta / 1000)}s ago`
-  if (delta < ONE_HOUR) return `${Math.floor(delta / ONE_MINUTE)}m ago`
-  if (delta < ONE_DAY) return `${Math.floor(delta / ONE_HOUR)}h ago`
-  return `${Math.floor(delta / ONE_DAY)}d ago`
-}
-
-export function siteOf(url: string | null): string {
-  if (!url) return ''
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
+/**
+ * Every agent in History, in the server's order (most tasks first), named the
+ * way the task rows name them. A selected agent the server does not list is
+ * kept so the picker can still show and clear it.
+ */
+export function agentOptionsFor(
+  agents: readonly AuditAgent[],
+  selectedSlug: string | null,
+): AgentOption[] {
+  const options = agents.map((agent) => ({
+    slug: agent.slug,
+    name: agentIdentity(undefined, agent.label || agent.slug).name,
+  }))
+  if (selectedSlug && !agents.some((agent) => agent.slug === selectedSlug)) {
+    options.push({
+      slug: selectedSlug,
+      name: agentIdentity(undefined, selectedSlug).name,
+    })
   }
+  return options
 }
 
-export function formatDuration(ms: number): string {
-  const v = ms < 0 ? 0 : ms
-  if (v < 1000) return `${v}ms`
-  const seconds = Math.floor(v / 1000)
-  if (seconds < 60) return `${seconds}s`
-  const mins = Math.floor(seconds / 60)
-  const remSec = seconds % 60
-  if (mins < 60) return `${mins}m ${remSec}s`
-  const hours = Math.floor(mins / 60)
-  const remMin = mins % 60
-  return `${hours}h ${remMin}m`
-}
-
-const TOKEN_COMPACT_FORMAT = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  compactDisplay: 'short',
-  maximumFractionDigits: 1,
-})
-const TOKEN_WHOLE_FORMAT = new Intl.NumberFormat('en-US', {
-  maximumFractionDigits: 0,
+const DAY_HEADING = new Intl.DateTimeFormat(undefined, {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
 })
 
-/** Compact token count for dense rows: `948`, `12.3k`, `1.2m` (lowercase suffix). */
-export function formatTokensCompact(tokens: number): string {
-  return TOKEN_COMPACT_FORMAT.format(Math.max(0, tokens)).toLowerCase()
+/** "Today", "Yesterday", then "Wednesday, October 21". */
+export function dayLabel(startedAt: number, now: number): string {
+  const days = daysBefore(startedAt, now)
+  if (days <= 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  return DAY_HEADING.format(new Date(startedAt))
 }
 
-/** Grouped exact token count for the detail card: `12,345`. */
-export function formatTokensFull(tokens: number): string {
-  return TOKEN_WHOLE_FORMAT.format(Math.max(0, tokens))
+export interface DayGroup {
+  key: number
+  label: string
+  tasks: TaskSummary[]
 }
 
-/**
- * Short trail of tool names with an ellipsis when the sequence is
- * longer than `cap`. Mirrors the abbreviated trail shown on each
- * task card / row.
- */
-export function abbreviateSequence(seq: string[], cap = 5): string {
-  if (seq.length <= cap) return seq.join(' → ')
-  return `${seq.slice(0, cap).join(' → ')} → …`
-}
-
-export interface AgentChip {
-  slug: string
-  count: number
-}
-
-/**
- * Chips render the slug, not the session label. The label is whatever the client
- * typed, so two sessions announcing "Claude Code" and "claude-code" group into one
- * chip whose displayed name would otherwise depend on which arrived first. The slug
- * is also what the tab strip shows, so both surfaces name the agent identically.
- */
-export function agentChipsFor(tasks: TaskSummary[]): AgentChip[] {
-  const map = new Map<string, AgentChip>()
-  for (const t of tasks) {
-    const existing = map.get(t.slug)
-    if (existing) {
-      existing.count += 1
+/** Tasks newest first, split into one group per local calendar day. */
+export function groupByDay(
+  tasks: readonly TaskSummary[],
+  now: number,
+): DayGroup[] {
+  const groups: DayGroup[] = []
+  const ordered = [...tasks].sort(
+    (left, right) => right.startedAt - left.startedAt,
+  )
+  for (const task of ordered) {
+    const key = startOfDay(task.startedAt)
+    const current = groups.at(-1)
+    if (current?.key === key) {
+      current.tasks.push(task)
       continue
     }
-    map.set(t.slug, { slug: t.slug, count: 1 })
+    groups.push({ key, label: dayLabel(task.startedAt, now), tasks: [task] })
   }
-  return [...map.values()].sort((a, b) => b.count - a.count)
+  return groups
 }
 
-export function statusOptions(
-  tasks: TaskSummary[],
-): { status: TaskStatus; count: number }[] {
-  const counts: Record<TaskStatus, number> = {
-    live: 0,
-    done: 0,
-    failed: 0,
-    cancelled: 0,
-  }
-  for (const t of tasks) counts[t.status] += 1
-  return (['live', 'done', 'failed', 'cancelled'] as TaskStatus[])
-    .filter((s) => counts[s] > 0)
-    .map((s) => ({ status: s, count: counts[s] }))
+/** "2:41 PM" in the reader's locale. */
+export function taskTime(startedAt: number): string {
+  return new Date(startedAt).toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
-export function siteOptions(
-  tasks: TaskSummary[],
-): { site: string; count: number }[] {
-  const map = new Map<string, number>()
-  for (const t of tasks) {
-    if (!t.site) continue
-    map.set(t.site, (map.get(t.site) ?? 0) + 1)
-  }
-  return [...map.entries()]
-    .map(([site, count]) => ({ site, count }))
-    .sort((a, b) => b.count - a.count)
+/** "2:41 PM" for today, "Yesterday", then "Oct 21" in the reader's locale. */
+export function taskWhen(startedAt: number, now: number): string {
+  const days = daysBefore(startedAt, now)
+  if (days <= 0) return taskTime(startedAt)
+  if (days === 1) return 'Yesterday'
+  return new Date(startedAt).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
-export function parseResultMeta(raw: string | null | undefined): {
-  isError: boolean
-  contentSummary: string
-  structuredKeys: string[]
-} | null {
-  if (!raw) return null
-  try {
-    const v = JSON.parse(raw) as {
-      isError?: boolean
-      contentSummary?: string
-      structuredKeys?: string[]
-    }
-    return {
-      isError: Boolean(v.isError),
-      contentSummary: v.contentSummary ?? 'unknown',
-      structuredKeys: Array.isArray(v.structuredKeys) ? v.structuredKeys : [],
-    }
-  } catch {
-    return null
+/** "took 4 min" style length of a task, rounded for people rather than logs. */
+export function tookLabel(durationMs: number): string {
+  const minutes = Math.round(Math.max(0, durationMs) / 60_000)
+  if (minutes < 1) return 'took under a minute'
+  if (minutes < 60) return `took ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return rest === 0 ? `took ${hours} h` : `took ${hours} h ${rest} min`
+}
+
+/** "Today at 2:41 PM", "Yesterday at 9:05 AM", then "Oct 21 at 4:10 PM". */
+export function taskDayAndTime(startedAt: number, now: number): string {
+  const days = daysBefore(startedAt, now)
+  const day = days <= 0 ? 'Today' : taskWhen(startedAt, now)
+  return `${day} at ${taskTime(startedAt)}`
+}
+
+/** "15 sec" under a minute, then "2 min" to the nearest minute. */
+export function ultrafastTime(durationMs: number): string {
+  const seconds = Math.max(1, Math.round(Math.max(0, durationMs) / 1_000))
+  if (seconds < 60) return `${seconds} sec`
+  return `${Math.round(seconds / 60)} min`
+}
+
+/** "1 page", "9 pages". */
+export function pagesLabel(pages: number): string {
+  return pages === 1 ? '1 page' : `${pages.toLocaleString('en-US')} pages`
+}
+
+/** Compact for a chip: "640", "4.2k", "62k". */
+export function chipTokens(tokens: number): string {
+  const value = Math.max(0, Math.round(tokens))
+  if (value < 1_000) return String(value)
+  if (value < 10_000) {
+    const thousands = Math.round(value / 100) / 10
+    return thousands >= 10 ? '10k' : `${thousands}k`
   }
+  return `${Math.round(value / 1_000).toLocaleString('en-US')}k`
+}
+
+function stepsLabel(steps: number): string {
+  return steps === 1 ? '1 step' : `${steps} steps`
+}
+
+/** What neo did in a pursue task, in one short phrase after the wordmark. */
+export function pursueNote(pursue: SessionPursueRun): string {
+  if (pursue.outcome === 'completed') {
+    return `neo did it in ${ultrafastTime(pursue.durationMs)}`
+  }
+  if (pursue.steps.length === 0) return 'neo handed back'
+  return `neo did ${stepsLabel(pursue.steps.length)}`
+}
+
+/**
+ * What ultrafast did in a task, in words, for the line under its name: "neo did 3 steps in 6 sec,
+ * then handed back", "neo finished it in 7 sec", "neo ran it in 15 sec, read 9 pages".
+ * Null when ultrafast did nothing in the task.
+ */
+export function ultrafastNote(
+  pursue: SessionPursueRun | undefined,
+  ultrafast: SessionUltrafastRun | undefined,
+): string | null {
+  const parts: string[] = []
+  if (pursue) {
+    const time = ultrafastTime(pursue.durationMs)
+    parts.push(
+      pursue.outcome === 'completed'
+        ? `neo finished it in ${time}`
+        : pursue.steps.length === 0
+          ? `neo handed back after ${time}`
+          : `neo did ${stepsLabel(pursue.steps.length)} in ${time}, then handed back`,
+    )
+  } else if (ultrafast) {
+    parts.push(`neo ran it in ${ultrafastTime(ultrafast.durationMs)}`)
+  }
+  if (ultrafast && ultrafast.pagesRead > 0) {
+    parts.push(`read ${pagesLabel(ultrafast.pagesRead)}`)
+  }
+  return parts.length > 0 ? parts.join(', ') : null
 }

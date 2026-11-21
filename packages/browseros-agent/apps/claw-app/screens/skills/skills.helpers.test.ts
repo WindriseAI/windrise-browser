@@ -1,16 +1,35 @@
 import { describe, expect, it } from 'bun:test'
+import type { Skill, SkillUltrafast } from '@browseros/claw-api'
 import {
-  formatRelativeTime,
-  formatTokens,
+  awaitsFirstRun,
+  chosenLine,
+  durationLabel,
+  firstRunLearning,
+  healthLine,
   neoName,
   parseSkillBody,
+  runModeCounts,
+  runModeLabel,
+  runSpeed,
+  runsByItself,
+  runsChoice,
   skillCommand,
-  tokenDeltaPercent,
+  skillSites,
+  stillVerifying,
+  stuckWhile,
+  turnedUltrafast,
+  ultrafastMark,
+  upgradeSeconds,
+  usedLabel,
+  VERIFYING_POLL_MS,
+  VERIFYING_WINDOW_MS,
+  verifyingPoll,
+  worksInAgents,
 } from './skills.helpers'
 
 describe('skillCommand', () => {
-  it('prefixes the name with a slash', () => {
-    expect(skillCommand('inbox-sweep')).toBe('/inbox-sweep')
+  it('asks for the skill by name, without any one agent’s prefix', () => {
+    expect(skillCommand('inbox-sweep')).toBe('use the inbox-sweep skill')
   })
 })
 
@@ -25,39 +44,6 @@ describe('neoName', () => {
 
   it('leaves an interior neo- untouched', () => {
     expect(neoName('weather-neo-check')).toBe('neo-weather-neo-check')
-  })
-})
-
-describe('formatTokens', () => {
-  it('leaves values under 1000 as-is', () => {
-    expect(formatTokens(840)).toBe('840')
-  })
-
-  it('compacts thousands to one decimal', () => {
-    expect(formatTokens(14600)).toBe('14.6k')
-  })
-
-  it('keeps the trailing decimal on a round thousand', () => {
-    expect(formatTokens(23000)).toBe('23.0k')
-  })
-})
-
-describe('tokenDeltaPercent', () => {
-  it('is null when either side is missing', () => {
-    expect(tokenDeltaPercent(undefined, 100)).toBeNull()
-    expect(tokenDeltaPercent(100, undefined)).toBeNull()
-  })
-
-  it('is null when the first run measured zero tokens', () => {
-    expect(tokenDeltaPercent(0, 100)).toBeNull()
-  })
-
-  it('is negative when the skill got cheaper', () => {
-    expect(tokenDeltaPercent(23000, 14600)).toBe(-37)
-  })
-
-  it('is positive when the skill got pricier', () => {
-    expect(tokenDeltaPercent(100, 150)).toBe(50)
   })
 })
 
@@ -101,26 +87,469 @@ describe('parseSkillBody', () => {
   })
 })
 
-describe('formatRelativeTime', () => {
-  const now = 1_000_000_000_000
+describe('usedLabel', () => {
+  const now = new Date(2026, 9, 23, 9).getTime()
 
-  it('reads "just now" under a minute', () => {
-    expect(formatRelativeTime(now - 30_000, now)).toBe('just now')
+  it('says when a skill has never run', () => {
+    expect(usedLabel(0, undefined, now)).toBe('Not used yet')
   })
 
-  it('reads minutes', () => {
-    expect(formatRelativeTime(now - 5 * 60_000, now)).toBe('5m ago')
+  it('counts runs and names the last day in plain words', () => {
+    expect(usedLabel(1, new Date(2026, 9, 23, 8).getTime(), now)).toBe(
+      'Used once · last used today',
+    )
+    expect(usedLabel(4, new Date(2026, 9, 22, 23).getTime(), now)).toBe(
+      'Used 4 times · last used yesterday',
+    )
   })
 
-  it('reads hours', () => {
-    expect(formatRelativeTime(now - 3 * 3_600_000, now)).toBe('3h ago')
+  it('names an older day by its date alone, as in "last used Oct 2"', () => {
+    const label = usedLabel(4, new Date(2026, 9, 2).getTime(), now)
+    expect(label).toMatch(/^Used 4 times · last used \S/)
+    expect(label).not.toContain('last used on ')
+  })
+})
+
+describe('skillSites', () => {
+  it('has no sites when the skill names none', () => {
+    expect(skillSites(undefined)).toEqual([])
+    expect(skillSites('  ')).toEqual([])
   })
 
-  it('reads days', () => {
-    expect(formatRelativeTime(now - 2 * 86_400_000, now)).toBe('2d ago')
+  it('keeps a single site as it was saved', () => {
+    expect(skillSites('x.com')).toEqual(['x.com'])
   })
 
-  it('never goes negative for a future timestamp', () => {
-    expect(formatRelativeTime(now + 60_000, now)).toBe('just now')
+  it('names each site by its host, as a person would read it', () => {
+    expect(
+      skillSites('https://www.microsoftazuresponsorships.com/usage'),
+    ).toEqual(['microsoftazuresponsorships.com'])
+    expect(skillSites('https://trmnl.com')).toEqual(['trmnl.com'])
+  })
+
+  it('splits a comma list and drops empty entries', () => {
+    expect(skillSites('x.com, linkedin.com,reddit.com, ')).toEqual([
+      'x.com',
+      'linkedin.com',
+      'reddit.com',
+    ])
+  })
+})
+
+describe('worksInAgents', () => {
+  const linked = (...agents: Skill['linkedAgents']) => ({
+    linkedAgents: agents,
+  })
+  const everyone = ['Claude Code', 'Codex', 'Cursor'] as const
+
+  it('lists every connected agent any skill is linked into, once, in the usual order', () => {
+    expect(
+      worksInAgents(
+        [linked('Cursor', 'Claude Code'), linked('Codex', 'Claude Code')],
+        everyone,
+      ),
+    ).toEqual(['Claude Code', 'Codex', 'Cursor'])
+  })
+
+  it('leaves out an agent that was disconnected after the skill was saved', () => {
+    expect(
+      worksInAgents([linked('Claude Code', 'Codex')], ['Claude Code']),
+    ).toEqual(['Claude Code'])
+    expect(worksInAgents([linked('Codex')], [])).toEqual([])
+  })
+
+  it('is empty when no skill is linked into an agent', () => {
+    expect(worksInAgents([linked(), linked()], everyone)).toEqual([])
+    expect(worksInAgents([], everyone)).toEqual([])
+  })
+})
+
+describe('stuckWhile', () => {
+  it('names what the run was doing when it got stuck', () => {
+    expect(stuckWhile('navigate')).toBe('Got stuck while opening a page.')
+    expect(stuckWhile('act')).toBe('Got stuck while clicking on a page.')
+    expect(stuckWhile(undefined)).toBe('Got stuck before it finished.')
+  })
+})
+
+const ultrafast = (patch: Partial<SkillUltrafast>): SkillUltrafast => ({
+  status: 'verified',
+  flowVersion: 1,
+  writeApproved: false,
+  ...patch,
+})
+
+describe('ultrafastMark', () => {
+  it('shows the plain wordmark when verified, a dim wordmark and a word otherwise, and nothing for a plain skill', () => {
+    expect(ultrafastMark(ultrafast({}))).toEqual({
+      dim: false,
+      word: null,
+      tone: 'muted',
+    })
+    expect(ultrafastMark(ultrafast({ status: 'degraded' }))).toEqual({
+      dim: true,
+      word: 'needs a repair',
+      tone: 'amber',
+    })
+    expect(ultrafastMark(ultrafast({ status: 'broken' }))).toMatchObject({
+      word: 'paused',
+      tone: 'red',
+    })
+    expect(ultrafastMark(ultrafast({ status: 'none' }))).toBeNull()
+    expect(ultrafastMark(undefined)).toBeNull()
+  })
+
+  it('says a skill made from a task turns ultrafast after its first run', () => {
+    const fromTask: Skill = {
+      name: 'neo-flipkart-phones',
+      description: 'Find phones under a budget on Flipkart',
+      origin: 'history',
+      version: 1,
+      linkedAgents: [],
+      runCount: 0,
+      cleanRunCount: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      ultrafast: ultrafast({ status: 'none' }),
+    }
+    expect(awaitsFirstRun(fromTask)).toBe(true)
+    expect(ultrafastMark(fromTask.ultrafast, true)).toEqual({
+      dim: true,
+      word: 'after its first run',
+      tone: 'muted',
+    })
+    expect(awaitsFirstRun({ ...fromTask, runCount: 1 })).toBe(false)
+    expect(awaitsFirstRun({ ...fromTask, origin: 'agent' })).toBe(false)
+    expect(
+      awaitsFirstRun({
+        ...fromTask,
+        ultrafast: ultrafast({ status: 'none', locked: true }),
+      }),
+    ).toBe(false)
+    expect(ultrafastMark(ultrafast({ status: 'pending' }), true)?.word).toBe(
+      'on the way',
+    )
+  })
+})
+
+describe('firstRunLearning', () => {
+  const fromTask: Skill = {
+    name: 'neo-phones',
+    description: 'Find phones under a budget',
+    origin: 'history',
+    version: 1,
+    linkedAgents: [],
+    runCount: 0,
+    cleanRunCount: 0,
+    createdAt: 0,
+    updatedAt: 0,
+    ultrafast: ultrafast({ status: 'pending' }),
+  }
+
+  it('walks through the first run while neo checks the fast version', () => {
+    expect(firstRunLearning(fromTask)?.map((step) => step.state)).toEqual([
+      'done',
+      'done',
+      'now',
+      'todo',
+    ])
+  })
+
+  it('says it finishes on the next run once the page stops checking', () => {
+    const steps = firstRunLearning(fromTask, false)
+    expect(steps?.map((step) => step.text)).not.toContain(
+      'neo is checking the fast version',
+    )
+    expect(steps?.at(-1)).toEqual({
+      text: 'Finishes on its next run',
+      state: 'todo',
+    })
+  })
+
+  it('says nothing once verified, when locked, or for a skill an agent saved', () => {
+    expect(
+      firstRunLearning({
+        ...fromTask,
+        ultrafast: ultrafast({ status: 'verified', verifiedAt: 1 }),
+      }),
+    ).toBeNull()
+    expect(
+      firstRunLearning({
+        ...fromTask,
+        ultrafast: ultrafast({ status: 'pending', locked: true }),
+      }),
+    ).toBeNull()
+    expect(firstRunLearning({ ...fromTask, origin: 'agent' })).toBeNull()
+    expect(
+      firstRunLearning({
+        ...fromTask,
+        ultrafast: ultrafast({ status: 'none' }),
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('turnedUltrafast', () => {
+  const fromTask: Skill = {
+    name: 'neo-phones',
+    description: 'Find phones under a budget',
+    origin: 'history',
+    version: 1,
+    linkedAgents: [],
+    runCount: 1,
+    cleanRunCount: 1,
+    createdAt: 0,
+    updatedAt: 0,
+    ultrafast: ultrafast({ status: 'verified', verifiedAt: 5, p50Ms: 7300 }),
+  }
+
+  it('is the moment a task skill’s fast version is verified', () => {
+    expect(turnedUltrafast(fromTask)).toBe(true)
+    expect(turnedUltrafast({ ...fromTask, origin: 'agent' })).toBe(false)
+    expect(
+      turnedUltrafast({
+        ...fromTask,
+        ultrafast: ultrafast({ status: 'pending' }),
+      }),
+    ).toBe(false)
+  })
+
+  it('rounds the speed to whole seconds, never below one', () => {
+    expect(upgradeSeconds(7300)).toBe(7)
+    expect(upgradeSeconds(200)).toBe(1)
+  })
+})
+
+describe('healthLine', () => {
+  it('says when it was checked and repaired, and how fast it runs', () => {
+    const now = new Date(2026, 9, 29, 12).getTime()
+    const yesterday = new Date(2026, 9, 28, 9).getTime()
+    expect(
+      healthLine(
+        ultrafast({ verifiedAt: now, repairedAt: yesterday, p50Ms: 1240 }),
+        now,
+      ),
+    ).toBe('Checked today · repaired yesterday · about 1.2 s a run')
+    expect(runSpeed(40)).toBe('about 0.1 s a run')
+  })
+})
+
+describe('runModeLabel', () => {
+  it('reads a handover in plain words and leaves normal runs unlabelled', () => {
+    expect(runModeLabel({ mode: 'ultrafast' })).toBe('Ultrafast')
+    expect(
+      runModeLabel({
+        mode: 'handed_back',
+        handoverStep: 2,
+        handoverCause: 'site_changed',
+      }),
+    ).toBe('Took over at step 2: the site changed')
+    expect(runModeLabel({ mode: 'agent' })).toBeNull()
+    expect(runModeLabel({})).toBeNull()
+  })
+
+  it('counts runs by how they went', () => {
+    expect(
+      runModeCounts([
+        { mode: 'ultrafast' },
+        { mode: 'ultrafast' },
+        { mode: 'handed_back' },
+        {},
+      ]),
+    ).toEqual({ ultrafast: 2, handedBack: 1, normal: 1 })
+  })
+})
+
+const writeRuns = (
+  patch: Partial<NonNullable<SkillUltrafast['runs']>>,
+): NonNullable<SkillUltrafast['runs']> => ({
+  mode: 'with_agent',
+  chosen: false,
+  reask: false,
+  click: 'Add it to the cart.',
+  site: 'amazon.in',
+  ...patch,
+})
+
+describe('runsChoice', () => {
+  const agentRuns = [
+    { mode: 'agent' as const, durationMs: 62_000 },
+    { mode: 'ultrafast' as const, durationMs: 11_000 },
+  ]
+
+  it('reads a read-only skill as nothing to choose', () => {
+    const choice = runsChoice(ultrafast({ p50Ms: 10_400 }), agentRuns)
+    expect(choice?.state).toBe('read')
+    expect(choice?.fastLabel).toBe('about 10 sec')
+    expect(choice?.slowLabel).toBe('about 1 min')
+  })
+
+  it('runs with the agent until the user chooses', () => {
+    const choice = runsChoice(
+      ultrafast({ effects: 'write', runs: writeRuns({}) }),
+      [],
+    )
+    expect(choice).toMatchObject({
+      state: 'choose',
+      selected: 'with_agent',
+      chip: 'Choose how it runs',
+      withoutLocked: false,
+    })
+    expect(choice?.slowLabel).toBeNull()
+  })
+
+  it('shows each chosen, re-asked, locked and always-with state', () => {
+    const state = (runs: NonNullable<SkillUltrafast['runs']>, locked = false) =>
+      runsChoice(ultrafast({ effects: 'write', runs, locked }), [])
+    expect(
+      state(writeRuns({ chosen: true, mode: 'without_agent' }))?.state,
+    ).toBe('without')
+    expect(state(writeRuns({ chosen: true }))?.state).toBe('with')
+    expect(state(writeRuns({ reask: true }))?.state).toBe('reask')
+    expect(state(writeRuns({ alwaysWithAgent: 'order' }))).toMatchObject({
+      state: 'always',
+      withoutLocked: true,
+      disabled: false,
+    })
+    expect(
+      state(writeRuns({ chosen: true, mode: 'without_agent' }), true),
+    ).toMatchObject({ state: 'locked', disabled: true, selected: 'with_agent' })
+  })
+
+  it('stays quiet without a working fast version', () => {
+    expect(runsChoice(ultrafast({ status: 'pending' }), [])).toBeNull()
+    expect(runsChoice(undefined, [])).toBeNull()
+  })
+})
+
+describe('chosenLine', () => {
+  it('says who chose and where', () => {
+    const now = new Date(2026, 10, 11, 18).getTime()
+    expect(
+      chosenLine(
+        writeRuns({
+          chosen: true,
+          via: 'chat',
+          client: 'Claude Code',
+          chosenAt: new Date(2026, 10, 11, 9).getTime(),
+        }),
+        now,
+      ),
+    ).toBe('You chose this in chat with Claude Code today')
+    expect(
+      chosenLine(writeRuns({ chosen: true, via: 'app', chosenAt: now }), now),
+    ).toBe('You chose this in BrowserOS today')
+    expect(chosenLine(writeRuns({}), now)).toBeNull()
+  })
+})
+
+describe('durationLabel', () => {
+  it('rounds to the way the page talks about time', () => {
+    expect(durationLabel(1_180)).toBe('about 1 sec')
+    expect(durationLabel(11_000)).toBe('about 11 sec')
+    expect(durationLabel(92_000)).toBe('about 2 min')
+    expect(durationLabel(undefined)).toBeNull()
+  })
+})
+
+describe('verifyingPoll', () => {
+  const pending: Skill = {
+    name: 'neo-phones',
+    description: 'Find phones under a budget',
+    origin: 'history',
+    version: 1,
+    linkedAgents: [],
+    runCount: 0,
+    cleanRunCount: 0,
+    createdAt: 0,
+    updatedAt: 0,
+    ultrafast: ultrafast({ status: 'pending' }),
+  }
+  const openedAt = 1_000_000
+
+  it('checks a pending fast version while the page is fresh', () => {
+    expect(verifyingPoll(pending, openedAt, openedAt + 30_000)).toBe(
+      VERIFYING_POLL_MS,
+    )
+  })
+
+  it('runs one check past the window, then stops for good', () => {
+    expect(
+      verifyingPoll(pending, openedAt, openedAt + VERIFYING_WINDOW_MS + 1),
+    ).toBe(VERIFYING_POLL_MS)
+    expect(
+      verifyingPoll(
+        pending,
+        openedAt,
+        openedAt + VERIFYING_WINDOW_MS + VERIFYING_POLL_MS,
+      ),
+    ).toBe(false)
+    expect(verifyingPoll(pending, openedAt, openedAt + 3 * 86_400_000)).toBe(
+      false,
+    )
+  })
+
+  it('never checks a skill that is not pending', () => {
+    expect(
+      verifyingPoll(
+        { ...pending, ultrafast: ultrafast({ status: 'verified' }) },
+        openedAt,
+        openedAt,
+      ),
+    ).toBe(false)
+    expect(verifyingPoll(undefined, openedAt, openedAt)).toBe(false)
+  })
+
+  it('reads as still checking only for data fetched inside the window', () => {
+    expect(stillVerifying(openedAt, openedAt + 500)).toBe(true)
+    expect(stillVerifying(openedAt, openedAt - 60_000)).toBe(true)
+    expect(stillVerifying(openedAt, openedAt + VERIFYING_WINDOW_MS)).toBe(false)
+  })
+})
+
+describe('runsByItself', () => {
+  const skill = (patch: Partial<SkillUltrafast>): Skill => ({
+    name: 'neo-phones',
+    description: 'Find phones under a budget',
+    origin: 'history',
+    version: 1,
+    linkedAgents: [],
+    runCount: 1,
+    cleanRunCount: 1,
+    createdAt: 0,
+    updatedAt: 0,
+    ultrafast: ultrafast({ status: 'verified', verifiedAt: 5, ...patch }),
+  })
+
+  it('is true for a read flow and a write chosen to run without the agent', () => {
+    expect(runsByItself(skill({}))).toBe(true)
+    expect(
+      runsByItself(
+        skill({
+          effects: 'write',
+          runs: writeRuns({ chosen: true, mode: 'without_agent' }),
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is false when the plan is off or the run still needs the agent', () => {
+    expect(runsByItself(skill({ locked: true }))).toBe(false)
+    expect(
+      runsByItself(
+        skill({
+          effects: 'write',
+          runs: writeRuns({ alwaysWithAgent: 'pay' }),
+        }),
+      ),
+    ).toBe(false)
+    expect(
+      runsByItself(
+        skill({
+          effects: 'write',
+          runs: writeRuns({}),
+        }),
+      ),
+    ).toBe(false)
   })
 })

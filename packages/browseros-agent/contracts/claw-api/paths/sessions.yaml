@@ -16,6 +16,12 @@ collection:
         description: Use `live` to request a complete current snapshot with live browser state.
         schema:
           $ref: ../schemas/sessions.yaml#/SessionStatus
+      - name: needsAttention
+        in: query
+        description: Only tasks that failed or were stopped. Applied before pagination, so pages stay full.
+        schema:
+          type: boolean
+          default: false
       - name: site
         in: query
         schema:
@@ -89,6 +95,53 @@ cancel:
         $ref: ../responses.yaml#/NotFound
       '409':
         $ref: ../responses.yaml#/Conflict
+      '500':
+        $ref: ../responses.yaml#/InternalError
+skillDraft:
+  get:
+    operationId: getSkillDraft
+    description: Where making a skill from this finished task stands, shared by every view of the task.
+    parameters:
+      - $ref: ../parameters.yaml#/SessionId
+    responses:
+      '200':
+        description: The draft's state, with the draft once it is ready.
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/skills.yaml#/SkillDraftStatus
+      '404':
+        $ref: ../responses.yaml#/NotFound
+      '500':
+        $ref: ../responses.yaml#/InternalError
+  post:
+    operationId: draftSkillFromSession
+    description: >-
+      Write a skill draft from this finished task through the decisions worker. Nothing is saved.
+      A draft already written, or one being written, is returned instead of a new one.
+    parameters:
+      - $ref: ../parameters.yaml#/SessionId
+    responses:
+      '200':
+        description: The draft, or why it could not be written.
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/skills.yaml#/SkillDraftStatus
+      '403':
+        description: not_entitled, when the plan does not include skill drafts.
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/common.yaml#/ApiError
+      '404':
+        $ref: ../responses.yaml#/NotFound
+      '422':
+        description: not_finished, when the task did not finish.
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/common.yaml#/ApiError
       '500':
         $ref: ../responses.yaml#/InternalError
 resolveHelp:
@@ -197,3 +250,19 @@ screenshot:
               message: session screenshot not found
       '500':
         $ref: ../responses.yaml#/InternalError
+helpEvents:
+  get:
+    operationId: streamHelpEvents
+    description: >-
+      Server-Sent Events. Sends an event named `help` at once and then whenever
+      the open help requests change (one is opened, handed back, cancelled,
+      consumed by the agent, or reaches its time limit). Each event's data is
+      `{"version": <number>}` and carries no request details: read
+      `GET /api/v1/sessions?status=live` for the requests themselves.
+    responses:
+      '200':
+        description: A stream of `help` events until the client disconnects.
+        content:
+          text/event-stream:
+            schema:
+              type: string

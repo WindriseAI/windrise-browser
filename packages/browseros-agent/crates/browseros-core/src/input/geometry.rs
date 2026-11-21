@@ -1,4 +1,4 @@
-use crate::{CoreError, ProtocolSession, input::Point};
+use crate::{CoreError, PageJs, ProtocolSession, input::Point};
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -75,23 +75,6 @@ struct BoxModel {
 }
 
 #[derive(Debug, Deserialize)]
-struct ResolveNodeResult {
-    object: Option<RemoteObject>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RemoteObject {
-    object_id: Option<String>,
-    value: Option<Value>,
-}
-
-#[derive(Debug, Deserialize)]
-struct CallFunctionResult {
-    result: RemoteObject,
-}
-
-#[derive(Debug, Deserialize)]
 struct PushNodesResult {
     #[serde(rename = "nodeIds")]
     node_ids: Vec<i64>,
@@ -103,6 +86,67 @@ struct Bounds {
     y: f64,
     w: f64,
     h: f64,
+}
+
+/// Native content quads retain transformed and multi-line geometry. A missing
+/// rectangle is a typed preparation failure; the click transaction owns recovery.
+pub(super) async fn get_element_quads(
+    session: &ProtocolSession,
+    backend_node_id: i64,
+) -> Result<Vec<Vec<Point>>, CoreError> {
+    let result = session
+        .send::<_, QuadsResult>(
+            "DOM.getContentQuads",
+            json!({ "backendNodeId": backend_node_id }),
+        )
+        .await;
+    if let Ok(result) = result {
+        let quads: Vec<_> = result
+            .quads
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|quad| quad.len() == 8 && quad.iter().all(|n| n.is_finite()))
+            .map(|quad| {
+                quad.as_chunks::<2>()
+                    .0
+                    .iter()
+                    .map(|&[x, y]| Point { x, y })
+                    .collect()
+            })
+            .collect();
+        if !quads.is_empty() {
+            return Ok(quads);
+        }
+    }
+    let rect: Option<Bounds> = PageJs::isolated(session)
+        .call(backend_node_id, BOUNDS_JS, &[])
+        .await?;
+    let rect = rect
+        .filter(|rect| rect.w > 0.0 && rect.h > 0.0)
+        .ok_or_else(|| {
+            CoreError::ClickPointUnavailable(
+                "Element has no visible click area; take a new snapshot. No click was sent."
+                    .to_string(),
+            )
+        })?;
+    Ok(vec![vec![
+        Point {
+            x: rect.x,
+            y: rect.y,
+        },
+        Point {
+            x: rect.x + rect.w,
+            y: rect.y,
+        },
+        Point {
+            x: rect.x + rect.w,
+            y: rect.y + rect.h,
+        },
+        Point {
+            x: rect.x,
+            y: rect.y + rect.h,
+        },
+    ]])
 }
 
 /// The point is in `session`'s coordinate basis. Dispatch input through the same
@@ -137,27 +181,33 @@ pub async fn get_element_center(
         return Ok(quad_center(&model.content));
     }
 
-    let object_id = resolve_object_id(session, backend_node_id, None).await?;
-    let bounds: CallFunctionResult = session
-        .send(
-            "Runtime.callFunctionOn",
-            json!({
-                "functionDeclaration": BOUNDS_JS,
-                "objectId": object_id,
-                "returnByValue": true
-            }),
-        )
-        .await?;
-    let value = bounds
-        .result
-        .value
+    let rect: Bounds = PageJs::isolated(session)
+        .call::<Option<Bounds>>(backend_node_id, BOUNDS_JS, &[])
+        .await?
         .ok_or_else(|| CoreError::Message("Could not get element bounds.".to_string()))?;
-    let rect: Bounds =
-        serde_json::from_value(value).map_err(|err| CoreError::Message(err.to_string()))?;
     Ok(Point {
         x: rect.x + rect.w / 2.0,
         y: rect.y + rect.h / 2.0,
     })
+}
+
+/// The element's content box in `session`'s viewport CSS pixels, from its first content quad.
+pub async fn get_element_rect(
+    session: &ProtocolSession,
+    backend_node_id: i64,
+) -> Result<crate::overlay::Rect, CoreError> {
+    let quads = session
+        .send::<_, QuadsResult>(
+            "DOM.getContentQuads",
+            json!({ "backendNodeId": backend_node_id }),
+        )
+        .await?;
+    let quad = quads
+        .quads
+        .and_then(|quads| quads.into_iter().next())
+        .filter(|quad| quad.len() >= 8)
+        .ok_or_else(|| CoreError::Message("Could not get element bounds.".to_string()))?;
+    Ok(quad_bounds(&quad))
 }
 
 pub async fn scroll_into_view(session: &ProtocolSession, backend_node_id: i64) {
@@ -174,25 +224,13 @@ pub async fn click_blocker_at_point(
     backend_node_id: i64,
     point: Point,
 ) -> Result<Option<String>, CoreError> {
-    let object_id = resolve_object_id(session, backend_node_id, None).await?;
-    let result: CallFunctionResult = session
-        .send(
-            "Runtime.callFunctionOn",
-            json!({
-                "functionDeclaration": HIT_TEST_BLOCKER_JS,
-                "objectId": object_id,
-                "returnByValue": true,
-                "arguments": [
-                    { "value": point.x },
-                    { "value": point.y }
-                ]
-            }),
+    PageJs::isolated(session)
+        .call(
+            backend_node_id,
+            HIT_TEST_BLOCKER_JS,
+            &[json!(point.x), json!(point.y)],
         )
-        .await?;
-    Ok(result
-        .result
-        .value
-        .and_then(|value| value.as_str().map(ToString::to_string)))
+        .await
 }
 
 pub async fn focus_element(
@@ -219,7 +257,7 @@ pub async fn focus_element(
 // `DOM.focus` needs `DOM.getDocument` to have run for the session first, which
 // fresh MCP sessions have not done, so it fails with "Document needs to be
 // requested first" (#2640). `HTMLElement.focus()` over `Runtime.callFunctionOn`
-// has no such dependency, the same runtime path `js_click` already uses.
+// has no such dependency and uses the shared PageJs runtime path.
 //
 // Success is confirmed against the resulting active element, not merely that a
 // `focus` method exists: every HTMLElement exposes `focus()`, but disabled or
@@ -231,14 +269,14 @@ pub async fn focus_element_js(
     session: &ProtocolSession,
     backend_node_id: i64,
 ) -> Result<(), CoreError> {
-    let focused = call_on_element(
-        session,
-        backend_node_id,
-        "function(){if(typeof this.focus!=='function'){return false}this.focus();return this.getRootNode().activeElement===this}",
-        None,
-    )
-    .await?;
-    if focused.as_bool().unwrap_or(false) {
+    let focused: Option<bool> = PageJs::isolated(session)
+        .call(
+            backend_node_id,
+            "function(){if(typeof this.focus!=='function'){return false}this.focus();return this.getRootNode().activeElement===this}",
+            &[],
+        )
+        .await?;
+    if focused.unwrap_or(false) {
         Ok(())
     } else {
         Err(CoreError::Message(
@@ -247,24 +285,15 @@ pub async fn focus_element_js(
     }
 }
 
-pub async fn js_click(session: &ProtocolSession, backend_node_id: i64) -> Result<(), CoreError> {
-    let object_id = resolve_object_id(session, backend_node_id, None).await?;
-    let _: Value = session
-        .send(
-            "Runtime.callFunctionOn",
-            json!({ "functionDeclaration": "function(){this.click()}", "objectId": object_id }),
-        )
-        .await?;
-    Ok(())
-}
-
 /// Read the connected field, preserving the distinction between empty and unreadable.
 pub async fn get_input_value(
     session: &ProtocolSession,
     backend_node_id: i64,
 ) -> Result<String, CoreError> {
-    let value = call_on_element(session, backend_node_id, READ_INPUT_VALUE_JS, None).await?;
-    value.as_str().map(ToString::to_string).ok_or_else(|| {
+    let value: Option<String> = PageJs::isolated(session)
+        .call(backend_node_id, READ_INPUT_VALUE_JS, &[])
+        .await?;
+    value.ok_or_else(|| {
         CoreError::Message("Could not read the field value. Take a new snapshot.".to_string())
     })
 }
@@ -282,69 +311,19 @@ function() {
 }
 "#;
 
-pub async fn call_on_element(
-    session: &ProtocolSession,
-    backend_node_id: i64,
-    function_declaration: &str,
-    args: Option<Vec<Value>>,
-) -> Result<Value, CoreError> {
-    let object_id = resolve_object_id(session, backend_node_id, None).await?;
-    let result: CallFunctionResult = session
-        .send(
-            "Runtime.callFunctionOn",
-            call_function_params(function_declaration, object_id, args),
-        )
-        .await?;
-    Ok(result.result.value.unwrap_or(Value::Null))
-}
-
-fn call_function_params(
-    function_declaration: &str,
-    object_id: String,
-    args: Option<Vec<Value>>,
-) -> Value {
-    let mut params = serde_json::Map::new();
-    params.insert(
-        "functionDeclaration".to_string(),
-        Value::String(function_declaration.to_string()),
-    );
-    params.insert("objectId".to_string(), Value::String(object_id));
-    params.insert("returnByValue".to_string(), Value::Bool(true));
-    if let Some(args) = args {
-        params.insert(
-            "arguments".to_string(),
-            Value::Array(
-                args.into_iter()
-                    .map(|value| json!({ "value": value }))
-                    .collect(),
-            ),
-        );
+fn quad_bounds(quad: &[f64]) -> crate::overlay::Rect {
+    let xs = [quad[0], quad[2], quad[4], quad[6]];
+    let ys = [quad[1], quad[3], quad[5], quad[7]];
+    let left = xs.iter().copied().fold(f64::INFINITY, f64::min);
+    let top = ys.iter().copied().fold(f64::INFINITY, f64::min);
+    let right = xs.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    let bottom = ys.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    crate::overlay::Rect {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
     }
-    Value::Object(params)
-}
-
-pub async fn resolve_object_id(
-    session: &ProtocolSession,
-    backend_node_id: i64,
-    object_group: Option<&str>,
-) -> Result<String, CoreError> {
-    let mut params = serde_json::Map::new();
-    params.insert("backendNodeId".to_string(), Value::from(backend_node_id));
-    if let Some(object_group) = object_group {
-        params.insert(
-            "objectGroup".to_string(),
-            Value::String(object_group.to_string()),
-        );
-    }
-    let resolved: ResolveNodeResult = session
-        .send("DOM.resolveNode", Value::Object(params))
-        .await?;
-    resolved
-        .object
-        .and_then(|object| object.object_id)
-        .ok_or_else(|| {
-            CoreError::Message("Element not found in DOM. Take a new snapshot.".to_string())
-        })
 }
 
 fn quad_center(quad: &[f64]) -> Point {
@@ -355,14 +334,28 @@ fn quad_center(quad: &[f64]) -> Point {
 }
 
 #[cfg(test)]
+mod bounds_tests {
+    use super::quad_bounds;
+
+    #[test]
+    fn a_rotated_quad_reads_as_its_bounding_box() {
+        let rect = quad_bounds(&[10.0, 0.0, 20.0, 10.0, 10.0, 20.0, 0.0, 10.0]);
+        assert_eq!(
+            (rect.x, rect.y, rect.width, rect.height),
+            (0.0, 0.0, 20.0, 20.0)
+        );
+    }
+}
+
+#[cfg(test)]
 mod tests {
-    use super::{call_function_params, click_blocker_at_point, focus_element_js};
+    use super::{click_blocker_at_point, focus_element_js};
     use crate::{CoreError, ProtocolSession, connection::CdpConnection, input::Point};
-    use browseros_cdp::{CdpError, CdpEvent};
+    use browseros_cdp::{CdpError, CdpEvent, TargetedEvents};
     use futures_util::future::BoxFuture;
     use serde_json::{Value, json};
     use std::sync::{Arc, Mutex};
-    use tokio::sync::broadcast;
+    use tokio::sync::{broadcast, mpsc};
 
     #[derive(Clone, Copy)]
     enum HitTestResponse {
@@ -375,6 +368,7 @@ mod tests {
     struct MockConnection {
         response: HitTestResponse,
         calls: Mutex<Vec<Value>>,
+        targeted: TargetedEvents,
     }
 
     impl CdpConnection for MockConnection {
@@ -424,6 +418,10 @@ mod tests {
             rx
         }
 
+        fn events_targeted(&self, method: &str) -> mpsc::UnboundedReceiver<CdpEvent> {
+            self.targeted.subscribe(method)
+        }
+
         fn is_connected(&self) -> bool {
             true
         }
@@ -437,15 +435,9 @@ mod tests {
         let connection = Arc::new(MockConnection {
             response,
             calls: Mutex::new(Vec::new()),
+            targeted: TargetedEvents::default(),
         });
         (connection.clone(), ProtocolSession::root(connection))
-    }
-
-    #[test]
-    fn call_function_omits_absent_arguments() {
-        let params = call_function_params("function(){return this.checked}", "node-1".into(), None);
-
-        assert_eq!(params.get("arguments"), None);
     }
 
     #[tokio::test]

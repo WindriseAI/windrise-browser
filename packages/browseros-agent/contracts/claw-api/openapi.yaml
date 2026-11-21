@@ -26,8 +26,8 @@ paths:
     $ref: ./paths/settings.yaml#/telemetry
   /api/v1/settings/agent:
     $ref: ./paths/settings.yaml#/agent
-  /api/v1/settings/agent/jev-token:
-    $ref: ./paths/settings.yaml#/jevToken
+  /api/v1/help/events:
+    $ref: ./paths/sessions.yaml#/helpEvents
   /api/v1/sessions:
     $ref: ./paths/sessions.yaml#/collection
   /api/v1/sessions/{sessionId}:
@@ -36,6 +36,8 @@ paths:
     $ref: ./paths/sessions.yaml#/cancel
   /api/v1/sessions/{sessionId}/help/resolve:
     $ref: ./paths/sessions.yaml#/resolveHelp
+  /api/v1/sessions/{sessionId}/skill-draft:
+    $ref: ./paths/sessions.yaml#/skillDraft
   /api/v1/sessions/{sessionId}/recording:
     $ref: ./paths/recordings.yaml#/metadata
   /api/v1/sessions/{sessionId}/recording/events:
@@ -52,24 +54,62 @@ paths:
     $ref: ./paths/connections.yaml#/collection
   /api/v1/connections/{harness}:
     $ref: ./paths/connections.yaml#/harness
+  /api/v1/claude-desktop/extension:
+    $ref: ./paths/claude_desktop.yaml#/extension
+  /api/v1/claude-desktop/extension/install:
+    $ref: ./paths/claude_desktop.yaml#/install
   /api/v1/audit/storage:
     $ref: ./paths/audit.yaml#/storage
   /api/v1/audit/retention:
     $ref: ./paths/audit.yaml#/retention
   /api/v1/audit/cleanup:
     $ref: ./paths/audit.yaml#/cleanup
+  /api/v1/audit/agents:
+    $ref: ./paths/audit.yaml#/agents
   /api/v1/skills:
     $ref: ./paths/skills.yaml#/collection
   /api/v1/skills/{name}:
     $ref: ./paths/skills.yaml#/item
   /api/v1/skills/{name}/runs:
     $ref: ./paths/skills.yaml#/runs
+  /api/v1/skills/{name}/flow:
+    $ref: ./paths/skills.yaml#/flow
+  /api/v1/skills/{name}/ultrafast/approve-write:
+    $ref: ./paths/skills.yaml#/approveWrite
   /api/v1/directory:
     $ref: ./paths/skills.yaml#/directory
   /api/v1/directory/{name}:
     $ref: ./paths/skills.yaml#/directoryItem
   /api/v1/directory/{name}/add:
     $ref: ./paths/skills.yaml#/directoryAdd
+  /api/v1/plan:
+    $ref: ./paths/plan.yaml#/plan
+  /api/v1/plan/pricing:
+    $ref: ./paths/plan.yaml#/pricing
+  /api/v1/plan/checkout:
+    $ref: ./paths/plan.yaml#/checkout
+  /api/v1/plan/checkout/{checkoutId}:
+    $ref: ./paths/plan.yaml#/checkoutStatus
+  /api/v1/plan/key:
+    $ref: ./paths/plan.yaml#/key
+  /api/v1/plan/key/activate:
+    $ref: ./paths/plan.yaml#/activateKey
+  /api/v1/plan/key/computers/{installId}/remove:
+    $ref: ./paths/plan.yaml#/removeComputer
+  /api/v1/plan/key/computers/{installId}/rename:
+    $ref: ./paths/plan.yaml#/renameComputer
+  /api/v1/plan/key/reset:
+    $ref: ./paths/plan.yaml#/resetKey
+  /api/v1/plan/cancel:
+    $ref: ./paths/plan.yaml#/cancel
+  /api/v1/plan/resume:
+    $ref: ./paths/plan.yaml#/resume
+  /api/v1/plan/portal:
+    $ref: ./paths/plan.yaml#/portal
+  /api/v1/plan/refresh:
+    $ref: ./paths/plan.yaml#/refresh
+  /api/v1/plan/savings:
+    $ref: ./paths/plan.yaml#/savings
 components:
   parameters:
     SessionId:
@@ -88,6 +128,10 @@ components:
       $ref: ./parameters.yaml#/RecordingBatchId
     RecordingGap:
       $ref: ./parameters.yaml#/RecordingGap
+    CheckoutId:
+      $ref: ./parameters.yaml#/CheckoutId
+    InstallId:
+      $ref: ./parameters.yaml#/InstallId
   responses:
     BadRequest:
       $ref: ./responses.yaml#/BadRequest
@@ -101,6 +145,14 @@ components:
       $ref: ./responses.yaml#/PayloadTooLarge
     InternalError:
       $ref: ./responses.yaml#/InternalError
+    PlanForbidden:
+      $ref: ./responses.yaml#/PlanForbidden
+    PlanNotFound:
+      $ref: ./responses.yaml#/PlanNotFound
+    PlanRateLimited:
+      $ref: ./responses.yaml#/PlanRateLimited
+    BillingUnreachable:
+      $ref: ./responses.yaml#/BillingUnreachable
   schemas:
     ApiError:
       $ref: ./schemas/common.yaml#/ApiError
@@ -118,6 +170,12 @@ components:
       $ref: ./schemas/system.yaml#/SystemCapabilities
     SchemaStatus:
       $ref: ./schemas/system.yaml#/SchemaStatus
+    ScreencastWatch:
+      $ref: ./schemas/screencasts.yaml#/ScreencastWatch
+    ScreencastWatchMessage:
+      $ref: ./schemas/screencasts.yaml#/ScreencastWatchMessage
+    ScreencastFrameHeader:
+      $ref: ./schemas/screencasts.yaml#/ScreencastFrameHeader
     CockpitStats:
       $ref: ./schemas/cockpit.yaml#/CockpitStats
     CockpitStatsWindow:
@@ -134,10 +192,6 @@ components:
       $ref: ./schemas/settings.yaml#/UpdateTelemetryRequest
     AgentSettings:
       $ref: ./schemas/settings.yaml#/AgentSettings
-    JevTokenSource:
-      $ref: ./schemas/settings.yaml#/JevTokenSource
-    SaveJevTokenRequest:
-      $ref: ./schemas/settings.yaml#/SaveJevTokenRequest
     UpdateAgentSettingsRequest:
       $ref: ./schemas/settings.yaml#/UpdateAgentSettingsRequest
     SessionStatus:
@@ -150,6 +204,12 @@ components:
       $ref: ./schemas/sessions.yaml#/SessionBrowserTab
     SessionTokenUsage:
       $ref: ./schemas/sessions.yaml#/SessionTokenUsage
+    SessionUltrafastRun:
+      $ref: ./schemas/sessions.yaml#/SessionUltrafastRun
+    SessionPursueStep:
+      $ref: ./schemas/sessions.yaml#/SessionPursueStep
+    SessionPursueRun:
+      $ref: ./schemas/sessions.yaml#/SessionPursueRun
     SessionSummary:
       $ref: ./schemas/sessions.yaml#/SessionSummary
     SessionList:
@@ -188,6 +248,12 @@ components:
       $ref: ./schemas/connections.yaml#/Connection
     ConnectionList:
       $ref: ./schemas/connections.yaml#/ConnectionList
+    ClaudeDesktopExtension:
+      $ref: ./schemas/claude_desktop.yaml#/ClaudeDesktopExtension
+    ClaudeDesktopInstallStatus:
+      $ref: ./schemas/claude_desktop.yaml#/ClaudeDesktopInstallStatus
+    ClaudeDesktopInstallResult:
+      $ref: ./schemas/claude_desktop.yaml#/ClaudeDesktopInstallResult
     AuditRetentionMode:
       $ref: ./schemas/audit.yaml#/AuditRetentionMode
     AuditRetention:
@@ -200,6 +266,10 @@ components:
       $ref: ./schemas/audit.yaml#/SetAuditRetentionRequest
     AuditCleanupResult:
       $ref: ./schemas/audit.yaml#/AuditCleanupResult
+    AuditAgent:
+      $ref: ./schemas/audit.yaml#/AuditAgent
+    AuditAgentList:
+      $ref: ./schemas/audit.yaml#/AuditAgentList
     SkillOrigin:
       $ref: ./schemas/skills.yaml#/SkillOrigin
     Skill:
@@ -214,13 +284,101 @@ components:
       $ref: ./schemas/skills.yaml#/SkillDetail
     SkillTokenSavings:
       $ref: ./schemas/skills.yaml#/SkillTokenSavings
+    SkillUltrafastStatus:
+      $ref: ./schemas/skills.yaml#/SkillUltrafastStatus
+    SkillUltrafast:
+      $ref: ./schemas/skills.yaml#/SkillUltrafast
+    SkillUltrafastRunsMode:
+      $ref: ./schemas/skills.yaml#/SkillUltrafastRunsMode
+    SkillUltrafastAlwaysWith:
+      $ref: ./schemas/skills.yaml#/SkillUltrafastAlwaysWith
+    SkillUltrafastChoiceVia:
+      $ref: ./schemas/skills.yaml#/SkillUltrafastChoiceVia
+    SkillUltrafastRuns:
+      $ref: ./schemas/skills.yaml#/SkillUltrafastRuns
+    SkillFlowSource:
+      $ref: ./schemas/skills.yaml#/SkillFlowSource
+    SkillRunMode:
+      $ref: ./schemas/skills.yaml#/SkillRunMode
     SkillCreate:
       $ref: ./schemas/skills.yaml#/SkillCreate
     SkillUpdate:
       $ref: ./schemas/skills.yaml#/SkillUpdate
+    SkillDraftEffects:
+      $ref: ./schemas/skills.yaml#/SkillDraftEffects
+    SkillDraftConfidence:
+      $ref: ./schemas/skills.yaml#/SkillDraftConfidence
+    SkillDraftInputKind:
+      $ref: ./schemas/skills.yaml#/SkillDraftInputKind
+    SkillDraftInput:
+      $ref: ./schemas/skills.yaml#/SkillDraftInput
+    SkillDraft:
+      $ref: ./schemas/skills.yaml#/SkillDraft
+    SkillDraftState:
+      $ref: ./schemas/skills.yaml#/SkillDraftState
+    SkillDraftFailureCode:
+      $ref: ./schemas/skills.yaml#/SkillDraftFailureCode
+    SkillDraftLimitScope:
+      $ref: ./schemas/skills.yaml#/SkillDraftLimitScope
+    SkillDraftFailure:
+      $ref: ./schemas/skills.yaml#/SkillDraftFailure
+    SkillDraftStatus:
+      $ref: ./schemas/skills.yaml#/SkillDraftStatus
     DirectorySkill:
       $ref: ./schemas/skills.yaml#/DirectorySkill
     DirectorySkillList:
       $ref: ./schemas/skills.yaml#/DirectorySkillList
     DirectorySkillDetail:
       $ref: ./schemas/skills.yaml#/DirectorySkillDetail
+    PlanStatus:
+      $ref: ./schemas/plan.yaml#/PlanStatus
+    Plan:
+      $ref: ./schemas/plan.yaml#/Plan
+    PriceInterval:
+      $ref: ./schemas/plan.yaml#/PriceInterval
+    PlanPrice:
+      $ref: ./schemas/plan.yaml#/PlanPrice
+    PricedPlan:
+      $ref: ./schemas/plan.yaml#/PricedPlan
+    PlanPricing:
+      $ref: ./schemas/plan.yaml#/PlanPricing
+    StartPlanCheckoutRequest:
+      $ref: ./schemas/plan.yaml#/StartPlanCheckoutRequest
+    PlanCheckout:
+      $ref: ./schemas/plan.yaml#/PlanCheckout
+    PlanCheckoutPhase:
+      $ref: ./schemas/plan.yaml#/PlanCheckoutPhase
+    PlanCheckoutStatus:
+      $ref: ./schemas/plan.yaml#/PlanCheckoutStatus
+    PlanComputer:
+      $ref: ./schemas/plan.yaml#/PlanComputer
+    PlanKey:
+      $ref: ./schemas/plan.yaml#/PlanKey
+    ActivatePlanKeyRequest:
+      $ref: ./schemas/plan.yaml#/ActivatePlanKeyRequest
+    RenamePlanComputerRequest:
+      $ref: ./schemas/plan.yaml#/RenamePlanComputerRequest
+    PlanKeyChange:
+      $ref: ./schemas/plan.yaml#/PlanKeyChange
+    PlanKeyFullError:
+      $ref: ./schemas/plan.yaml#/PlanKeyFullError
+    PlanRateLimitedError:
+      $ref: ./schemas/plan.yaml#/PlanRateLimitedError
+    CancelPlanRequest:
+      $ref: ./schemas/plan.yaml#/CancelPlanRequest
+    PlanPortalFlow:
+      $ref: ./schemas/plan.yaml#/PlanPortalFlow
+    PlanPortalRequest:
+      $ref: ./schemas/plan.yaml#/PlanPortalRequest
+    PlanPortal:
+      $ref: ./schemas/plan.yaml#/PlanPortal
+    PlanSavings:
+      $ref: ./schemas/plan.yaml#/PlanSavings
+    PlanSavingsMeter:
+      $ref: ./schemas/plan.yaml#/PlanSavingsMeter
+    PlanSavingsPeriod:
+      $ref: ./schemas/plan.yaml#/PlanSavingsPeriod
+    PlanSavingsPeriods:
+      $ref: ./schemas/plan.yaml#/PlanSavingsPeriods
+    PlanSavingsSite:
+      $ref: ./schemas/plan.yaml#/PlanSavingsSite

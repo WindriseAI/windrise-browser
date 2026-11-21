@@ -10,39 +10,24 @@
 //! any tool was missing would have refused to start against a slightly older
 //! extension.
 
-use std::sync::Arc;
+use std::sync::atomic::{AtomicI64, AtomicU32, Ordering};
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use browseros_core::{
-    BrowserSession, BrowserView, PageId,
+    BrowserSession, BrowserView, DocumentMark, PageId,
     snapshot::{SnapshotMode, SnapshotOptions},
 };
 use browseros_decide::drive::{ActError, Driver, Journey, Move, Performed};
 use browseros_decide::view::PageView;
 use browseros_decide::vocabulary::{How, Operation};
-use browseros_mcp::{OutputFileAccess, TargetStore, ToolDef};
+use browseros_mcp::{OutputFileAccess, TargetStore, ToolDef, token_estimate::estimate_text_tokens};
 use serde_json::{Value, json};
 use tokio_util::sync::CancellationToken;
 
 use crate::AppState;
 use crate::api::mcp::dispatch::{ToolCall, ToolIdentity, dispatch_tool_call};
 use crate::ids::SessionId;
-
-/// Whether this server can offer the decision loop at all.
-///
-/// One type rather than four comparisons against `Option::None`. The catalogue,
-/// the server instructions, `run`'s own description and the body of the managed
-/// skill all have to answer this question the same way, and nothing enforces
-/// that while each of them asks it separately. An agent told to prefer a tool
-/// that is not listed, or offered a tool its instructions never mention, is
-/// worse off than one told nothing.
-///
-/// Read fresh wherever it is needed rather than cached, which keeps the
-/// catalogue and the instructions correct from the moment the environment has
-/// the credential. The managed skill is the one exception and says so where it
-/// is loaded: it is written to disk once per launch.
-// Both live in config so the skill loader, which is a service, can ask the same
-// question without reaching up into this layer.
-pub use crate::config::PursueOffering;
 
 /// How long to let a page keep changing before reading it anyway.
 ///
@@ -54,38 +39,39 @@ pub use crate::config::PursueOffering;
 /// stopped. The loop decides whether a move did anything by comparing
 /// fingerprints, so a read taken too early reports that a working control did
 /// nothing, and the control is retired.
-const SETTLE_BUDGET: std::time::Duration = std::time::Duration::from_millis(1_500);
+const SETTLE_BUDGET: Duration = Duration::from_millis(1_500);
 
 /// The same, for a wait the model chose and paid a whole request for.
 ///
 /// Longer than the settle every observe already does, because otherwise WAIT
 /// would be a request spent on nothing and the honest change would be to drop
 /// it from the vocabulary.
-const WAITED_FOR_BUDGET: std::time::Duration = std::time::Duration::from_millis(5_000);
+const WAITED_FOR_BUDGET: Duration = Duration::from_millis(5_000);
 
 /// Waits for the page to stop changing, for a bounded time.
 ///
-/// `browseros_core` already has this: it reads the tab's loading flag, waits out
-/// a navigation if it saw one, then watches a `MutationObserver` counter until
-/// two reads agree. The shared default budget is 50ms, which cannot reach its
-/// own 150ms navigation detect window or its own 100ms quiet interval, and its
-/// comment says it is short on purpose so that an agent's actions stay
-/// responsive, with the explicit `wait` tool for anything slower. That trade is
-/// right for a model that can name what it is waiting for. jev cannot write a
-/// selector or a substring, and a wait decision costs it a whole request, so it
-/// passes its own budget instead.
+/// jev cannot write a selector or a substring, and a wait decision costs it a whole request, so
+/// the loop passes its own budget instead of the short default an agent's action gets.
 ///
-/// The outcome is deliberately discarded. `BudgetExpired` means the page is
-/// still moving and the ceiling was reached, which is the case the ceiling is
-/// for; `Skipped` means the page could not be evaluated, and a snapshot is
-/// still the right next move. There is nothing a caller could do differently
-/// with either.
-async fn settle(
-    pages: &browseros_core::pages::PageManager,
-    page: u32,
-    budget: std::time::Duration,
-) {
-    let _ = browseros_core::settle::wait_for_action_settle(pages, PageId(page), budget).await;
+/// Read through the task's view, so the page resolved is the one its profile and window binding
+/// admit. The mark is taken before the move, so a navigation the move caused is waited out rather
+/// than mistaken for an older one.
+///
+/// The outcome is deliberately discarded. `BudgetExpired` means the page is still moving and the
+/// ceiling was reached, which is the case the ceiling is for; `Skipped` means the page could not
+/// be evaluated, and a snapshot is still the right next move.
+async fn settle(view: &BrowserView, page: u32, mark: DocumentMark, budget: Duration) {
+    let page_id = PageId(page);
+    if let Ok(session) = view.page_session(page_id.clone()).await {
+        let _ = browseros_core::settle::wait_for_action_settle(
+            &session,
+            view.signals(),
+            &page_id,
+            mark,
+            budget,
+        )
+        .await;
+    }
 }
 
 /// Where each tool sits in the connected peer's catalogue.
@@ -131,14 +117,26 @@ pub struct PageDriver {
     catalog: Arc<Vec<ToolDef>>,
     session_id: SessionId,
     identity: ToolIdentity,
-    /// Which window and tab group this session is bound to, captured once for
-    /// the run.
-    view: Option<BrowserView>,
+    /// Which profile, window and tab group this session is bound to, captured once for the run.
+    /// Every read and settle goes through it, as every tool call does.
+    view: BrowserView,
     target_store: Arc<dyn TargetStore>,
     default_tab_group_id: Option<String>,
     state: AppState,
     output_files: OutputFileAccess,
     cancel: CancellationToken,
+    /// Where the page's document events stood before the last move, for the settle after it.
+    mark: Mutex<Option<DocumentMark>>,
+    pages_read: AtomicU32,
+    page_tokens: AtomicI64,
+}
+
+/// The page states neo read itself during a run, none of which went to the agent.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct PageReads {
+    pub pages: u32,
+    /// The audit log's token estimate for those pages' text.
+    pub tokens: i64,
 }
 
 impl PageDriver {
@@ -149,7 +147,7 @@ impl PageDriver {
         catalog: Arc<Vec<ToolDef>>,
         session_id: SessionId,
         identity: ToolIdentity,
-        view: Option<BrowserView>,
+        view: BrowserView,
         target_store: Arc<dyn TargetStore>,
         default_tab_group_id: Option<String>,
         state: AppState,
@@ -172,7 +170,18 @@ impl PageDriver {
             state,
             output_files,
             cancel,
+            mark: Mutex::new(None),
+            pages_read: AtomicU32::new(0),
+            page_tokens: AtomicI64::new(0),
         })
+    }
+
+    /// What this run has read of the page so far.
+    pub fn reads(&self) -> PageReads {
+        PageReads {
+            pages: self.pages_read.load(Ordering::Relaxed),
+            tokens: self.page_tokens.load(Ordering::Relaxed),
+        }
     }
 
     pub fn page(&self) -> u32 {
@@ -210,10 +219,10 @@ impl PageDriver {
             // snapshot of which window and tab group this session is bound to,
             // which does not change under a run working one page, and capturing
             // it per decision would put a round trip in front of every action.
-            self.view.clone(),
+            Some(self.view.clone()),
             Arc::clone(&self.target_store),
             self.cancel.child_token(),
-            self.cancel.clone(),
+            self.cancel.child_token(),
             CancellationToken::new(),
             self.default_tab_group_id.clone(),
             self.state.clone(),
@@ -243,6 +252,22 @@ impl PageDriver {
             });
         }
         Ok(text)
+    }
+
+    fn set_mark(&self) {
+        let mark = self.view.signals().document_mark(&PageId(self.page));
+        if let Ok(mut slot) = self.mark.lock() {
+            *slot = Some(mark);
+        }
+    }
+
+    /// The mark taken before the last move, or where the page stands now when nothing moved.
+    fn take_mark(&self) -> DocumentMark {
+        self.mark
+            .lock()
+            .ok()
+            .and_then(|mut slot| slot.take())
+            .unwrap_or_else(|| self.view.signals().document_mark(&PageId(self.page)))
     }
 
     /// The act tool's arguments for one decision.
@@ -325,51 +350,33 @@ impl PageDriver {
     }
 
     async fn travel(&self, journey: &Journey) -> Result<(), ActError> {
-        match journey {
-            Journey::To(destination) if destination.new_tab => {
-                self.run(
-                    self.reach.tabs,
-                    Operation::Tabs,
-                    json!({ "action": "new", "url": destination.url }),
-                )
-                .await?;
-            }
-            Journey::To(destination) => {
-                self.run(
-                    self.reach.navigate,
-                    Operation::Navigate,
-                    json!({ "page": self.page, "url": destination.url }),
-                )
-                .await?;
-            }
-            Journey::Back => {
-                self.run(
-                    self.reach.navigate,
-                    Operation::Back,
-                    json!({ "page": self.page, "action": "back" }),
-                )
-                .await?;
-            }
-            Journey::Again => {
-                self.run(
-                    self.reach.navigate,
-                    Operation::Reload,
-                    json!({ "page": self.page, "action": "reload" }),
-                )
-                .await?;
-            }
-            Journey::Tab(page) => {
-                self.run(
-                    self.reach.tabs,
-                    Operation::Tabs,
-                    json!({ "action": "select", "page": page }),
-                )
-                .await?;
-            }
-        }
+        let (operation, args) = journey_call(self.page, journey);
+        let tool = match operation {
+            Operation::Tabs => self.reach.tabs,
+            _ => self.reach.navigate,
+        };
+        self.run(tool, operation, args).await?;
         // As in `act`: the observe that follows settles, so there is nothing
         // for a sleep to add.
         Ok(())
+    }
+}
+
+/// The browser call a move between pages makes. A destination always loads in the working page,
+/// since every later look and step reads that page; opening it in another tab would leave the run
+/// behind on the old one.
+fn journey_call(page: u32, journey: &Journey) -> (Operation, Value) {
+    match journey {
+        Journey::To(destination) => (
+            Operation::Navigate,
+            json!({ "page": page, "url": destination.url }),
+        ),
+        Journey::Back => (Operation::Back, json!({ "page": page, "action": "back" })),
+        Journey::Again => (
+            Operation::Reload,
+            json!({ "page": page, "action": "reload" }),
+        ),
+        Journey::Tab(tab) => (Operation::Tabs, json!({ "action": "select", "page": tab })),
     }
 }
 
@@ -379,8 +386,13 @@ impl Driver for PageDriver {
     }
 
     async fn observe(&self) -> Result<PageView, String> {
-        settle(self.session.pages.as_ref(), self.page, SETTLE_BUDGET).await;
-        let observer = self.session.observe(PageId(self.page)).await;
+        let mark = self.take_mark();
+        settle(&self.view, self.page, mark, SETTLE_BUDGET).await;
+        let observer = self
+            .view
+            .observe(PageId(self.page))
+            .await
+            .map_err(|error| error.to_string())?;
         let snapshot = observer
             .snapshot_with_options(SnapshotOptions {
                 mode: SnapshotMode::Full,
@@ -388,10 +400,14 @@ impl Driver for PageDriver {
             })
             .await
             .map_err(|error| error.to_string())?;
+        self.pages_read.fetch_add(1, Ordering::Relaxed);
+        self.page_tokens.fetch_add(
+            i64::try_from(estimate_text_tokens(&snapshot.text)).unwrap_or(i64::MAX),
+            Ordering::Relaxed,
+        );
         let title = self
-            .session
-            .pages
-            .get_info(PageId(self.page))
+            .view
+            .page(PageId(self.page))
             .await
             .map(|info| info.title)
             .unwrap_or_default();
@@ -404,6 +420,7 @@ impl Driver for PageDriver {
     }
 
     async fn perform(&self, act: &Move) -> Result<Performed, ActError> {
+        self.set_mark();
         match act {
             Move::Act(decision) => {
                 self.act(decision).await?;
@@ -416,7 +433,8 @@ impl Driver for PageDriver {
                 Ok(Performed::Moved)
             }
             Move::Settle => {
-                settle(self.session.pages.as_ref(), self.page, WAITED_FOR_BUDGET).await;
+                let mark = self.take_mark();
+                settle(&self.view, self.page, mark, WAITED_FOR_BUDGET).await;
                 Ok(Performed::Unmoved)
             }
         }
@@ -489,6 +507,21 @@ mod tests {
             "what it does have is still offered"
         );
         assert!(!missing.contains(&Operation::Act));
+    }
+
+    /// A destination marked for a new tab used to open one while the run kept reading the old
+    /// page. Every destination now loads in the page pursue is working on.
+    #[test]
+    fn a_destination_always_loads_in_the_working_page() {
+        let destination = browseros_decide::offer::Destination {
+            label: "Cart".to_string(),
+            url: "https://shop.test/cart".to_string(),
+            new_tab: true,
+        };
+        let (operation, args) = journey_call(7, &Journey::To(destination));
+        assert_eq!(operation, Operation::Navigate);
+        assert_eq!(args, json!({ "page": 7, "url": "https://shop.test/cart" }));
+        assert_eq!(journey_call(7, &Journey::Tab(3)).0, Operation::Tabs);
     }
 
     /// A peer that ships everything withholds nothing.

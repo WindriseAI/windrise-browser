@@ -1,228 +1,258 @@
-/**
- * @license
- * Copyright 2026 BrowserOS
- * SPDX-License-Identifier: AGPL-3.0-or-later
- */
-
 import { describe, expect, it } from 'bun:test'
 import type { SessionScreenshot } from '@browseros/claw-api'
+import type { DescribedStep } from '@/lib/step-sentences'
 import type { ToolDispatchRow } from '@/modules/api/audit.hooks'
-import { groupDispatchesByTab, pickDefaultTabId } from './task-detail.helpers'
+import type { ReplayAction } from '@/screens/replay/session-replay'
+import {
+  actionForStep,
+  activeStepIndex,
+  lastPageUrl,
+  neoRunMarks,
+  offsetFromTakeover,
+  pagesVisited,
+  railItems,
+  snapshotForStep,
+  ultrafastLineText,
+} from './task-detail.helpers'
 
-function dispatch(
-  id: number,
-  pageId: number | null,
-  overrides: Partial<ToolDispatchRow> = {},
+function step(firstAt: number, dispatchIds: number[]): DescribedStep {
+  return {
+    sentence: `step at ${firstAt}`,
+    verb: 'read',
+    dispatchIds,
+    firstAt,
+    isError: false,
+    cancelled: false,
+    hidden: false,
+  }
+}
+
+function row(
+  dispatchId: number,
+  createdAt: number,
+  extra: Partial<ToolDispatchRow> = {},
 ): ToolDispatchRow {
   return {
-    dispatchId: id,
-    createdAt: 1_000_000 + id,
+    dispatchId,
+    createdAt,
     slug: 'codex',
     label: 'Codex',
     sessionId: 's',
-    toolName: 'snapshot',
-    ...(pageId === null ? {} : { pageId }),
-    durationMs: 5,
-    ...overrides,
+    toolName: 'read',
+    ...extra,
   }
 }
 
-function screenshot(screenshotId: number): SessionScreenshot {
-  return {
-    screenshotId,
-    capturedAt: 1_000_000 + screenshotId,
-    toolName: 'screenshot',
-  }
-}
+const steps = [step(1_000, [1]), step(5_000, [2, 3]), step(9_000, [4])]
 
-function expectDefined<T>(value: T | undefined): T {
-  expect(value).toBeDefined()
-  if (value === undefined) throw new Error('Expected value to be defined')
-  return value
-}
-
-describe('groupDispatchesByTab', () => {
-  it('returns an empty array for zero dispatches', () => {
-    expect(groupDispatchesByTab([], [])).toEqual([])
-  })
-
-  it('all null-pageId dispatches yields a Session bucket only (no page tabs)', () => {
-    const rows = [dispatch(1, null), dispatch(2, null), dispatch(3, null)]
-    const groups = groupDispatchesByTab(rows, [])
-    expect(groups).toHaveLength(1)
-    const session = expectDefined(groups[0])
-    expect(session.id).toBe('session')
-    expect(session.label).toBe('Session')
-    expect(session.pageId).toBeNull()
-    expect(session.dispatchCount).toBe(3)
-    expect(session.dispatches.map((d) => d.dispatchId)).toEqual([1, 2, 3])
-  })
-
-  it('single pageId + zero null dispatches yields Session + one page tab', () => {
-    const rows = [
-      dispatch(1, 7, { url: 'https://a.example/', title: 'A' }),
-      dispatch(2, 7, { url: 'https://a.example/next', title: 'A2' }),
-    ]
-    const groups = groupDispatchesByTab(rows, [])
-    expect(groups).toHaveLength(2)
-    const session = expectDefined(groups[0])
-    const page = expectDefined(groups[1])
-    expect(session.id).toBe('session')
-    expect(session.dispatchCount).toBe(2)
-    expect(page.id).toBe('page-7')
-    expect(page.label).toBe('Tab 1')
-  })
-
-  it('page tabs are labelled sequentially by first-appearance order (Tab 1, Tab 2, ...) not by raw pageId', () => {
-    // codex may open pageIds 43, 21, 55 in that chronological order.
-    // We want Tab 1 -> 43, Tab 2 -> 21, Tab 3 -> 55.
-    const rows = [
-      dispatch(1, 43),
-      dispatch(2, 21),
-      dispatch(3, 43),
-      dispatch(4, 55),
-      dispatch(5, 21),
-    ]
-    const groups = groupDispatchesByTab(rows, [])
-    const pageGroups = groups.filter((g) => g.id !== 'session')
-    expect(pageGroups.map((g) => g.label)).toEqual(['Tab 1', 'Tab 2', 'Tab 3'])
-    expect(pageGroups.map((g) => g.pageId)).toEqual([43, 21, 55])
-  })
-
-  it('Session bucket contains EVERY dispatch (overview semantics)', () => {
-    const rows = [
-      dispatch(1, null),
-      dispatch(2, 7),
-      dispatch(3, 1),
-      dispatch(4, null),
-      dispatch(5, 3),
-    ]
-    const groups = groupDispatchesByTab(rows, [])
-    const session = expectDefined(groups.find((g) => g.id === 'session'))
-    expect(session.dispatchCount).toBe(5)
-    expect(session.dispatches.map((d) => d.dispatchId)).toEqual([1, 2, 3, 4, 5])
-  })
-
-  it('Session bucket contains EVERY screenshot (overview semantics)', () => {
-    const rows = [
-      dispatch(1, null),
-      dispatch(2, 3),
-      dispatch(3, 3, { screenshotId: 31 }),
-      dispatch(4, 7),
-      dispatch(5, 7, { screenshotId: 51 }),
-    ]
-    const screenshots = [screenshot(11), screenshot(31), screenshot(51)]
-    const groups = groupDispatchesByTab(rows, screenshots)
-    const session = expectDefined(groups.find((g) => g.id === 'session'))
-    expect(session.screenshots).toEqual(screenshots)
-  })
-
-  it('preserves chronological order inside per-page groups', () => {
-    const rows = [
-      dispatch(1, 5),
-      dispatch(2, null),
-      dispatch(3, 5),
-      dispatch(4, 5),
-      dispatch(5, null),
-    ]
-    const groups = groupDispatchesByTab(rows, [])
-    const page = expectDefined(groups.find((g) => g.id === 'page-5'))
-    expect(page.dispatches.map((d) => d.dispatchId)).toEqual([1, 3, 4])
-  })
-
-  it('per-page displayUrl uses the LAST non-null url observed in that group', () => {
-    const rows = [
-      dispatch(1, 7, { url: 'https://first.example/', title: 'First' }),
-      dispatch(2, 7, { url: undefined, title: undefined }),
-      dispatch(3, 7, { url: 'https://latest.example/', title: 'Latest' }),
-      dispatch(4, 7, { url: undefined, title: undefined }),
-    ]
-    const g = expectDefined(
-      groupDispatchesByTab(rows, []).find((x) => x.id === 'page-7'),
-    )
-    expect(g.displayUrl).toBe('https://latest.example/')
-    expect(g.displayTitle).toBe('Latest')
-  })
-
-  it('per-page displayUrl is null when every url in the group is null', () => {
-    const rows = [dispatch(1, 9), dispatch(2, 9)]
-    const g = expectDefined(
-      groupDispatchesByTab(rows, []).find((x) => x.id === 'page-9'),
-    )
-    expect(g.displayUrl).toBeNull()
-    expect(g.displayTitle).toBeNull()
-  })
-
-  it('per-page displayUrl + displayTitle come from the SAME paired dispatch when one exists', () => {
-    // Simulates a mid-navigation dispatch (has url but null title)
-    // FOLLOWED by a load-complete dispatch (has both url + title).
-    // Without the paired-preference guard, `lastWithTitle` might
-    // reach further back and return a stale title next to the
-    // freshest url. With the guard, both come from the last
-    // dispatch that carried them together.
-    const rows = [
-      dispatch(1, 7, { url: 'https://old.example/', title: 'Old title' }),
-      dispatch(2, 7, { url: 'https://new.example/', title: undefined }),
-      dispatch(3, 7, { url: 'https://new.example/', title: 'New title' }),
-    ]
-    const g = expectDefined(
-      groupDispatchesByTab(rows, []).find((x) => x.id === 'page-7'),
-    )
-    expect(g.displayUrl).toBe('https://new.example/')
-    expect(g.displayTitle).toBe('New title')
-  })
-
-  it('per-page displayUrl/displayTitle fall back independently when no paired dispatch exists', () => {
-    // No single dispatch carries both fields; each field falls
-    // back to its own most-recent non-null value.
-    const rows = [
-      dispatch(1, 3, { url: undefined, title: 'Only title' }),
-      dispatch(2, 3, { url: 'https://only-url.example/', title: undefined }),
-    ]
-    const g = expectDefined(
-      groupDispatchesByTab(rows, []).find((x) => x.id === 'page-3'),
-    )
-    expect(g.displayUrl).toBe('https://only-url.example/')
-    expect(g.displayTitle).toBe('Only title')
-  })
-
-  it('filters screenshot metadata to the page whose dispatch owns it', () => {
-    const rows = [
-      dispatch(1, null),
-      dispatch(2, 3),
-      dispatch(3, 3, { screenshotId: 31 }),
-      dispatch(4, 7),
-      dispatch(5, 7, { screenshotId: 51 }),
-    ]
-    const groups = groupDispatchesByTab(rows, [
-      screenshot(11),
-      screenshot(31),
-      screenshot(51),
-    ])
-    const page3 = expectDefined(groups.find((g) => g.id === 'page-3'))
-    const page7 = expectDefined(groups.find((g) => g.id === 'page-7'))
-    expect(page3.screenshots.map((item) => item.screenshotId)).toEqual([31])
-    expect(page7.screenshots.map((item) => item.screenshotId)).toEqual([51])
+describe('activeStepIndex', () => {
+  it('follows the playhead, including the later calls folded into a step', () => {
+    expect(activeStepIndex(steps, null)).toBe(-1)
+    expect(activeStepIndex(steps, 500)).toBe(-1)
+    expect(activeStepIndex(steps, 1_000)).toBe(0)
+    expect(activeStepIndex(steps, 7_000)).toBe(1)
+    expect(activeStepIndex(steps, 60_000)).toBe(2)
   })
 })
 
-describe('pickDefaultTabId', () => {
-  it('always returns Session when it exists (overview-first)', () => {
-    const rows = [dispatch(1, null), dispatch(2, 3), dispatch(3, 7)]
-    expect(pickDefaultTabId(groupDispatchesByTab(rows, []))).toBe('session')
+describe('actionForStep', () => {
+  it('seeks to the first recorded action of the step', () => {
+    const actions = [3, 2, 4].map(
+      (dispatchId, sourceIndex) =>
+        ({ frame: { dispatchId }, startAt: sourceIndex }) as ReplayAction,
+    )
+    expect(actionForStep(steps[1] as DescribedStep, actions)?.startAt).toBe(0)
+    expect(actionForStep(step(0, [99]), actions)).toBeUndefined()
+  })
+})
+
+describe('snapshotForStep', () => {
+  const shots: SessionScreenshot[] = [
+    { screenshotId: 10, capturedAt: 900, toolName: 'navigate' },
+    { screenshotId: 11, capturedAt: 4_000, toolName: 'act' },
+  ]
+  it('prefers the step’s own picture, else the latest one before it', () => {
+    const dispatches = [row(2, 5_000), row(3, 5_500, { screenshotId: 12 })]
+    expect(snapshotForStep(steps[1] as DescribedStep, dispatches, shots)).toBe(
+      12,
+    )
+    expect(snapshotForStep(steps[2] as DescribedStep, dispatches, shots)).toBe(
+      11,
+    )
+    expect(snapshotForStep(step(100, [7]), dispatches, shots)).toBeNull()
+  })
+})
+
+describe('lastPageUrl', () => {
+  it('is the page of the last step, even one visited earlier', () => {
+    expect(
+      lastPageUrl([
+        row(1, 1, { url: 'https://a.example/' }),
+        row(2, 2, { url: 'https://b.example/' }),
+        row(3, 3, { url: 'https://a.example/#top' }),
+        row(4, 4, { url: 'chrome://newtab/' }),
+      ]),
+    ).toBe('https://a.example/')
+    expect(lastPageUrl([row(1, 1, { url: 'chrome://newtab/' })])).toBe(
+      undefined,
+    )
+  })
+})
+
+describe('pagesVisited', () => {
+  it('lists each web page once, keeps the latest title, skips non-web pages', () => {
+    const pages = pagesVisited([
+      row(1, 1, { url: 'https://www.google.com/travel/flights#x', title: '' }),
+      row(2, 2, { url: 'chrome://newtab/' }),
+      row(3, 3, {
+        url: 'https://www.google.com/travel/flights',
+        title: 'Flights',
+      }),
+      row(4, 4, { url: 'https://news.ycombinator.com/', title: 'HN' }),
+    ])
+    expect(pages).toEqual([
+      {
+        url: 'https://www.google.com/travel/flights',
+        host: 'google.com',
+        title: 'Flights',
+      },
+      {
+        url: 'https://news.ycombinator.com/',
+        host: 'news.ycombinator.com',
+        title: 'HN',
+      },
+    ])
+  })
+})
+
+describe('neo runs in the step list', () => {
+  const takeover = {
+    ...step(1_000, [1]),
+    neoRun: {
+      goal: 'Pick a show',
+      outcome: 'handed_back' as const,
+      stepCount: 2,
+    },
+  }
+  const steps = [
+    step(500, [0]),
+    takeover,
+    { ...step(1_400, [2]), neoOffsetMs: 400 },
+    { ...step(3_100, [3]), neoOffsetMs: 2_100 },
+    step(6_000, [4]),
+  ]
+
+  it('gathers each run behind its takeover', () => {
+    expect(railItems(steps)).toEqual([
+      { kind: 'step', index: 0 },
+      { kind: 'run', takeover: 1, steps: [2, 3] },
+      { kind: 'step', index: 4 },
+    ])
   })
 
-  it('returns Session even for a session-only task', () => {
-    const rows = [dispatch(1, null), dispatch(2, null)]
-    expect(pickDefaultTabId(groupDispatchesByTab(rows, []))).toBe('session')
+  it('times neo’s steps from the takeover', () => {
+    expect(offsetFromTakeover(400)).toBe('+0.4s')
+    expect(offsetFromTakeover(9_960)).toBe('+10.0s')
+    expect(offsetFromTakeover(12_400)).toBe('+12s')
   })
 
-  it('returns Session even for a page-only task', () => {
-    const rows = [dispatch(1, 5), dispatch(2, 5)]
-    expect(pickDefaultTabId(groupDispatchesByTab(rows, []))).toBe('session')
+  it('keeps a pursue call that failed as an ordinary row', () => {
+    const failed = { ...takeover, isError: true }
+    expect(
+      railItems([step(500, [0]), failed]).map((item) => item.kind),
+    ).toEqual(['step', 'step'])
   })
 
-  it('returns undefined for an empty group list', () => {
-    expect(pickDefaultTabId([])).toBeUndefined()
+  it('marks the run on the scrubber from the takeover to neo’s last step', () => {
+    const action = (dispatchId: number, startAt: number) =>
+      ({
+        frame: { dispatchId },
+        startAt,
+        completionAt: startAt,
+      }) as ReplayAction
+    expect(
+      neoRunMarks(steps, [
+        action(1, 40),
+        action(2, 41),
+        action(3, 43),
+        action(4, 50),
+      ]),
+    ).toEqual([{ startAt: 40, endAt: 43 }])
+  })
+
+  it('ends the mark at the last call of a folded last step', () => {
+    const action = (dispatchId: number, startAt: number) =>
+      ({
+        frame: { dispatchId },
+        startAt,
+        completionAt: startAt,
+      }) as ReplayAction
+    const folded = [
+      ...steps.slice(0, 3),
+      { ...steps[3], dispatchIds: [3, 5] },
+      steps[4],
+    ]
+    expect(
+      neoRunMarks(folded, [
+        action(1, 40),
+        action(2, 41),
+        action(3, 43),
+        action(5, 44),
+        action(4, 50),
+      ]),
+    ).toEqual([{ startAt: 40, endAt: 44 }])
+  })
+})
+
+describe('the ultrafast line on the task page', () => {
+  const words = (text: ReturnType<typeof ultrafastLineText>) =>
+    text?.sentence
+      .map((part) => (typeof part === 'string' ? part : part.figure))
+      .join('')
+
+  it('says neo handed the page back, with the figures it saved', () => {
+    const text = ultrafastLineText(
+      {
+        outcome: 'handed_back',
+        durationMs: 5_662,
+        steps: [{ action: 'click' }, { action: 'click' }, { action: 'scroll' }],
+      },
+      { durationMs: 5_662, pagesRead: 4, tokensSaved: 46_210 },
+      'Claude',
+    )
+    expect(words(text)).toBe(
+      'neo did 3 steps in 6 sec, then handed the page back to Claude.',
+    )
+    expect(text?.figures).toEqual([
+      { value: '46k', label: 'tokens saved' },
+      { value: '4', label: 'pages read' },
+    ])
+  })
+
+  it('says neo finished on its own and adds its steps', () => {
+    const text = ultrafastLineText(
+      { outcome: 'completed', durationMs: 9_200, steps: [{ action: 'click' }] },
+      { durationMs: 9_200, pagesRead: 1, tokensSaved: 900 },
+      'Claude',
+    )
+    expect(words(text)).toBe('neo finished the task on its own in 9 sec.')
+    expect(
+      text?.figures.map((figure) => `${figure.value} ${figure.label}`),
+    ).toEqual(['900 tokens saved', '1 page read', '1 step by neo'])
+  })
+
+  it('says neo read the pages itself on a skill run', () => {
+    const text = ultrafastLineText(
+      undefined,
+      { durationMs: 15_354, pagesRead: 9, tokensSaved: 61_942 },
+      'Claude',
+    )
+    expect(words(text)).toBe(
+      'neo read the pages itself in 15 sec, so Claude didn’t have to.',
+    )
+  })
+
+  it('says nothing on a task that ran the normal way', () => {
+    expect(ultrafastLineText(undefined, undefined, 'Claude')).toBe(null)
   })
 })

@@ -308,7 +308,12 @@ describe('skills API schema', () => {
     expect(paths.directoryItem?.get?.operationId).toBe('getDirectorySkill')
     expect(paths.directoryAdd?.post?.operationId).toBe('addDirectorySkill')
 
-    expect(schemas.SkillOrigin?.enum).toEqual(['agent', 'manual', 'directory'])
+    expect(schemas.SkillOrigin?.enum).toEqual([
+      'agent',
+      'manual',
+      'directory',
+      'history',
+    ])
     expect(schemas.Skill?.required).toEqual([
       'name',
       'description',
@@ -347,5 +352,127 @@ describe('skills API schema', () => {
       'description',
       'installs',
     ])
+  })
+
+  test('defines skill drafts made from a finished task', () => {
+    const sessionPaths = yaml('paths/sessions.yaml') as Record<
+      string,
+      Record<string, { operationId?: string }>
+    >
+    const schemas = yaml('schemas/skills.yaml') as Record<
+      string,
+      {
+        enum?: string[]
+        required?: string[]
+        properties?: Record<string, unknown>
+      }
+    >
+
+    expect(sessionPaths.skillDraft?.get?.operationId).toBe('getSkillDraft')
+    expect(sessionPaths.skillDraft?.post?.operationId).toBe(
+      'draftSkillFromSession',
+    )
+    expect(schemas.SkillDraftState?.enum).toEqual([
+      'none',
+      'writing',
+      'ready',
+      'failed',
+      'saved',
+    ])
+    expect(schemas.SkillDraftFailureCode?.enum).toEqual([
+      'limit_reached',
+      'drafts_paused',
+      'draft_unusable',
+      'upstream_error',
+      'in_progress',
+    ])
+    expect(schemas.SkillDraft?.required).toEqual([
+      'name',
+      'title',
+      'description',
+      'site',
+      'steps',
+      'inputs',
+      'notes',
+      'effects',
+      'confidence',
+    ])
+    expect(Object.keys(schemas.SkillCreate?.properties ?? {})).toEqual(
+      expect.arrayContaining(['sourceSessionId', 'summary', 'inputs']),
+    )
+  })
+})
+
+describe('plan API schema', () => {
+  const routes = {
+    '/api/v1/plan': ['plan', 'get', 'getPlan'],
+    '/api/v1/plan/pricing': ['pricing', 'get', 'getPlanPricing'],
+    '/api/v1/plan/savings': ['savings', 'get', 'getPlanSavings'],
+    '/api/v1/plan/checkout': ['checkout', 'post', 'startPlanCheckout'],
+    '/api/v1/plan/checkout/{checkoutId}': [
+      'checkoutStatus',
+      'get',
+      'getPlanCheckout',
+    ],
+    '/api/v1/plan/key': ['key', 'get', 'getPlanKey'],
+    '/api/v1/plan/key/activate': ['activateKey', 'post', 'activatePlanKey'],
+    '/api/v1/plan/key/computers/{installId}/remove': [
+      'removeComputer',
+      'post',
+      'removePlanComputer',
+    ],
+    '/api/v1/plan/key/computers/{installId}/rename': [
+      'renameComputer',
+      'post',
+      'renamePlanComputer',
+    ],
+    '/api/v1/plan/key/reset': ['resetKey', 'post', 'resetPlanKey'],
+    '/api/v1/plan/cancel': ['cancel', 'post', 'cancelPlan'],
+    '/api/v1/plan/resume': ['resume', 'post', 'resumePlan'],
+    '/api/v1/plan/portal': ['portal', 'post', 'openPlanPortal'],
+    '/api/v1/plan/refresh': ['refresh', 'post', 'refreshPlan'],
+  } as const
+
+  test('registers every plan route under its operation', () => {
+    const openapi = yaml('openapi.yaml') as {
+      paths: Record<string, unknown>
+    }
+    const paths = yaml('paths/plan.yaml') as Record<
+      string,
+      Record<string, { operationId?: string }>
+    >
+
+    expect(Object.keys(routes)).toHaveLength(14)
+    for (const [route, [name, method, operationId]] of Object.entries(routes)) {
+      expect(openapi.paths[route]).toEqual({
+        $ref: `./paths/plan.yaml#/${name}`,
+      })
+      expect(paths[name]?.[method]?.operationId).toBe(operationId)
+    }
+    expect(Object.keys(paths).toSorted()).toEqual(
+      Object.values(routes)
+        .map(([name]) => name)
+        .toSorted(),
+    )
+  })
+
+  test('never carries a licence key out of the server', () => {
+    const schemas = yaml('schemas/plan.yaml') as Record<
+      string,
+      { properties?: Record<string, unknown> }
+    >
+    const withKeyField = Object.entries(schemas)
+      .filter(([, schema]) => schema.properties && 'key' in schema.properties)
+      .map(([name]) => name)
+
+    expect(withKeyField.toSorted()).toEqual([
+      'ActivatePlanKeyRequest',
+      'PlanKeyChange',
+    ])
+    expect(schemas.PlanKeyChange?.properties?.key).toMatchObject({
+      allOf: [{ $ref: '#/PlanKey' }],
+    })
+    expect(schemas.PlanKey?.properties).not.toHaveProperty('key')
+    expect(schemas.PlanCheckoutStatus?.properties).not.toHaveProperty('key')
   })
 })
