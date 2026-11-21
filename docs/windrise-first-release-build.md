@@ -37,7 +37,7 @@
 | **14 地址栏通用插槽** | C++通用插槽 | `browser_os_api.cc/.h` / `browser_actions.cc` / `browser_os.idl` | 扩展API/UI局部编译并链接 | 插件设置每标签文字/显隐/图标；仅受限固定内置扩展可用，定向回调 | 补丁回放通过，运行未测 |
 | **15 统一办公上下分段** | C++通用插槽 | `tab_strip_view.cc` / `vertical_tab_strip_region_view.cc` | 标签布局局部编译并链接 | 双滚动容器与可拖分隔，AI区成员由插件指定，不改TabStripModel | 补丁回放通过，运行未测 |
 | **16 组合页银边** | C++通用插槽 | `contents_container_outline.cc` / `contents_container_view.cc` | 边框视图局部编译并链接 | 静态银边走 Outline，流动流光共用光效层 | 补丁回放通过，运行未测 |
-| **17 品牌译文回填** | 语言包迁移 | `xtb_rebrand.py` / `xtb_coverage.py` / 3 类 `.xtb` | 只重生成 `.pak`，不重编C++ | GRIT解析活动消息，老ID回填新ID，81语言覆盖 | 脚本测试通过，编译未测 |
+| **17 品牌译文回填** | 语言包迁移 | `xtb_rebrand.py` / `xtb_coverage.py` / 3 类 `.xtb` | 只重生成 `.pak`，不重编C++ | GRIT解析活动消息，老ID回填新ID，源码覆盖 81 语言（Windows 首发 `chrome.release` 仅随包打入 `en-US.pak`、`zh-CN.pak`） | 脚本测试通过，编译未测 |
 | **新增：窗口浮层插槽** | C++通用插槽 | `browser_view.cc` / `browser_view_layout_impl.cc` | 窗口级UI编译并链接 | 透明 WebView 只载内置插件，交互卡片命中有效，空白穿透不冻网页 | 补丁回放通过，运行未测 |
 | **新增：穿透光效层** | C++通用插槽 | `browser_view.cc` / `contents_container_view.cc` | 窗口级UI编译并链接 | 原生树禁输入/焦点，网页区/分屏 bounds 变化事件驱动，插件画银光 | 补丁回放通过，运行未测 |
 | **新增：Windows闪烁** | 只改插件 | `windows_api.cc:1223` -> `FlashFrame` | 无需重编 | 插件调用 `chrome.windows.update(windowId, {drawAttention: true})` | 源码已核，行为未测 |
@@ -121,7 +121,7 @@ OK
 - `test_duplicate_ids_rejected_before_producing_output`: 重复 ID 严格拒绝。
 - `test_unrelated_entries_and_chromeos_are_not_blindly_rebranded`: ChromeOS 项及非目标条目不被误替换。
 
-### 4.3 81 语言与三资源覆盖分析
+### 4.3 81 语言与三资源源码覆盖分析（首发包仅随包携带中英 `.pak`）
 运行分析工具：
 ```bash
 python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/chromium/src
@@ -139,6 +139,7 @@ python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/c
   - `fr`: 总计 654 条，已翻译 24 条，成功回填恢复 578 条，可恢复率 **92.05%**。
   - `de`: 总计 654 条，已翻译 24 条，成功回填恢复 544 条，可恢复率 **86.85%**。
   - 全球 81 种语言共计 52,320 处检查条目。
+- **Windows 首发打包范围**：上述 81 语言为源码 `.xtb` 译文迁移分析范围；按 `packages/browseros/chromium_patches/chrome/installer/mini_installer/chrome.release`（`locales\en-US.pak`、`locales\zh-CN.pak`），Windows 首发包仅随包携带中英两套 `.pak`，繁体中文等其他系统语言默认回退英文。
 - **zh-CN 52 条未恢复项原因分类**：
   - **品牌专有名词**（Chromium 官方从未提供翻译，各语言原样保留英文）：如 `IDS_PRODUCT_NAME` ("Chromium")、`IDS_SHORT_PRODUCT_NAME`、`IDS_ACCNAME_APP`、`IDS_PASSWORD_MANAGER_TITLE_BRAND`。
   - **资源映射占位符**（Chromium 源码中明确标记为占位，无实际翻译）：如 `IDS_ABOUT_TERMS_OF_SERVICE` ("Not used in Chromium. Placeholder...")、`IDS_UPDATE_RECOMMENDED_DIALOG_TITLE_ALT`。
