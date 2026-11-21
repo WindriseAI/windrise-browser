@@ -54,7 +54,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +      destination: OTHER
 +      internal {
 +        contacts {
-+          email: "nikhil@browseros.com"
++          email: "support@windrisebridge.com"
 +        }
 +      }
 +    }
@@ -77,7 +77,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +      destination: OTHER
 +      internal {
 +        contacts {
-+          email: "nikhil@browseros.com"
++          email: "support@windrisebridge.com"
 +        }
 +      }
 +    }

@@ -133,7 +133,7 @@ class ProductDescriptor:
         company: str = "BrowserOS",
         homepage_url: str = "https://www.windrisebridge.com/",
         support_url: str = "https://www.windrisebridge.com/help",
-        bugtracker_url: str = "https://github.com/browseros-ai/BrowserOS/issues",
+        bugtracker_url: str = "https://github.com/WindriseAI/windrise-browser/issues",
         required_extensions: Tuple[Tuple[str, str], ...] = (),
         **overrides,
     ) -> "ProductDescriptor":

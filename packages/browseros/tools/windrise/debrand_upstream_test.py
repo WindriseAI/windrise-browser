@@ -152,6 +152,24 @@ class DebrandUpstreamTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertNotIn("cdn.browseros.com", urls_ts)
 
+    def test_u18_no_upstream_emails_or_issue_tracker(self):
+        products_py = (
+            REPO_ROOT / "packages/browseros/bos_build/core/products.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("https://github.com/WindriseAI/windrise-browser/issues", products_py)
+        self.assertNotIn("browseros-ai/BrowserOS", products_py)
+
+        control_in = (
+            REPO_ROOT
+            / "packages/browseros/bos_build/steps/package/linux_packaging/assets/debian/control.in"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("browseros.com", control_in)
+
+        updater_cc = read_patch(
+            "chrome/browser/browseros/server/browseros_server_updater.cc"
+        )
+        self.assertNotIn("nikhil@browseros.com", updater_cc)
+
 
 if __name__ == "__main__":
     unittest.main()
