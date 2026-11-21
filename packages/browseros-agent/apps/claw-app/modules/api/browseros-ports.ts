@@ -8,8 +8,8 @@ import {
   resolveApiBaseUrlFromSources,
 } from './client.helpers'
 
-const BROWSEROS_SERVER_PORT_PREF = 'browseros.server.server_port'
-const BROWSEROS_PROXY_PORT_PREF = 'browseros.server.proxy_port'
+const BROWSEROS_SERVER_PORT_PREF = 'windrise.server.server_port'
+const BROWSEROS_PROXY_PORT_PREF = 'windrise.server.proxy_port'
 
 export function fallbackClawApiBaseUrl(): string {
   return `http://127.0.0.1:${CLAW_API_PORT_DEFAULT}`
@@ -68,15 +68,15 @@ export async function resolveBrowserOSMcpBaseUrl(
 async function readBrowserOSPort(prefName: string): Promise<number | null> {
   if (
     typeof chrome === 'undefined' ||
-    typeof chrome.browserOS?.getPref !== 'function'
+    typeof chrome.windrise?.getPref !== 'function'
   ) {
     return null
   }
 
   try {
-    const pref = await new Promise<chrome.browserOS.PrefObject>(
+    const pref = await new Promise<chrome.windrise.PrefObject>(
       (resolve, reject) => {
-        chrome.browserOS.getPref(prefName, (value) => {
+        chrome.windrise.getPref(prefName, (value) => {
           const message = chrome.runtime?.lastError?.message
           if (message) {
             reject(new Error(message))

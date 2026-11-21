@@ -3,17 +3,19 @@ new file mode 100644
 index 0000000000..63bd5929cc
 --- /dev/null
 +++ b/chrome/browser/browseros/core/windrise_theme.cc
-@@ -0,0 +1,323 @@
+@@ -0,0 +1,360 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "chrome/browser/browseros/core/windrise_theme.h"
 +
 +#include <algorithm>
++#include <string>
 +#include <utility>
 +
 +#include "base/functional/bind.h"
 +#include "base/no_destructor.h"
++#include "base/values.h"
 +#include "components/pref_registry/pref_registry_syncable.h"
 +#include "components/prefs/pref_service.h"
 +
@@ -21,174 +23,174 @@ index 0000000000..63bd5929cc
 +
 +// 颜色默认值是 browser-theme-v2.md 第 2 节的定稿值（亮 / 暗）。偏好里存 RGB。
 +const ThemeColorSpec kThemeColorSpecs[kThemeTokenCount] = {
-+    {ThemeToken::kFrame, "browseros.windrise.theme.light.frame",
-+     "browseros.windrise.theme.dark.frame", 0xDDE1E5, 0x262B32},
-+    {ThemeToken::kBar, "browseros.windrise.theme.light.bar",
-+     "browseros.windrise.theme.dark.bar", 0xEEF0F2, 0x2E343C},
-+    {ThemeToken::kOmnibox, "browseros.windrise.theme.light.omnibox",
-+     "browseros.windrise.theme.dark.omnibox", 0xFFFFFF, 0x20252B},
-+    {ThemeToken::kTabActive, "browseros.windrise.theme.light.tab_active",
-+     "browseros.windrise.theme.dark.tab_active", 0xF7F8F9, 0x3C434C},
-+    {ThemeToken::kTile, "browseros.windrise.theme.light.tile",
-+     "browseros.windrise.theme.dark.tile", 0xE8EBEE, 0x323840},
-+    {ThemeToken::kPopup, "browseros.windrise.theme.light.popup",
-+     "browseros.windrise.theme.dark.popup", 0xF7F8F9, 0x3C434C},
-+    {ThemeToken::kText, "browseros.windrise.theme.light.text",
-+     "browseros.windrise.theme.dark.text", 0x0E1116, 0xECEEF1},
-+    {ThemeToken::kTextSecondary, "browseros.windrise.theme.light.text_secondary",
-+     "browseros.windrise.theme.dark.text_secondary", 0x4A515C, 0xB4BCC5},
-+    {ThemeToken::kIcon, "browseros.windrise.theme.light.icon",
-+     "browseros.windrise.theme.dark.icon", 0x3C434D, 0xC4CAD2},
-+    {ThemeToken::kLine, "browseros.windrise.theme.light.line",
-+     "browseros.windrise.theme.dark.line", 0xC9CED5, 0x3A4048},
-+    {ThemeToken::kWebContentsGap, "browseros.windrise.theme.light.web_gap",
-+     "browseros.windrise.theme.dark.web_gap", 0xDDE1E5, 0x262B32},
++    {ThemeToken::kFrame, "windrise.theme.light.frame",
++     "windrise.theme.dark.frame", 0xDDE1E5, 0x262B32},
++    {ThemeToken::kBar, "windrise.theme.light.bar",
++     "windrise.theme.dark.bar", 0xEEF0F2, 0x2E343C},
++    {ThemeToken::kOmnibox, "windrise.theme.light.omnibox",
++     "windrise.theme.dark.omnibox", 0xFFFFFF, 0x20252B},
++    {ThemeToken::kTabActive, "windrise.theme.light.tab_active",
++     "windrise.theme.dark.tab_active", 0xF7F8F9, 0x3C434C},
++    {ThemeToken::kTile, "windrise.theme.light.tile",
++     "windrise.theme.dark.tile", 0xE8EBEE, 0x323840},
++    {ThemeToken::kPopup, "windrise.theme.light.popup",
++     "windrise.theme.dark.popup", 0xF7F8F9, 0x3C434C},
++    {ThemeToken::kText, "windrise.theme.light.text",
++     "windrise.theme.dark.text", 0x0E1116, 0xECEEF1},
++    {ThemeToken::kTextSecondary, "windrise.theme.light.text_secondary",
++     "windrise.theme.dark.text_secondary", 0x4A515C, 0xB4BCC5},
++    {ThemeToken::kIcon, "windrise.theme.light.icon",
++     "windrise.theme.dark.icon", 0x3C434D, 0xC4CAD2},
++    {ThemeToken::kLine, "windrise.theme.light.line",
++     "windrise.theme.dark.line", 0xC9CED5, 0x3A4048},
++    {ThemeToken::kWebContentsGap, "windrise.theme.light.web_gap",
++     "windrise.theme.dark.web_gap", 0xDDE1E5, 0x262B32},
 +    // WINDRISE-TODO(value)：定稿用 B 版银色玻璃（mock panelalt 是
 +    // linear-gradient(180deg,#EEF0F2,#E3E7EB)）。原生 color id 只能平涂，
 +    // 先取最接近的 --wr-tile 值，等设计稿给平涂定值后改这里与偏好默认值。
-+    {ThemeToken::kPanel, "browseros.windrise.theme.light.panel",
-+     "browseros.windrise.theme.dark.panel", 0xE8EBEE, 0x323840},
-+    {ThemeToken::kCard, "browseros.windrise.theme.light.card",
-+     "browseros.windrise.theme.dark.card", 0xE8EBEE, 0x323840},
++    {ThemeToken::kPanel, "windrise.theme.light.panel",
++     "windrise.theme.dark.panel", 0xE8EBEE, 0x323840},
++    {ThemeToken::kCard, "windrise.theme.light.card",
++     "windrise.theme.dark.card", 0xE8EBEE, 0x323840},
 +    // WINDRISE-TODO(value)：段标题 / 分隔线的定值还没给，先用次要文字与线。
 +    {ThemeToken::kSectionHeaderText,
-+     "browseros.windrise.theme.light.section_header_text",
-+     "browseros.windrise.theme.dark.section_header_text", 0x4A515C, 0xB4BCC5},
++     "windrise.theme.light.section_header_text",
++     "windrise.theme.dark.section_header_text", 0x4A515C, 0xB4BCC5},
 +    {ThemeToken::kSectionDivider,
-+     "browseros.windrise.theme.light.section_divider",
-+     "browseros.windrise.theme.dark.section_divider", 0xC9CED5, 0x3A4048},
++     "windrise.theme.light.section_divider",
++     "windrise.theme.dark.section_divider", 0xC9CED5, 0x3A4048},
 +    {ThemeToken::kSlotChipBackground,
-+     "browseros.windrise.theme.light.slot_chip_background",
-+     "browseros.windrise.theme.dark.slot_chip_background", 0x14171C, 0x14171C},
++     "windrise.theme.light.slot_chip_background",
++     "windrise.theme.dark.slot_chip_background", 0x14171C, 0x14171C},
 +    {ThemeToken::kSlotChipForeground,
-+     "browseros.windrise.theme.light.slot_chip_foreground",
-+     "browseros.windrise.theme.dark.slot_chip_foreground", 0xFFFFFF, 0xFFFFFF},
++     "windrise.theme.light.slot_chip_foreground",
++     "windrise.theme.dark.slot_chip_foreground", 0xFFFFFF, 0xFFFFFF},
 +    // WINDRISE-TODO(value)：卡片 / 面板的 B 版银色玻璃是渐变 + 上缘高光，
 +    // 原生 color id 只能平涂，先取 --wr-tile 值；设计稿给平涂定值后改这里。
 +    {ThemeToken::kAiCardBackground,
-+     "browseros.windrise.theme.light.ai_card_background",
-+     "browseros.windrise.theme.dark.ai_card_background", 0xE8EBEE, 0x323840},
++     "windrise.theme.light.ai_card_background",
++     "windrise.theme.dark.ai_card_background", 0xE8EBEE, 0x323840},
 +    {ThemeToken::kAiPanelBackground,
-+     "browseros.windrise.theme.light.ai_panel_background",
-+     "browseros.windrise.theme.dark.ai_panel_background", 0xE8EBEE, 0x323840},
++     "windrise.theme.light.ai_panel_background",
++     "windrise.theme.dark.ai_panel_background", 0xE8EBEE, 0x323840},
 +    {ThemeToken::kAiPanelButtonBackground,
-+     "browseros.windrise.theme.light.ai_panel_button_background",
-+     "browseros.windrise.theme.dark.ai_panel_button_background", 0xFFFFFF,
++     "windrise.theme.light.ai_panel_button_background",
++     "windrise.theme.dark.ai_panel_button_background", 0xFFFFFF,
 +     0x4A525C},
 +    // B 版银色玻璃：上浅下深的竖向渐变（方案标注表第 6 行：#F1F3F5 -> #E2E6EA）。
 +    // 暗色取面板同一档深色（上 #3C434C、下 #323840，见下面面板两项）：卡片的字
 +    // 在暗色下是浅色，原来暗色值同亮色，浅底配浅字看不清。
 +    {ThemeToken::kAiCardBackgroundTop,
-+     "browseros.windrise.theme.light.ai_card_background_top",
-+     "browseros.windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0x3C434C},
++     "windrise.theme.light.ai_card_background_top",
++     "windrise.theme.dark.ai_card_background_top", 0xF1F3F5, 0x3C434C},
 +    {ThemeToken::kAiCardBackgroundBottom,
-+     "browseros.windrise.theme.light.ai_card_background_bottom",
-+     "browseros.windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
++     "windrise.theme.light.ai_card_background_bottom",
++     "windrise.theme.dark.ai_card_background_bottom", 0xE2E6EA,
 +     0x323840},
 +    // 面板（B 版）：亮色取值和卡片同一套渐变。暗色
 +    // 单独给深色两档（上 = 浮层色 #3C434C，下 = tile 色 #323840），否则暗色下
 +    // 浅底配浅字看不见。「接一个 AI」按钮底见上面 ai_panel_button_background：
 +    // 亮色白（代码里再乘 .78 透明度，照 rgb(255 255 255 / .78)），暗色 #4A525C。
 +    {ThemeToken::kAiPanelBackgroundTop,
-+     "browseros.windrise.theme.light.ai_panel_background_top",
-+     "browseros.windrise.theme.dark.ai_panel_background_top", 0xF1F3F5,
++     "windrise.theme.light.ai_panel_background_top",
++     "windrise.theme.dark.ai_panel_background_top", 0xF1F3F5,
 +     0x3C434C},
 +    {ThemeToken::kAiPanelBackgroundBottom,
-+     "browseros.windrise.theme.light.ai_panel_background_bottom",
-+     "browseros.windrise.theme.dark.ai_panel_background_bottom", 0xE2E6EA,
++     "windrise.theme.light.ai_panel_background_bottom",
++     "windrise.theme.dark.ai_panel_background_bottom", 0xE2E6EA,
 +     0x323840},
 +};
 +
 +// 布局默认值来自 browser-theme-v2.md 第 3 节与内部页样式表（圆角 s/m/l）。
 +const LayoutMetricSpec kLayoutMetricSpecs[kLayoutMetricCount] = {
-+    {LayoutMetric::kRadiusSmall, "browseros.windrise.layout.radius_small", 8},
-+    {LayoutMetric::kRadiusMedium, "browseros.windrise.layout.radius_medium", 12},
-+    {LayoutMetric::kRadiusLarge, "browseros.windrise.layout.radius_large", 16},
++    {LayoutMetric::kRadiusSmall, "windrise.layout.radius_small", 8},
++    {LayoutMetric::kRadiusMedium, "windrise.layout.radius_medium", 12},
++    {LayoutMetric::kRadiusLarge, "windrise.layout.radius_large", 16},
 +    {LayoutMetric::kGridButtonHeight,
-+     "browseros.windrise.layout.grid_button_height", 32},
++     "windrise.layout.grid_button_height", 32},
 +    {LayoutMetric::kGridButtonRadius,
-+     "browseros.windrise.layout.grid_button_radius", 16},
++     "windrise.layout.grid_button_radius", 16},
 +    {LayoutMetric::kGridButtonPaddingLeft,
-+     "browseros.windrise.layout.grid_button_padding_left", 8},
++     "windrise.layout.grid_button_padding_left", 8},
 +    {LayoutMetric::kGridButtonPaddingRight,
-+     "browseros.windrise.layout.grid_button_padding_right", 10},
++     "windrise.layout.grid_button_padding_right", 10},
 +    {LayoutMetric::kGridButtonIconGap,
-+     "browseros.windrise.layout.grid_button_icon_gap", 4},
++     "windrise.layout.grid_button_icon_gap", 4},
 +    {LayoutMetric::kGridButtonFontSize,
-+     "browseros.windrise.layout.grid_button_font_size", 13},
++     "windrise.layout.grid_button_font_size", 13},
 +    {LayoutMetric::kWebContentsRadius,
-+     "browseros.windrise.layout.web_contents_radius", 12},
++     "windrise.layout.web_contents_radius", 12},
 +    // 定稿：网页区四边的缝为 0（还剩圆角）。留着这个键是为了以后要缝时
 +    // 改偏好即可，不用重编。
-+    {LayoutMetric::kWebContentsGap, "browseros.windrise.layout.web_contents_gap",
++    {LayoutMetric::kWebContentsGap, "windrise.layout.web_contents_gap",
 +     0},
 +    // 竖向标签栏：帧 36:26925 的量（标签 36 高、圆角 10、左右各留 8、
 +    // 内左 10 / 内右 12、顶部按钮 32 见方、图标 16、「+」整宽 36）。
-+    {LayoutMetric::kTabHeight, "browseros.windrise.layout.tab_height", 36},
-+    {LayoutMetric::kTabRadius, "browseros.windrise.layout.tab_radius", 10},
++    {LayoutMetric::kTabHeight, "windrise.layout.tab_height", 36},
++    {LayoutMetric::kTabRadius, "windrise.layout.tab_radius", 10},
 +    {LayoutMetric::kTabStripHorizontalPadding,
-+     "browseros.windrise.layout.tab_strip_horizontal_padding", 8},
++     "windrise.layout.tab_strip_horizontal_padding", 8},
 +    {LayoutMetric::kTabContentsInsetLeft,
-+     "browseros.windrise.layout.tab_contents_inset_left", 10},
++     "windrise.layout.tab_contents_inset_left", 10},
 +    {LayoutMetric::kTabContentsInsetRight,
-+     "browseros.windrise.layout.tab_contents_inset_right", 12},
-+    {LayoutMetric::kTopButtonSize, "browseros.windrise.layout.top_button_size",
++     "windrise.layout.tab_contents_inset_right", 12},
++    {LayoutMetric::kTopButtonSize, "windrise.layout.top_button_size",
 +     32},
 +    {LayoutMetric::kTopButtonIconSize,
-+     "browseros.windrise.layout.top_button_icon_size", 16},
++     "windrise.layout.top_button_icon_size", 16},
 +    {LayoutMetric::kTopButtonRadius,
-+     "browseros.windrise.layout.top_button_radius", 10},
++     "windrise.layout.top_button_radius", 10},
 +    {LayoutMetric::kNewTabButtonHeight,
-+     "browseros.windrise.layout.new_tab_button_height", 36},
++     "windrise.layout.new_tab_button_height", 36},
 +    // 折叠窄条：图标 16 + 一个字 14，间距 5。左下卡片折叠时的「标志 + 数字」用同一组值（§5 同构）。
-+    {LayoutMetric::kRailGlyphSize, "browseros.windrise.layout.rail_glyph_size",
++    {LayoutMetric::kRailGlyphSize, "windrise.layout.rail_glyph_size",
 +     14},
-+    {LayoutMetric::kRailGlyphGap, "browseros.windrise.layout.rail_glyph_gap", 5},
++    {LayoutMetric::kRailGlyphGap, "windrise.layout.rail_glyph_gap", 5},
 +    // 分段标题。WINDRISE-TODO(value)：行高 / 字号方案里没写，先按标签
 +    // 文字行（14px 字号、28 高）来。
 +    {LayoutMetric::kAiSectionHeaderHeight,
-+     "browseros.windrise.layout.ai_section_header_height", 28},
++     "windrise.layout.ai_section_header_height", 28},
 +    {LayoutMetric::kAiSectionHeaderFontSize,
-+     "browseros.windrise.layout.ai_section_header_font_size", 14},
++     "windrise.layout.ai_section_header_font_size", 14},
 +    {LayoutMetric::kAiSplitterHeight,
-+     "browseros.windrise.layout.ai_splitter_height", 12},
++     "windrise.layout.ai_splitter_height", 12},
 +    // 卡片与面板：theme-v2 第 5 节（收起 44 高圆角 10；面板圆角 12）。
-+    {LayoutMetric::kAiCardHeight, "browseros.windrise.layout.ai_card_height", 44},
-+    {LayoutMetric::kAiCardRadius, "browseros.windrise.layout.ai_card_radius", 10},
++    {LayoutMetric::kAiCardHeight, "windrise.layout.ai_card_height", 44},
++    {LayoutMetric::kAiCardRadius, "windrise.layout.ai_card_radius", 10},
 +    {LayoutMetric::kAiCardPaddingLeft,
-+     "browseros.windrise.layout.ai_card_padding_left", 14},
++     "windrise.layout.ai_card_padding_left", 14},
 +    {LayoutMetric::kAiCardIconSize,
-+     "browseros.windrise.layout.ai_card_icon_size", 16},
++     "windrise.layout.ai_card_icon_size", 16},
 +    {LayoutMetric::kAiCardPanelGap,
-+     "browseros.windrise.layout.ai_card_panel_gap", 8},
-+    {LayoutMetric::kAiPanelWidth, "browseros.windrise.layout.ai_panel_width", 224},
++     "windrise.layout.ai_card_panel_gap", 8},
++    {LayoutMetric::kAiPanelWidth, "windrise.layout.ai_panel_width", 224},
 +    {LayoutMetric::kAiPanelCollapsedWidth,
-+     "browseros.windrise.layout.ai_panel_collapsed_width", 280},
-+    {LayoutMetric::kAiPanelRadius, "browseros.windrise.layout.ai_panel_radius",
++     "windrise.layout.ai_panel_collapsed_width", 280},
++    {LayoutMetric::kAiPanelRadius, "windrise.layout.ai_panel_radius",
 +     12},
 +    {LayoutMetric::kAiPanelPadding,
-+     "browseros.windrise.layout.ai_panel_padding", 14},
++     "windrise.layout.ai_panel_padding", 14},
 +    {LayoutMetric::kAiPanelRowHeight,
-+     "browseros.windrise.layout.ai_panel_row_height", 35},
++     "windrise.layout.ai_panel_row_height", 35},
 +    {LayoutMetric::kAiPanelButtonHeight,
-+     "browseros.windrise.layout.ai_panel_button_height", 36},
++     "windrise.layout.ai_panel_button_height", 36},
 +    // 书签栏 32（theme-v2「书签栏 高 32」；帧 36:26925 里网页上沿
 +    // 在 80 = 工具栏 48 + 书签栏 32）。上游是按钮 28 + 6 = 34。
 +    {LayoutMetric::kBookmarkBarHeight,
-+     "browseros.windrise.layout.bookmark_bar_height", 32},
++     "windrise.layout.bookmark_bar_height", 32},
 +    // 工具栏 48、地址栏 36（theme-v2；帧 36:26925 工具栏
 +    // 0–47、地址栏约 6–41）。上游地址栏 34，工具栏被 Windows 标题按钮区撑到 49。
-+    {LayoutMetric::kToolbarHeight, "browseros.windrise.layout.toolbar_height",
++    {LayoutMetric::kToolbarHeight, "windrise.layout.toolbar_height",
 +     48},
 +    {LayoutMetric::kLocationBarHeight,
-+     "browseros.windrise.layout.location_bar_height", 36},
++     "windrise.layout.location_bar_height", 36},
 +    // 窗口圆角取 Windows 11 的 8；AI 操作时网页区四角 12 -> 36，300ms
 +    {LayoutMetric::kWindowCornerRadius,
-+     "browseros.windrise.layout.window_corner_radius", 8},
++     "windrise.layout.window_corner_radius", 8},
 +    {LayoutMetric::kWebContentsRadiusAi,
-+     "browseros.windrise.layout.web_contents_radius_ai", 36},
++     "windrise.layout.web_contents_radius_ai", 36},
 +    {LayoutMetric::kWebContentsRadiusAiMs,
-+     "browseros.windrise.layout.web_contents_radius_ai_ms", 300},
++     "windrise.layout.web_contents_radius_ai_ms", 300},
 +};
 +
 +namespace {
@@ -229,11 +231,46 @@ index 0000000000..63bd5929cc
 +  for (const ThemeColorSpec& spec : kThemeColorSpecs) {
 +    registry->RegisterIntegerPref(spec.light_pref, spec.light_rgb);
 +    registry->RegisterIntegerPref(spec.dark_pref, spec.dark_rgb);
++    // Register legacy browseros.windrise.* keys for one-time migration.
++    registry->RegisterIntegerPref(std::string("browseros.") + spec.light_pref,
++                                  spec.light_rgb);
++    registry->RegisterIntegerPref(std::string("browseros.") + spec.dark_pref,
++                                  spec.dark_rgb);
 +  }
 +  for (const LayoutMetricSpec& spec : kLayoutMetricSpecs) {
 +    registry->RegisterIntegerPref(spec.pref, spec.value);
++    registry->RegisterIntegerPref(std::string("browseros.") + spec.pref,
++                                  spec.value);
 +  }
 +  registry->RegisterDoublePref(kAiSectionRatioPref, 0.4);
++  registry->RegisterDoublePref(std::string("browseros.") + kAiSectionRatioPref,
++                               0.4);
++}
++
++void MigrateProfilePrefs(PrefService* prefs) {
++  if (!prefs) {
++    return;
++  }
++  const auto migrate = [prefs](const char* new_key) {
++    const std::string old_key = std::string("browseros.") + new_key;
++    if (!prefs->FindPreference(old_key) || !prefs->FindPreference(new_key)) {
++      return;
++    }
++    if (const base::Value* old_value = prefs->GetUserPrefValue(old_key)) {
++      if (!prefs->GetUserPrefValue(new_key)) {
++        prefs->Set(new_key, old_value->Clone());
++      }
++      prefs->ClearPref(old_key);
++    }
++  };
++  for (const ThemeColorSpec& spec : kThemeColorSpecs) {
++    migrate(spec.light_pref);
++    migrate(spec.dark_pref);
++  }
++  for (const LayoutMetricSpec& spec : kLayoutMetricSpecs) {
++    migrate(spec.pref);
++  }
++  migrate(kAiSectionRatioPref);
 +}
 +
 +bool LoadFromPrefs(const PrefService& prefs) {
@@ -256,7 +293,7 @@ index 0000000000..63bd5929cc
 +
 +  for (const LayoutMetricSpec& spec : kLayoutMetricSpecs) {
 +    const size_t index = static_cast<size_t>(spec.metric);
-+    // 偏好可以被扩展写（setPref 放行所有 browseros.*），越界值会把布局撑坏，
++    // 偏好可以被扩展写（setPref 放行所有 windrise.*），越界值会把布局撑坏，
 +    // 统一夹到 [0, 1000]。
 +    const int value = std::clamp(prefs.GetInteger(spec.pref), 0, 1000);
 +    if (snapshot.layout.value[index] != value) {

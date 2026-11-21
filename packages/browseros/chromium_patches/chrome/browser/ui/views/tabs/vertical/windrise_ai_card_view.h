@@ -32,7 +32,7 @@ index 0000000000..76ce7d0228
 +class WindriseAiPanelView;
 +
 +// 竖向标签栏左下角「已连接 N 个 AI」卡片（B 版银色玻璃）。
-+// 数据全部来自扩展：browserOS.setConnectedAis 推连接列表，卡片只显示数量 /
++// 数据全部来自扩展：windrise.setConnectedAis 推连接列表，卡片只显示数量 /
 +// AI 标志 / 齿轮；点卡片向右上方浮出 WindriseAiPanelView。收起（折叠标签栏）
 +// 时只剩风桥标志 + 数字。
 +// views::Button 本身已是 AnimationDelegateViews（ui/views/controls/button/button.h），
@@ -53,7 +53,7 @@ index 0000000000..76ce7d0228
 +  // 时候卡片宽度还在变，按这一刻居中会让这一组一边淡入一边横移。
 +  void SetCollapsedContentWidth(int width) { collapsed_content_width_ = width; }
 +
-+  // 面板点了底部按钮：转成 browserOS.onAiPanelAction 发给扩展。
++  // 面板点了底部按钮：转成 windrise.onAiPanelAction 发给扩展。
 +  void NotifyPanelAction(const char* action);
 +
 +  // views::View:

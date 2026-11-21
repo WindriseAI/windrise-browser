@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..0cf77879a1
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_prefs.h
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,136 @@
 +// Copyright 2025 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -24,32 +24,32 @@ index 0000000000..0cf77879a1
 +namespace prefs {
 +
 +// Boolean: Show labels on BrowserOS toolbar actions (default: true)
-+inline constexpr char kShowToolbarLabels[] = "browseros.show_toolbar_labels";
++inline constexpr char kShowToolbarLabels[] = "windrise.show_toolbar_labels";
 +
 +// Boolean: Enable vertical tabs (default: true)
 +inline constexpr char kVerticalTabsEnabled[] =
-+    "browseros.vertical_tabs_enabled";
++    "windrise.vertical_tabs_enabled";
 +
 +// Boolean: Start the vertical tab strip collapsed (default: false, i.e. a new
 +// profile opens with the strip expanded). Once the user expands or collapses
 +// it, the upstream persisted state wins.
 +inline constexpr char kVerticalTabsStartCollapsed[] =
-+    "browseros.vertical_tabs_start_collapsed";
++    "windrise.vertical_tabs_start_collapsed";
 +
 +// String: Prefix of tab group titles that belong to an AI workspace. While the
 +// active tab is in such a group, the vertical tab strip stays expanded.
 +inline constexpr char kAIWorkspaceGroupPrefix[] =
-+    "browseros.ai_workspace_group_prefix";
++    "windrise.ai_workspace_group_prefix";
 +
 +// Boolean: Show saved tab groups in the bookmark bar (default: true, false for
 +// BrowserClaw).
 +inline constexpr char kShowTabGroupsInBookmarkBar[] =
-+    "browseros.show_tab_groups_in_bookmark_bar";
++    "windrise.show_tab_groups_in_bookmark_bar";
 +
 +// Boolean: Focus NTP content instead of omnibox on new tab (default: true)
-+inline constexpr char kNtpFocusContent[] = "browseros.ntp_focus_content";
++inline constexpr char kNtpFocusContent[] = "windrise.ntp_focus_content";
 +
-+inline constexpr char kOnboardingCompleted[] = "browseros.onboarding_completed";
++inline constexpr char kOnboardingCompleted[] = "windrise.onboarding_completed";
 +
 +// Local-only first-install records keyed by active product extension ID. An
 +// empty record is eligible; discovery adds the bundled version, then READY adds
@@ -58,7 +58,7 @@ index 0000000000..0cf77879a1
 +// user-set dictionary (even empty) prevents re-enrollment after expiry,
 +// recovery, or a browser restart.
 +inline constexpr char kExtensionInstallGrace[] =
-+    "browseros.extension_install_grace";
++    "windrise.extension_install_grace";
 +
 +// Boolean: Automation-driven tabs never pull the user's attention. A tab counts
 +// as automation-driven while a DevTools client is attached to it, which is
@@ -68,7 +68,7 @@ index 0000000000..0cf77879a1
 +// Browser::ActivateContents, Browser::AddNewContents and the DevTools
 +// BrowserHandler. Default: true for BrowserClaw, false for BrowserOS.
 +inline constexpr char kAutomationNeverStealsFocus[] =
-+    "browseros.automation_never_steals_focus";
++    "windrise.automation_never_steals_focus";
 +
 +// String: where the Windrise AI edge light  is drawn.
 +//   "page"  - the Windrise extension draws it inside the page (default);
@@ -76,18 +76,22 @@ index 0000000000..0cf77879a1
 +//   "layer" - a transparent, input-less web view over the web contents loads
 +//             the extension's edge-light/frame.html (same drawing code).
 +// Any other value is treated as "page" (the native Skia drawing was removed).
-+// Written by the Windrise extension through browserOS.setEdgeLightMode.
++// Written by the Windrise extension through windrise.setEdgeLightMode.
 +inline constexpr char kWindriseEdgeLightMode[] =
-+    "browseros.windrise.edge_light_mode";
++    "windrise.edge_light_mode";
 +// String: id of the extension that last set kWindriseEdgeLightMode; the
 +// "layer" web view loads chrome-extension://<id>/edge-light/frame.html.
 +inline constexpr char kWindriseEdgeLightExtensionId[] =
-+    "browseros.windrise.edge_light_extension_id";
++    "windrise.edge_light_extension_id";
 +
 +}  // namespace prefs
 +
-+// Registers BrowserOS profile preferences.
++// Registers Windrise profile preferences (including legacy browseros.* keys
++// for one-time migration).
 +void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
++
++// One-time migration from legacy browseros.* profile prefs to windrise.*.
++void MigrateProfilePrefs(PrefService* pref_service);
 +
 +// Check if toolbar labels should be shown for BrowserOS actions.
 +bool ShouldShowToolbarLabels(PrefService* pref_service);

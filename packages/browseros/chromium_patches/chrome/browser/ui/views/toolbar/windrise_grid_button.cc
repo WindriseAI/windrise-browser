@@ -35,8 +35,8 @@ index 0000000000..f4f9157fe9
 +using browseros::windrise::LayoutMetric;
 +
 +// 工具栏「格子」按钮点下去后扩展收到的事件名。扩展侧用
-+// chrome.browserOS.onGridButtonClicked 监听（见 browser_os.idl）。
-+constexpr char kGridClickedEventName[] = "browserOS.onGridButtonClicked";
++// chrome.windrise.onGridButtonClicked 监听（见 windrise.idl）。
++constexpr char kGridClickedEventName[] = "windrise.onGridButtonClicked";
 +
 +}  // namespace
 +

@@ -63,13 +63,18 @@ index 2653e37becbfa113d92456139d86c321f09ed8b5..7f9327317554c866ac283630291d5cfb
    ttc::RegisterProfilePrefs(registry);
    universal_optout::prefs::RegisterProfilePrefs(registry);
    visited_url_ranking::GroupSuggestionsServiceImpl::RegisterProfilePrefs(
-@@ -2307,6 +2323,11 @@ void RegisterGeminiSettingsPrefs(user_prefs::PrefRegistrySyncable* registry) {
+@@ -2307,6 +2323,16 @@ void RegisterGeminiSettingsPrefs(user_prefs::PrefRegistrySyncable* registry) {
    registry->RegisterIntegerPref(optimization_guide::prefs::kGeminiSettings, 0);
  }
  
 +void RegisterBrowserOSPrefs(user_prefs::PrefRegistrySyncable* registry) {
 +  browseros::RegisterProfilePrefs(registry);
 +  browseros::RegisterCustomizationProfilePrefs(registry);
++}
++
++void MigrateBrowserOSProfilePrefs(PrefService* profile_prefs) {
++  browseros::MigrateProfilePrefs(profile_prefs);
++  browseros::MigrateCustomizationProfilePrefs(profile_prefs);
 +}
 +
  #if BUILDFLAG(IS_CHROMEOS)

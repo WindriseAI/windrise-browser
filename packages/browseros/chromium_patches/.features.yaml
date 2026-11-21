@@ -161,6 +161,7 @@ features:
       - chrome/browser/extensions/api/browser_os/browser_os_api_utils.h
       - chrome/browser/extensions/api/browser_os/browser_os_change_detector.cc
       - chrome/browser/extensions/api/browser_os/browser_os_change_detector.h
+      - chrome/browser/extensions/api/windrise/windrise_api.h
       - chrome/browser/extensions/api/side_panel/side_panel_api.h
       - chrome/browser/extensions/api/side_panel/side_panel_service.cc
       - chrome/browser/extensions/api/side_panel/side_panel_service.h
@@ -179,7 +180,7 @@ features:
       - chrome/common/extensions/api/_api_features.json
       - chrome/common/extensions/api/_permission_features.json
       - chrome/common/extensions/api/api_sources.gni
-      - chrome/common/extensions/api/browser_os.idl
+      - chrome/common/extensions/api/windrise.idl
       - chrome/common/extensions/api/side_panel.idl
       - chrome/common/extensions/permissions/chrome_api_permissions.cc
       - extensions/browser/BUILD.gn
@@ -522,7 +523,7 @@ features:
       - "chrome/browser/ui/page_action/page_action_icon_type.h"
       - "chrome/browser/ui/page_action/page_action_properties_provider.cc"
       - "chrome/browser/ui/webui/webui_toolbar/utils/toolbar_button_utils.cc"
-      - "chrome/common/extensions/api/browser_os.idl"
+      - "chrome/common/extensions/api/windrise.idl"
       - "components/browser_apis/ui_controllers/toolbar/toolbar_ui_api_data_model.mojom"
       - "extensions/browser/extension_function_histogram_value.h"
 
@@ -618,7 +619,7 @@ features:
   windrise-browser-ai-section-behavior-1116:
     description: "fix: optional setAiActivity aiName attributes activity to each AI while preserving unnamed callers; selecting AI tabs respects the collapsed sidebar; AI tab rows reuse the upper tab strip context menu and TabMenuModel; decode IDN hosts before choosing a rail glyph"
     files:
-      - "chrome/common/extensions/api/browser_os.idl"
+      - "chrome/common/extensions/api/windrise.idl"
       - "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
       - "chrome/browser/browseros/core/windrise_ai_state.h"
       - "chrome/browser/browseros/core/windrise_ai_state.cc"

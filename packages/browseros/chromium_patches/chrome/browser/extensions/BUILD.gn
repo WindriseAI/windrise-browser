@@ -17,7 +17,7 @@ index aa7042008..5a1bf708d 100644
      "external_policy_loader.cc",
      "external_policy_loader.h",
      "external_pref_loader.cc",
-@@ -792,6 +800,14 @@ source_set("extensions") {
+@@ -792,6 +800,15 @@ source_set("extensions") {
        "api/automation_internal/chrome_automation_internal_api_delegate.h",
        "api/bookmark_manager_private/bookmark_manager_private_api.cc",
        "api/bookmark_manager_private/bookmark_manager_private_api.h",
@@ -29,16 +29,17 @@ index aa7042008..5a1bf708d 100644
 +      "api/browser_os/browser_os_api_utils.h",
 +      "api/browser_os/browser_os_change_detector.cc",
 +      "api/browser_os/browser_os_change_detector.h",
++      "api/windrise/windrise_api.h",
        "api/chrome_device_permissions_prompt.h",
        "api/enterprise_reporting_private/conversion_utils.cc",
        "api/enterprise_reporting_private/conversion_utils.h",
-@@ -1062,6 +1078,12 @@ source_set("extensions") {
+@@ -1062,6 +1079,12 @@ source_set("extensions") {
        "//components/language/core/common",
        "//components/language/core/language_model",
        "//components/live_caption:constants",
 +      "//chrome/app:generated_resources",
 +      "//chrome/browser/browseros/core",
-+      # 风桥 browserOS.setAiTabs / setConnectedAis / setAiActivity。
++      # 风桥 windrise.setAiTabs / setConnectedAis / setAiActivity。
 +      "//chrome/browser/browseros/core:ai_state",
 +      "//chrome/browser/browseros/core:prefs",
 +      "//chrome/browser/browseros/metrics",

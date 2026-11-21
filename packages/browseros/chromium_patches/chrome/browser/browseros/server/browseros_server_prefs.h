@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..4e88e044d184d
 --- /dev/null
 +++ b/chrome/browser/browseros/server/browseros_server_prefs.h
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,51 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -14,6 +14,7 @@ index 0000000000000..4e88e044d184d
 +#include "chrome/browser/browseros/buildflags.h"
 +
 +class PrefRegistrySimple;
++class PrefService;
 +
 +namespace browseros_server {
 +
@@ -43,8 +44,13 @@ index 0000000000000..4e88e044d184d
 +extern const char kMCPServerPort[];     // DEPRECATED: migrated to kProxyPort
 +extern const char kMCPServerEnabled[];  // DEPRECATED: no longer used
 +
-+// Registers BrowserOS server preferences in Local State (browser-wide prefs)
++// Registers Windrise server preferences in Local State (browser-wide prefs),
++// including legacy browseros.server.* keys for one-time migration.
 +void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
++
++// One-time migration from legacy browseros.server.* local state prefs to
++// windrise.server.*.
++void MigrateLocalStatePrefs(PrefService* local_state);
 +
 +}  // namespace browseros_server
 +

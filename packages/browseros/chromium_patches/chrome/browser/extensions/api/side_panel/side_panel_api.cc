@@ -24,11 +24,11 @@ index 99e9cc39ad41e..90545097937ce 100644
  }
  
 +ExtensionFunction::ResponseAction
-+SidePanelBrowserosToggleFunction::RunFunction() {
++SidePanelWindriseToggleFunction::RunFunction() {
 +  EXTENSION_FUNCTION_VALIDATE(extension());
 +
-+  std::optional<api::side_panel::BrowserosToggle::Params> params =
-+      api::side_panel::BrowserosToggle::Params::Create(args());
++  std::optional<api::side_panel::WindriseToggle::Params> params =
++      api::side_panel::WindriseToggle::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  // Convert optional open parameter.
@@ -47,17 +47,17 @@ index 99e9cc39ad41e..90545097937ce 100644
 +    return RespondNow(Error(std::move(toggle_result.error())));
 +  }
 +
-+  api::side_panel::BrowserosToggleResult result;
++  api::side_panel::WindriseToggleResult result;
 +  result.opened = toggle_result.value();
 +  return RespondNow(WithArguments(result.ToValue()));
 +}
 +
 +ExtensionFunction::ResponseAction
-+SidePanelBrowserosIsOpenFunction::RunFunction() {
++SidePanelWindriseIsOpenFunction::RunFunction() {
 +  EXTENSION_FUNCTION_VALIDATE(extension());
 +
-+  std::optional<api::side_panel::BrowserosIsOpen::Params> params =
-+      api::side_panel::BrowserosIsOpen::Params::Create(args());
++  std::optional<api::side_panel::WindriseIsOpen::Params> params =
++      api::side_panel::WindriseIsOpen::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  SidePanelService* service = GetService();

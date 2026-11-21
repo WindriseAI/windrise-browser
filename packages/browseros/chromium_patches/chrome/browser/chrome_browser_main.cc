@@ -2,15 +2,16 @@ diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_brows
 index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac752b4c1ed 100644
 --- a/chrome/browser/chrome_browser_main.cc
 +++ b/chrome/browser/chrome_browser_main.cc
-@@ -34,6 +34,7 @@
+@@ -34,6 +34,8 @@
  #include "chrome/browser/browser_features.h"
  #include "chrome/browser/browser_process.h"
  #include "chrome/browser/browser_process_impl.h"
 +#include "chrome/browser/browseros/server/browseros_server_manager.h"
++#include "chrome/browser/browseros/server/browseros_server_prefs.h"
  #include "chrome/browser/chrome_browser_main_extra_parts.h"
  #include "chrome/browser/component_updater/registration.h"
  #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
-@@ -1005,6 +1006,11 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
+@@ -1005,6 +1007,11 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
  
  int ChromeBrowserMainParts::PreEarlyInitialization() {
    TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
@@ -22,7 +23,7 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
    for (auto& chrome_extra_part : chrome_extra_parts_) {
      chrome_extra_part->PreEarlyInitialization();
    }
-@@ -1359,6 +1365,43 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
+@@ -1359,6 +1366,43 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
    }
  #endif
  
@@ -66,7 +67,7 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
  #if BUILDFLAG(IS_MAC)
  #if defined(ARCH_CPU_X86_64)
    // The use of Rosetta to run the x64 version of Chromium on Arm is neither
-@@ -1956,12 +1999,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+@@ -1956,12 +2000,20 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
      g_browser_process->CreateDevToolsAutoOpener();
    }
  
@@ -76,6 +77,11 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
 -          switches::kDisableComponentUpdate)) {
 -    component_updater::RegisterComponentsForUpdate();
 -  }
++  // Migrate legacy browseros.server.* local state prefs to windrise.server.*.
++  if (PrefService* local_state = g_browser_process->local_state()) {
++    browseros_server::MigrateLocalStatePrefs(local_state);
++  }
++
 +  // Explicit debugging transports and --disable-browseros-server take
 +  // precedence over the managed service's CDP listener.
 +  LOG(INFO) << "windrise: Starting Windrise server process";
@@ -88,7 +94,7 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
  
    // `profile` may be nullptr if the profile picker is shown.
    Profile* profile = profile_info.profile;
-@@ -2261,6 +2307,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
+@@ -2261,6 +2313,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
      chrome_extra_part->PostMainMessageLoopRun();
    }
  

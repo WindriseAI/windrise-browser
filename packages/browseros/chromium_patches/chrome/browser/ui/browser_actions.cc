@@ -24,7 +24,7 @@ index d716fe0590..b343774766 100644
            vector_icons::kGTranslateIcon)
            .Build());
  
-+  // 风桥通用地址栏插槽：文字与显隐由插件通过 browserOS.setAddressBarSlot
++  // 风桥通用地址栏插槽：文字与显隐由插件通过 windrise.setAddressBarSlot
 +  // 控制。点击时把当前标签页 id 通过扩展事件发出去。
 +  root_action_item_->AddChild(
 +      actions::ActionItem::Builder(
@@ -45,7 +45,7 @@ index d716fe0590..b343774766 100644
 +                    tab->GetContents()));
 +                event_router->BroadcastEvent(std::make_unique<extensions::Event>(
 +                    extensions::events::UNKNOWN,
-+                    "browserOS.onAddressBarSlotClicked", std::move(args),
++                    "windrise.onAddressBarSlotClicked", std::move(args),
 +                    bwi->GetProfile()));
 +              },
 +              bwi))

@@ -37,7 +37,7 @@ const browserOSAdapter = {
   getBrowserosVersion: async () => null,
   getPref: async (name: string) =>
     new Promise<{ value?: unknown }>((resolve) => {
-      const getPref = globalThis.chrome?.browserOS?.getPref
+      const getPref = globalThis.chrome?.windrise?.getPref
       if (!getPref) {
         resolve({ value: null })
         return
@@ -71,7 +71,7 @@ mock.module('@/lib/browseros/adapter', () => ({
 mock.module('@/lib/browseros/prefs', () => ({
   BROWSEROS_PREFS: {
     PROVIDERS: 'browseros.providers',
-    MCP_PORT: 'browseros.server.mcp_port',
+    MCP_PORT: 'windrise.server.mcp_port',
   },
 }))
 

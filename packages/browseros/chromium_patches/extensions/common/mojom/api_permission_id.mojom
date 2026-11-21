@@ -2,11 +2,12 @@ diff --git a/extensions/common/mojom/api_permission_id.mojom b/extensions/common
 index 6552fb8..0b26855 100644
 --- a/extensions/common/mojom/api_permission_id.mojom
 +++ b/extensions/common/mojom/api_permission_id.mojom
-@@ -300,6 +300,7 @@ enum APIPermissionID {
+@@ -300,6 +300,8 @@ enum APIPermissionID {
    kPublicSuffix = 273,
    kEnterpriseWebrtc = 274,
    kMimeTypesHandlerPdf = 275,
-+  kBrowserOS = 276,
++  kDeleted_BrowserOS = 276,
++  kWindrise = 277,
  
    // Add new entries at the end of the enum and be sure to update the
    // "ExtensionPermission3" enum in

@@ -6,8 +6,8 @@ index 4255410af88106db0aa7cd9c1f55577e243595e2..5a4cfa84065d11608483033615cc58f0
      ],
      "contexts": ["privileged_extension"]
    }],
-+  "browserOS": {
-+    "dependencies": ["permission:browserOS"],
++  "windrise": {
++    "dependencies": ["permission:windrise"],
 +    "contexts": ["privileged_extension"]
 +  },
    "browsingData": {

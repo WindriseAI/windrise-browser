@@ -33,7 +33,7 @@ const globals = globalThis as { localStorage?: unknown; chrome?: unknown }
 /** Stubs the pref call the way BrowserOS answers it: kLight 1, kDark 2. */
 function stubBrowserPref(value: unknown): void {
   globals.chrome = {
-    browserOS: {
+    windrise: {
       getPref: (name: string, callback: (pref: unknown) => void) => {
         callback({ key: name, type: typeof value, value })
       },
@@ -149,7 +149,7 @@ describe('theme-storage', () => {
     expect(await readBrowserColorScheme()).toBeNull()
   })
 
-  it('returns null when the browserOS pref API is absent', async () => {
+  it('returns null when the windrise pref API is absent', async () => {
     expect(await readBrowserColorScheme()).toBeNull()
     globals.chrome = {}
     expect(await readBrowserColorScheme()).toBeNull()
@@ -157,7 +157,7 @@ describe('theme-storage', () => {
 
   it('returns null when the pref call reports a runtime error', async () => {
     globals.chrome = {
-      browserOS: {
+      windrise: {
         getPref: (_name: string, callback: (pref: unknown) => void) => {
           callback(undefined)
         },

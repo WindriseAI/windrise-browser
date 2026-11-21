@@ -41,10 +41,10 @@ describe('diagnostics browser boundary', () => {
           throw new Error('Reporter missing')
         },
       },
-      browserOS: {
+      windrise: {
         getVersionNumber: (callback: (value: string) => void) =>
           callback('chromium-version'),
-        getBrowserosVersionNumber: (callback: (value: string) => void) =>
+        getWindriseVersionNumber: (callback: (value: string) => void) =>
           callback('browseros-version'),
       },
       system: {

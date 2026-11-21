@@ -75,7 +75,7 @@ function fixture(factory = createExtensionUpdateApi) {
         ]
       },
     },
-    browserOS: {
+    windrise: {
       getPref: (_name: string, callback: (pref: { value: unknown }) => void) =>
         callback({ value: { [ID]: { idle_install_info: pending } } }),
     },

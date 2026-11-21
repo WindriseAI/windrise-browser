@@ -6,7 +6,7 @@ import { defineConfig } from 'wxt'
 // auto-wires manifest.chrome_url_overrides.newtab to point at the
 // generated newtab.html, so no hand-rolled override needed.
 //
-// `browserOS` is BrowserOS Chromium's permission gate for the
+// `windrise` is Windrise Chromium's permission gate for the
 // new-tab override and the cockpit-adjacent surfaces.
 export default defineConfig({
   outDir: 'dist',
@@ -31,7 +31,7 @@ export default defineConfig({
       'sidePanel',
       'bookmarks',
       'history',
-      'browserOS',
+      'windrise',
       'alarms',
       'webNavigation',
       'downloads',

@@ -69,6 +69,24 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn("!command_line->HasSwitch(browseros::kEnableServer)", mgr)
         self.assertIn("browseros::kLegacyDisableServer", mgr)
 
+    def test_u08_non_windows_program_and_linux_package_names(self):
+        cc = read_patch("chrome/common/chrome_constants.cc")
+        self.assertIn('FPL("windrise-browser")', cc)
+        self.assertNotIn('FPL("browseros")', cc)
+        # Windows chrome.exe must remain unchanged.
+        self.assertNotIn('FPL("windrise-browser.exe")', cc)
+
+        products_py = (
+            REPO_ROOT / "packages/browseros/bos_build/core/products.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("linux_name: Optional[str] = None", products_py)
+        self.assertIn("package_name=linux_slug", products_py)
+
+        product_py = (
+            REPO_ROOT / "packages/browseros/bos_build/products/browseros/product.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('linux_name="windrise-browser"', product_py)
+
     def test_u09_branding_copyright_has_no_upstream(self):
         for rel in (
             "products/browseros/chrome/app/theme/chromium/BRANDING.release",
@@ -203,6 +221,164 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertNotIn("BrowserOS extension", delegate)
         self.assertIn('"windrise: Extension "', delegate)
 
+    def test_u21_private_extension_api_renamed_with_security_preserved(self):
+        self.assertFalse(
+            (PATCHES / "chrome/common/extensions/api/browser_os.idl").exists()
+        )
+        idl = read_patch("chrome/common/extensions/api/windrise.idl")
+        self.assertIn("+namespace windrise {", idl)
+        self.assertNotIn("namespace browserOS", idl)
+        self.assertIn("+    static void getWindriseVersionNumber(", idl)
+        self.assertNotIn("browseros", idl.lower())
+
+        api_sources = read_patch("chrome/common/extensions/api/api_sources.gni")
+        self.assertIn('+    "windrise.idl",', api_sources)
+        self.assertNotIn('"browser_os.idl"', api_sources)
+
+        api_features = read_patch(
+            "chrome/common/extensions/api/_api_features.json"
+        )
+        self.assertIn('+  "windrise": {', api_features)
+        self.assertIn('+    "dependencies": ["permission:windrise"],', api_features)
+        self.assertIn('+    "contexts": ["privileged_extension"]', api_features)
+        self.assertNotIn("browserOS", api_features)
+
+        perm_features = read_patch(
+            "chrome/common/extensions/api/_permission_features.json"
+        )
+        self.assertIn('+  "windrise": {', perm_features)
+        self.assertIn(
+            '+    "extension_types": ["extension", "platform_app"]',
+            perm_features,
+        )
+        self.assertNotIn("browserOS", perm_features)
+
+        api_perms = read_patch(
+            "chrome/common/extensions/permissions/chrome_api_permissions.cc"
+        )
+        self.assertIn('+    {APIPermissionID::kWindrise, "windrise"},', api_perms)
+        self.assertNotIn("browserOS", api_perms)
+
+        mojom = read_patch("extensions/common/mojom/api_permission_id.mojom")
+        self.assertIn("+  kDeleted_BrowserOS = 276,", mojom)
+        self.assertIn("+  kWindrise = 277,", mojom)
+
+        fwd_hdr = read_patch(
+            "chrome/browser/extensions/api/windrise/windrise_api.h"
+        )
+        self.assertIn(
+            '+#include "chrome/browser/extensions/api/browser_os/browser_os_api.h"',
+            fwd_hdr,
+        )
+
+        api_h = read_patch(
+            "chrome/browser/extensions/api/browser_os/browser_os_api.h"
+        )
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("windrise.setAddressBarSlot",', api_h
+        )
+        self.assertIn('+  DECLARE_EXTENSION_FUNCTION("windrise.setAiTabs",', api_h)
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("windrise.getWindriseVersionNumber",',
+            api_h,
+        )
+        self.assertIn("WINDRISE_GETWINDRISEVERSIONNUMBER", api_h)
+        self.assertNotIn("getBrowserosVersionNumber", api_h)
+        self.assertNotIn("browserOS.", api_h)
+
+        api_cc = read_patch(
+            "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+        )
+        self.assertIn('+#include "chrome/common/extensions/api/windrise.h"', api_cc)
+        self.assertIn(
+            "+  return extensions::IsAuthorizedWindriseExtension(extension);",
+            api_cc,
+        )
+        self.assertIn(
+            "+WindriseGetWindriseVersionNumberFunction::Run() {", api_cc
+        )
+        self.assertNotIn("GetBrowserosVersionNumber", api_cc)
+        self.assertNotIn("browser_os::", api_cc)
+
+        side_idl = read_patch("chrome/common/extensions/api/side_panel.idl")
+        self.assertIn("+    [nodoc] static void windriseToggle(", side_idl)
+        self.assertIn("+    [nodoc] static void windriseIsOpen(", side_idl)
+        self.assertIn("+  dictionary WindriseIsOpenOptions {", side_idl)
+        self.assertIn("+  callback WindriseIsOpenCallback = void(boolean isOpen);", side_idl)
+        self.assertNotIn("browseros", side_idl.lower())
+
+        side_h = read_patch(
+            "chrome/browser/extensions/api/side_panel/side_panel_api.h"
+        )
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseToggle",', side_h
+        )
+        self.assertIn("SIDEPANEL_WINDRISETOGGLE", side_h)
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseIsOpen",', side_h
+        )
+        self.assertIn("SIDEPANEL_WINDRISEISOPEN", side_h)
+        self.assertNotIn("browserosToggle", side_h)
+        self.assertNotIn("browserosIsOpen", side_h)
+
+        for rel, expected_event in (
+            (
+                "chrome/browser/ui/browser_actions.cc",
+                '"windrise.onAddressBarSlotClicked"',
+            ),
+            (
+                "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc",
+                '"windrise.onAiPanelAction"',
+            ),
+            (
+                "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc",
+                '"windrise.onAiPanelAction"',
+            ),
+            (
+                "chrome/browser/ui/views/toolbar/windrise_grid_button.cc",
+                '"windrise.onGridButtonClicked"',
+            ),
+        ):
+            text = read_patch(rel)
+            self.assertIn(expected_event, text)
+            self.assertNotIn("browserOS.", text)
+
+        hist = read_patch(
+            "extensions/browser/extension_function_histogram_value.h"
+        )
+        self.assertIn("+  WINDRISE_GETPREF = 2028,", hist)
+        self.assertIn("+  SIDEPANEL_WINDRISETOGGLE = 2043,", hist)
+        self.assertIn("+  WINDRISE_GETWINDRISEVERSIONNUMBER = 2044,", hist)
+        self.assertIn("+  SIDEPANEL_WINDRISEISOPEN = 2045,", hist)
+        self.assertIn("+  DELETED_SIDEPANEL_BROWSEROSTOGGLE = 2004,", hist)
+        self.assertIn("+  DELETED_SIDEPANEL_BROWSEROSISOPEN = 2005,", hist)
+        self.assertIn("+  DELETED_WINDRISE_GETBROWSEROSVERSIONNUMBER = 2032,", hist)
+
+        enums = read_patch(
+            "tools/metrics/histograms/metadata/extensions/enums.xml"
+        )
+        self.assertIn('<int value="2028" label="WINDRISE_GETPREF"/>', enums)
+        self.assertIn(
+            '<int value="2043" label="SIDEPANEL_WINDRISETOGGLE"/>', enums
+        )
+        self.assertIn(
+            '<int value="2044" label="WINDRISE_GETWINDRISEVERSIONNUMBER"/>',
+            enums,
+        )
+        self.assertIn(
+            '<int value="2045" label="SIDEPANEL_WINDRISEISOPEN"/>', enums
+        )
+        self.assertIn(
+            '<int value="2005" label="DELETED_SIDEPANEL_BROWSEROSISOPEN"/>',
+            enums,
+        )
+        self.assertIn(
+            '<int value="2032" label="DELETED_WINDRISE_GETBROWSEROSVERSIONNUMBER"/>',
+            enums,
+        )
+        self.assertIn('<int value="276" label="kDeleted_BrowserOS"/>', enums)
+        self.assertIn('<int value="277" label="kWindrise"/>', enums)
+
     def test_u22_no_browseros_about_flags(self):
         self.assertFalse((PATCHES / "chrome/browser/about_flags.cc").exists())
 
@@ -221,6 +397,51 @@ class DebrandUpstreamTest(unittest.TestCase):
             ):
                 hits.append(path.relative_to(PATCHES).as_posix())
         self.assertEqual(hits, [])
+
+    def test_prefs_renamed_to_windrise_with_migration(self):
+        prefs_h = read_patch("chrome/browser/browseros/core/browseros_prefs.h")
+        self.assertIn('"windrise.vertical_tabs_start_collapsed"', prefs_h)
+        self.assertIn('"windrise.edge_light_mode"', prefs_h)
+        self.assertIn('"windrise.edge_light_extension_id"', prefs_h)
+        self.assertNotIn('"browseros.', prefs_h)
+        self.assertNotIn("windrise.windrise.", prefs_h)
+
+        theme_cc = read_patch("chrome/browser/browseros/core/windrise_theme.cc")
+        self.assertIn('"windrise.theme.light.tile"', theme_cc)
+        self.assertIn('"windrise.layout.tab_height"', theme_cc)
+        self.assertNotIn('"browseros.windrise.', theme_cc)
+        self.assertNotIn("windrise.windrise.", theme_cc)
+        self.assertIn("void MigrateProfilePrefs(PrefService* prefs)", theme_cc)
+
+        theme_h = read_patch("chrome/browser/browseros/core/windrise_theme.h")
+        self.assertIn('"windrise.layout.ai_section_ratio"', theme_h)
+        self.assertNotIn('"browseros.', theme_h)
+
+        cust_h = read_patch(
+            "chrome/browser/browseros/customization/customization_pref_names.h"
+        )
+        self.assertIn('"windrise.show_avatar_button"', cust_h)
+        self.assertIn('"windrise.show_extensions_toolbar"', cust_h)
+        self.assertNotIn('"browseros.', cust_h)
+
+        server_cc = read_patch(
+            "chrome/browser/browseros/server/browseros_server_prefs.cc"
+        )
+        self.assertIn('const char kCDPServerPort[] = "windrise.server.cdp_port";', server_cc)
+        self.assertIn("void MigrateLocalStatePrefs(PrefService* local_state)", server_cc)
+
+        profile_cc = read_patch("chrome/browser/profiles/profile_impl.cc")
+        self.assertIn("+    MigrateBrowserOSProfilePrefs(GetPrefs());", profile_cc)
+
+        main_cc = read_patch("chrome/browser/chrome_browser_main.cc")
+        self.assertIn("+    browseros_server::MigrateLocalStatePrefs(local_state);", main_cc)
+
+        api_cc = read_patch(
+            "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+        )
+        self.assertIn('!params->name.starts_with("windrise.")', api_cc)
+        self.assertIn('params->name.starts_with("windrise.theme.")', api_cc)
+        self.assertIn('params->name.starts_with("windrise.layout.")', api_cc)
 
     def test_r728_default_google_service_prefs_disabled(self):
         prefs_cc = read_patch("chrome/browser/prefs/browser_prefs.cc")

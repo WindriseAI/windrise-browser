@@ -6,8 +6,8 @@ index afc66fce49630..9a73a7447e175 100644
      DOMString path;
    };
  
-+  // Options for toggling the side panel on a specific tab (BrowserOS).
-+  dictionary BrowserosToggleOptions {
++  // Options for toggling the side panel on a specific tab (Windrise).
++  dictionary WindriseToggleOptions {
 +    // The tab on which to toggle the side panel. Required.
 +    long tabId;
 +    // Optional desired state. If true, opens the panel. If false, closes it.
@@ -15,14 +15,14 @@ index afc66fce49630..9a73a7447e175 100644
 +    boolean? open;
 +  };
 +
-+  // Result of toggling the side panel (BrowserOS).
-+  dictionary BrowserosToggleResult {
++  // Result of toggling the side panel (Windrise).
++  dictionary WindriseToggleResult {
 +    // Whether the side panel is now open.
 +    boolean opened;
 +  };
 +
-+  // Options for checking if the side panel is open on a specific tab (BrowserOS).
-+  dictionary BrowserosIsOpenOptions {
++  // Options for checking if the side panel is open on a specific tab.
++  dictionary WindriseIsOpenOptions {
 +    // The tab to check. Required.
 +    long tabId;
 +  };
@@ -31,8 +31,8 @@ index afc66fce49630..9a73a7447e175 100644
    callback PanelOptionsCallback = void(PanelOptions options);
    callback PanelBehaviorCallback = void(PanelBehavior behavior);
    callback PanelLayoutCallback = void(PanelLayout layout);
-+  callback BrowserosToggleCallback = void(BrowserosToggleResult result);
-+  callback BrowserosIsOpenCallback = void(boolean isOpen);
++  callback WindriseToggleCallback = void(WindriseToggleResult result);
++  callback WindriseIsOpenCallback = void(boolean isOpen);
  
    interface Functions {
      // Configures the side panel.
@@ -41,22 +41,22 @@ index afc66fce49630..9a73a7447e175 100644
          CloseOptions options,
          VoidCallback callback);
 +
-+    // Toggles the extension's side panel on a specific tab (BrowserOS).
++    // Toggles the extension's side panel on a specific tab (Windrise).
 +    // Opens the panel if closed, closes if open. The panel is contextual
 +    // (tab-specific only) and will not appear on other tabs.
 +    // Auto-registers a contextual panel if none exists for the tab.
 +    // |options|: Specifies the tab on which to toggle the side panel.
 +    // |callback|: Called with the result indicating if the panel is now open.
-+    [nodoc] static void browserosToggle(
-+        BrowserosToggleOptions options,
-+        BrowserosToggleCallback callback);
++    [nodoc] static void windriseToggle(
++        WindriseToggleOptions options,
++        WindriseToggleCallback callback);
 +
-+    // Checks if the extension's side panel is open on a specific tab (BrowserOS).
++    // Checks if the extension's side panel is open on a specific tab.
 +    // |options|: Specifies the tab to check.
 +    // |callback|: Called with true if the panel is open, false otherwise.
-+    [nodoc] static void browserosIsOpen(
-+        BrowserosIsOpenOptions options,
-+        BrowserosIsOpenCallback callback);
++    [nodoc] static void windriseIsOpen(
++        WindriseIsOpenOptions options,
++        WindriseIsOpenCallback callback);
    };
  
    interface Events {

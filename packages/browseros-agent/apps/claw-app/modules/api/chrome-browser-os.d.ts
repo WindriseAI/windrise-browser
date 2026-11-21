@@ -1,4 +1,4 @@
-declare namespace chrome.browserOS {
+declare namespace chrome.windrise {
   interface PrefObject {
     key: string
     type: string

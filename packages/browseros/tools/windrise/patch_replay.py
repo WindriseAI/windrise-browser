@@ -203,7 +203,7 @@ def run_incremental_replay(
         "chrome/browser/extensions/api/browser_os/browser_os_api.cc",
         "chrome/browser/extensions/api/browser_os/browser_os_api.h",
         "chrome/browser/ui/browser_actions.cc",
-        "chrome/common/extensions/api/browser_os.idl",
+        "chrome/common/extensions/api/windrise.idl",
     ]
 
     subprocess.run(["git", "init"], cwd=work_dir, capture_output=True, check=True)

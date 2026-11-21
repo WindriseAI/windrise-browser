@@ -8,7 +8,7 @@ browser or navigates web tabs.
 `api.js` is the shared, self-contained browser implementation. WXT bundles it into
 the extension. The Rust coordinator can also evaluate the same factory in an
 older extension worker, so a sidecar release can unblock installs that have not
-yet received the listener. The native `chrome.browserOS.getPref` API reads
+yet received the listener. The native `chrome.windrise.getPref` API reads
 `extensions.settings` in that worker's own profile; no filesystem/profile guesses
 or preference writes are needed. Only `kWaitForIdle` (2), a newer version, and the
 known Neo extension ID qualify. Other install gates retain their policy.

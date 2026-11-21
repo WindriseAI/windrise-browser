@@ -22,8 +22,8 @@ index 0000000000..4d19561a2b
 +// 风桥工具栏「格子」按钮。位置：地址栏之后、扩展按钮之前。
 +// 外观（高、圆角、内边距、图标间距、字号、底色）都从 browseros.windrise.layout.*
 +// 与 browseros.windrise.theme.* 偏好取，改偏好并在运行时重绘即可，不用重编。
-+// 点击时不自己做任何事，只把 browserOS.onGridButtonClicked 广播给扩展，
-+// 由扩展开格子模式（同地址栏插槽 browserOS.onAddressBarSlotClicked 的做法）。
++// 点击时不自己做任何事，只把 windrise.onGridButtonClicked 广播给扩展，
++// 由扩展开格子模式（同地址栏插槽 windrise.onAddressBarSlotClicked 的做法）。
 +// 窄窗（窗口宽 < 900，和侧栏自动收起同一个阈值 browseros::windrise::
 +// IsNarrowWindow）时收成只剩图标的 32 见方圆钮，宽回来恢复「图标 + 格子」；
 +// 提示和读屏名字一直是「格子」。切换不做动画（拖窗口边是连续操作）。

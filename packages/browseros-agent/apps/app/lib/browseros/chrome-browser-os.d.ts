@@ -1,5 +1,5 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Browser API type definitions require flexible types
-declare namespace chrome.browserOS {
+declare namespace chrome.windrise {
   interface PrefObject {
     key: string
     type: string
@@ -31,7 +31,7 @@ declare namespace chrome.browserOS {
 
   function getVersionNumber(callback: (version: string) => void): void
 
-  function getBrowserosVersionNumber(callback: (version: string) => void): void
+  function getWindriseVersionNumber(callback: (version: string) => void): void
 
   type SelectionType = 'file' | 'folder'
 
@@ -54,30 +54,30 @@ declare namespace chrome.browserOS {
 }
 
 declare namespace chrome.sidePanel {
-  interface BrowserosToggleOptions {
+  interface WindriseToggleOptions {
     tabId: number
     open?: boolean
   }
 
-  interface BrowserosToggleResult {
+  interface WindriseToggleResult {
     opened: boolean
   }
 
-  interface BrowserosIsOpenOptions {
+  interface WindriseIsOpenOptions {
     tabId: number
   }
 
-  function browserosToggle(
-    options: BrowserosToggleOptions,
-  ): Promise<BrowserosToggleResult>
-  function browserosToggle(
-    options: BrowserosToggleOptions,
-    callback: (result: BrowserosToggleResult) => void,
+  function windriseToggle(
+    options: WindriseToggleOptions,
+  ): Promise<WindriseToggleResult>
+  function windriseToggle(
+    options: WindriseToggleOptions,
+    callback: (result: WindriseToggleResult) => void,
   ): void
 
-  function browserosIsOpen(options: BrowserosIsOpenOptions): Promise<boolean>
-  function browserosIsOpen(
-    options: BrowserosIsOpenOptions,
+  function windriseIsOpen(options: WindriseIsOpenOptions): Promise<boolean>
+  function windriseIsOpen(
+    options: WindriseIsOpenOptions,
     callback: (isOpen: boolean) => void,
   ): void
 

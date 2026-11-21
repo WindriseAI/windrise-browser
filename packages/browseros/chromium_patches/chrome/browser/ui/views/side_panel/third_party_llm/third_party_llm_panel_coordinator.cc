@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..dbe7099f94
 --- /dev/null
 +++ b/chrome/browser/ui/views/side_panel/third_party_llm/third_party_llm_panel_coordinator.cc
-@@ -0,0 +1,1177 @@
+@@ -0,0 +1,1182 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -84,8 +84,10 @@ index 0000000000..dbe7099f94
 +namespace {
 +
 +// Preference names
-+const char kThirdPartyLlmProvidersPref[] = "browseros.third_party_llm.providers";
-+const char kThirdPartyLlmSelectedProviderPref[] = "browseros.third_party_llm.selected_provider";
++const char kThirdPartyLlmProvidersPref[] = "windrise.third_party_llm.providers";
++const char kThirdPartyLlmSelectedProviderPref[] = "windrise.third_party_llm.selected_provider";
++const char kLegacyThirdPartyLlmProvidersPref[] = "browseros.third_party_llm.providers";
++const char kLegacyThirdPartyLlmSelectedProviderPref[] = "browseros.third_party_llm.selected_provider";
 +
 +bool IsRestorableProviderUrl(const GURL& url) {
 +  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
@@ -1180,4 +1182,7 @@ index 0000000000..dbe7099f94
 +    user_prefs::PrefRegistrySyncable* registry) {
 +  registry->RegisterListPref(kThirdPartyLlmProvidersPref);
 +  registry->RegisterIntegerPref(kThirdPartyLlmSelectedProviderPref, 0);
++  // Legacy keys registered for one-time migration.
++  registry->RegisterListPref(kLegacyThirdPartyLlmProvidersPref);
++  registry->RegisterIntegerPref(kLegacyThirdPartyLlmSelectedProviderPref, 0);
 +}

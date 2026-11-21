@@ -60,7 +60,7 @@ class HttpsDownloader:
             raise AppImagePackagingError(f"Refusing non-HTTPS tool URL: {url}")
         request = urllib.request.Request(
             url,
-            headers={"User-Agent": "BrowserOS-Linux-Packager"},
+            headers={"User-Agent": "Windrise-Linux-Packager"},
         )
         with (
             urllib.request.urlopen(request, timeout=60) as response,

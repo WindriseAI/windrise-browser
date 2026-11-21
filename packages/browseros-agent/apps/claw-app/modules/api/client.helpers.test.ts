@@ -16,10 +16,10 @@ function installBrowserOSPrefs(values: Record<string, unknown>) {
     configurable: true,
     value: {
       runtime: {},
-      browserOS: {
+      windrise: {
         getPref(
           name: string,
-          callback: (pref: chrome.browserOS.PrefObject) => void,
+          callback: (pref: chrome.windrise.PrefObject) => void,
         ) {
           callback({
             key: name,
@@ -168,7 +168,7 @@ describe('resolveApiBaseUrlFromSources', () => {
 
 describe('BrowserOS managed port resolution', () => {
   it('prefers the BrowserOS server port pref for API traffic', async () => {
-    installBrowserOSPrefs({ 'browseros.server.server_port': 9511 })
+    installBrowserOSPrefs({ 'windrise.server.server_port': 9511 })
     installFetchRecorder()
 
     await expect(
@@ -182,7 +182,7 @@ describe('BrowserOS managed port resolution', () => {
   })
 
   it('prefers the BrowserOS proxy port pref for MCP traffic', async () => {
-    installBrowserOSPrefs({ 'browseros.server.proxy_port': 9512 })
+    installBrowserOSPrefs({ 'windrise.server.proxy_port': 9512 })
     const requests = installFetchRecorder({
       unhealthyProxyOrigins: new Set(['http://127.0.0.1:9512']),
     })
@@ -199,7 +199,7 @@ describe('BrowserOS managed port resolution', () => {
   })
 
   it('falls back to trusted sources when the pref is invalid', async () => {
-    installBrowserOSPrefs({ 'browseros.server.server_port': '9511' })
+    installBrowserOSPrefs({ 'windrise.server.server_port': '9511' })
 
     await expect(
       resolveBrowserOSServerBaseUrl({
@@ -212,7 +212,7 @@ describe('BrowserOS managed port resolution', () => {
   })
 
   it('keeps a valid server port pref when startup health is not ready yet', async () => {
-    installBrowserOSPrefs({ 'browseros.server.server_port': 9511 })
+    installBrowserOSPrefs({ 'windrise.server.server_port': 9511 })
     const requests = installFetchRecorder({
       unhealthyServerOrigins: new Set(['http://127.0.0.1:9511']),
     })
@@ -229,7 +229,7 @@ describe('BrowserOS managed port resolution', () => {
   })
 
   it('keeps a valid proxy port pref when startup health is not ready yet', async () => {
-    installBrowserOSPrefs({ 'browseros.server.proxy_port': 9000 })
+    installBrowserOSPrefs({ 'windrise.server.proxy_port': 9000 })
     const requests = installFetchRecorder({
       unhealthyProxyOrigins: new Set(['http://127.0.0.1:9000']),
     })
@@ -246,7 +246,7 @@ describe('BrowserOS managed port resolution', () => {
   })
 
   it('routes typed API calls through the BrowserOS server port pref', async () => {
-    installBrowserOSPrefs({ 'browseros.server.server_port': 9511 })
+    installBrowserOSPrefs({ 'windrise.server.server_port': 9511 })
     const requests = installFetchRecorder()
 
     const response = await (await apiClient()).getHealth()
@@ -257,7 +257,7 @@ describe('BrowserOS managed port resolution', () => {
 
   it('routes typed API calls through trusted fallbacks when the pref is invalid', async () => {
     installWindow('?apiUrl=http%3A%2F%2F127.0.0.1%3A9432')
-    installBrowserOSPrefs({ 'browseros.server.server_port': '9511' })
+    installBrowserOSPrefs({ 'windrise.server.server_port': '9511' })
     const requests = installFetchRecorder()
 
     const response = await (await apiClient()).getHealth()

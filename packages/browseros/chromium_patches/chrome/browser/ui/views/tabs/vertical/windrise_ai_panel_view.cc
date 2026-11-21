@@ -66,7 +66,7 @@ index 0000000000..c579b88530
 +
 +using browseros::windrise::LayoutMetric;
 +
-+constexpr char kPanelActionEventName[] = "browserOS.onAiPanelAction";
++constexpr char kPanelActionEventName[] = "windrise.onAiPanelAction";
 +
 +// 面板按钮发给扩展的 action 名（扩展 sw.js forwardGridAction 分发）。
 +constexpr char kActionConnectAi[] = "connect_ai";

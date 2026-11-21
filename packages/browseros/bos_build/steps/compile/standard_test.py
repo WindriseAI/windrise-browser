@@ -206,7 +206,7 @@ class CompileModuleExecuteTest(unittest.TestCase):
             build_output_dir = Path(tmp) / "out" / "Default"
             build_output_dir.mkdir(parents=True)
             chrome_path = build_output_dir / "chrome"
-            product_path = build_output_dir / "browseros"
+            product_path = build_output_dir / "windrise-browser"
             chrome_path.write_bytes(b"chrome")
             registry = ArtifactRegistry()
             ctx = cast(
