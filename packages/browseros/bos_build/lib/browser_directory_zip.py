@@ -67,15 +67,29 @@ def check_member_path(name: str) -> str:
     return "/".join(lowered)
 
 
+def check_bundled_extensions_manifest(raw: bytes, label: str) -> None:
+    """Reject missing, malformed, or non-empty bundled_extensions.json."""
+    try:
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Invalid bundled_extensions.json in browser ZIP: {label}") from exc
+    if not isinstance(data, dict) or data:
+        raise ValueError(
+            f"Non-empty bundled_extensions.json is forbidden in browser ZIP: {label}"
+        )
+
+
 def check_layout(entries: list[tuple[str, bool, int]], version: str) -> str:
     if not isinstance(version, str) or not VERSION_PATTERN.fullmatch(version):
         raise ValueError("version must be the actual four-part Chromium version")
     members = {}
+    raw_names = {}
     for name, is_dir, size in entries:
         key = check_member_path(name)
         if key in members:
             raise ValueError(f"Duplicate Windows ZIP path: {name}")
         members[key] = (is_dir, size)
+        raw_names[key] = name
     roots = [root for root in ("", "application/")
              if root + "chrome.exe" in members
              and not members[root + "chrome.exe"][0]
@@ -91,6 +105,25 @@ def check_layout(entries: list[tuple[str, bool, int]], version: str) -> str:
     dll = members.get(f"{root}{version}/chrome.dll")
     if not dll or dll[0] or dll[1] <= 0:
         raise ValueError(f"Missing nonempty {root}{version}/chrome.dll")
+    version_dir = f"{root}{version}"
+    expected_manifest = f"{version}.manifest".casefold()
+    for key, (is_dir, size) in members.items():
+        if is_dir:
+            continue
+        posix = PurePosixPath(key)
+        original = raw_names[key]
+        if posix.parent.name == "browseros_extensions" and posix.suffix == ".crx":
+            raise ValueError(f"Bundled extension CRX is forbidden in browser ZIP: {original}")
+        if posix.name == "bundled_extensions.json" and (size < 2 or size > 6):
+            raise ValueError(
+                f"Non-empty bundled_extensions.json is forbidden in browser ZIP: {original}"
+            )
+        if posix.suffix == ".manifest":
+            in_version_dir = posix.parent.as_posix() == version_dir
+            if (in_version_dir or VERSION_PATTERN.fullmatch(posix.stem)) and posix.name != expected_manifest:
+                raise ValueError(
+                    f"Mismatched assembly manifest in browser ZIP: {original} (expected {version}.manifest)"
+                )
     return "Application/chrome.exe" if root else "chrome.exe"
 
 
@@ -126,6 +159,10 @@ def inspect_directory_zip(zip_path: Path, metadata_path: Path | None = None) -> 
             [(info.filename, info.is_dir(), info.file_size) for info in infos],
             metadata.get("version"),
         )
+        for info in infos:
+            if not info.is_dir() and PurePosixPath(info.filename).name.casefold() == "bundled_extensions.json":
+                with archive.open(info) as manifest_file:
+                    check_bundled_extensions_manifest(manifest_file.read(), info.filename)
         # Layout matching is case insensitive, as on the target filesystem.
         executable_info = next(info for info in infos if info.filename.casefold() == executable.casefold())
         with archive.open(executable_info) as source:

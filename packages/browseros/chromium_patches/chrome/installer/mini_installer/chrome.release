@@ -18,7 +18,7 @@ index 33e8546206..4e42fc38cc 100644
  #
  # Sub directories living in the version dir
  #
-+browseros_extensions\*.*: %(VersionDir)s\browseros_extensions\
++browseros_extensions\bundled_extensions.json: %(VersionDir)s\browseros_extensions\
  Extensions\*.*: %(VersionDir)s\Extensions\
 -locales\*.pak: %(VersionDir)s\Locales
 +locales\en-US.pak: %(VersionDir)s\Locales

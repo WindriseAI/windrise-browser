@@ -128,6 +128,52 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 with zipfile.ZipFile(registry.get("installer_zip")) as archive:
                     self.assertEqual(archive.read(ctx.get_artifact_name("installer")), b"signed installer")
 
+    def test_directory_zip_rejects_retired_extension_and_stale_manifest(self):
+        version = "158.0.8127.41"
+        cases = (
+            ("browseros_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx", b"crx"),
+            ("browseros_extensions/bundled_extensions.json", b'{"adlpneommgkgeanpaekgoaolcpncohkf": {}}'),
+            ("158.0.8127.18.manifest", b"<assembly/>"),
+        )
+        for rel, content in cases:
+            with self.subTest(file=rel), tempfile.TemporaryDirectory() as tmp:
+                product = get_product_descriptor("browseros")
+                root = Path(tmp)
+                build_output_dir = root / "out" / "Default"
+                browser_tree = (
+                    build_output_dir / "gen/chrome/installer/mini_installer"
+                    / "mini_installer/temp_installer_archive/Chrome-bin"
+                )
+                version_tree = browser_tree / version
+                version_tree.mkdir(parents=True)
+                (root / "chrome").mkdir()
+                (root / "chrome/VERSION").write_text("MAJOR=158\nMINOR=0\nBUILD=8127\nPATCH=41\n")
+                executable = bytearray(70)
+                executable[:2] = b"MZ"
+                struct.pack_into("<I", executable, 60, 64)
+                executable[64:68] = b"PE\0\0"
+                struct.pack_into("<H", executable, 68, 0x8664)
+                chrome_path = build_output_dir / "chrome.exe"
+                chrome_path.write_bytes(executable)
+                (browser_tree / "chrome.exe").write_bytes(executable)
+                (version_tree / "chrome.dll").write_bytes(b"runtime DLL")
+                bad_file = version_tree / rel
+                bad_file.parent.mkdir(parents=True, exist_ok=True)
+                bad_file.write_bytes(content)
+                (build_output_dir / "mini_installer.exe").write_bytes(b"signed installer")
+                ctx = cast(Context, SimpleNamespace(
+                    chromium_src=root,
+                    out_dir="out/Default",
+                    architecture="x64",
+                    artifact_registry=ArtifactRegistry(),
+                    get_chromium_app_path=lambda: chrome_path,
+                    get_app_path=lambda: build_output_dir / f"{product.app_base_name}.exe",
+                    get_dist_dir=lambda: root / "dist",
+                    get_artifact_name=lambda kind: product.artifact_filename(kind, "0.31.0", "x64"),
+                ))
+                with self.assertRaises(ValueError):
+                    windows.WindowsPackageModule().execute(ctx)
+
 
 
 

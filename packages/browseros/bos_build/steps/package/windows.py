@@ -19,6 +19,7 @@ from ...lib.utils import (
 from ..compile.standard import autoninja_command
 from ...lib.browser_directory_zip import (
     VERSION_PATTERN,
+    check_bundled_extensions_manifest,
     check_layout,
     executable_arch,
     sha256_file,
@@ -185,6 +186,9 @@ class WindowsPackageModule(Step):
             else:
                 raise RuntimeError(f"Unsupported installer runtime entry: {path}")
         check_layout(entries, version)
+        for path, relative in files:
+            if path.name.casefold() == "bundled_extensions.json":
+                check_bundled_extensions_manifest(path.read_bytes(), relative)
 
         staged_chrome = browser_tree / "chrome.exe"
         if sha256_file(staged_chrome) != sha256_file(build_output_dir / "chrome.exe"):

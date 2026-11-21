@@ -74,10 +74,15 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
 
     def test_windows_manifest_carries_bundled_extensions(self) -> None:
         manifest = _patched_source("chrome/installer/mini_installer/chrome.release")
+        lines = manifest.splitlines()
 
         self.assertIn(
+            "browseros_extensions\\bundled_extensions.json: %(VersionDir)s\\browseros_extensions\\",
+            lines,
+        )
+        self.assertNotIn(
             "browseros_extensions\\*.*: %(VersionDir)s\\browseros_extensions\\",
-            manifest.splitlines(),
+            lines,
         )
 
     def test_gn_sources_follow_product_matrix(self) -> None:
@@ -101,12 +106,13 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
         )
 
         self.assertIn('import("//chrome/browser/browseros/buildflags.gni")', build)
-        self.assertEqual(base_sources, {manifest, bug_reporter})
+        self.assertEqual(base_sources, {manifest})
+        self.assertNotIn(bug_reporter, build)
         self.assertNotIn(retired_agent, build)
         self.assertEqual(browserclaw_sources, {browserclaw})
         self.assertEqual(
             base_sources | browserclaw_sources,
-            {manifest, browserclaw, bug_reporter},
+            {manifest, browserclaw},
         )
 
 
