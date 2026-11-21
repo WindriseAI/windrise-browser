@@ -94,7 +94,7 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +  bool saw_installation_file = false;
 +  for (base::FilePath entry = entries.Next(); !entry.empty();
 +       entry = entries.Next()) {
-+    if (entry.BaseName() != kInstallationFileName || saw_installation_file) {
++    if (entry.BaseName().value() != kInstallationFileName || saw_installation_file) {
 +      return base::FilePath();
 +    }
 +    saw_installation_file = true;
