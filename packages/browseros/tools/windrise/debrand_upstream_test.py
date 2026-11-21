@@ -185,6 +185,15 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertTrue((REPO_ROOT / "LICENSE").is_file())
         self.assertTrue((REPO_ROOT / "LICENSE.ungoogled_chromium").is_file())
 
+    def test_u23_virtual_routes_only_keep_windrise_settings(self):
+        hdr = read_patch("chrome/browser/browseros/core/browseros_constants.h")
+        self.assertIn(
+            '+    {"/settings", kWindriseAssistantExtensionId, "settings.html", ""},',
+            hdr,
+        )
+        for dead in ('"/mcp"', '"/onboarding"', '"/claw"', '"app.html"'):
+            self.assertNotIn(dead, hdr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..c4e0bc478ab9b
 --- /dev/null
 +++ b/chrome/browser/browseros/core/browseros_constants.h
-@@ -0,0 +1,277 @@
+@@ -0,0 +1,273 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -159,10 +159,6 @@ index 0000000000000..c4e0bc478ab9b
 +
 +inline constexpr BrowserOSURLRoute kBrowserOSURLRoutes[] = {
 +    {"/settings", kWindriseAssistantExtensionId, "settings.html", ""},
-+    {"/settings", kAgentExtensionId, "app.html", "/settings"},
-+    {"/mcp", kAgentExtensionId, "app.html", "/mcp"},
-+    {"/onboarding", kAgentExtensionId, "app.html", "/onboarding"},
-+    {"/claw", kBrowserClawExtensionId, "newtab.html", ""},
 +};
 +
 +inline constexpr size_t kBrowserOSURLRoutesCount =
