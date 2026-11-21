@@ -21,6 +21,7 @@ from ...lib.browser_directory_zip import (
     VERSION_PATTERN,
     check_bundled_extensions_manifest,
     check_layout,
+    create_directory_tar_xz,
     executable_arch,
     sha256_file,
 )
@@ -58,9 +59,16 @@ class MiniInstallerModule(Step):
 
 @step("package_windows", phase="package", platforms=("windows",))
 class WindowsPackageModule(Step):
-    produces = ["installer", "installer_zip", "browser_directory_zip", "browser_directory_metadata"]
+    produces = [
+        "installer",
+        "installer_zip",
+        "browser_directory_zip",
+        "browser_directory_metadata",
+        "browser_directory_tar_xz",
+        "browser_directory_tar_xz_metadata",
+    ]
     requires = []
-    description = "Create Windows installers and complete browser directory ZIP"
+    description = "Create Windows installers and complete browser directory archives (ZIP + TAR.XZ)"
 
     def validate(self, context: Context) -> None:
         if not IS_WINDOWS():
@@ -77,13 +85,22 @@ class WindowsPackageModule(Step):
 
         installer_path = self._create_installer(context)
         zip_path = self._create_portable_zip(context)
-        directory_zip, directory_metadata = self._create_directory_zip(context)
+        (
+            directory_zip,
+            directory_metadata,
+            directory_tar_xz,
+            directory_tar_xz_metadata,
+        ) = self._create_directory_archives(context)
         product_executable_path = self._copy_product_executable(context)
 
         context.artifact_registry.add("installer", installer_path)
         context.artifact_registry.add("installer_zip", zip_path)
         context.artifact_registry.add("browser_directory_zip", directory_zip)
         context.artifact_registry.add("browser_directory_metadata", directory_metadata)
+        context.artifact_registry.add("browser_directory_tar_xz", directory_tar_xz)
+        context.artifact_registry.add(
+            "browser_directory_tar_xz_metadata", directory_tar_xz_metadata
+        )
         context.artifact_registry.add("built_app", product_executable_path)
 
         log_success("Windows packages created successfully")
@@ -145,8 +162,10 @@ class WindowsPackageModule(Step):
         except Exception as e:
             raise RuntimeError(f"Failed to create installer ZIP: {e}")
 
-    def _create_directory_zip(self, ctx: Context) -> tuple[Path, Path]:
-        """Reuse the mini_installer's release-manifest staging tree after signing.
+    def _collect_validated_directory_tree(
+        self, ctx: Context
+    ) -> tuple[list[tuple[Path, str]], str, str]:
+        """Validate the mini_installer's release-manifest staging tree after signing.
 
         Upstream BUILD.gn passes $target_gen_dir/mini_installer as staging_dir;
         create_installer_archive.py adds temp_installer_archive/Chrome-bin.
@@ -198,13 +217,57 @@ class WindowsPackageModule(Step):
         if arch != ctx.architecture:
             raise RuntimeError(f"Installer chrome.exe architecture {arch} differs from target {ctx.architecture}")
 
+        return files, version, arch
+
+    def _create_directory_archives(
+        self, ctx: Context
+    ) -> tuple[Path, Path, Path, Path]:
+        """Produce both browser directory .zip and .tar.xz archives plus metadata."""
+        files, version, arch = self._collect_validated_directory_tree(ctx)
+        resource_versions = bundled_resource_versions(ctx)
         output_dir = ctx.get_dist_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
-        zip_path = output_dir / ctx.get_artifact_name("browser_directory_zip")
+
+        zip_path, zip_metadata_path = self._write_directory_zip(
+            output_dir / ctx.get_artifact_name("browser_directory_zip"),
+            files,
+            version=version,
+            arch=arch,
+            resource_versions=resource_versions,
+        )
+        tar_xz_path, tar_xz_metadata_path = self._write_directory_tar_xz(
+            output_dir / ctx.get_artifact_name("browser_directory_tar_xz"),
+            files,
+            version=version,
+            arch=arch,
+            resource_versions=resource_versions,
+        )
+        return zip_path, zip_metadata_path, tar_xz_path, tar_xz_metadata_path
+
+    def _create_directory_zip(self, ctx: Context) -> tuple[Path, Path]:
+        files, version, arch = self._collect_validated_directory_tree(ctx)
+        output_dir = ctx.get_dist_dir()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        return self._write_directory_zip(
+            output_dir / ctx.get_artifact_name("browser_directory_zip"),
+            files,
+            version=version,
+            arch=arch,
+            resource_versions=bundled_resource_versions(ctx),
+        )
+
+    def _write_directory_zip(
+        self,
+        zip_path: Path,
+        files: list[tuple[Path, str]],
+        *,
+        version: str,
+        arch: str,
+        resource_versions: dict,
+    ) -> tuple[Path, Path]:
         metadata_path = zip_path.with_suffix(zip_path.suffix + ".json")
         pending_zip = zip_path.with_suffix(zip_path.suffix + ".tmp")
         pending_metadata = metadata_path.with_suffix(metadata_path.suffix + ".tmp")
-        resource_versions = bundled_resource_versions(ctx)
         try:
             with zipfile.ZipFile(pending_zip, "w", zipfile.ZIP_DEFLATED) as archive:
                 for path, relative in files:
@@ -229,6 +292,41 @@ class WindowsPackageModule(Step):
             pending_metadata.unlink(missing_ok=True)
         log_success(f"Browser directory ZIP created: {zip_path.name}")
         return zip_path, metadata_path
+
+    def _write_directory_tar_xz(
+        self,
+        tar_xz_path: Path,
+        files: list[tuple[Path, str]],
+        *,
+        version: str,
+        arch: str,
+        resource_versions: dict,
+    ) -> tuple[Path, Path]:
+        metadata_path = tar_xz_path.with_suffix(tar_xz_path.suffix + ".json")
+        pending_tar_xz = tar_xz_path.with_suffix(tar_xz_path.suffix + ".tmp")
+        pending_metadata = metadata_path.with_suffix(metadata_path.suffix + ".tmp")
+        try:
+            create_directory_tar_xz(files, pending_tar_xz, arch=arch)
+            digest = sha256_file(pending_tar_xz)
+            metadata = {
+                "name": tar_xz_path.name,
+                "format": "tar.xz",
+                "platform": "win32",
+                "arch": arch,
+                "version": version,
+                "buildId": f"sha256-{digest}",
+                "size": pending_tar_xz.stat().st_size,
+                "sha256": digest,
+                "component_versions": resource_versions,
+            }
+            pending_metadata.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+            pending_tar_xz.replace(tar_xz_path)
+            pending_metadata.replace(metadata_path)
+        finally:
+            pending_tar_xz.unlink(missing_ok=True)
+            pending_metadata.unlink(missing_ok=True)
+        log_success(f"Browser directory TAR.XZ created: {tar_xz_path.name}")
+        return tar_xz_path, metadata_path
 
 
 

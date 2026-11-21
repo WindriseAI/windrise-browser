@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Windows directory ZIP contract and read-only release inspection (stdlib only).
+"""Windows directory archive (ZIP / TAR.XZ) contract and read-only inspection (stdlib only).
 
-Usage: python browser_directory_zip.py BROWSER.zip [--metadata BROWSER.zip.json]
+Usage: python browser_directory_zip.py BROWSER.{zip,tar.xz} [--metadata ARCHIVE.json]
 This command never extracts files, starts a browser, or changes either input.
 """
 
 import argparse
 import hashlib
+import io
 import json
+import lzma
 import re
 import stat
 import struct
 import sys
+import tarfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
@@ -19,6 +22,10 @@ from pathlib import Path, PurePosixPath
 VERSION_PATTERN = re.compile(r"\d+\.\d+\.\d+\.\d+")
 BUILD_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]{1,128}")
 PE_ARCHITECTURES = {0x014C: "x86", 0x8664: "x64", 0xAA64: "arm64"}
+XZ_MAGIC = b"\xfd7zXZ\x00"
+TAR_XZ_DEFAULT_PRESET = 6
+SUPPORTED_ARCHIVE_FORMATS = ("zip", "tar.xz")
+_MAX_PE_HEADER_READ = 1024 * 1024 + 64
 
 
 def sha256_file(path: Path) -> str:
@@ -27,6 +34,48 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def tar_xz_filters(arch: str = "x64", preset: int = TAR_XZ_DEFAULT_PRESET) -> list[dict]:
+    """Return LZMA filter chain for Windows browser directory .tar.xz archives.
+
+    x86/x64 binaries (chrome.dll, dxcompiler.dll, etc.) benefit substantially from
+    the x86 BCJ pre-filter ahead of LZMA2.
+    """
+    lzma2 = {"id": lzma.FILTER_LZMA2, "preset": preset}
+    if arch in ("x64", "x86"):
+        return [{"id": lzma.FILTER_X86}, lzma2]
+    return [lzma2]
+
+
+def _normalize_tarinfo(tarinfo: tarfile.TarInfo) -> tarfile.TarInfo:
+    """Normalize tar member metadata for deterministic, whitespace-safe bsdtar -tvf output."""
+    tarinfo.uid = 0
+    tarinfo.gid = 0
+    tarinfo.uname = "0"
+    tarinfo.gname = "0"
+    tarinfo.mode = 0o755 if tarinfo.isdir() else 0o644
+    return tarinfo
+
+
+def create_directory_tar_xz(
+    files: list[tuple[Path, str]],
+    output_path: Path,
+    *,
+    arch: str = "x64",
+    preset: int = TAR_XZ_DEFAULT_PRESET,
+) -> None:
+    """Create a browser directory .tar.xz archive with LZMA2 (+ x86 BCJ for x86/x64)."""
+    filters = tar_xz_filters(arch=arch, preset=preset)
+    with lzma.open(output_path, "wb", format=lzma.FORMAT_XZ, filters=filters) as xz_stream:
+        with tarfile.open(fileobj=xz_stream, mode="w:", format=tarfile.PAX_FORMAT) as archive:
+            for path, relative in files:
+                archive.add(
+                    path,
+                    arcname=relative,
+                    recursive=False,
+                    filter=_normalize_tarinfo,
+                )
 
 
 def executable_arch(source) -> str:
@@ -131,28 +180,39 @@ def check_layout(entries: list[tuple[str, bool, int]], version: str) -> str:
     return "Application/chrome.exe" if root else "chrome.exe"
 
 
-def inspect_directory_zip(zip_path: Path, metadata_path: Path | None = None) -> dict:
-    metadata_path = metadata_path or zip_path.with_suffix(zip_path.suffix + ".json")
+def _validate_archive_metadata(
+    archive_path: Path,
+    metadata_path: Path | None,
+    *,
+    expected_format: str,
+) -> dict:
+    label = "ZIP" if expected_format == "zip" else "TAR.XZ"
+    metadata_path = metadata_path or archive_path.with_suffix(archive_path.suffix + ".json")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     if not isinstance(metadata, dict):
         raise ValueError("Metadata must be a JSON object")
-    if metadata.get("name") != zip_path.name or metadata.get("format") != "zip":
-        raise ValueError("Metadata name/format does not identify this directory ZIP")
+    if metadata.get("name") != archive_path.name or metadata.get("format") != expected_format:
+        raise ValueError(f"Metadata name/format does not identify this directory {label}")
     build_id = metadata.get("buildId")
     if not isinstance(build_id, str) or not BUILD_ID_PATTERN.fullmatch(build_id):
         raise ValueError("Metadata buildId is missing or invalid")
     if metadata.get("platform") != "win32" or metadata.get("arch") not in PE_ARCHITECTURES.values():
         raise ValueError("Metadata platform/arch is invalid")
     size = metadata.get("size")
-    if type(size) is not int or size <= 0 or size != zip_path.stat().st_size:
-        raise ValueError("Metadata size does not match ZIP byte count")
+    if type(size) is not int or size <= 0 or size != archive_path.stat().st_size:
+        raise ValueError(f"Metadata size does not match {label} byte count")
     digest = metadata.get("sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
         raise ValueError("Metadata sha256 must be 64 lowercase hexadecimal characters")
-    if sha256_file(zip_path) != digest:
-        raise ValueError("Metadata sha256 does not match ZIP bytes")
+    if sha256_file(archive_path) != digest:
+        raise ValueError(f"Metadata sha256 does not match {label} bytes")
     if build_id != f"sha256-{digest}":
-        raise ValueError("Metadata buildId does not identify this ZIP's content")
+        raise ValueError(f"Metadata buildId does not identify this {label}'s content")
+    return metadata
+
+
+def inspect_directory_zip(zip_path: Path, metadata_path: Path | None = None) -> dict:
+    metadata = _validate_archive_metadata(zip_path, metadata_path, expected_format="zip")
     with zipfile.ZipFile(zip_path, "r") as archive:
         infos = archive.infolist()
         for info in infos:
@@ -178,15 +238,79 @@ def inspect_directory_zip(zip_path: Path, metadata_path: Path | None = None) -> 
     return {**metadata, "executable": executable, "files": sum(not info.is_dir() for info in infos)}
 
 
+def inspect_directory_tar_xz(tar_xz_path: Path, metadata_path: Path | None = None) -> dict:
+    metadata = _validate_archive_metadata(tar_xz_path, metadata_path, expected_format="tar.xz")
+    with tar_xz_path.open("rb") as raw_file:
+        magic = raw_file.read(len(XZ_MAGIC))
+    if magic != XZ_MAGIC:
+        raise ValueError("Archive does not start with an XZ magic header")
+
+    entries: list[tuple[str, bool, int]] = []
+    bundled_manifests: list[tuple[str, bytes]] = []
+    chrome_headers: dict[str, bytes] = {}
+    file_count = 0
+
+    with lzma.open(tar_xz_path, "rb", format=lzma.FORMAT_XZ) as xz_stream:
+        with tarfile.open(fileobj=xz_stream, mode="r|") as archive:
+            for member in archive:
+                if not (member.isfile() or member.isdir()):
+                    raise ValueError(f"Unsupported TAR.XZ link/special file: {member.name}")
+                if member.isdir():
+                    entries.append((member.name.rstrip("/") + "/", True, 0))
+                    continue
+                file_count += 1
+                entries.append((member.name, False, member.size))
+                lowered_name = member.name.casefold()
+                if PurePosixPath(member.name).name.casefold() == "bundled_extensions.json":
+                    extracted = archive.extractfile(member)
+                    if extracted is None:
+                        raise ValueError(f"Unable to read bundled_extensions.json: {member.name}")
+                    bundled_manifests.append((member.name, extracted.read()))
+                elif lowered_name in ("chrome.exe", "application/chrome.exe"):
+                    extracted = archive.extractfile(member)
+                    if extracted is None:
+                        raise ValueError(f"Unable to read executable header: {member.name}")
+                    chrome_headers[lowered_name] = extracted.read(_MAX_PE_HEADER_READ)
+        # Drain any trailing tar padding / XZ stream blocks so liblzma validates
+        # the entire compressed payload and footer checksum.
+        while xz_stream.read(1024 * 1024):
+            pass
+
+    executable = check_layout(entries, metadata.get("version"))
+    for manifest_name, manifest_bytes in bundled_manifests:
+        check_bundled_extensions_manifest(manifest_bytes, manifest_name)
+    executable_header = chrome_headers.get(executable.casefold())
+    if executable_header is None:
+        raise ValueError(f"Missing executable payload in TAR.XZ: {executable}")
+    if executable_arch(io.BytesIO(executable_header)) != metadata["arch"]:
+        raise ValueError("Metadata arch does not match chrome.exe PE machine type")
+    return {**metadata, "executable": executable, "files": file_count}
+
+
+def inspect_directory_archive(archive_path: Path, metadata_path: Path | None = None) -> dict:
+    if archive_path.name.casefold().endswith(".tar.xz"):
+        return inspect_directory_tar_xz(archive_path, metadata_path)
+    return inspect_directory_zip(archive_path, metadata_path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("zip", type=Path)
+    parser.add_argument("archive", type=Path)
     parser.add_argument("--metadata", type=Path)
     args = parser.parse_args()
     try:
-        result = inspect_directory_zip(args.zip, args.metadata)
-    except (OSError, ValueError, KeyError, RuntimeError, zipfile.BadZipFile, EOFError) as error:
-        print(f"Directory ZIP check failed: {error}", file=sys.stderr)
+        result = inspect_directory_archive(args.archive, args.metadata)
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        RuntimeError,
+        zipfile.BadZipFile,
+        tarfile.TarError,
+        lzma.LZMAError,
+        EOFError,
+    ) as error:
+        print(f"Directory archive check failed: {error}", file=sys.stderr)
         return 1
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0

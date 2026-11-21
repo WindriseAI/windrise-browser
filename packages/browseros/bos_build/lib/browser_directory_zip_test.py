@@ -2,17 +2,25 @@
 """Tests for browser directory ZIP layout and retired payload guards."""
 
 import hashlib
+import io
 import json
+import lzma
 import struct
+import tarfile
 import tempfile
 import unittest
 import zipfile
 from pathlib import Path
 
 from .browser_directory_zip import (
+    XZ_MAGIC,
     check_bundled_extensions_manifest,
     check_layout,
+    create_directory_tar_xz,
+    inspect_directory_archive,
+    inspect_directory_tar_xz,
     inspect_directory_zip,
+    tar_xz_filters,
 )
 
 VERSION = "158.0.8127.41"
@@ -123,6 +131,207 @@ class BrowserDirectoryZipLayoutTest(unittest.TestCase):
             )
             with self.assertRaisesRegex(ValueError, "Non-empty bundled_extensions.json"):
                 inspect_directory_zip(zip_path, meta_path)
+
+    def test_tar_xz_filters_uses_x86_bcj_for_x86_and_x64_only(self) -> None:
+        self.assertEqual(
+            [f["id"] for f in tar_xz_filters("x64")],
+            [lzma.FILTER_X86, lzma.FILTER_LZMA2],
+        )
+        self.assertEqual(
+            [f["id"] for f in tar_xz_filters("x86")],
+            [lzma.FILTER_X86, lzma.FILTER_LZMA2],
+        )
+        self.assertEqual(
+            [f["id"] for f in tar_xz_filters("arm64")],
+            [lzma.FILTER_LZMA2],
+        )
+
+    def test_create_and_inspect_directory_tar_xz_roundtrip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "tree"
+            (src / VERSION / "windrise_extensions").mkdir(parents=True)
+            (src / "chrome.exe").write_bytes(_minimal_pe_x64())
+            (src / VERSION / "chrome.dll").write_bytes(b"dll-payload")
+            (src / VERSION / f"{VERSION}.manifest").write_bytes(b"<assembly/>")
+            (src / VERSION / "windrise_extensions" / "bundled_extensions.json").write_bytes(b"{}\n")
+
+            files = [
+                (p, p.relative_to(src).as_posix())
+                for p in sorted(src.rglob("*"))
+                if p.is_file()
+            ]
+            tar_xz_path = root / "browser.tar.xz"
+            create_directory_tar_xz(files, tar_xz_path, arch="x64", preset=1)
+
+            raw = tar_xz_path.read_bytes()
+            self.assertTrue(raw.startswith(XZ_MAGIC))
+            digest = hashlib.sha256(raw).hexdigest()
+            meta_path = root / "browser.tar.xz.json"
+            meta_path.write_text(
+                json.dumps(
+                    {
+                        "name": tar_xz_path.name,
+                        "format": "tar.xz",
+                        "platform": "win32",
+                        "arch": "x64",
+                        "version": VERSION,
+                        "buildId": f"sha256-{digest}",
+                        "size": len(raw),
+                        "sha256": digest,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = inspect_directory_archive(tar_xz_path)
+            self.assertEqual(result["format"], "tar.xz")
+            self.assertEqual(result["executable"], "chrome.exe")
+            self.assertEqual(result["files"], 4)
+
+            # Verify normalized tar metadata (whitespace-safe bsdtar -tvf output).
+            with tarfile.open(tar_xz_path, "r:xz") as archive:
+                for member in archive.getmembers():
+                    self.assertEqual(member.uid, 0)
+                    self.assertEqual(member.gid, 0)
+                    self.assertEqual(member.uname, "0")
+                    self.assertEqual(member.gname, "0")
+
+    def test_inspect_directory_tar_xz_rejects_retired_payloads_and_symlinks(self) -> None:
+        cases = [
+            (
+                "non-empty bundled_extensions.json",
+                {f"{VERSION}/windrise_extensions/bundled_extensions.json": b'{"x":1}'},
+                "Non-empty bundled_extensions.json",
+            ),
+            (
+                "retired crx",
+                {f"{VERSION}/windrise_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx": b"crx"},
+                "Bundled extension CRX is forbidden",
+            ),
+            (
+                "BrowserOSServer",
+                {f"{VERSION}/BrowserOSServer/browseros_server.exe": b"srv"},
+                "Bundled upstream server payload is forbidden",
+            ),
+            (
+                "stale version manifest",
+                {f"{VERSION}/158.0.8127.18.manifest": b"<assembly/>"},
+                "Mismatched assembly manifest",
+            ),
+        ]
+        for label, extra_files, expected_err in cases:
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                tar_xz_path = root / "bad.tar.xz"
+                members = {
+                    "chrome.exe": _minimal_pe_x64(),
+                    f"{VERSION}/chrome.dll": b"dll",
+                    f"{VERSION}/{VERSION}.manifest": b"<assembly/>",
+                    **extra_files,
+                }
+                with tarfile.open(tar_xz_path, "w:xz") as archive:
+                    for rel, payload in members.items():
+                        info = tarfile.TarInfo(name=rel)
+                        info.size = len(payload)
+                        archive.addfile(info, io.BytesIO(payload))
+                raw = tar_xz_path.read_bytes()
+                digest = hashlib.sha256(raw).hexdigest()
+                meta_path = root / "bad.tar.xz.json"
+                meta_path.write_text(
+                    json.dumps(
+                        {
+                            "name": tar_xz_path.name,
+                            "format": "tar.xz",
+                            "platform": "win32",
+                            "arch": "x64",
+                            "version": VERSION,
+                            "buildId": f"sha256-{digest}",
+                            "size": len(raw),
+                            "sha256": digest,
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                with self.assertRaisesRegex(ValueError, expected_err):
+                    inspect_directory_tar_xz(tar_xz_path, meta_path)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tar_xz_path = root / "symlink.tar.xz"
+            with tarfile.open(tar_xz_path, "w:xz") as archive:
+                exe = tarfile.TarInfo("chrome.exe")
+                exe_bytes = _minimal_pe_x64()
+                exe.size = len(exe_bytes)
+                archive.addfile(exe, io.BytesIO(exe_bytes))
+                link = tarfile.TarInfo(f"{VERSION}/evil")
+                link.type = tarfile.SYMTYPE
+                link.linkname = "../outside"
+                archive.addfile(link)
+            raw = tar_xz_path.read_bytes()
+            digest = hashlib.sha256(raw).hexdigest()
+            meta_path = root / "symlink.tar.xz.json"
+            meta_path.write_text(
+                json.dumps(
+                    {
+                        "name": tar_xz_path.name,
+                        "format": "tar.xz",
+                        "platform": "win32",
+                        "arch": "x64",
+                        "version": VERSION,
+                        "buildId": f"sha256-{digest}",
+                        "size": len(raw),
+                        "sha256": digest,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "Unsupported TAR.XZ link/special file"):
+                inspect_directory_tar_xz(tar_xz_path, meta_path)
+
+    def test_inspect_directory_tar_xz_rejects_wrong_format_and_non_xz_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake_path = root / "fake.tar.xz"
+            fake_bytes = b"PK\x03\x04not-an-xz-file"
+            fake_path.write_bytes(fake_bytes)
+            digest = hashlib.sha256(fake_bytes).hexdigest()
+            meta_path = root / "fake.tar.xz.json"
+            meta_path.write_text(
+                json.dumps(
+                    {
+                        "name": fake_path.name,
+                        "format": "zip",
+                        "platform": "win32",
+                        "arch": "x64",
+                        "version": VERSION,
+                        "buildId": f"sha256-{digest}",
+                        "size": len(fake_bytes),
+                        "sha256": digest,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "Metadata name/format"):
+                inspect_directory_tar_xz(fake_path, meta_path)
+
+            meta_path.write_text(
+                json.dumps(
+                    {
+                        "name": fake_path.name,
+                        "format": "tar.xz",
+                        "platform": "win32",
+                        "arch": "x64",
+                        "version": VERSION,
+                        "buildId": f"sha256-{digest}",
+                        "size": len(fake_bytes),
+                        "sha256": digest,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "XZ magic header"):
+                inspect_directory_tar_xz(fake_path, meta_path)
 
 
 if __name__ == "__main__":
