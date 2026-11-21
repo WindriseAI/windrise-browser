@@ -68,15 +68,15 @@ index 0000000000..07b0e3fad7
 +  ResponseAction Run() override;
 +};
 +
-+class WindriseGetBrowserosVersionNumberFunction : public ExtensionFunction {
++class WindriseGetWindriseVersionNumberFunction : public ExtensionFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("windrise.getBrowserosVersionNumber",
-+                             WINDRISE_GETBROWSEROSVERSIONNUMBER)
++  DECLARE_EXTENSION_FUNCTION("windrise.getWindriseVersionNumber",
++                             WINDRISE_GETWINDRISEVERSIONNUMBER)
 +
-+  WindriseGetBrowserosVersionNumberFunction() = default;
++  WindriseGetWindriseVersionNumberFunction() = default;
 +
 + protected:
-+  ~WindriseGetBrowserosVersionNumberFunction() override = default;
++  ~WindriseGetWindriseVersionNumberFunction() override = default;
 +
 +  ResponseAction Run() override;
 +};

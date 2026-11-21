@@ -21,8 +21,8 @@ index afc66fce49630..9a73a7447e175 100644
 +    boolean opened;
 +  };
 +
-+  // Options for checking if the side panel is open on a specific tab (BrowserOS).
-+  dictionary BrowserosIsOpenOptions {
++  // Options for checking if the side panel is open on a specific tab.
++  dictionary WindriseIsOpenOptions {
 +    // The tab to check. Required.
 +    long tabId;
 +  };
@@ -32,7 +32,7 @@ index afc66fce49630..9a73a7447e175 100644
    callback PanelBehaviorCallback = void(PanelBehavior behavior);
    callback PanelLayoutCallback = void(PanelLayout layout);
 +  callback WindriseToggleCallback = void(WindriseToggleResult result);
-+  callback BrowserosIsOpenCallback = void(boolean isOpen);
++  callback WindriseIsOpenCallback = void(boolean isOpen);
  
    interface Functions {
      // Configures the side panel.
@@ -51,12 +51,12 @@ index afc66fce49630..9a73a7447e175 100644
 +        WindriseToggleOptions options,
 +        WindriseToggleCallback callback);
 +
-+    // Checks if the extension's side panel is open on a specific tab (BrowserOS).
++    // Checks if the extension's side panel is open on a specific tab.
 +    // |options|: Specifies the tab to check.
 +    // |callback|: Called with true if the panel is open, false otherwise.
-+    [nodoc] static void browserosIsOpen(
-+        BrowserosIsOpenOptions options,
-+        BrowserosIsOpenCallback callback);
++    [nodoc] static void windriseIsOpen(
++        WindriseIsOpenOptions options,
++        WindriseIsOpenCallback callback);
    };
  
    interface Events {

@@ -256,11 +256,11 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction
-+WindriseGetBrowserosVersionNumberFunction::Run() {
++WindriseGetWindriseVersionNumberFunction::Run() {
 +  std::string version = std::string(version_info::GetBrowserOSVersionNumber());
 +
 +  return RespondNow(ArgumentList(
-+      windrise::GetBrowserosVersionNumber::Results::Create(version)));
++      windrise::GetWindriseVersionNumber::Results::Create(version)));
 +}
 +
 +namespace {

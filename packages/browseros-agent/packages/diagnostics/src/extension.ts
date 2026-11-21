@@ -18,7 +18,7 @@ const REFRESH_ALARM = 'browseros.diagnostics.refresh'
 type Product = 'browseros' | 'browseros-neo'
 interface NativeVersions {
   getVersionNumber?: (callback: (value: string) => void) => void
-  getBrowserosVersionNumber?: (callback: (value: string) => void) => void
+  getWindriseVersionNumber?: (callback: (value: string) => void) => void
 }
 interface ServerDetails {
   version: string | null
@@ -69,7 +69,7 @@ export async function collectBrowserDiagnostics(
     within(task, 2000).catch(() => null)
   const [browseros, chromium, platform, cpu, memory, server, reporter] =
     await Promise.all([
-      safe(() => nativeVersion(api, 'getBrowserosVersionNumber')),
+      safe(() => nativeVersion(api, 'getWindriseVersionNumber')),
       safe(() => nativeVersion(api, 'getVersionNumber')),
       safe(() => chrome.runtime.getPlatformInfo()),
       safe(() => chrome.system.cpu.getInfo()),

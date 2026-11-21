@@ -62,7 +62,7 @@ export function toggleSidePanel(
 ): Promise<SidePanelToggleResult> {
   return forTab(target.tabId, async () => {
     await prepareTabSidePanel(target.tabId)
-    if (await chrome.sidePanel.browserosIsOpen({ tabId: target.tabId })) {
+    if (await chrome.sidePanel.windriseIsOpen({ tabId: target.tabId })) {
       return closeTabPanel(target.tabId)
     }
     return chrome.sidePanel.windriseToggle({ tabId: target.tabId, open: true })

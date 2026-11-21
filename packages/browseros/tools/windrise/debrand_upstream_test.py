@@ -228,6 +228,8 @@ class DebrandUpstreamTest(unittest.TestCase):
         idl = read_patch("chrome/common/extensions/api/windrise.idl")
         self.assertIn("+namespace windrise {", idl)
         self.assertNotIn("namespace browserOS", idl)
+        self.assertIn("+    static void getWindriseVersionNumber(", idl)
+        self.assertNotIn("browseros", idl.lower())
 
         api_sources = read_patch("chrome/common/extensions/api/api_sources.gni")
         self.assertIn('+    "windrise.idl",', api_sources)
@@ -276,6 +278,12 @@ class DebrandUpstreamTest(unittest.TestCase):
             '+  DECLARE_EXTENSION_FUNCTION("windrise.setAddressBarSlot",', api_h
         )
         self.assertIn('+  DECLARE_EXTENSION_FUNCTION("windrise.setAiTabs",', api_h)
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("windrise.getWindriseVersionNumber",',
+            api_h,
+        )
+        self.assertIn("WINDRISE_GETWINDRISEVERSIONNUMBER", api_h)
+        self.assertNotIn("getBrowserosVersionNumber", api_h)
         self.assertNotIn("browserOS.", api_h)
 
         api_cc = read_patch(
@@ -286,11 +294,18 @@ class DebrandUpstreamTest(unittest.TestCase):
             "+  return extensions::IsAuthorizedWindriseExtension(extension);",
             api_cc,
         )
+        self.assertIn(
+            "+WindriseGetWindriseVersionNumberFunction::Run() {", api_cc
+        )
+        self.assertNotIn("GetBrowserosVersionNumber", api_cc)
         self.assertNotIn("browser_os::", api_cc)
 
         side_idl = read_patch("chrome/common/extensions/api/side_panel.idl")
         self.assertIn("+    [nodoc] static void windriseToggle(", side_idl)
-        self.assertNotIn("browserosToggle", side_idl)
+        self.assertIn("+    [nodoc] static void windriseIsOpen(", side_idl)
+        self.assertIn("+  dictionary WindriseIsOpenOptions {", side_idl)
+        self.assertIn("+  callback WindriseIsOpenCallback = void(boolean isOpen);", side_idl)
+        self.assertNotIn("browseros", side_idl.lower())
 
         side_h = read_patch(
             "chrome/browser/extensions/api/side_panel/side_panel_api.h"
@@ -299,7 +314,12 @@ class DebrandUpstreamTest(unittest.TestCase):
             '+  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseToggle",', side_h
         )
         self.assertIn("SIDEPANEL_WINDRISETOGGLE", side_h)
+        self.assertIn(
+            '+  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseIsOpen",', side_h
+        )
+        self.assertIn("SIDEPANEL_WINDRISEISOPEN", side_h)
         self.assertNotIn("browserosToggle", side_h)
+        self.assertNotIn("browserosIsOpen", side_h)
 
         for rel, expected_event in (
             (
@@ -328,7 +348,11 @@ class DebrandUpstreamTest(unittest.TestCase):
         )
         self.assertIn("+  WINDRISE_GETPREF = 2028,", hist)
         self.assertIn("+  SIDEPANEL_WINDRISETOGGLE = 2043,", hist)
+        self.assertIn("+  WINDRISE_GETWINDRISEVERSIONNUMBER = 2044,", hist)
+        self.assertIn("+  SIDEPANEL_WINDRISEISOPEN = 2045,", hist)
         self.assertIn("+  DELETED_SIDEPANEL_BROWSEROSTOGGLE = 2004,", hist)
+        self.assertIn("+  DELETED_SIDEPANEL_BROWSEROSISOPEN = 2005,", hist)
+        self.assertIn("+  DELETED_WINDRISE_GETBROWSEROSVERSIONNUMBER = 2032,", hist)
 
         enums = read_patch(
             "tools/metrics/histograms/metadata/extensions/enums.xml"
@@ -336,6 +360,21 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn('<int value="2028" label="WINDRISE_GETPREF"/>', enums)
         self.assertIn(
             '<int value="2043" label="SIDEPANEL_WINDRISETOGGLE"/>', enums
+        )
+        self.assertIn(
+            '<int value="2044" label="WINDRISE_GETWINDRISEVERSIONNUMBER"/>',
+            enums,
+        )
+        self.assertIn(
+            '<int value="2045" label="SIDEPANEL_WINDRISEISOPEN"/>', enums
+        )
+        self.assertIn(
+            '<int value="2005" label="DELETED_SIDEPANEL_BROWSEROSISOPEN"/>',
+            enums,
+        )
+        self.assertIn(
+            '<int value="2032" label="DELETED_WINDRISE_GETBROWSEROSVERSIONNUMBER"/>',
+            enums,
         )
         self.assertIn('<int value="276" label="kDeleted_BrowserOS"/>', enums)
         self.assertIn('<int value="277" label="kWindrise"/>', enums)

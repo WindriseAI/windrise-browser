@@ -53,11 +53,11 @@ index 99e9cc39ad41e..90545097937ce 100644
 +}
 +
 +ExtensionFunction::ResponseAction
-+SidePanelBrowserosIsOpenFunction::RunFunction() {
++SidePanelWindriseIsOpenFunction::RunFunction() {
 +  EXTENSION_FUNCTION_VALIDATE(extension());
 +
-+  std::optional<api::side_panel::BrowserosIsOpen::Params> params =
-+      api::side_panel::BrowserosIsOpen::Params::Create(args());
++  std::optional<api::side_panel::WindriseIsOpen::Params> params =
++      api::side_panel::WindriseIsOpen::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
 +
 +  SidePanelService* service = GetService();

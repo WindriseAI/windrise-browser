@@ -31,7 +31,7 @@ declare namespace chrome.windrise {
 
   function getVersionNumber(callback: (version: string) => void): void
 
-  function getBrowserosVersionNumber(callback: (version: string) => void): void
+  function getWindriseVersionNumber(callback: (version: string) => void): void
 
   type SelectionType = 'file' | 'folder'
 
@@ -63,7 +63,7 @@ declare namespace chrome.sidePanel {
     opened: boolean
   }
 
-  interface BrowserosIsOpenOptions {
+  interface WindriseIsOpenOptions {
     tabId: number
   }
 
@@ -75,9 +75,9 @@ declare namespace chrome.sidePanel {
     callback: (result: WindriseToggleResult) => void,
   ): void
 
-  function browserosIsOpen(options: BrowserosIsOpenOptions): Promise<boolean>
-  function browserosIsOpen(
-    options: BrowserosIsOpenOptions,
+  function windriseIsOpen(options: WindriseIsOpenOptions): Promise<boolean>
+  function windriseIsOpen(
+    options: WindriseIsOpenOptions,
     callback: (isOpen: boolean) => void,
   ): void
 

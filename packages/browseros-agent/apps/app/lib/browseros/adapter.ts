@@ -36,12 +36,12 @@ export class BrowserOSAdapter {
 
   async getBrowserosVersion(): Promise<string | null> {
     return new Promise<string | null>((resolve, reject) => {
-      if (typeof chrome.windrise.getBrowserosVersionNumber !== 'function') {
+      if (typeof chrome.windrise.getWindriseVersionNumber !== 'function') {
         resolve(null)
         return
       }
 
-      chrome.windrise.getBrowserosVersionNumber((version: string) => {
+      chrome.windrise.getWindriseVersionNumber((version: string) => {
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message || 'Unknown error'))
         } else {

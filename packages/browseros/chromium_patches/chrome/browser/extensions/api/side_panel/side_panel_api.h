@@ -21,18 +21,18 @@ index 72a88888eb9fc..3f0779a57b615 100644
 +  ResponseAction RunFunction() override;
 +};
 +
-+class SidePanelBrowserosIsOpenFunction : public SidePanelApiFunction {
++class SidePanelWindriseIsOpenFunction : public SidePanelApiFunction {
 + public:
-+  DECLARE_EXTENSION_FUNCTION("sidePanel.browserosIsOpen",
-+                             SIDEPANEL_BROWSEROSISOPEN)
-+  SidePanelBrowserosIsOpenFunction() = default;
-+  SidePanelBrowserosIsOpenFunction(const SidePanelBrowserosIsOpenFunction&) =
++  DECLARE_EXTENSION_FUNCTION("sidePanel.windriseIsOpen",
++                             SIDEPANEL_WINDRISEISOPEN)
++  SidePanelWindriseIsOpenFunction() = default;
++  SidePanelWindriseIsOpenFunction(const SidePanelWindriseIsOpenFunction&) =
 +      delete;
-+  SidePanelBrowserosIsOpenFunction& operator=(
-+      const SidePanelBrowserosIsOpenFunction&) = delete;
++  SidePanelWindriseIsOpenFunction& operator=(
++      const SidePanelWindriseIsOpenFunction&) = delete;
 +
 + private:
-+  ~SidePanelBrowserosIsOpenFunction() override = default;
++  ~SidePanelWindriseIsOpenFunction() override = default;
 +  ResponseAction RunFunction() override;
 +};
 +

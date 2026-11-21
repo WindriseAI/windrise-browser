@@ -21,7 +21,7 @@ beforeEach(() => {
       setOptions: async (value: chrome.sidePanel.PanelOptions) => {
         options.set(value.tabId, value)
       },
-      browserosIsOpen: async ({ tabId }: { tabId: number }) =>
+      windriseIsOpen: async ({ tabId }: { tabId: number }) =>
         opened.has(tabId),
       windriseToggle: async ({
         tabId,

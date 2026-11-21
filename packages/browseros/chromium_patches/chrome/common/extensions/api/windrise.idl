@@ -199,7 +199,7 @@ index 0000000000..426ba49623
 +
 +    // Gets the Windrise browser version number
 +    // |callback|: Called with the version string.
-+    static void getBrowserosVersionNumber(
++    static void getWindriseVersionNumber(
 +        GetVersionNumberCallback callback);
 +
 +    // Opens a native OS file/folder picker dialog.
