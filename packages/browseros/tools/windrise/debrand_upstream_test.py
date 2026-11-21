@@ -69,6 +69,16 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn("!command_line->HasSwitch(browseros::kEnableServer)", mgr)
         self.assertIn("browseros::kLegacyDisableServer", mgr)
 
+    def test_u09_branding_copyright_has_no_upstream(self):
+        for rel in (
+            "products/browseros/chrome/app/theme/chromium/BRANDING.release",
+            "products/browseros/chrome/app/theme/chromium/BRANDING.debug",
+            "products/browseros/chrome/updater/branding.gni",
+        ):
+            text = (FILES / rel).read_text(encoding="utf-8")
+            self.assertNotIn("Based on BrowserOS", text)
+            self.assertIn("Windrise", text)
+
 
 if __name__ == "__main__":
     unittest.main()
