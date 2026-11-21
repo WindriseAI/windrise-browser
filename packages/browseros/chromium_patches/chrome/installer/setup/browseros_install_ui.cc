@@ -27,7 +27,7 @@ index 0000000000000000000000000000000000000000..93da7d596dbc87a85996de1b36cf702d
 +
 +namespace {
 +
-+constexpr wchar_t kInstallWindowClass[] = L"BrowserOSInstallProgressWindow";
++constexpr wchar_t kInstallWindowClass[] = L"WindriseInstallProgressWindow";
 +constexpr int kWindowWidthDips = 420;
 +constexpr int kWindowHeightDips = 150;
 +constexpr int kMarginDips = 24;

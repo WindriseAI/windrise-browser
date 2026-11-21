@@ -79,6 +79,11 @@ class DebrandUpstreamTest(unittest.TestCase):
             self.assertNotIn("Based on BrowserOS", text)
             self.assertIn("Windrise", text)
 
+    def test_u11_install_progress_window_class_rebranded(self):
+        ui_cc = read_patch("chrome/installer/setup/browseros_install_ui.cc")
+        self.assertIn('L"WindriseInstallProgressWindow"', ui_cc)
+        self.assertNotIn('L"BrowserOSInstallProgressWindow"', ui_cc)
+
 
 if __name__ == "__main__":
     unittest.main()
