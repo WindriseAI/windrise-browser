@@ -222,6 +222,26 @@ class DebrandUpstreamTest(unittest.TestCase):
                 hits.append(path.relative_to(PATCHES).as_posix())
         self.assertEqual(hits, [])
 
+    def test_r728_default_google_service_prefs_disabled(self):
+        prefs_cc = read_patch("chrome/browser/prefs/browser_prefs.cc")
+        self.assertIn(
+            "network_time::prefs::kNetworkTimeQueriesEnabled", prefs_cc
+        )
+        self.assertIn("prefs::kSafeBrowsingEnabled", prefs_cc)
+        self.assertIn("translate::prefs::kOfferTranslateEnabled", prefs_cc)
+
+        net_cc = read_patch(
+            "chrome/browser/net/profile_network_context_service.cc"
+        )
+        self.assertIn("kAlternateErrorPagesEnabled", net_cc)
+        self.assertIn("+                                false);", net_cc)
+
+        spell_cc = read_patch("chrome/browser/spellchecker/spellcheck_factory.cc")
+        self.assertIn(
+            "+  user_prefs->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false,",
+            spell_cc,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

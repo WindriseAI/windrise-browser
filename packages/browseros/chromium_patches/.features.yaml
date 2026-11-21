@@ -397,6 +397,7 @@ features:
       - chrome/browser/browser_features.cc
       - chrome/browser/browser_features.h
       - chrome/browser/net/profile_network_context_service.cc
+      - chrome/browser/spellchecker/spellcheck_factory.cc
       - chrome/browser/resources/settings/reset_page/reset_profile_dialog.html.ts
       - chrome/browser/themes/BUILD.gn
       - chrome/browser/themes/theme_service.cc
