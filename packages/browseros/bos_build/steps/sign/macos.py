@@ -48,8 +48,17 @@ def get_browseros_server_binary_info(component_path: Path) -> Optional[Dict[str,
     return info
 
 
-SERVER_RESOURCES_SOURCE_REL = all_server_bundles()[0].chromium_resources_root
-SERVER_RESOURCES_BUNDLE_REL = all_server_bundles()[0].macos_bundle_resources_root
+_SERVER_BUNDLES = all_server_bundles()
+SERVER_RESOURCES_SOURCE_REL = (
+    _SERVER_BUNDLES[0].chromium_resources_root
+    if _SERVER_BUNDLES
+    else Path("chrome/browser/browseros/server/resources")
+)
+SERVER_RESOURCES_BUNDLE_REL = (
+    _SERVER_BUNDLES[0].macos_bundle_resources_root
+    if _SERVER_BUNDLES
+    else Path("Contents/Resources/BrowserOSServer/default/resources")
+)
 # Finder droppings in the staged tree must not fail the nightly sign.
 SERVER_RESOURCES_JUNK_FILES = {".DS_Store"}
 
@@ -1580,7 +1589,10 @@ def notarize_app(
         # Try to extract submission ID for debugging
         for line in result.stdout.split("\n"):
             if "id:" in line:
-                submission_id = line.split("id:")[1].strip().split()[0]
+                id_parts = line.split("id:", 1)[1].strip().split()
+                if not id_parts:
+                    continue
+                submission_id = id_parts[0]
                 log_info(
                     f'Get detailed logs with: xcrun notarytool log {submission_id} --keychain-profile "{profile}"'
                 )

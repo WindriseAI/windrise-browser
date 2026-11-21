@@ -110,6 +110,8 @@ def generate_ico(img: Image.Image, sizes: list[int], output_path: Path) -> bool:
             resized = img.resize((size, size), Image.Resampling.LANCZOS)
             icons.append(resized)
 
+        if not icons:
+            raise ValueError("ICO generation requires at least one size")
         icons[0].save(
             output_path,
             format="ICO",

@@ -186,7 +186,7 @@ def get_commit_changed_files_with_status(
                 continue
             # Format: "D\tpath/to/file" or "R100\told\tnew"
             parts = line.split("\t")
-            if len(parts) >= 2:
+            if len(parts) >= 2 and parts[0]:
                 status = parts[0][0]  # First char: A, M, D, R, C
                 file_path = parts[-1]  # Last part is the (new) file path
                 files[file_path] = status

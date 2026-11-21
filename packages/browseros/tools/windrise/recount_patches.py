@@ -356,7 +356,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.git:
         for path, error in iter_git_rejections(targets):
             failed = True
-            print(f"git rejects {path}: {error.splitlines()[0]}")
+            first_line = error.splitlines()[0] if error.splitlines() else error
+            print(f"git rejects {path}: {first_line}")
 
     print(
         f"\n{len(targets)} patches scanned, {len(dirty)} "

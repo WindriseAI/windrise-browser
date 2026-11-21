@@ -144,6 +144,8 @@ def _merge_info_plists(input_paths, output_path):
     "arm64".)
     """
     input_plists = [_read_plist(x) for x in input_paths]
+    if not input_plists:
+        raise ValueError("input_paths must not be empty")
     output_plist = input_plists[0]
     for index in range(1, len(input_plists)):
         input_plist = input_plists[index]

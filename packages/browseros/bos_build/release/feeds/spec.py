@@ -151,6 +151,8 @@ def _browser_feeds(product_id: str) -> Tuple[FeedSpec, ...]:
 
 
 def _server_feeds(bundle: ServerBundle) -> Tuple[FeedSpec, ...]:
+    if not bundle.product_ids:
+        return ()
     slug = _SERVER_FEED_SLUGS.get(bundle.id)
     if slug is None:
         raise ValueError(

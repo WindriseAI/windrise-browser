@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the update-feed spec table."""
 
+from dataclasses import replace
 import unittest
 
 from ...core.products import (
@@ -8,9 +9,11 @@ from ...core.products import (
     BROWSEROS_BUG_REPORTER_EXTENSION_ID,
     BROWSERCLAW_EXTENSION_ID,
 )
+from ...products.browseros.product import BROWSEROS_SERVER_BUNDLE
 from .spec import (
     CDN_BASE_URL,
     EXTENSIONS,
+    _server_feeds,
     all_feeds,
     browser_feeds_for_product,
     bundled_manifest_feed,
@@ -22,13 +25,13 @@ from .spec import (
 )
 
 # Every key a shipped client polls (chromium_patches ground truth).
+# Note: browseros-server has product_ids=() after U04 (not shipped by Windrise),
+# so it intentionally produces no server feed.
 CLIENT_POLLED_KEYS = [
     "appcast.xml",
     "appcast-x86_64.xml",
     "appcast-win.xml",
     "appcast-win-arm64.xml",
-    "appcast-server.xml",
-    "appcast-server.alpha.xml",
     "appcast-claw-server.xml",
     "appcast-claw-server.alpha.xml",
     "extensions/update-manifest.xml",
@@ -125,14 +128,24 @@ class FeedTableTest(unittest.TestCase):
             if feed.kind in ("browser", "server"):
                 self.assertEqual(feed.link, f"{CDN_BASE_URL}/{feed.key}", feed.key)
 
+    def test_empty_product_ids_server_bundle_emits_no_feeds(self):
+        self.assertEqual(BROWSEROS_SERVER_BUNDLE.product_ids, ())
+        self.assertEqual(_server_feeds(BROWSEROS_SERVER_BUNDLE), ())
+        for channel in ("prod", "alpha"):
+            with self.assertRaises(ValueError):
+                server_feed("browseros-server", channel)
+        keys = {feed.key for feed in all_feeds()}
+        self.assertNotIn("appcast-server.xml", keys)
+        self.assertNotIn("appcast-server.alpha.xml", keys)
+
     def test_server_feed_lookup_and_titles(self):
-        prod = server_feed("browseros-server", "prod")
+        attached = replace(BROWSEROS_SERVER_BUNDLE, product_ids=("browseros",))
+        prod, alpha = _server_feeds(attached)
         self.assertEqual(prod.key, "appcast-server.xml")
         self.assertEqual(prod.title, "Windrise Server")
         self.assertEqual(prod.legacy_titles, ("BrowserOS Server",))
         self.assertEqual(prod.product, "browseros")
 
-        alpha = server_feed("browseros-server", "alpha")
         self.assertEqual(alpha.title, "Windrise Server (Alpha)")
         self.assertEqual(alpha.legacy_titles, ("BrowserOS Server (Alpha)",))
 

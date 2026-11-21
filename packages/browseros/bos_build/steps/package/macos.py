@@ -393,7 +393,10 @@ def notarize_dmg(
             # Try to extract submission ID for debugging
             for line in result.stdout.split("\n"):
                 if "id:" in line:
-                    submission_id = line.split("id:")[1].strip().split()[0]
+                    id_parts = line.split("id:", 1)[1].strip().split()
+                    if not id_parts:
+                        continue
+                    submission_id = id_parts[0]
                     log_info(
                         f'Get detailed logs with: xcrun notarytool log {submission_id} --keychain-profile "{keychain_profile}"'
                     )

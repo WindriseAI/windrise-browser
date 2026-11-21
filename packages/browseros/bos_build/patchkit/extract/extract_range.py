@@ -51,7 +51,7 @@ def get_range_changed_files_with_status(
         if not line.strip():
             continue
         parts = line.split("\t")
-        if len(parts) >= 2:
+        if len(parts) >= 2 and parts[0]:
             status = parts[0][0]
             file_path = parts[-1]
             files[file_path] = status
