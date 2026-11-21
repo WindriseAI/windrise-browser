@@ -212,7 +212,6 @@ def _replacements(product_name: str) -> tuple[tuple[str, str], ...]:
         ),
         (r"The Chromium Authors", f"{product_name} Software Inc"),
         (r"Google Chrome", product_name),
-        (r"(Google)(?! Play)", product_name),
         (r"Chromium", product_name),
         (r"Chrome", product_name),
     )

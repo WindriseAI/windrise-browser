@@ -84,6 +84,15 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn('L"WindriseInstallProgressWindow"', ui_cc)
         self.assertNotIn('L"BrowserOSInstallProgressWindow"', ui_cc)
 
+    def test_u12_zh_cn_product_name_is_windrise_cn(self):
+        xtb = read_patch("chrome/app/resources/chromium_strings_zh-CN.xtb")
+        added = [l for l in xtb.splitlines() if l.startswith("+")]
+        self.assertTrue(any("关于风桥浏览器" in l for l in added))
+        self.assertTrue(any("- 风桥浏览器</translation>" in l for l in added))
+        self.assertFalse(any("Windrise Browser" in l for l in added))
+        self.assertFalse(any("风桥浏览器 云端硬盘" in l for l in added))
+        self.assertFalse(any("风桥浏览器浏览器" in l for l in added))
+
 
 if __name__ == "__main__":
     unittest.main()
