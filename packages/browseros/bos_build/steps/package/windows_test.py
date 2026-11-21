@@ -3,6 +3,7 @@
 
 import json
 import struct
+import tarfile
 import tempfile
 import unittest
 import zipfile
@@ -16,6 +17,11 @@ from ..compile import standard
 from ...core.context import ArtifactRegistry, Context
 from ...core.products import get_product_descriptor
 from ...core.step import ValidationError
+from ...lib.browser_directory_zip import (
+    XZ_MAGIC,
+    inspect_directory_tar_xz,
+    inspect_directory_zip,
+)
 
 
 class BuildMiniInstallerTest(unittest.TestCase):
@@ -115,16 +121,58 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 windows.WindowsPackageModule().execute(ctx)
 
                 self.assertEqual(product_path.read_bytes(), bytes(executable))
-                with zipfile.ZipFile(registry.get("browser_directory_zip")) as archive:
+                zip_artifact = registry.get("browser_directory_zip")
+                zip_meta_artifact = registry.get("browser_directory_metadata")
+                tar_xz_artifact = registry.get("browser_directory_tar_xz")
+                tar_xz_meta_artifact = registry.get("browser_directory_tar_xz_metadata")
+
+                with zipfile.ZipFile(zip_artifact) as archive:
+                    zip_names = archive.namelist()
                     self.assertEqual(archive.read("chrome.exe"), bytes(executable))
                     self.assertEqual(archive.read(f"{version}/chrome.dll"), b"runtime DLL")
                     self.assertEqual(archive.read(f"{version}/windrise_extensions/bundled_extensions.json"), b"{}\n")
-                    self.assertNotIn("User Data/Default/Preferences", archive.namelist())
-                    self.assertNotIn("mini_installer.exe", archive.namelist())
-                metadata = json.loads(registry.get("browser_directory_metadata").read_text())
+                    self.assertNotIn("User Data/Default/Preferences", zip_names)
+                    self.assertNotIn("mini_installer.exe", zip_names)
+                metadata = json.loads(zip_meta_artifact.read_text())
+                self.assertEqual(metadata["format"], "zip")
                 self.assertEqual(metadata["version"], version)
-                self.assertEqual(metadata["sha256"], windows.sha256_file(registry.get("browser_directory_zip")))
-                self.assertEqual(metadata["size"], registry.get("browser_directory_zip").stat().st_size)
+                self.assertEqual(metadata["sha256"], windows.sha256_file(zip_artifact))
+                self.assertEqual(metadata["size"], zip_artifact.stat().st_size)
+                inspect_directory_zip(zip_artifact, zip_meta_artifact)
+
+                self.assertTrue(tar_xz_artifact.name.endswith("_browser_directory.tar.xz"))
+                self.assertTrue(tar_xz_artifact.read_bytes().startswith(XZ_MAGIC))
+                with tarfile.open(tar_xz_artifact, "r:xz") as tar_archive:
+                    tar_members = tar_archive.getmembers()
+                    self.assertEqual([m.name for m in tar_members], zip_names)
+                    self.assertEqual(
+                        tar_archive.extractfile("chrome.exe").read(), bytes(executable)
+                    )
+                    self.assertEqual(
+                        tar_archive.extractfile(f"{version}/chrome.dll").read(),
+                        b"runtime DLL",
+                    )
+                    self.assertEqual(
+                        tar_archive.extractfile(
+                            f"{version}/windrise_extensions/bundled_extensions.json"
+                        ).read(),
+                        b"{}\n",
+                    )
+                tar_metadata = json.loads(tar_xz_meta_artifact.read_text())
+                self.assertEqual(tar_metadata["name"], tar_xz_artifact.name)
+                self.assertEqual(tar_metadata["format"], "tar.xz")
+                self.assertEqual(tar_metadata["platform"], "win32")
+                self.assertEqual(tar_metadata["arch"], "x64")
+                self.assertEqual(tar_metadata["version"], version)
+                self.assertEqual(
+                    tar_metadata["sha256"], windows.sha256_file(tar_xz_artifact)
+                )
+                self.assertEqual(
+                    tar_metadata["buildId"], f"sha256-{tar_metadata['sha256']}"
+                )
+                self.assertEqual(tar_metadata["size"], tar_xz_artifact.stat().st_size)
+                inspect_directory_tar_xz(tar_xz_artifact, tar_xz_meta_artifact)
+
                 with zipfile.ZipFile(registry.get("installer_zip")) as archive:
                     self.assertEqual(archive.read(ctx.get_artifact_name("installer")), b"signed installer")
 
@@ -135,6 +183,7 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
             ("windrise_extensions/bundled_extensions.json", b'{"adlpneommgkgeanpaekgoaolcpncohkf": {}}'),
             ("browseros_extensions/bundled_extensions.json", b"{}\n"),
             ("158.0.8127.18.manifest", b"<assembly/>"),
+            ("BrowserOSServer/browseros_server.exe", b"server"),
         )
         for rel, content in cases:
             with self.subTest(file=rel), tempfile.TemporaryDirectory() as tmp:
@@ -174,6 +223,9 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 ))
                 with self.assertRaises(ValueError):
                     windows.WindowsPackageModule().execute(ctx)
+                dist_dir = root / "dist"
+                self.assertFalse((dist_dir / product.artifact_filename("browser_directory_zip", "0.31.0", "x64")).exists())
+                self.assertFalse((dist_dir / product.artifact_filename("browser_directory_tar_xz", "0.31.0", "x64")).exists())
 
 
 

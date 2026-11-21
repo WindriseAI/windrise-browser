@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/tools/generate_grd.gni b/ui/webui/resources/tool
 index 8a8a5d6d66815..d85a6419bff3f 100644
 --- a/ui/webui/resources/tools/generate_grd.gni
 +++ b/ui/webui/resources/tools/generate_grd.gni
-@@ -51,6 +51,11 @@ template("generate_grd") {
+@@ -51,6 +51,15 @@ template("generate_grd") {
                  invoker.input_files_base_dir,
                  "--input-files",
                ] + invoker.input_files
@@ -12,5 +12,9 @@ index 8a8a5d6d66815..d85a6419bff3f 100644
 +        args += [ "--ignore-missing-input-files" ]
 +      }
      }
++
++    if (defined(invoker.compress_brotli_files)) {
++      args += [ "--compress-brotli-files" ] + invoker.compress_brotli_files
++    }
  
      if (defined(invoker.output_files_base_dir)) {

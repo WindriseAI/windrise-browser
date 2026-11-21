@@ -117,6 +117,8 @@ class ProductDescriptor:
                 return f"{base}_v{version}_{arch}_installer.zip"
             case "browser_directory_zip":
                 return f"{base}_v{version}_{arch}_browser_directory.zip"
+            case "browser_directory_tar_xz":
+                return f"{base}_v{version}_{arch}_browser_directory.tar.xz"
             case _:
                 raise ValueError(f"Unknown artifact type: {artifact_type}")
 
