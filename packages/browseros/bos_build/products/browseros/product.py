@@ -40,7 +40,9 @@ BROWSEROS_PRODUCT = ProductDescriptor.define(
 BROWSEROS_SERVER_BUNDLE = ServerBundle(
     id="browseros-server",
     name="Windrise Server",
-    product_ids=("browseros",),
+    # Windrise Bridge communicates with the browser directly over pipe/extension
+    # and does not ship the upstream BrowserOSServer sidecar.
+    product_ids=(),
     chromium_output_root="BrowserOSServer",
     local_resources_root=Path("resources/binaries/browseros_server"),
     chromium_resources_root=Path("chrome/browser/browseros/server/resources"),
@@ -59,4 +61,5 @@ BROWSEROS_SERVER_BUNDLE = ServerBundle(
     source_builder="bun",
     source_component="server",
     runtime_binary_name="browseros_server",
+    required_in_chromium_output=False,
 )

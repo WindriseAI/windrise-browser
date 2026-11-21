@@ -57,12 +57,14 @@ def check_member_path(name: str) -> str:
         raise ValueError(f"Unsafe ZIP member path: {name}")
     lowered = [part.casefold() for part in parts]
     for index, part in enumerate(lowered):
+        if part in {"browserosserver", "browserclawserver"} or part == "browseros_server.exe":
+            raise ValueError(f"Bundled upstream server payload is forbidden in browser ZIP: {name}")
         if (part in {"user data", "userdata", "guest profile", "system profile",
                      "local state", "preferences", "secure preferences", "login data",
                      "cookies", "history", "web data", "bookmarks"}
                 or re.fullmatch(r"profile \d+", part)
                 or part.startswith("singleton")
-                or (part == "default" and (index == 0 or lowered[index - 1] not in {"browserosserver", "browserclawserver"}))):
+                or part == "default"):
             raise ValueError(f"User profile data is forbidden in browser ZIP: {name}")
     return "/".join(lowered)
 

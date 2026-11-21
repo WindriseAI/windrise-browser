@@ -53,6 +53,17 @@ class BrowserDirectoryZipLayoutTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Bundled extension CRX is forbidden"):
             check_layout(entries, VERSION)
 
+    def test_rejects_bundled_upstream_server(self) -> None:
+        entries = _base_entries() + [
+            (
+                f"{VERSION}/BrowserOSServer/default/resources/bin/browseros_server.exe",
+                False,
+                1024,
+            )
+        ]
+        with self.assertRaisesRegex(ValueError, "Bundled upstream server payload is forbidden"):
+            check_layout(entries, VERSION)
+
     def test_rejects_mismatched_version_manifest(self) -> None:
         entries = _base_entries() + [
             (f"{VERSION}/158.0.8127.18.manifest", False, 64),

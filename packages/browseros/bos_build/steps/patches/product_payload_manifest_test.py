@@ -46,31 +46,10 @@ def _conditional_sources(source: str, condition: str) -> set[str]:
 
 
 class ProductPayloadManifestPatchTest(unittest.TestCase):
-    def test_windows_manifest_carries_both_server_layouts(self) -> None:
+    def test_windows_manifest_excludes_upstream_server_layouts(self) -> None:
         manifest = _patched_source("chrome/installer/mini_installer/chrome.release")
-        browseros_block = "\n".join(
-            (
-                "BrowserOSServer\\default\\resources\\*.*: %(VersionDir)s\\BrowserOSServer\\default\\resources\\",
-                "BrowserOSServer\\default\\resources\\bin\\*.*: %(VersionDir)s\\BrowserOSServer\\default\\resources\\bin\\",
-                "BrowserOSServer\\default\\resources\\bin\\third_party\\*.*: %(VersionDir)s\\BrowserOSServer\\default\\resources\\bin\\third_party\\",
-                "BrowserOSServer\\default\\resources\\db\\migrations\\*.*: %(VersionDir)s\\BrowserOSServer\\default\\resources\\db\\migrations\\",
-                "BrowserOSServer\\default\\resources\\db\\migrations\\meta\\*.*: %(VersionDir)s\\BrowserOSServer\\default\\resources\\db\\migrations\\meta\\",
-            )
-        )
-        browserclaw_block = "\n".join(
-            (
-                "BrowserClawServer\\default\\resources\\*.*: %(VersionDir)s\\BrowserClawServer\\default\\resources\\",
-                "BrowserClawServer\\default\\resources\\bin\\*.*: %(VersionDir)s\\BrowserClawServer\\default\\resources\\bin\\",
-                "BrowserClawServer\\default\\resources\\db\\migrations\\*.*: %(VersionDir)s\\BrowserClawServer\\default\\resources\\db\\migrations\\",
-                "BrowserClawServer\\default\\resources\\db\\migrations\\meta\\*.*: %(VersionDir)s\\BrowserClawServer\\default\\resources\\db\\migrations\\meta\\",
-            )
-        )
-
-        self.assertIn(browseros_block, manifest)
-        self.assertIn(browserclaw_block, manifest)
-        self.assertNotIn(
-            "BrowserClawServer\\default\\resources\\bin\\third_party", manifest
-        )
+        self.assertNotIn("BrowserOSServer", manifest)
+        self.assertNotIn("BrowserClawServer", manifest)
 
     def test_windows_manifest_carries_bundled_extensions(self) -> None:
         manifest = _patched_source("chrome/installer/mini_installer/chrome.release")

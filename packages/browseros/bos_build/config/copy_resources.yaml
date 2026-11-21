@@ -124,60 +124,7 @@ copy_operations:
     type: "directory"
     product: "browserclaw"
 
-  - name: "BrowserOS Server Resources - macOS ARM64"
-    source: "resources/binaries/browseros_server/darwin-arm64/resources"
-    destination: "chrome/browser/browseros/server/resources"
-    type: "directory"
-    product: "browseros"
-    managed: true
-    required: true
-    clear_destination: true
-    os: ["macos"]
-    arch: ["arm64"]
-
-  - name: "BrowserOS Server Resources - macOS x64"
-    source: "resources/binaries/browseros_server/darwin-x64/resources"
-    destination: "chrome/browser/browseros/server/resources"
-    type: "directory"
-    product: "browseros"
-    managed: true
-    required: true
-    clear_destination: true
-    os: ["macos"]
-    arch: ["x64"]
-
-  - name: "BrowserOS Server Resources - Linux ARM64"
-    source: "resources/binaries/browseros_server/linux-arm64/resources"
-    destination: "chrome/browser/browseros/server/resources"
-    type: "directory"
-    product: "browseros"
-    managed: true
-    required: true
-    clear_destination: true
-    os: ["linux"]
-    arch: ["arm64"]
-
-  - name: "BrowserOS Server Resources - Linux x64"
-    source: "resources/binaries/browseros_server/linux-x64/resources"
-    destination: "chrome/browser/browseros/server/resources"
-    type: "directory"
-    product: "browseros"
-    managed: true
-    required: true
-    clear_destination: true
-    os: ["linux"]
-    arch: ["x64"]
-
-  - name: "BrowserOS Server Resources - Windows x64"
-    source: "resources/binaries/browseros_server/windows-x64/resources"
-    destination: "chrome/browser/browseros/server/resources"
-    type: "directory"
-    product: "browseros"
-    managed: true
-    required: true
-    clear_destination: true
-    os: ["windows"]
-    arch: ["x64"]
+  # Windrise does not bundle BrowserOSServer sidecar binaries.
 
   # BrowserOS Claw Server resources - Rust ships by default. The optional
   # rename keeps current CDN artifacts that still use the old -rs filename
