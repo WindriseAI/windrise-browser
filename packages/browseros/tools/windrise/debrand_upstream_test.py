@@ -170,6 +170,21 @@ class DebrandUpstreamTest(unittest.TestCase):
         )
         self.assertNotIn("nikhil@browseros.com", updater_cc)
 
+    def test_u19_repo_root_docs_rebranded_and_license_preserved(self):
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("风桥浏览器", readme)
+        self.assertIn("Windrise Browser", readme)
+        self.assertIn("AGPL-3.0", readme)
+        self.assertNotIn("BrowserOS", readme)
+        self.assertNotIn("cdn.browseros.com", readme)
+
+        self.assertFalse((REPO_ROOT / "README.BrowserOS.md").exists())
+        self.assertFalse((REPO_ROOT / "CLA.md").exists())
+        self.assertFalse((REPO_ROOT / ".auctor.json").exists())
+        # Legal baselines L1 & L5 must remain untouched.
+        self.assertTrue((REPO_ROOT / "LICENSE").is_file())
+        self.assertTrue((REPO_ROOT / "LICENSE.ungoogled_chromium").is_file())
+
 
 if __name__ == "__main__":
     unittest.main()
