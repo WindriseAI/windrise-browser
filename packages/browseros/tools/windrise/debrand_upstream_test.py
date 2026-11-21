@@ -206,6 +206,22 @@ class DebrandUpstreamTest(unittest.TestCase):
     def test_u22_no_browseros_about_flags(self):
         self.assertFalse((PATCHES / "chrome/browser/about_flags.cc").exists())
 
+    def test_u24_no_browseros_log_prefix_in_patches(self):
+        hits = []
+        for path in sorted(PATCHES.rglob("*")):
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            if any(
+                line.startswith("+") and '"browseros: ' in line
+                for line in text.splitlines()
+            ):
+                hits.append(path.relative_to(PATCHES).as_posix())
+        self.assertEqual(hits, [])
+
 
 if __name__ == "__main__":
     unittest.main()

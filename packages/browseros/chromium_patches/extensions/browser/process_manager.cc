@@ -23,7 +23,7 @@ index d097a45600c4b40ea984d6935c49f5c2b8cbbd6f..96ccf9172e2f9f23e8fb9e88f3930b71
 +        content::ServiceWorkerExternalRequestTimeoutType::kDoesNotTimeout,
 +        Activity::PROCESS_MANAGER, "browseros_permanent_keepalive");
 +    browseros_permanent_keepalives_[worker_id] = keepalive_uuid;
-+    VLOG(1) << "browseros: Added permanent keepalive for extension "
++    VLOG(1) << "windrise: Added permanent keepalive for extension "
 +            << worker_id.extension_id;
 +  }
 +
@@ -41,7 +41,7 @@ index d097a45600c4b40ea984d6935c49f5c2b8cbbd6f..96ccf9172e2f9f23e8fb9e88f3930b71
 +                                         Activity::PROCESS_MANAGER,
 +                                         "browseros_permanent_keepalive");
 +    browseros_permanent_keepalives_.erase(keepalive_iter);
-+    VLOG(1) << "browseros: Removed permanent keepalive for extension "
++    VLOG(1) << "windrise: Removed permanent keepalive for extension "
 +            << worker_id.extension_id;
 +  }
 +

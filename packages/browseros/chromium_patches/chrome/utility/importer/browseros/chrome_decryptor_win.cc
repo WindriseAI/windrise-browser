@@ -57,33 +57,33 @@ index 0000000000..60a5ac4e9b
 +                                   std::string* encrypted_key) {
 +  std::string json_content;
 +  if (!base::ReadFileToString(local_state_path, &json_content)) {
-+    LOG(WARNING) << "browseros: Failed to read Local State file";
++    LOG(WARNING) << "windrise: Failed to read Local State file";
 +    return false;
 +  }
 +
 +  auto parsed = base::JSONReader::Read(json_content, base::JSON_PARSE_RFC);
 +  if (!parsed || !parsed->is_dict()) {
-+    LOG(WARNING) << "browseros: Failed to parse Local State JSON";
++    LOG(WARNING) << "windrise: Failed to parse Local State JSON";
 +    return false;
 +  }
 +
 +  const base::DictValue& dict = parsed->GetDict();
 +  const base::DictValue* os_crypt = dict.FindDict("os_crypt");
 +  if (!os_crypt) {
-+    LOG(WARNING) << "browseros: No os_crypt section in Local State";
++    LOG(WARNING) << "windrise: No os_crypt section in Local State";
 +    return false;
 +  }
 +
 +  const std::string* encoded_key = os_crypt->FindString("encrypted_key");
 +  if (!encoded_key || encoded_key->empty()) {
-+    LOG(WARNING) << "browseros: No encrypted_key in os_crypt";
++    LOG(WARNING) << "windrise: No encrypted_key in os_crypt";
 +    return false;
 +  }
 +
 +  // Base64 decode the key
 +  std::optional<std::vector<uint8_t>> decoded = base::Base64Decode(*encoded_key);
 +  if (!decoded) {
-+    LOG(WARNING) << "browseros: Failed to base64 decode encrypted_key";
++    LOG(WARNING) << "windrise: Failed to base64 decode encrypted_key";
 +    return false;
 +  }
 +
@@ -122,13 +122,13 @@ index 0000000000..60a5ac4e9b
 +bool DecryptWithDpapi(const std::string& encrypted_data,
 +                      std::string* decrypted_data) {
 +  if (encrypted_data.length() <= kDpapiPrefixLength) {
-+    LOG(WARNING) << "browseros: Encrypted key too short";
++    LOG(WARNING) << "windrise: Encrypted key too short";
 +    return false;
 +  }
 +
 +  // Check for "DPAPI" prefix
 +  if (!base::StartsWith(encrypted_data, kDpapiPrefix)) {
-+    LOG(WARNING) << "browseros: Missing DPAPI prefix on key";
++    LOG(WARNING) << "windrise: Missing DPAPI prefix on key";
 +    return false;
 +  }
 +
@@ -138,7 +138,7 @@ index 0000000000..60a5ac4e9b
 +  size_t data_length = encrypted_data.length() - kDpapiPrefixLength;
 +
 +  if (!DecryptRawDpapiBlob(data, data_length, decrypted_data)) {
-+    LOG(WARNING) << "browseros: CryptUnprotectData failed for key with error: "
++    LOG(WARNING) << "windrise: CryptUnprotectData failed for key with error: "
 +                 << GetLastError();
 +    return false;
 +  }
@@ -151,13 +151,13 @@ index 0000000000..60a5ac4e9b
 +                   size_t ciphertext_length,
 +                   std::string* plaintext) {
 +  if (key.size() != kAesKeyLength) {
-+    LOG(WARNING) << "browseros: Invalid AES key size: " << key.size();
++    LOG(WARNING) << "windrise: Invalid AES key size: " << key.size();
 +    return false;
 +  }
 +
 +  // Minimum: nonce (12) + auth tag (16) + at least 1 byte of data
 +  if (ciphertext_length < kNonceLength + kAuthTagLength) {
-+    LOG(WARNING) << "browseros: Ciphertext too short for AES-GCM";
++    LOG(WARNING) << "windrise: Ciphertext too short for AES-GCM";
 +    return false;
 +  }
 +
@@ -177,7 +177,7 @@ index 0000000000..60a5ac4e9b
 +      base::span<const uint8_t>());  // empty additional data
 +
 +  if (!decrypted) {
-+    LOG(WARNING) << "browseros: AES-GCM decryption failed";
++    LOG(WARNING) << "windrise: AES-GCM decryption failed";
 +    return false;
 +  }
 +
@@ -192,7 +192,7 @@ index 0000000000..60a5ac4e9b
 +  // Get path to Local State
 +  base::FilePath local_state_path = GetLocalStatePath(profile_path);
 +  if (!base::PathExists(local_state_path)) {
-+    LOG(WARNING) << "browseros: Local State file not found at: "
++    LOG(WARNING) << "windrise: Local State file not found at: "
 +                 << local_state_path.value();
 +    if (result) {
 +      *result = KeyExtractionResult::kLocalStateNotFound;
@@ -220,7 +220,7 @@ index 0000000000..60a5ac4e9b
 +
 +  // Verify key length (should be 32 bytes for AES-256)
 +  if (decrypted_key.size() != kAesKeyLength) {
-+    LOG(WARNING) << "browseros: Unexpected key length: "
++    LOG(WARNING) << "windrise: Unexpected key length: "
 +                 << decrypted_key.size() << " (expected " << kAesKeyLength << ")";
 +    if (result) {
 +      *result = KeyExtractionResult::kUnknownError;
@@ -257,7 +257,7 @@ index 0000000000..60a5ac4e9b
 +    size_t encrypted_length =
 +        ciphertext.length() - kEncryptionVersionPrefixLength;
 +    if (encrypted_length == 0) {
-+      LOG(WARNING) << "browseros: Empty ciphertext after v10 prefix";
++      LOG(WARNING) << "windrise: Empty ciphertext after v10 prefix";
 +      return DecryptResult::kError;
 +    }
 +    return DecryptAesGcm(key, encrypted_data, encrypted_length, plaintext)

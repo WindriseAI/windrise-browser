@@ -124,13 +124,13 @@ index 0000000000000000000000000000000000000000..97180c8484b889a9eb8a77b832300cb8
 +    return;
 +  }
 +  if (event_name.empty()) {
-+    LOG(WARNING) << "browseros: Attempted to capture event with empty name";
++    LOG(WARNING) << "windrise: Attempted to capture event with empty name";
 +    return;
 +  }
 +
 +  if (!installation_load_complete_) {
 +    if (pending_events_.size() >= kMaxPendingEvents) {
-+      LOG(WARNING) << "browseros: Metrics startup queue is full; dropping "
++      LOG(WARNING) << "windrise: Metrics startup queue is full; dropping "
 +                   << event_name;
 +      return;
 +    }
@@ -140,7 +140,7 @@ index 0000000000000000000000000000000000000000..97180c8484b889a9eb8a77b832300cb8
 +  }
 +
 +  if (install_id_.empty()) {
-+    VLOG(1) << "browseros: Metrics disabled because installation identity "
++    VLOG(1) << "windrise: Metrics disabled because installation identity "
 +               "could not be loaded";
 +    return;
 +  }
@@ -171,7 +171,7 @@ index 0000000000000000000000000000000000000000..97180c8484b889a9eb8a77b832300cb8
 +
 +  installation_load_complete_ = true;
 +  if (!install_id.has_value()) {
-+    LOG(ERROR) << "browseros: Native metrics disabled because installation "
++    LOG(ERROR) << "windrise: Native metrics disabled because installation "
 +                  "identity is unavailable";
 +    pending_events_.clear();
 +    return;
@@ -204,7 +204,7 @@ index 0000000000000000000000000000000000000000..97180c8484b889a9eb8a77b832300cb8
 +
 +  std::string json_payload;
 +  if (!base::JSONWriter::Write(payload, &json_payload)) {
-+    LOG(ERROR) << "browseros: Failed to serialize metrics payload";
++    LOG(ERROR) << "windrise: Failed to serialize metrics payload";
 +    return;
 +  }
 +
@@ -245,12 +245,12 @@ index 0000000000000000000000000000000000000000..97180c8484b889a9eb8a77b832300cb8
 +  }
 +
 +  if (response_code == net::HTTP_OK) {
-+    VLOG(2) << "browseros: Metrics event sent successfully";
++    VLOG(2) << "windrise: Metrics event sent successfully";
 +  } else {
-+    LOG(WARNING) << "browseros: Failed to send metrics event. Response code: "
++    LOG(WARNING) << "windrise: Failed to send metrics event. Response code: "
 +                 << response_code;
 +    if (response_body.has_value() && !response_body->empty()) {
-+      LOG(WARNING) << "browseros: Error response: " << *response_body;
++      LOG(WARNING) << "windrise: Error response: " << *response_body;
 +    }
 +  }
 +

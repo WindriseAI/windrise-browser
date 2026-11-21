@@ -94,7 +94,7 @@ index 0000000000000000000000000000000000000000..daec0858421976c7817879e11ad3efbc
 +    return base::Version();
 +  }
 +  if (!process.WaitForExitWithTimeout(kVersionProbeTimeout, &exit_code)) {
-+    LOG(WARNING) << "browseros: Version probe timed out: " << executable;
++    LOG(WARNING) << "windrise: Version probe timed out: " << executable;
 +#if BUILDFLAG(IS_WIN)
 +    process.Terminate(-1, false);
 +#else
@@ -229,7 +229,7 @@ index 0000000000000000000000000000000000000000..daec0858421976c7817879e11ad3efbc
 +            const base::Version actual = ProbeServerVersion(ready.executable);
 +            if (!base::PathExists(ready.executable) ||
 +                (actual.IsValid() && actual != version)) {
-+              LOG(WARNING) << "browseros: Rejecting invalid ready server "
++              LOG(WARNING) << "windrise: Rejecting invalid ready server "
 +                           << version.GetString();
 +              RemoveRejectedVersion(execution_dir, version);
 +              return {bundled, std::nullopt};

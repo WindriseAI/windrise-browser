@@ -174,24 +174,24 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  if (!base::StringToInt(port_str, &port) || !net::IsPortValid(port) ||
 +      port <= 0) {
-+    LOG(WARNING) << "browseros: Invalid " << port_name
++    LOG(WARNING) << "windrise: Invalid " << port_name
 +                 << " specified on command line: " << port_str
 +                 << " (must be 1-65535)";
 +    return 0;
 +  }
 +
 +  if (net::IsWellKnownPort(port)) {
-+    LOG(WARNING) << "browseros: " << port_name << " " << port
++    LOG(WARNING) << "windrise: " << port_name << " " << port
 +                 << " is well-known (0-1023) and may require elevated "
 +                    "privileges";
 +  }
 +  if (!net::IsPortAllowedForScheme(port, "http")) {
-+    LOG(WARNING) << "browseros: " << port_name << " " << port
++    LOG(WARNING) << "windrise: " << port_name << " " << port
 +                 << " is restricted by Chromium (may interfere with system "
 +                    "services)";
 +  }
 +
-+  LOG(INFO) << "browseros: " << port_name
++  LOG(INFO) << "windrise: " << port_name
 +            << " overridden via command line: " << port;
 +  return port;
 +}
@@ -267,7 +267,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  base::FilePath exec_dir = GetBrowserOSExecutionDir();
 +  if (exec_dir.empty()) {
-+    LOG(ERROR) << "browseros: Failed to resolve execution directory for lock";
++    LOG(ERROR) << "windrise: Failed to resolve execution directory for lock";
 +    return false;
 +  }
 +
@@ -278,20 +278,20 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +                                base::File::FLAG_READ | base::File::FLAG_WRITE);
 +
 +  if (!lock_file_.IsValid()) {
-+    LOG(ERROR) << "browseros: Failed to open lock file: " << lock_path;
++    LOG(ERROR) << "windrise: Failed to open lock file: " << lock_path;
 +    return false;
 +  }
 +
 +  base::File::Error lock_error =
 +      lock_file_.Lock(base::File::LockMode::kExclusive);
 +  if (lock_error != base::File::FILE_OK) {
-+    LOG(INFO) << "browseros: Server already running in another Chrome process "
++    LOG(INFO) << "windrise: Server already running in another Chrome process "
 +              << "(lock file: " << lock_path << ")";
 +    lock_file_.Close();
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Acquired exclusive lock on " << lock_path;
++  LOG(INFO) << "windrise: Acquired exclusive lock on " << lock_path;
 +  return true;
 +}
 +
@@ -300,15 +300,15 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  std::optional<server_utils::ServerState> state = state_store_->Read();
 +  if (!state) {
-+    LOG(INFO) << "browseros: No orphan state file found";
++    LOG(INFO) << "windrise: No orphan state file found";
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Found state file - PID: " << state->pid
++  LOG(INFO) << "windrise: Found state file - PID: " << state->pid
 +            << ", creation_time: " << state->creation_time;
 +
 +  if (!server_utils::ProcessExists(state->pid)) {
-+    LOG(INFO) << "browseros: Process " << state->pid << " no longer exists";
++    LOG(INFO) << "windrise: Process " << state->pid << " no longer exists";
 +    state_store_->Delete();
 +    return false;
 +  }
@@ -316,29 +316,29 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  std::optional<int64_t> actual_creation_time =
 +      server_utils::GetProcessCreationTime(state->pid);
 +  if (!actual_creation_time) {
-+    LOG(WARNING) << "browseros: Could not get creation time for PID "
++    LOG(WARNING) << "windrise: Could not get creation time for PID "
 +                 << state->pid;
 +    state_store_->Delete();
 +    return false;
 +  }
 +
 +  if (*actual_creation_time != state->creation_time) {
-+    LOG(INFO) << "browseros: PID " << state->pid << " was reused "
++    LOG(INFO) << "windrise: PID " << state->pid << " was reused "
 +              << "(expected creation_time: " << state->creation_time
 +              << ", actual: " << *actual_creation_time << ")";
 +    state_store_->Delete();
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Killing orphan server (PID: " << state->pid << ")";
++  LOG(INFO) << "windrise: Killing orphan server (PID: " << state->pid << ")";
 +  constexpr base::TimeDelta kGracefulTimeout = base::Seconds(2);
 +  bool killed = server_utils::KillProcess(state->pid, kGracefulTimeout);
 +
 +  if (killed) {
-+    LOG(INFO) << "browseros: Orphan server killed successfully";
++    LOG(INFO) << "windrise: Orphan server killed successfully";
 +  } else {
 +    LOG(WARNING)
-+        << "browseros: Failed to kill orphan server, proceeding anyway";
++        << "windrise: Failed to kill orphan server, proceeding anyway";
 +  }
 +
 +  state_store_->Delete();
@@ -366,7 +366,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    int old_mcp = local_state_->GetInteger(browseros_server::kMCPServerPort);
 +    if (old_mcp > 0) {
 +      proxy_port = old_mcp;
-+      LOG(INFO) << "browseros: Migrated old MCP port " << old_mcp
++      LOG(INFO) << "windrise: Migrated old MCP port " << old_mcp
 +                << " to proxy port";
 +    } else {
 +      proxy_port = browseros_server::kDefaultProxyPort;
@@ -388,7 +388,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  allow_remote_in_mcp_ =
 +      local_state_->GetBoolean(browseros_server::kAllowRemoteInMCP);
 +
-+  LOG(INFO) << "browseros: Loaded ports from prefs - " << ports_.DebugString();
++  LOG(INFO) << "windrise: Loaded ports from prefs - " << ports_.DebugString();
 +}
 +
 +void BrowserOSServerManager::SetupPrefObservers() {
@@ -451,7 +451,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +                                              /*allow_reuse=*/true);
 +  assigned_ports.insert(proxy_https_port_);
 +
-+  LOG(INFO) << "browseros: Resolved ports for startup - "
++  LOG(INFO) << "windrise: Resolved ports for startup - "
 +            << ports_.DebugString();
 +}
 +
@@ -476,14 +476,14 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    ports_.server = server_override;
 +  }
 +
-+  LOG(INFO) << "browseros: Final ports after CLI overrides - "
++  LOG(INFO) << "windrise: Final ports after CLI overrides - "
 +            << ports_.DebugString();
 +}
 +
 +void BrowserOSServerManager::SavePortsToPrefs() {
 +  if (!local_state_) {
 +    LOG(WARNING)
-+        << "browseros: SavePortsToPrefs - no prefs available, skipping save";
++        << "windrise: SavePortsToPrefs - no prefs available, skipping save";
 +    return;
 +  }
 +
@@ -496,7 +496,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  // DEPRECATED: keep mcp_port in sync with server port for backward compat
 +  local_state_->SetInteger(browseros_server::kMCPServerPort, ports_.server);
 +
-+  LOG(INFO) << "browseros: Saving to prefs - " << ports_.DebugString();
++  LOG(INFO) << "windrise: Saving to prefs - " << ports_.DebugString();
 +}
 +
 +int BrowserOSServerManager::FindAvailableServerPort(
@@ -512,7 +512,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +void BrowserOSServerManager::Start() {
 +  if (started_ || stopping_ || is_running_) {
-+    LOG(INFO) << "browseros: " << GetManagedServerDescriptor().log_name
++    LOG(INFO) << "windrise: " << GetManagedServerDescriptor().log_name
 +              << " already running";
 +    return;
 +  }
@@ -521,7 +521,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  if (!command_line->HasSwitch(browseros::kEnableServer) ||
 +      command_line->HasSwitch(browseros::kDisableServer) ||
 +      command_line->HasSwitch(browseros::kLegacyDisableServer)) {
-+    LOG(INFO) << "browseros: Managed server disabled by default";
++    LOG(INFO) << "windrise: Managed server disabled by default";
 +    return;
 +  }
 +
@@ -540,7 +540,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +      !command_line->HasSwitch(::switches::kRemoteDebuggingPipe)) {
 +    StartCDPServer();
 +  } else {
-+    LOG(INFO) << "browseros: Skipping managed CDP server - "
++    LOG(INFO) << "windrise: Skipping managed CDP server - "
 +              << "explicit remote debugging transport takes precedence";
 +  }
 +
@@ -551,7 +551,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  RecoverFromOrphan();
 +
-+  LOG(INFO) << "browseros: Starting " << GetManagedServerDescriptor().log_name;
++  LOG(INFO) << "windrise: Starting " << GetManagedServerDescriptor().log_name;
 +
 +  started_ = true;
 +  StartProxy();
@@ -637,7 +637,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    }
 +  }
 +  stopping_ = false;
-+  LOG(INFO) << "browseros: Managed server stopped; released profile lock";
++  LOG(INFO) << "windrise: Managed server stopped; released profile lock";
 +}
 +
 +void BrowserOSServerManager::OnVersionStoreStopped() {
@@ -663,7 +663,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +}
 +
 +void BrowserOSServerManager::StartCDPServer() {
-+  LOG(INFO) << "browseros: Starting CDP server on port " << ports_.cdp;
++  LOG(INFO) << "windrise: Starting CDP server on port " << ports_.cdp;
 +
 +  content::DevToolsAgentHost::StartRemoteDebuggingServer(
 +      std::make_unique<CDPServerSocketFactory>(ports_.cdp), base::FilePath(),
@@ -673,7 +673,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  // A synchronous port check here would race with the IO-thread bind and
 +  // produce false failures. The port was validated as available by
 +  // ResolvePortsForStartup() immediately before this call.
-+  LOG(INFO) << "browseros: CDP WebSocket server requested at ws://127.0.0.1:"
++  LOG(INFO) << "windrise: CDP WebSocket server requested at ws://127.0.0.1:"
 +            << ports_.cdp;
 +}
 +
@@ -682,7 +682,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Stopping CDP server";
++  LOG(INFO) << "windrise: Stopping CDP server";
 +  content::DevToolsAgentHost::StopRemoteDebuggingServer();
 +  ports_.cdp = 0;
 +}
@@ -700,7 +700,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +                       proxy->SetAllowRemote(allow_remote);
 +                       if (!proxy->Start(http_port, https_port)) {
 +                         LOG(ERROR)
-+                             << "browseros: Failed to start MCP proxy on port "
++                             << "windrise: Failed to start MCP proxy on port "
 +                             << http_port;
 +                       }
 +                     },
@@ -768,15 +768,15 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  healthy_since_ = base::TimeTicks();
 +  ServerLaunchConfig config = BuildLaunchConfig();
 +  if (config.paths.execution.empty()) {
-+    LOG(ERROR) << "browseros: Failed to resolve execution directory";
++    LOG(ERROR) << "windrise: Failed to resolve execution directory";
 +    OnStrike("launch_failed");
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Launching " << config.log_name << " - "
++  LOG(INFO) << "windrise: Launching " << config.log_name << " - "
 +            << config.DebugString();
 +  if (launched_installation_ && launched_installation_->version.IsValid()) {
-+    LOG(INFO) << "browseros: Selected "
++    LOG(INFO) << "windrise: Selected "
 +              << (launched_installation_->downloaded ? "downloaded" : "bundled")
 +              << " server " << launched_installation_->version.GetString();
 +  }
@@ -826,7 +826,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  }
 +
 +  if (!process_.IsValid()) {
-+    LOG(ERROR) << "browseros: Failed to launch "
++    LOG(ERROR) << "windrise: Failed to launch "
 +               << GetManagedServerDescriptor().log_name;
 +    OnStrike("launch_failed");
 +    return;
@@ -834,7 +834,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  is_running_ = true;
 +  consecutive_health_failures_ = 0;
-+  LOG(INFO) << "browseros: " << GetManagedServerDescriptor().log_name
++  LOG(INFO) << "windrise: " << GetManagedServerDescriptor().log_name
 +            << " started with PID: " << process_.Pid();
 +
 +  if (server_proxy_) {
@@ -853,7 +853,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +      state.pid = process_.Pid();
 +      state.creation_time = *creation_time;
 +      if (!state_store_->Write(state)) {
-+        LOG(WARNING) << "browseros: Failed to write server state file";
++        LOG(WARNING) << "windrise: Failed to write server state file";
 +      }
 +    }
 +  }
@@ -952,7 +952,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +void BrowserOSServerManager::OnTerminateProcessComplete(bool killed) {
 +  termination_in_progress_ = false;
 +  if (!killed) {
-+    LOG(ERROR) << "browseros: Managed server termination failed; "
++    LOG(ERROR) << "windrise: Managed server termination failed; "
 +                  "refusing to launch a second server";
 +    termination_callback_.Reset();
 +    is_restarting_ = false;
@@ -969,7 +969,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  if (!started_ || termination_in_progress_) {
 +    return;
 +  }
-+  LOG(INFO) << "browseros: Managed server exited with code " << exit_code;
++  LOG(INFO) << "windrise: Managed server exited with code " << exit_code;
 +  const bool was_starting = !running_installation_.has_value();
 +  health_check_timer_.Stop();
 +  process_check_timer_.Stop();
@@ -1017,7 +1017,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +  int exit_code = 0;
 +  bool exited = process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code);
-+  VLOG(1) << "browseros: CheckProcessStatus PID: " << process_.Pid()
++  VLOG(1) << "windrise: CheckProcessStatus PID: " << process_.Pid()
 +          << ", WaitForExitWithTimeout returned: " << exited
 +          << ", exit_code: " << exit_code;
 +
@@ -1049,7 +1049,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +        local_state_->SetBoolean(browseros_server::kRestartServerRequested,
 +                                 false);
 +      }
-+      LOG(INFO) << "browseros: Confirmed healthy server "
++      LOG(INFO) << "windrise: Confirmed healthy server "
 +                << (GetRunningVersion().IsValid()
 +                        ? GetRunningVersion().GetString()
 +                        : "(unknown version)");
@@ -1084,7 +1084,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    return;
 +  }
 +  LOG(ERROR)
-+      << "browseros: Server did not become healthy before startup deadline";
++      << "windrise: Server did not become healthy before startup deadline";
 +  OnStrike("startup_deadline");
 +}
 +
@@ -1093,7 +1093,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    return;
 +  }
 +  ++strikes_;
-+  LOG(WARNING) << "browseros: Strike " << strikes_ << "/" << kMaxStrikes
++  LOG(WARNING) << "windrise: Strike " << strikes_ << "/" << kMaxStrikes
 +               << " (" << reason << ") against "
 +               << (launched_installation_ ? Describe(*launched_installation_)
 +                                          : "unknown")
@@ -1105,7 +1105,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    SwitchAwayFromLaunchedInstallation(reason);
 +    const int installations = version_store_->fallback_download() ? 2 : 1;
 +    if (++failed_installations_ >= installations) {
-+      LOG(ERROR) << "browseros: Every server installation failed; retrying in "
++      LOG(ERROR) << "windrise: Every server installation failed; retrying in "
 +                 << kFailedCycleDelay.InSeconds() << "s";
 +      failed_installations_ = 0;
 +      delay = kFailedCycleDelay;
@@ -1136,7 +1136,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  properties.Set("reason", reason);
 +
 +  if (failed.downloaded) {
-+    LOG(WARNING) << "browseros: Rejecting " << Describe(failed)
++    LOG(WARNING) << "windrise: Rejecting " << Describe(failed)
 +                 << " server for this session; falling back to bundled";
 +    version_store_->set_rejected_version(failed.version);
 +    properties.Set("bundled_version",
@@ -1150,7 +1150,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  // sometimes beats an old binary that never starts, and it is the only way
 +  // back when that download already migrated user data past the bundle.
 +  // Readmitting also lets the updater re-fetch it if its files are gone.
-+  LOG(ERROR) << "browseros: Bundled server out of strikes; readmitting the "
++  LOG(ERROR) << "windrise: Bundled server out of strikes; readmitting the "
 +                "downloaded server";
 +  version_store_->set_rejected_version(base::Version());
 +  const std::optional<ServerInstallation>& download =
@@ -1180,7 +1180,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  if (!started_) {
 +    return;
 +  }
-+  LOG(INFO) << "browseros: Relaunching "
++  LOG(INFO) << "windrise: Relaunching "
 +            << GetManagedServerDescriptor().log_name << " in "
 +            << delay.InSeconds() << "s";
 +  relaunch_timer_.Start(
@@ -1203,12 +1203,12 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +}
 +
 +void BrowserOSServerManager::RestartBrowserOSProcess() {
-+  LOG(INFO) << "browseros: Restarting "
++  LOG(INFO) << "windrise: Restarting "
 +            << GetManagedServerDescriptor().log_name;
 +
 +  if (!started_ || !version_store_ || !version_store_->initialized() ||
 +      launch_in_progress_ || is_restarting_ || is_updating_) {
-+    LOG(INFO) << "browseros: Restart already in progress or not initialized";
++    LOG(INFO) << "windrise: Restart already in progress or not initialized";
 +    return;
 +  }
 +  is_restarting_ = true;
@@ -1240,10 +1240,10 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  assigned.insert(ports_.server);
 +
 +  if (ports_.server == previous_server_port) {
-+    LOG(INFO) << "browseros: Restart keeping server port - "
++    LOG(INFO) << "windrise: Restart keeping server port - "
 +              << ports_.DebugString();
 +  } else {
-+    LOG(INFO) << "browseros: Restart moved server port from "
++    LOG(INFO) << "windrise: Restart moved server port from "
 +              << previous_server_port << " to " << ports_.server << " - "
 +              << ports_.DebugString();
 +  }
@@ -1254,11 +1254,11 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +void BrowserOSServerManager::RestartServerForUpdate(
 +    UpdateCompleteCallback callback) {
-+  LOG(INFO) << "browseros: Restarting server for OTA update";
++  LOG(INFO) << "windrise: Restarting server for OTA update";
 +
 +  if (!started_ || launch_in_progress_ || termination_in_progress_ ||
 +      is_restarting_ || is_updating_) {
-+    LOG(WARNING) << "browseros: Restart already in progress, deferring update";
++    LOG(WARNING) << "windrise: Restart already in progress, deferring update";
 +    std::move(callback).Run(false);
 +    return;
 +  }
@@ -1347,7 +1347,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +               : std::nullopt;
 +  if (!status || !status->is_dict() ||
 +      !status->GetDict().FindBool("can_update").value_or(false)) {
-+    LOG(INFO) << "browseros: Server busy or readiness unknown; keeping version "
++    LOG(INFO) << "windrise: Server busy or readiness unknown; keeping version "
 +              << installation.version.GetString() << " ready for retry";
 +    return;
 +  }
@@ -1371,7 +1371,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  // No healthy server means no in-flight work to interrupt and nobody to ask
 +  // for can_update. Waiting for health here is what kept a boot-looping bundle
 +  // from ever switching to a fixed download.
-+  LOG(INFO) << "browseros: No healthy server; activating ready version "
++  LOG(INFO) << "windrise: No healthy server; activating ready version "
 +            << target.version.GetString() << " now";
 +  ForgiveStrikes();
 +  next_installation_.reset();
@@ -1421,7 +1421,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +      local_state_->GetBoolean(browseros_server::kAllowRemoteInMCP);
 +
 +  if (new_value != allow_remote_in_mcp_) {
-+    LOG(INFO) << "browseros: allow_remote_in_mcp preference changed from "
++    LOG(INFO) << "windrise: allow_remote_in_mcp preference changed from "
 +              << (allow_remote_in_mcp_ ? "true" : "false") << " to "
 +              << (new_value ? "true" : "false")
 +              << ", restarting server (the proxy bind address follows the "
@@ -1446,7 +1446,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  }
 +  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
 +          browseros::kProxyPort)) {
-+    LOG(INFO) << "browseros: Ignoring proxy_port pref change "
++    LOG(INFO) << "windrise: Ignoring proxy_port pref change "
 +              << "(CLI --browseros-proxy-port overrides)";
 +    return;
 +  }
@@ -1459,17 +1459,17 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    return;
 +  }
 +  if (!net::IsPortValid(new_port)) {
-+    LOG(WARNING) << "browseros: Invalid proxy port " << new_port
++    LOG(WARNING) << "windrise: Invalid proxy port " << new_port
 +                 << " (must be 1-65535), ignoring pref change";
 +    return;
 +  }
 +  if (new_port == ports_.cdp || new_port == ports_.server) {
-+    LOG(WARNING) << "browseros: Proxy port " << new_port
++    LOG(WARNING) << "windrise: Proxy port " << new_port
 +                 << " collides with another bound port, ignoring pref change";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: proxy_port preference changed from " << ports_.proxy
++  LOG(INFO) << "windrise: proxy_port preference changed from " << ports_.proxy
 +            << " to " << new_port << ", rebinding proxy and restarting server";
 +  ports_.proxy = new_port;
 +  SavePortsToPrefs();
@@ -1490,7 +1490,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Server restart requested via preference";
++  LOG(INFO) << "windrise: Server restart requested via preference";
 +  RestartBrowserOSProcess();
 +}
 +
@@ -1499,7 +1499,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  if (command_line->HasSwitch(browseros::kServerResourcesDir)) {
 +    base::FilePath custom_path =
 +        command_line->GetSwitchValuePath(browseros::kServerResourcesDir);
-+    LOG(INFO) << "browseros: Using custom resources dir from command line: "
++    LOG(INFO) << "windrise: Using custom resources dir from command line: "
 +              << custom_path;
 +    return custom_path;
 +  }
@@ -1508,21 +1508,21 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +
 +#if BUILDFLAG(IS_MAC)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +  exe_dir = exe_dir.DirName().Append("Resources");
 +
 +#elif BUILDFLAG(IS_WIN)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +  exe_dir = exe_dir.AppendASCII(version_info::GetVersionNumber());
 +
 +#elif BUILDFLAG(IS_LINUX)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +#endif
@@ -1535,7 +1535,7 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +base::FilePath BrowserOSServerManager::GetBrowserOSExecutionDir() const {
 +  base::FilePath user_data_dir;
 +  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-+    LOG(ERROR) << "browseros: Failed to resolve DIR_USER_DATA path";
++    LOG(ERROR) << "windrise: Failed to resolve DIR_USER_DATA path";
 +    return base::FilePath();
 +  }
 +
@@ -1545,13 +1545,13 @@ index 0000000000000000000000000000000000000000..cc6466db3ae9fb5a4515a944ac7f1b34
 +  base::ScopedAllowBlocking allow_blocking;
 +  if (!base::PathExists(exec_dir)) {
 +    if (!base::CreateDirectory(exec_dir)) {
-+      LOG(ERROR) << "browseros: Failed to create execution directory: "
++      LOG(ERROR) << "windrise: Failed to create execution directory: "
 +                 << exec_dir;
 +      return base::FilePath();
 +    }
 +  }
 +
-+  LOG(INFO) << "browseros: Using execution directory: " << exec_dir;
++  LOG(INFO) << "windrise: Using execution directory: " << exec_dir;
 +  return exec_dir;
 +}
 +

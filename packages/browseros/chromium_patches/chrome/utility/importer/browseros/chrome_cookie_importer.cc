@@ -156,7 +156,7 @@ index 0000000000000..21b17a08e1a8e
 +    const std::string& encryption_key) {
 +  std::vector<ImportedCookieEntry> cookies;
 +  if (encryption_key.empty()) {
-+    LOG(WARNING) << "browseros: Chrome encryption key unavailable; "
++    LOG(WARNING) << "windrise: Chrome encryption key unavailable; "
 +                 << "skipping cookie import";
 +    return cookies;
 +  }
@@ -164,7 +164,7 @@ index 0000000000000..21b17a08e1a8e
 +  // Path to Cookies database
 +  base::FilePath cookies_path = profile_path.AppendASCII(kCookiesFilename);
 +  if (!base::PathExists(cookies_path)) {
-+    LOG(WARNING) << "browseros: Cookies not found at: " << cookies_path.value();
++    LOG(WARNING) << "windrise: Cookies not found at: " << cookies_path.value();
 +    return cookies;
 +  }
 +
@@ -177,7 +177,7 @@ index 0000000000000..21b17a08e1a8e
 +  // Open database
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_db_path)) {
-+    LOG(WARNING) << "browseros: Failed to open Cookies database";
++    LOG(WARNING) << "windrise: Failed to open Cookies database";
 +    DeleteDatabaseTemp(temp_db_path);
 +    return cookies;
 +  }
@@ -214,7 +214,7 @@ index 0000000000000..21b17a08e1a8e
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "browseros: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare query";
 +      DeleteDatabaseTemp(temp_db_path);
 +      return cookies;
 +    }
@@ -274,7 +274,7 @@ index 0000000000000..21b17a08e1a8e
 +      // Skip cookies that cannot be safely migrated (device-bound session
 +      // cookies, blacklisted domains).
 +      if (ShouldSkipCookie(entry.host_key, entry.name)) {
-+        VLOG(1) << "browseros: Skipping cookie " << entry.name << " on "
++        VLOG(1) << "windrise: Skipping cookie " << entry.name << " on "
 +                << entry.host_key << " (filtered)";
 +        continue;
 +      }
@@ -288,7 +288,7 @@ index 0000000000000..21b17a08e1a8e
 +  DeleteDatabaseTemp(temp_db_path);
 +
 +  if (skipped_app_bound > 0 || failed_decrypt > 0) {
-+    LOG(WARNING) << "browseros: Cookie import skipped " << skipped_app_bound
++    LOG(WARNING) << "windrise: Cookie import skipped " << skipped_app_bound
 +                 << " App-Bound (v20) cookies and " << failed_decrypt
 +                 << " undecryptable cookies; imported " << cookies.size()
 +                 << ". App-Bound cookies (Chrome 127+) require Chrome's "

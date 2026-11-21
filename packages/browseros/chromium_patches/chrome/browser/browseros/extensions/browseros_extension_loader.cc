@@ -197,7 +197,7 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +    }
 +    record->Set(kGraceDeadline,
 +                base::TimeToValue(base::Time::Now() + kInstallGracePeriod));
-+    LOG(INFO) << "browseros: Started 30-minute bundled extension grace for "
++    LOG(INFO) << "windrise: Started 30-minute bundled extension grace for "
 +              << id;
 +  }
 +  ScheduleInstallGraceExpiry();
@@ -251,7 +251,7 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  for (const auto& id : ids) {
 +    extensions::DelayedInstallManager::Get(profile_)
 +        ->FinishDelayedInstallationIfReady(id, /*install_immediately=*/true);
-+    LOG(INFO) << "browseros: Bundled extension grace expired for " << id;
++    LOG(INFO) << "windrise: Bundled extension grace expired for " << id;
 +  }
 +  ScheduleInstallGraceExpiry();
 +}
@@ -309,7 +309,7 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  bundled_prefs_ = std::move(result.prefs);
 +  local_discovery_complete_ = true;
 +  RecordBundledVersions();
-+  LOG(INFO) << "browseros: Local extension discovery complete: "
++  LOG(INFO) << "windrise: Local extension discovery complete: "
 +            << bundled_prefs_.size()
 +            << " entries, complete=" << result.complete;
 +
@@ -456,7 +456,7 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  }
 +  waiting_for_ready_ = false;
 +  readiness_timer_.Stop();
-+  LOG(INFO) << "browseros: Primary extension readiness "
++  LOG(INFO) << "windrise: Primary extension readiness "
 +            << (ready ? "READY" : "failed; retry available");
 +  auto callbacks = std::move(ready_callbacks_);
 +  ready_callbacks_.clear();

@@ -30,7 +30,7 @@ index 0000000000000..df71e4624bd5f
 +void BrowserOSMetricsHandler::HandleLogBrowserOSMetric(
 +    const base::ListValue& args) {
 +  if (args.size() < 1 || !args[0].is_string()) {
-+    LOG(WARNING) << "browseros: Invalid metric event name";
++    LOG(WARNING) << "windrise: Invalid metric event name";
 +    return;
 +  }
 +
@@ -42,7 +42,7 @@ index 0000000000000..df71e4624bd5f
 +      base::DictValue properties = args[1].GetDict().Clone();
 +      browseros_metrics::BrowserOSMetrics::Log(event_name, std::move(properties));
 +    } else {
-+      LOG(WARNING) << "browseros: Invalid metric properties format";
++      LOG(WARNING) << "windrise: Invalid metric properties format";
 +      browseros_metrics::BrowserOSMetrics::Log(event_name);
 +    }
 +  } else {

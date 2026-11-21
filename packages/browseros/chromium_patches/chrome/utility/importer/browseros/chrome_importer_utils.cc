@@ -25,13 +25,13 @@ index 0000000000000..3000a42871631
 +base::FilePath CopyToTempFile(const base::FilePath& source_path) {
 +  base::FilePath temp_path;
 +  if (!base::CreateTemporaryFile(&temp_path)) {
-+    LOG(WARNING) << "browseros: Failed to create temp file for "
++    LOG(WARNING) << "windrise: Failed to create temp file for "
 +                 << source_path.BaseName().value();
 +    return base::FilePath();
 +  }
 +
 +  if (!base::CopyFile(source_path, temp_path)) {
-+    LOG(WARNING) << "browseros: Failed to copy "
++    LOG(WARNING) << "windrise: Failed to copy "
 +                 << source_path.BaseName().value() << " to temp";
 +    base::DeleteFile(temp_path);
 +    return base::FilePath();

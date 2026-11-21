@@ -78,7 +78,7 @@ index 0000000000000..dbd7e166bb02c
 +int FindAvailablePort(int starting_port,
 +                      const std::set<int>& excluded,
 +                      bool allow_reuse) {
-+  LOG(INFO) << "browseros: Finding port starting from " << starting_port;
++  LOG(INFO) << "windrise: Finding port starting from " << starting_port;
 +
 +  for (int i = 0; i < kMaxPortAttempts; i++) {
 +    int port_to_try = starting_port + i;
@@ -93,17 +93,17 @@ index 0000000000000..dbd7e166bb02c
 +
 +    if (IsPortAvailable(port_to_try, allow_reuse)) {
 +      if (port_to_try != starting_port) {
-+        LOG(INFO) << "browseros: Port " << starting_port
++        LOG(INFO) << "windrise: Port " << starting_port
 +                  << " was in use or excluded, using " << port_to_try
 +                  << " instead";
 +      } else {
-+        LOG(INFO) << "browseros: Using port " << port_to_try;
++        LOG(INFO) << "windrise: Using port " << port_to_try;
 +      }
 +      return port_to_try;
 +    }
 +  }
 +
-+  LOG(WARNING) << "browseros: Could not find available port after "
++  LOG(WARNING) << "windrise: Could not find available port after "
 +               << kMaxPortAttempts << " attempts, using " << starting_port
 +               << " anyway";
 +  return starting_port;
@@ -174,7 +174,7 @@ index 0000000000000..dbd7e166bb02c
 +base::FilePath GetExecutionDir() {
 +  base::FilePath user_data_dir;
 +  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-+    LOG(ERROR) << "browseros: Failed to resolve DIR_USER_DATA path";
++    LOG(ERROR) << "windrise: Failed to resolve DIR_USER_DATA path";
 +    return base::FilePath();
 +  }
 +
@@ -183,7 +183,7 @@ index 0000000000000..dbd7e166bb02c
 +
 +  if (!base::PathExists(exec_dir)) {
 +    if (!base::CreateDirectory(exec_dir)) {
-+      LOG(ERROR) << "browseros: Failed to create execution directory: "
++      LOG(ERROR) << "windrise: Failed to create execution directory: "
 +                 << exec_dir;
 +      return base::FilePath();
 +    }
@@ -197,7 +197,7 @@ index 0000000000000..dbd7e166bb02c
 +  if (command_line->HasSwitch(browseros::kServerResourcesDir)) {
 +    base::FilePath custom_path =
 +        command_line->GetSwitchValuePath(browseros::kServerResourcesDir);
-+    LOG(INFO) << "browseros: Using custom resources dir from command line: "
++    LOG(INFO) << "windrise: Using custom resources dir from command line: "
 +              << custom_path;
 +    return custom_path;
 +  }
@@ -206,7 +206,7 @@ index 0000000000000..dbd7e166bb02c
 +
 +#if BUILDFLAG(IS_MAC)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +  // Navigate to Resources folder in the app bundle
@@ -215,14 +215,14 @@ index 0000000000000..dbd7e166bb02c
 +
 +#elif BUILDFLAG(IS_WIN)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +  exe_dir = exe_dir.AppendASCII(version_info::GetVersionNumber());
 +
 +#elif BUILDFLAG(IS_LINUX)
 +  if (!base::PathService::Get(base::DIR_EXE, &exe_dir)) {
-+    LOG(ERROR) << "browseros: Failed to get executable directory";
++    LOG(ERROR) << "windrise: Failed to get executable directory";
 +    return base::FilePath();
 +  }
 +#endif
@@ -279,7 +279,7 @@ index 0000000000000..dbd7e166bb02c
 +  std::optional<base::Value> parsed =
 +      base::JSONReader::Read(contents, base::JSON_PARSE_RFC);
 +  if (!parsed || !parsed->is_dict()) {
-+    LOG(WARNING) << "browseros: Invalid state file format";
++    LOG(WARNING) << "windrise: Invalid state file format";
 +    return std::nullopt;
 +  }
 +
@@ -288,7 +288,7 @@ index 0000000000000..dbd7e166bb02c
 +  std::optional<double> creation_time = dict.FindDouble("creation_time");
 +
 +  if (!pid || !creation_time) {
-+    LOG(WARNING) << "browseros: State file missing required fields";
++    LOG(WARNING) << "windrise: State file missing required fields";
 +    return std::nullopt;
 +  }
 +
@@ -296,7 +296,7 @@ index 0000000000000..dbd7e166bb02c
 +  state.pid = static_cast<base::ProcessId>(*pid);
 +  state.creation_time = static_cast<int64_t>(*creation_time);
 +
-+  LOG(INFO) << "browseros: Read state file - PID: " << state.pid
++  LOG(INFO) << "windrise: Read state file - PID: " << state.pid
 +            << ", creation_time: " << state.creation_time;
 +  return state;
 +}
@@ -313,16 +313,16 @@ index 0000000000000..dbd7e166bb02c
 +
 +  std::optional<std::string> json_output = base::WriteJson(dict);
 +  if (!json_output.has_value()) {
-+    LOG(ERROR) << "browseros: Failed to serialize state to JSON";
++    LOG(ERROR) << "windrise: Failed to serialize state to JSON";
 +    return false;
 +  }
 +
 +  if (!base::WriteFile(state_path, json_output.value())) {
-+    LOG(ERROR) << "browseros: Failed to write state file: " << state_path;
++    LOG(ERROR) << "windrise: Failed to write state file: " << state_path;
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Wrote state file - PID: " << state.pid
++  LOG(INFO) << "windrise: Wrote state file - PID: " << state.pid
 +            << ", creation_time: " << state.creation_time;
 +  return true;
 +}
@@ -338,11 +338,11 @@ index 0000000000000..dbd7e166bb02c
 +  }
 +
 +  if (!base::DeleteFile(state_path)) {
-+    LOG(WARNING) << "browseros: Failed to delete state file: " << state_path;
++    LOG(WARNING) << "windrise: Failed to delete state file: " << state_path;
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Deleted state file";
++  LOG(INFO) << "windrise: Deleted state file";
 +  return true;
 +}
 +
@@ -462,7 +462,7 @@ index 0000000000000..dbd7e166bb02c
 +    if (errno == ESRCH) {
 +      return true;  // Process already gone
 +    }
-+    PLOG(WARNING) << "browseros: Failed to send SIGTERM to PID " << pid;
++    PLOG(WARNING) << "windrise: Failed to send SIGTERM to PID " << pid;
 +    return false;
 +  }
 +
@@ -470,7 +470,7 @@ index 0000000000000..dbd7e166bb02c
 +  base::TimeTicks deadline = base::TimeTicks::Now() + graceful_timeout;
 +  while (base::TimeTicks::Now() < deadline) {
 +    if (!ProcessExists(pid)) {
-+      LOG(INFO) << "browseros: Process " << pid
++      LOG(INFO) << "windrise: Process " << pid
 +                << " terminated gracefully after SIGTERM";
 +      return true;
 +    }
@@ -478,13 +478,13 @@ index 0000000000000..dbd7e166bb02c
 +  }
 +
 +  // Still running, send SIGKILL
-+  LOG(WARNING) << "browseros: Process " << pid
++  LOG(WARNING) << "windrise: Process " << pid
 +               << " did not terminate after SIGTERM, sending SIGKILL";
 +  if (kill(pid, SIGKILL) != 0) {
 +    if (errno == ESRCH) {
 +      return true;  // Gone between checks
 +    }
-+    PLOG(ERROR) << "browseros: Failed to send SIGKILL to PID " << pid;
++    PLOG(ERROR) << "windrise: Failed to send SIGKILL to PID " << pid;
 +    return false;
 +  }
 +
@@ -499,14 +499,14 @@ index 0000000000000..dbd7e166bb02c
 +    if (error == ERROR_INVALID_PARAMETER) {
 +      return true;  // Process doesn't exist
 +    }
-+    LOG(ERROR) << "browseros: Failed to open process " << pid
++    LOG(ERROR) << "windrise: Failed to open process " << pid
 +               << " for termination, error: " << error;
 +    return false;
 +  }
 +
 +  if (!TerminateProcess(handle.Get(), 1)) {
 +    DWORD error = GetLastError();
-+    LOG(ERROR) << "browseros: Failed to terminate process " << pid
++    LOG(ERROR) << "windrise: Failed to terminate process " << pid
 +               << ", error: " << error;
 +    return false;
 +  }

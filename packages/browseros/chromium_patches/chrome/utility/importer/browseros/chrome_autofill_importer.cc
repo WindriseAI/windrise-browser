@@ -35,7 +35,7 @@ index 0000000000000..3d1e95eaf3461
 +    // Try profile directory as fallback
 +    web_data_path = profile_path.AppendASCII(kWebDataFilename);
 +    if (!base::PathExists(web_data_path)) {
-+      LOG(WARNING) << "browseros: Web Data file not found";
++      LOG(WARNING) << "windrise: Web Data file not found";
 +      return entries;
 +    }
 +  }
@@ -47,7 +47,7 @@ index 0000000000000..3d1e95eaf3461
 +
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_path)) {
-+    LOG(WARNING) << "browseros: Failed to open database";
++    LOG(WARNING) << "windrise: Failed to open database";
 +    base::DeleteFile(temp_path);
 +    return entries;
 +  }
@@ -60,7 +60,7 @@ index 0000000000000..3d1e95eaf3461
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "browseros: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare query";
 +      base::DeleteFile(temp_path);
 +      return entries;
 +    }

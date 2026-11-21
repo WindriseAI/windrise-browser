@@ -21,7 +21,7 @@ index 61afd65943..38a5e27c00 100644
 +    int tab_id,
 +    bool include_incognito_information,
 +    std::optional<bool> desired_state) {
-+  LOG(INFO) << "browseros: BrowserosToggleSidePanelForTab called for tab_id="
++  LOG(INFO) << "windrise: BrowserosToggleSidePanelForTab called for tab_id="
 +            << tab_id << ", extension=" << extension.id()
 +            << ", desired_state="
 +            << (desired_state.has_value()
@@ -35,14 +35,14 @@ index 61afd65943..38a5e27c00 100644
 +                                    include_incognito_information, &window,
 +                                    &web_contents, nullptr) ||
 +      !window || !web_contents) {
-+    LOG(WARNING) << "browseros: Tab not found for tab_id=" << tab_id;
++    LOG(WARNING) << "windrise: Tab not found for tab_id=" << tab_id;
 +    return base::unexpected(ErrorUtils::FormatErrorMessage(
 +        kTabNotFoundError, base::ToString(tab_id)));
 +  }
 +
 +  BrowserWindowInterface* browser_window = window->GetBrowserWindowInterface();
 +  if (!browser_window) {
-+    LOG(WARNING) << "browseros: No browser window for tab_id=" << tab_id;
++    LOG(WARNING) << "windrise: No browser window for tab_id=" << tab_id;
 +    return base::unexpected(
 +        base::StringPrintf("No browser window for tabId: %d", tab_id));
 +  }
@@ -56,7 +56,7 @@ index 61afd65943..38a5e27c00 100644
 +    has_contextual_options = panels_iter->second.contains(tab_id);
 +  }
 +
-+  LOG(INFO) << "browseros: has_contextual_options=" << has_contextual_options
++  LOG(INFO) << "windrise: has_contextual_options=" << has_contextual_options
 +            << " for tab_id=" << tab_id;
 +
 +  if (!has_contextual_options) {
@@ -64,14 +64,14 @@ index 61afd65943..38a5e27c00 100644
 +    api::side_panel::PanelOptions default_options =
 +        GetOptions(extension, std::nullopt);
 +    if (!default_options.path) {
-+      LOG(WARNING) << "browseros: No side panel path configured for extension="
++      LOG(WARNING) << "windrise: No side panel path configured for extension="
 +                   << extension.id();
 +      return base::unexpected(
 +          "No side panel path configured. Set a path in manifest or via "
 +          "setOptions() before toggling.");
 +    }
 +
-+    LOG(INFO) << "browseros: Auto-registering contextual panel for tab_id="
++    LOG(INFO) << "windrise: Auto-registering contextual panel for tab_id="
 +              << tab_id << " with path=" << *default_options.path;
 +
 +    // SetOptions synchronously notifies the tab coordinator, registering its
@@ -86,18 +86,18 @@ index 61afd65943..38a5e27c00 100644
 +  // Check if panel is disabled for this tab.
 +  api::side_panel::PanelOptions current_options = GetOptions(extension, tab_id);
 +  if (!current_options.enabled.value_or(true)) {
-+    LOG(WARNING) << "browseros: Side panel is disabled for tab_id=" << tab_id;
++    LOG(WARNING) << "windrise: Side panel is disabled for tab_id=" << tab_id;
 +    return base::unexpected(
 +        base::StringPrintf("Side panel is disabled for tabId: %d", tab_id));
 +  }
 +
 +  // Toggle the contextual panel.
-+  LOG(INFO) << "browseros: Calling ToggleContextualExtensionSidePanel for tab_id="
++  LOG(INFO) << "windrise: Calling ToggleContextualExtensionSidePanel for tab_id="
 +            << tab_id;
 +  bool is_now_open = side_panel_util::ToggleContextualExtensionSidePanel(
 +      *browser_window, *web_contents, extension.id(), desired_state);
 +
-+  LOG(INFO) << "browseros: Toggle result: is_now_open=" << is_now_open
++  LOG(INFO) << "windrise: Toggle result: is_now_open=" << is_now_open
 +            << " for tab_id=" << tab_id;
 +
 +  return is_now_open;
@@ -109,7 +109,7 @@ index 61afd65943..38a5e27c00 100644
 +    content::BrowserContext* context,
 +    int tab_id,
 +    bool include_incognito_information) {
-+  LOG(INFO) << "browseros: BrowserosIsSidePanelOpenForTab called for tab_id="
++  LOG(INFO) << "windrise: BrowserosIsSidePanelOpenForTab called for tab_id="
 +            << tab_id << ", extension=" << extension.id();
 +
 +  // Find the tab.
@@ -119,14 +119,14 @@ index 61afd65943..38a5e27c00 100644
 +                                    include_incognito_information, &window,
 +                                    &web_contents, nullptr) ||
 +      !window || !web_contents) {
-+    LOG(WARNING) << "browseros: Tab not found for tab_id=" << tab_id;
++    LOG(WARNING) << "windrise: Tab not found for tab_id=" << tab_id;
 +    return base::unexpected(ErrorUtils::FormatErrorMessage(
 +        kTabNotFoundError, base::ToString(tab_id)));
 +  }
 +
 +  BrowserWindowInterface* browser_window = window->GetBrowserWindowInterface();
 +  if (!browser_window) {
-+    LOG(WARNING) << "browseros: No browser window for tab_id=" << tab_id;
++    LOG(WARNING) << "windrise: No browser window for tab_id=" << tab_id;
 +    return base::unexpected(
 +        base::StringPrintf("No browser window for tabId: %d", tab_id));
 +  }
@@ -134,7 +134,7 @@ index 61afd65943..38a5e27c00 100644
 +  // Check if panel is disabled - return false (not an error).
 +  api::side_panel::PanelOptions current_options = GetOptions(extension, tab_id);
 +  if (!current_options.enabled.value_or(true)) {
-+    LOG(INFO) << "browseros: Panel is disabled for tab_id=" << tab_id
++    LOG(INFO) << "windrise: Panel is disabled for tab_id=" << tab_id
 +              << ", returning false";
 +    return false;
 +  }
@@ -142,7 +142,7 @@ index 61afd65943..38a5e27c00 100644
 +  bool is_open = side_panel_util::IsContextualExtensionSidePanelOpen(
 +      browser_window, web_contents, extension.id());
 +
-+  LOG(INFO) << "browseros: IsOpen result: is_open=" << is_open
++  LOG(INFO) << "windrise: IsOpen result: is_open=" << is_open
 +            << " for tab_id=" << tab_id;
 +
 +  return is_open;

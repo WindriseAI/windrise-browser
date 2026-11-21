@@ -23,7 +23,7 @@ index 59a08a4e0ec57771c631408eebaec98aee6562bd..7b595864cf4ee9787d65a0ad5ce2213e
    }
  
 +  if (browseros::IsActiveBrowserOSExtension(extension->id())) {
-+    LOG(INFO) << "browseros: Skipping settings override dialog for BrowserOS "
++    LOG(INFO) << "windrise: Skipping settings override dialog for BrowserOS "
 +                 "extension "
 +              << extension->id();
 +    return std::nullopt;

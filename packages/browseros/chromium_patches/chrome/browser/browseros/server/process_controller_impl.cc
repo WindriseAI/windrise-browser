@@ -36,18 +36,18 @@ index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2a
 +
 +  std::optional<std::string> json_output = base::WriteJson(root);
 +  if (!json_output.has_value()) {
-+    LOG(ERROR) << "browseros: Failed to serialize " << config.log_name
++    LOG(ERROR) << "windrise: Failed to serialize " << config.log_name
 +               << " config to JSON";
 +    return base::FilePath();
 +  }
 +
 +  if (!base::WriteFile(config_path, json_output.value())) {
-+    LOG(ERROR) << "browseros: Failed to write " << config.log_name
++    LOG(ERROR) << "windrise: Failed to write " << config.log_name
 +               << " config file: " << config_path;
 +    return base::FilePath();
 +  }
 +
-+  LOG(INFO) << "browseros: Wrote " << config.log_name << " config to "
++  LOG(INFO) << "windrise: Wrote " << config.log_name << " config to "
 +            << config_path;
 +  return config_path;
 +}
@@ -65,34 +65,34 @@ index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2a
 +
 +  // Check if executable exists, fallback to bundled if not
 +  if (!base::PathExists(actual_exe_path)) {
-+    LOG(WARNING) << "browseros: Binary not found at " << actual_exe_path
++    LOG(WARNING) << "windrise: Binary not found at " << actual_exe_path
 +                 << ", falling back to bundled";
 +    actual_exe_path = config.paths.fallback_exe;
 +    actual_resources_dir = config.paths.fallback_resources;
 +    result.used_fallback = true;
 +
 +    if (!base::PathExists(actual_exe_path)) {
-+      LOG(ERROR) << "browseros: Bundled binary also not found at: "
++      LOG(ERROR) << "windrise: Bundled binary also not found at: "
 +                 << actual_exe_path;
 +      return result;
 +    }
 +  }
 +
 +  if (config.paths.execution.empty()) {
-+    LOG(ERROR) << "browseros: Execution directory path is empty";
++    LOG(ERROR) << "windrise: Execution directory path is empty";
 +    return result;
 +  }
 +
 +  // Ensure execution directory exists (blocking I/O)
 +  if (!base::CreateDirectory(config.paths.execution)) {
-+    LOG(ERROR) << "browseros: Failed to create execution directory at: "
++    LOG(ERROR) << "windrise: Failed to create execution directory at: "
 +               << config.paths.execution;
 +    return result;
 +  }
 +
 +  base::FilePath config_path = WriteConfigJson(config, actual_resources_dir);
 +  if (config_path.empty()) {
-+    LOG(ERROR) << "browseros: Failed to write config file, aborting launch";
++    LOG(ERROR) << "windrise: Failed to write config file, aborting launch";
 +    return result;
 +  }
 +
@@ -113,31 +113,31 @@ index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2a
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Terminating process with SIGKILL (PID: "
++  LOG(INFO) << "windrise: Terminating process with SIGKILL (PID: "
 +            << process->Pid() << ", wait: " << (wait ? "true" : "false") << ")";
 +
 +#if BUILDFLAG(IS_POSIX)
 +  base::ProcessId pid = process->Pid();
 +  if (kill(pid, SIGKILL) != 0) {
-+    PLOG(ERROR) << "browseros: Failed to send SIGKILL to PID " << pid;
++    PLOG(ERROR) << "windrise: Failed to send SIGKILL to PID " << pid;
 +  } else if (wait) {
 +    // Blocking wait - caller must ensure this runs on a thread with MayBlock()
 +    int exit_code = 0;
 +    if (process->WaitForExit(&exit_code)) {
-+      LOG(INFO) << "browseros: Process killed successfully";
++      LOG(INFO) << "windrise: Process killed successfully";
 +    } else {
-+      LOG(WARNING) << "browseros: WaitForExit failed";
++      LOG(WARNING) << "windrise: WaitForExit failed";
 +    }
 +  } else {
-+    LOG(INFO) << "browseros: SIGKILL sent (not waiting for exit)";
++    LOG(INFO) << "windrise: SIGKILL sent (not waiting for exit)";
 +  }
 +#else
 +  // Windows: Terminate with wait parameter
 +  bool terminated = process->Terminate(0, wait);
 +  if (terminated) {
-+    LOG(INFO) << "browseros: Process terminated successfully";
++    LOG(INFO) << "windrise: Process terminated successfully";
 +  } else {
-+    LOG(ERROR) << "browseros: Failed to terminate process";
++    LOG(ERROR) << "windrise: Failed to terminate process";
 +  }
 +#endif
 +}
@@ -149,14 +149,14 @@ index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2a
 +    return true;  // No process to wait for
 +  }
 +
-+  LOG(INFO) << "browseros: Waiting for process exit (PID: " << process->Pid()
++  LOG(INFO) << "windrise: Waiting for process exit (PID: " << process->Pid()
 +            << ", timeout: " << timeout.InSeconds() << "s)";
 +
 +  bool exited = process->WaitForExitWithTimeout(timeout, exit_code);
 +  if (exited) {
-+    LOG(INFO) << "browseros: Process exited with code " << *exit_code;
++    LOG(INFO) << "windrise: Process exited with code " << *exit_code;
 +  } else {
-+    LOG(INFO) << "browseros: Process did not exit within timeout";
++    LOG(INFO) << "windrise: Process did not exit within timeout";
 +  }
 +  return exited;
 +}

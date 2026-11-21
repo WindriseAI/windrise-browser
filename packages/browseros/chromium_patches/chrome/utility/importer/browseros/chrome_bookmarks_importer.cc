@@ -181,26 +181,26 @@ index 0000000000000..ff65fb5f3bc9e
 +  // Read bookmarks JSON file
 +  base::FilePath bookmarks_path = profile_path.AppendASCII(kBookmarksFilename);
 +  if (!base::PathExists(bookmarks_path)) {
-+    LOG(WARNING) << "browseros: Bookmarks file not found";
++    LOG(WARNING) << "windrise: Bookmarks file not found";
 +    return result;
 +  }
 +
 +  std::string bookmarks_content;
 +  if (!base::ReadFileToString(bookmarks_path, &bookmarks_content)) {
-+    LOG(WARNING) << "browseros: Failed to read Bookmarks file";
++    LOG(WARNING) << "windrise: Failed to read Bookmarks file";
 +    return result;
 +  }
 +
 +  std::optional<base::Value> bookmarks_value =
 +      base::JSONReader::Read(bookmarks_content, base::JSON_PARSE_RFC);
 +  if (!bookmarks_value || !bookmarks_value->is_dict()) {
-+    LOG(WARNING) << "browseros: Failed to parse Bookmarks JSON";
++    LOG(WARNING) << "windrise: Failed to parse Bookmarks JSON";
 +    return result;
 +  }
 +
 +  const base::DictValue* roots = bookmarks_value->GetDict().FindDict("roots");
 +  if (!roots) {
-+    LOG(WARNING) << "browseros: No roots in Bookmarks";
++    LOG(WARNING) << "windrise: No roots in Bookmarks";
 +    return result;
 +  }
 +

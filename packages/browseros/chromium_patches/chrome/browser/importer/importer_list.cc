@@ -58,18 +58,18 @@ index 62546b572bab8..df99dae8f9719 100644
 +
 +// Chrome importer helper functions (cross-platform)
 +bool HasExtensionsToImport(const base::FilePath& preferences_path) {
-+  LOG(INFO) << "browseros: Checking for extensions in: " << preferences_path.AsUTF8Unsafe();
++  LOG(INFO) << "windrise: Checking for extensions in: " << preferences_path.AsUTF8Unsafe();
 +
 +  std::string preferences_content;
 +  if (!base::ReadFileToString(preferences_path, &preferences_content)) {
-+    LOG(INFO) << "browseros: Failed to read preferences file: " << preferences_path.AsUTF8Unsafe();
++    LOG(INFO) << "windrise: Failed to read preferences file: " << preferences_path.AsUTF8Unsafe();
 +    return false;
 +  }
 +
 +  std::optional<base::DictValue> preferences =
 +      base::JSONReader::ReadDict(preferences_content, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
 +  if (!preferences) {
-+    LOG(INFO) << "browseros: Failed to parse preferences file as JSON: " << preferences_path.AsUTF8Unsafe();
++    LOG(INFO) << "windrise: Failed to parse preferences file as JSON: " << preferences_path.AsUTF8Unsafe();
 +    return false;
 +  }
 +
@@ -77,11 +77,11 @@ index 62546b572bab8..df99dae8f9719 100644
 +  const base::DictValue* extensions_dict =
 +      preferences->FindDictByDottedPath("extensions.settings");
 +  if (!extensions_dict) {
-+    LOG(INFO) << "browseros: No extensions.settings found in preferences file";
++    LOG(INFO) << "windrise: No extensions.settings found in preferences file";
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Found extensions.settings with " << extensions_dict->size() << " entries";
++  LOG(INFO) << "windrise: Found extensions.settings with " << extensions_dict->size() << " entries";
 +
 +  // Check for at least one valid extension
 +  int examined_extensions = 0;
@@ -99,18 +99,18 @@ index 62546b572bab8..df99dae8f9719 100644
 +    // 3. It's enabled (we're being lenient here, importing disabled ones too for now)
 +
 +    if (dict.FindBool("was_installed_by_default").value_or(true)) {
-+      LOG(INFO) << "browseros: Extension " << key << " was installed by default, skipping";
++      LOG(INFO) << "windrise: Extension " << key << " was installed by default, skipping";
 +      continue;  // Skip default extensions
 +    }
 +
 +    if (!dict.FindBool("from_webstore").value_or(false)) {
-+      LOG(INFO) << "browseros: Extension " << key << " is not from the web store, skipping";
++      LOG(INFO) << "windrise: Extension " << key << " is not from the web store, skipping";
 +      continue;  // Skip non-webstore extensions
 +    }
 +    return true;
 +  }
 +
-+  LOG(INFO) << "browseros: Examined " << examined_extensions << " extensions, none qualified for import";
++  LOG(INFO) << "windrise: Examined " << examined_extensions << " extensions, none qualified for import";
 +  return false;
 +}
 +

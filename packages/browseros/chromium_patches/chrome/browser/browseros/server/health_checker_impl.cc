@@ -88,7 +88,7 @@ index 0000000000000..cba17265c71d9
 +
 +  if (!success && url_loader_) {
 +    int net_error = url_loader_->NetError();
-+    LOG(WARNING) << "browseros: HTTP request failed - HTTP " << response_code
++    LOG(WARNING) << "windrise: HTTP request failed - HTTP " << response_code
 +                 << ", net error: " << net::ErrorToString(net_error);
 +  }
 +

@@ -140,7 +140,7 @@ index 0000000000000..dd30f75d414ec
 +
 +  XmlReader reader;
 +  if (!reader.Load(xml)) {
-+    LOG(WARNING) << "browseros: Failed to load appcast XML";
++    LOG(WARNING) << "windrise: Failed to load appcast XML";
 +    return items;
 +  }
 +
@@ -193,7 +193,7 @@ index 0000000000000..dd30f75d414ec
 +            !current_item.enclosures.empty()) {
 +          items.push_back(std::move(current_item));
 +        } else {
-+          LOG(WARNING) << "browseros: Skipping invalid appcast item (no valid "
++          LOG(WARNING) << "windrise: Skipping invalid appcast item (no valid "
 +                       << "version or enclosures)";
 +        }
 +        current_item = AppcastItem();
@@ -201,7 +201,7 @@ index 0000000000000..dd30f75d414ec
 +    }
 +  }
 +
-+  VLOG(1) << "browseros: Parsed " << items.size() << " appcast items";
++  VLOG(1) << "windrise: Parsed " << items.size() << " appcast items";
 +  return items;
 +}
 +

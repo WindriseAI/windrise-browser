@@ -26,7 +26,7 @@ index 0000000000000..bd13aa92a2373
 +
 +  std::string preferences_content;
 +  if (!base::ReadFileToString(preferences_path, &preferences_content)) {
-+    LOG(WARNING) << "browseros: Failed to read "
++    LOG(WARNING) << "windrise: Failed to read "
 +                 << preferences_path.BaseName().value();
 +    return extension_ids;
 +  }
@@ -34,7 +34,7 @@ index 0000000000000..bd13aa92a2373
 +  std::optional<base::DictValue> preferences = base::JSONReader::ReadDict(
 +      preferences_content, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
 +  if (!preferences) {
-+    LOG(WARNING) << "browseros: Failed to parse JSON from "
++    LOG(WARNING) << "windrise: Failed to parse JSON from "
 +                 << preferences_path.BaseName().value();
 +    return extension_ids;
 +  }
@@ -81,7 +81,7 @@ index 0000000000000..bd13aa92a2373
 +
 +  if (!base::PathExists(preferences_path) &&
 +      !base::PathExists(secure_preferences_path)) {
-+    LOG(WARNING) << "browseros: No preferences files found";
++    LOG(WARNING) << "windrise: No preferences files found";
 +    return extension_ids;
 +  }
 +

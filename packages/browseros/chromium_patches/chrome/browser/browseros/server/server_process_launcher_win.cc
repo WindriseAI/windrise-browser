@@ -47,7 +47,7 @@ index 0000000000000000000000000000000000000000..f6d0bdb166f5ba99abe06a3b8095a0f8
 +  if (!::CreateProcessW(nullptr, writable_command_line.data(), nullptr, nullptr,
 +                        FALSE, flags, environment_ptr, nullptr,
 +                        startup_info_ptr, &raw_process_info)) {
-+    DPLOG(ERROR) << "browseros: Failed to launch managed server";
++    DPLOG(ERROR) << "windrise: Failed to launch managed server";
 +    return base::Process();
 +  }
 +

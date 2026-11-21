@@ -44,7 +44,7 @@ index 0000000000000..3674707cab113
 +    chrome_encryption_key_ =
 +        browseros_importer::ExtractChromeKey(source_path_, &key_result);
 +    if (chrome_encryption_key_.empty()) {
-+      LOG(WARNING) << "browseros: Failed to extract Chrome encryption key, "
++      LOG(WARNING) << "windrise: Failed to extract Chrome encryption key, "
 +                   << "result: " << static_cast<int>(key_result);
 +    }
 +  }
@@ -90,34 +90,34 @@ index 0000000000000..3674707cab113
 +}
 +
 +void ChromeImporter::ImportHistory() {
-+  LOG(INFO) << "browseros: Starting history import";
++  LOG(INFO) << "windrise: Starting history import";
 +
 +  std::vector<user_data_importer::ImporterURLRow> rows =
 +      browseros_importer::ImportChromeHistory(source_path_);
 +
 +  if (rows.empty()) {
-+    LOG(INFO) << "browseros: No history to import";
++    LOG(INFO) << "windrise: No history to import";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Importing " << rows.size() << " history items";
++  LOG(INFO) << "windrise: Importing " << rows.size() << " history items";
 +
 +  if (!cancelled()) {
 +    bridge_->SetHistoryItems(rows,
 +                             user_data_importer::VISIT_SOURCE_CHROME_IMPORTED);
 +  }
 +
-+  LOG(INFO) << "browseros: History import complete";
++  LOG(INFO) << "windrise: History import complete";
 +}
 +
 +void ChromeImporter::ImportBookmarks() {
-+  LOG(INFO) << "browseros: Starting bookmarks import";
++  LOG(INFO) << "windrise: Starting bookmarks import";
 +
 +  browseros_importer::ChromeBookmarksResult result =
 +      browseros_importer::ImportChromeBookmarks(source_path_);
 +
 +  if (!result.bookmarks.empty() && !cancelled()) {
-+    LOG(INFO) << "browseros: Importing " << result.bookmarks.size()
++    LOG(INFO) << "windrise: Importing " << result.bookmarks.size()
 +              << " bookmarks";
 +    std::u16string folder_name =
 +        l10n_util::GetStringUTF16(IDS_IMPORT_FROM_CHROME);
@@ -128,31 +128,31 @@ index 0000000000000..3674707cab113
 +    }
 +    bridge_->AddBookmarks(result.bookmarks, folder_name);
 +  } else {
-+    LOG(INFO) << "browseros: No bookmarks to import";
++    LOG(INFO) << "windrise: No bookmarks to import";
 +  }
 +
 +  if (!result.favicons.empty() && !cancelled()) {
-+    LOG(INFO) << "browseros: Importing " << result.favicons.size()
++    LOG(INFO) << "windrise: Importing " << result.favicons.size()
 +              << " favicons";
 +    bridge_->SetFavicons(result.favicons);
 +  }
 +
-+  LOG(INFO) << "browseros: Bookmarks import complete";
++  LOG(INFO) << "windrise: Bookmarks import complete";
 +}
 +
 +void ChromeImporter::ImportPasswords() {
-+  LOG(INFO) << "browseros: Starting password import";
++  LOG(INFO) << "windrise: Starting password import";
 +
 +  std::vector<user_data_importer::ImportedPasswordForm> passwords =
 +      browseros_importer::ImportChromePasswords(source_path_,
 +                                                chrome_encryption_key_);
 +
 +  if (passwords.empty()) {
-+    LOG(INFO) << "browseros: No passwords to import";
++    LOG(INFO) << "windrise: No passwords to import";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Importing " << passwords.size() << " passwords";
++  LOG(INFO) << "windrise: Importing " << passwords.size() << " passwords";
 +
 +  for (const auto& password : passwords) {
 +    if (cancelled()) {
@@ -161,22 +161,22 @@ index 0000000000000..3674707cab113
 +    bridge_->SetPasswordForm(password);
 +  }
 +
-+  LOG(INFO) << "browseros: Password import complete";
++  LOG(INFO) << "windrise: Password import complete";
 +}
 +
 +void ChromeImporter::ImportCookies() {
-+  LOG(INFO) << "browseros: Starting cookie import";
++  LOG(INFO) << "windrise: Starting cookie import";
 +
 +  std::vector<browseros_importer::ImportedCookieEntry> cookies =
 +      browseros_importer::ImportChromeCookies(source_path_,
 +                                              chrome_encryption_key_);
 +
 +  if (cookies.empty()) {
-+    LOG(INFO) << "browseros: No cookies to import";
++    LOG(INFO) << "windrise: No cookies to import";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Importing " << cookies.size() << " cookies";
++  LOG(INFO) << "windrise: Importing " << cookies.size() << " cookies";
 +
 +  for (const auto& cookie : cookies) {
 +    if (cancelled()) {
@@ -185,47 +185,47 @@ index 0000000000000..3674707cab113
 +    bridge_->SetCookie(cookie);
 +  }
 +
-+  LOG(INFO) << "browseros: Cookie import complete";
++  LOG(INFO) << "windrise: Cookie import complete";
 +}
 +
 +void ChromeImporter::ImportAutofillFormData() {
-+  LOG(INFO) << "browseros: Starting autofill import";
++  LOG(INFO) << "windrise: Starting autofill import";
 +
 +  std::vector<ImporterAutofillFormDataEntry> entries =
 +      browseros_importer::ImportChromeAutofill(source_path_);
 +
 +  if (entries.empty()) {
-+    LOG(INFO) << "browseros: No autofill entries to import";
++    LOG(INFO) << "windrise: No autofill entries to import";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Importing " << entries.size()
++  LOG(INFO) << "windrise: Importing " << entries.size()
 +            << " autofill entries";
 +
 +  if (!cancelled()) {
 +    bridge_->SetAutofillFormData(entries);
 +  }
 +
-+  LOG(INFO) << "browseros: Autofill import complete";
++  LOG(INFO) << "windrise: Autofill import complete";
 +}
 +
 +void ChromeImporter::ImportExtensions() {
-+  LOG(INFO) << "browseros: Starting extensions import";
++  LOG(INFO) << "windrise: Starting extensions import";
 +
 +  std::vector<std::string> extension_ids =
 +      browseros_importer::ImportChromeExtensions(source_path_);
 +
 +  if (extension_ids.empty()) {
-+    LOG(INFO) << "browseros: No extensions to import";
++    LOG(INFO) << "windrise: No extensions to import";
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Importing " << extension_ids.size()
++  LOG(INFO) << "windrise: Importing " << extension_ids.size()
 +            << " extensions";
 +
 +  if (!cancelled()) {
 +    bridge_->SetExtensions(extension_ids);
 +  }
 +
-+  LOG(INFO) << "browseros: Extensions import complete";
++  LOG(INFO) << "windrise: Extensions import complete";
 +}

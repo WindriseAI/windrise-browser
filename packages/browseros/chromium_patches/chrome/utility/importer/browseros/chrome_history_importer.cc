@@ -32,7 +32,7 @@ index 0000000000000..ec7b96bb6b854
 +
 +  base::FilePath history_path = profile_path.AppendASCII(kHistoryFilename);
 +  if (!base::PathExists(history_path)) {
-+    LOG(WARNING) << "browseros: History file not found";
++    LOG(WARNING) << "windrise: History file not found";
 +    return rows;
 +  }
 +
@@ -43,7 +43,7 @@ index 0000000000000..ec7b96bb6b854
 +
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_path)) {
-+    LOG(WARNING) << "browseros: Failed to open database";
++    LOG(WARNING) << "windrise: Failed to open database";
 +    base::DeleteFile(temp_path);
 +    return rows;
 +  }
@@ -62,7 +62,7 @@ index 0000000000000..ec7b96bb6b854
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "browseros: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare query";
 +      base::DeleteFile(temp_path);
 +      return rows;
 +    }

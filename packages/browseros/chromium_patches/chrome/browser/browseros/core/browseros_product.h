@@ -75,7 +75,7 @@ index 0000000000000..e35cbdaf72a25
 +    return *product;
 +  }
 +
-+  LOG(WARNING) << "browseros: Ignoring invalid --" << kBrowserOSProduct << "="
++  LOG(WARNING) << "windrise: Ignoring invalid --" << kBrowserOSProduct << "="
 +               << value;
 +#endif
 +

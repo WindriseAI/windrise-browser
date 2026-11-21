@@ -57,11 +57,11 @@ index 0000000000000..762582371aee4
 +  if (!result.has_value()) {
 +    OSStatus error = result.error();
 +    if (error == errSecItemNotFound) {
-+      LOG(WARNING) << "browseros: Chrome Safe Storage not found in Keychain";
++      LOG(WARNING) << "windrise: Chrome Safe Storage not found in Keychain";
 +    } else if (error == errSecAuthFailed) {
-+      LOG(WARNING) << "browseros: Keychain access denied";
++      LOG(WARNING) << "windrise: Keychain access denied";
 +    } else {
-+      LOG(WARNING) << "browseros: Keychain error: " << error;
++      LOG(WARNING) << "windrise: Keychain error: " << error;
 +    }
 +    return false;
 +  }
@@ -95,7 +95,7 @@ index 0000000000000..762582371aee4
 +                   size_t ciphertext_length,
 +                   std::string* plaintext) {
 +  if (key.size() != kDerivedKeyLength) {
-+    LOG(WARNING) << "browseros: Invalid key size";
++    LOG(WARNING) << "windrise: Invalid key size";
 +    return false;
 +  }
 +
@@ -103,7 +103,7 @@ index 0000000000000..762582371aee4
 +  bssl::ScopedEVP_CIPHER_CTX ctx;
 +  if (!EVP_DecryptInit_ex(ctx.get(), EVP_aes_128_cbc(), nullptr,
 +                          key.data(), kIv)) {
-+    LOG(WARNING) << "browseros: EVP_DecryptInit_ex failed";
++    LOG(WARNING) << "windrise: EVP_DecryptInit_ex failed";
 +    return false;
 +  }
 +
@@ -113,7 +113,7 @@ index 0000000000000..762582371aee4
 +
 +  if (!EVP_DecryptUpdate(ctx.get(), output.data(), &output_length,
 +                         ciphertext, ciphertext_length)) {
-+    LOG(WARNING) << "browseros: EVP_DecryptUpdate failed";
++    LOG(WARNING) << "windrise: EVP_DecryptUpdate failed";
 +    return false;
 +  }
 +
@@ -122,7 +122,7 @@ index 0000000000000..762582371aee4
 +  if (!EVP_DecryptFinal_ex(ctx.get(),
 +                           output_span.subspan(static_cast<size_t>(output_length)).data(),
 +                           &final_length)) {
-+    LOG(WARNING) << "browseros: EVP_DecryptFinal_ex failed - possible padding error";
++    LOG(WARNING) << "windrise: EVP_DecryptFinal_ex failed - possible padding error";
 +    return false;
 +  }
 +
@@ -147,7 +147,7 @@ index 0000000000000..762582371aee4
 +  // Derive the encryption key using PBKDF2
 +  std::vector<uint8_t> derived_key;
 +  if (!DeriveKeyFromPassword(keychain_password, &derived_key)) {
-+    LOG(WARNING) << "browseros: PBKDF2 key derivation failed";
++    LOG(WARNING) << "windrise: PBKDF2 key derivation failed";
 +    if (result) {
 +      *result = KeyExtractionResult::kUnknownError;
 +    }
@@ -180,7 +180,7 @@ index 0000000000000..762582371aee4
 +    auto encrypted_span =
 +        base::as_byte_span(ciphertext).subspan(kEncryptionVersionPrefixLength);
 +    if (encrypted_span.empty()) {
-+      LOG(WARNING) << "browseros: Empty ciphertext after v10 prefix";
++      LOG(WARNING) << "windrise: Empty ciphertext after v10 prefix";
 +      return DecryptResult::kError;
 +    }
 +    std::vector<uint8_t> key_bytes(key.begin(), key.end());

@@ -351,7 +351,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 +
 +  if (http_listener_) {
-+    LOG(WARNING) << "browseros: Proxy already started on port "
++    LOG(WARNING) << "windrise: Proxy already started on port "
 +                 << bound_http_port_;
 +    return false;
 +  }
@@ -371,7 +371,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 +
 +  if (http_port < 0 || http_port > 65535) {
-+    LOG(ERROR) << "browseros: Proxy invalid HTTP port " << http_port;
++    LOG(ERROR) << "windrise: Proxy invalid HTTP port " << http_port;
 +    return false;
 +  }
 +
@@ -383,7 +383,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  int result = listener->socket->ListenWithAddressAndPort(
 +      bind_address, static_cast<uint16_t>(http_port), kBackLog);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: Proxy failed to bind " << bind_address << ":"
++    LOG(ERROR) << "windrise: Proxy failed to bind " << bind_address << ":"
 +               << http_port
 +               << " - " << net::ErrorToString(result);
 +    return false;
@@ -392,7 +392,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  net::IPEndPoint local_address;
 +  result = listener->socket->GetLocalAddress(&local_address);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: Proxy failed to read bound port - "
++    LOG(ERROR) << "windrise: Proxy failed to read bound port - "
 +               << net::ErrorToString(result);
 +    return false;
 +  }
@@ -401,7 +401,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  bound_http_port_ = local_address.port();
 +  StartAccept(http_listener_.get());
 +
-+  LOG(INFO) << "browseros: MCP proxy listening on " << bind_address << ":"
++  LOG(INFO) << "windrise: MCP proxy listening on " << bind_address << ":"
 +            << bound_http_port_;
 +  return true;
 +}
@@ -410,7 +410,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 +
 +  if (https_port < 0 || https_port > 65535) {
-+    LOG(ERROR) << "browseros: Proxy invalid HTTPS port " << https_port
++    LOG(ERROR) << "windrise: Proxy invalid HTTPS port " << https_port
 +               << ", continuing HTTP-only";
 +    return false;
 +  }
@@ -427,7 +427,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  int result = listener->socket->ListenWithAddressAndPort(
 +      bind_address, static_cast<uint16_t>(https_port), kBackLog);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to bind " << bind_address
++    LOG(ERROR) << "windrise: HTTPS proxy failed to bind " << bind_address
 +               << ":" << https_port
 +               << " - " << net::ErrorToString(result)
 +               << ", continuing HTTP-only";
@@ -440,7 +440,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  net::IPEndPoint local_address;
 +  result = listener->socket->GetLocalAddress(&local_address);
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to read bound port - "
++    LOG(ERROR) << "windrise: HTTPS proxy failed to read bound port - "
 +               << net::ErrorToString(result) << ", continuing HTTP-only";
 +    tls_context_.reset();
 +    tls_cert_.reset();
@@ -452,7 +452,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  bound_https_port_ = local_address.port();
 +  StartAccept(https_listener_.get());
 +
-+  LOG(INFO) << "browseros: HTTPS MCP proxy listening on " << bind_address
++  LOG(INFO) << "windrise: HTTPS MCP proxy listening on " << bind_address
 +            << ":" << bound_https_port_;
 +  return true;
 +}
@@ -471,7 +471,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +          tls_key_->key(), net::x509_util::DIGEST_SHA256, "CN=localhost",
 +          serial_number, now - base::Days(1), now + base::Days(3650), {},
 +          &der_cert)) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to create certificate, "
++    LOG(ERROR) << "windrise: HTTPS proxy failed to create certificate, "
 +                  "continuing HTTP-only";
 +    tls_key_.reset();
 +    return false;
@@ -480,7 +480,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  tls_cert_ =
 +      net::X509Certificate::CreateFromBytes(base::as_byte_span(der_cert));
 +  if (!tls_cert_) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to parse certificate, "
++    LOG(ERROR) << "windrise: HTTPS proxy failed to parse certificate, "
 +                  "continuing HTTP-only";
 +    tls_key_.reset();
 +    return false;
@@ -489,7 +489,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  tls_context_ = net::CreateSSLServerContext(tls_cert_.get(), tls_key_->key(),
 +                                             net::SSLServerConfig());
 +  if (!tls_context_) {
-+    LOG(ERROR) << "browseros: HTTPS proxy failed to create SSL context, "
++    LOG(ERROR) << "windrise: HTTPS proxy failed to create SSL context, "
 +                  "continuing HTTP-only";
 +    tls_cert_.reset();
 +    tls_key_.reset();
@@ -507,12 +507,12 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  tls_handshakes_.clear();
 +
 +  if (http_listener_) {
-+    LOG(INFO) << "browseros: Stopping MCP proxy on port " << bound_http_port_;
++    LOG(INFO) << "windrise: Stopping MCP proxy on port " << bound_http_port_;
 +    http_listener_.reset();
 +  }
 +
 +  if (https_listener_) {
-+    LOG(INFO) << "browseros: Stopping HTTPS MCP proxy on port "
++    LOG(INFO) << "windrise: Stopping HTTPS MCP proxy on port "
 +              << bound_https_port_;
 +    https_listener_.reset();
 +  }
@@ -528,14 +528,14 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 +
 +  backend_port_ = port;
-+  LOG(INFO) << "browseros: Proxy backend port set to " << port;
++  LOG(INFO) << "windrise: Proxy backend port set to " << port;
 +}
 +
 +void BrowserOSServerProxy::SetAllowRemote(bool allow) {
 +  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 +
 +  allow_remote_ = allow;
-+  LOG(INFO) << "browseros: Proxy allow_remote set to "
++  LOG(INFO) << "windrise: Proxy allow_remote set to "
 +            << (allow ? "true" : "false");
 +}
 +
@@ -567,7 +567,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  }
 +
 +  if (result != net::OK) {
-+    LOG(ERROR) << "browseros: " << (listener->is_https ? "HTTPS " : "")
++    LOG(ERROR) << "windrise: " << (listener->is_https ? "HTTPS " : "")
 +               << "Proxy accept failed - " << net::ErrorToString(result);
 +    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
 +        FROM_HERE,
@@ -650,7 +650,7 @@ index 0000000000000000000000000000000000000000..e66ec726cc6d8c796ecede86b9776402
 +  }
 +
 +  if (result != net::OK) {
-+    VLOG(1) << "browseros: HTTPS proxy handshake failed - "
++    VLOG(1) << "windrise: HTTPS proxy handshake failed - "
 +            << net::ErrorToString(result);
 +    tls_handshakes_.erase(it);
 +    return;

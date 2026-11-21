@@ -97,11 +97,11 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +  // Decode public key
 +  std::string public_key_bytes;
 +  if (!base::Base64Decode(public_key_base64, &public_key_bytes)) {
-+    LOG(ERROR) << "browseros: Failed to decode public key from base64";
++    LOG(ERROR) << "windrise: Failed to decode public key from base64";
 +    return false;
 +  }
 +  if (public_key_bytes.size() != ED25519_PUBLIC_KEY_LEN) {
-+    LOG(ERROR) << "browseros: Invalid public key length: "
++    LOG(ERROR) << "windrise: Invalid public key length: "
 +               << public_key_bytes.size() << " (expected "
 +               << ED25519_PUBLIC_KEY_LEN << ")";
 +    return false;
@@ -110,11 +110,11 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +  // Decode signature
 +  std::string signature_bytes;
 +  if (!base::Base64Decode(signature_base64, &signature_bytes)) {
-+    LOG(ERROR) << "browseros: Failed to decode signature from base64";
++    LOG(ERROR) << "windrise: Failed to decode signature from base64";
 +    return false;
 +  }
 +  if (signature_bytes.size() != ED25519_SIGNATURE_LEN) {
-+    LOG(ERROR) << "browseros: Invalid signature length: "
++    LOG(ERROR) << "windrise: Invalid signature length: "
 +               << signature_bytes.size() << " (expected "
 +               << ED25519_SIGNATURE_LEN << ")";
 +    return false;
@@ -123,7 +123,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +  // Read file contents
 +  std::string file_contents;
 +  if (!base::ReadFileToString(file_path, &file_contents)) {
-+    LOG(ERROR) << "browseros: Failed to read file for signature verification: "
++    LOG(ERROR) << "windrise: Failed to read file for signature verification: "
 +               << file_path;
 +    return false;
 +  }
@@ -138,11 +138,11 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +
 +  int result = ED25519_verify(message, message_len, sig, pub_key);
 +  if (result != 1) {
-+    LOG(ERROR) << "browseros: Ed25519 signature verification failed";
++    LOG(ERROR) << "windrise: Ed25519 signature verification failed";
 +    return false;
 +  }
 +
-+  LOG(INFO) << "browseros: Ed25519 signature verified successfully";
++  LOG(INFO) << "windrise: Ed25519 signature verified successfully";
 +  return true;
 +}
 +
@@ -160,7 +160,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return "Failed to extract ZIP file";
 +  }
 +
-+  LOG(INFO) << "browseros: Extracted ZIP to " << dest_dir;
++  LOG(INFO) << "windrise: Extracted ZIP to " << dest_dir;
 +  return "";  // Success
 +}
 +
@@ -184,7 +184,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +
 +  // Step 2: Clean stale destination if exists (handles interrupted updates)
 +  if (base::PathExists(dest_dir)) {
-+    LOG(WARNING) << "browseros: Cleaning stale version directory: " << dest_dir;
++    LOG(WARNING) << "windrise: Cleaning stale version directory: " << dest_dir;
 +    if (!base::DeletePathRecursively(dest_dir)) {
 +      result.error = "Failed to clean stale version directory";
 +      base::DeleteFile(zip_path);
@@ -221,14 +221,14 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +}
 +
 +void BrowserOSServerUpdater::Start() {
-+  LOG(INFO) << "browseros: Starting server update polling";
++  LOG(INFO) << "windrise: Starting server update polling";
 +  update_check_timer_.Start(FROM_HERE, kUpdateCheckInterval, this,
 +                            &BrowserOSServerUpdater::OnUpdateTimer);
 +  CheckNow();
 +}
 +
 +void BrowserOSServerUpdater::Stop() {
-+  LOG(INFO) << "browseros: Stopping server updater";
++  LOG(INFO) << "windrise: Stopping server updater";
 +  update_check_timer_.Stop();
 +  weak_factory_.InvalidateWeakPtrs();
 +  appcast_loader_.reset();
@@ -242,12 +242,12 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +
 +void BrowserOSServerUpdater::CheckNow() {
 +  if (!version_store_->initialized()) {
-+    LOG(INFO) << "browseros: Version caches not loaded yet, skipping check";
++    LOG(INFO) << "windrise: Version caches not loaded yet, skipping check";
 +    return;
 +  }
 +
 +  if (update_in_progress_) {
-+    LOG(INFO) << "browseros: Update check already in progress, skipping";
++    LOG(INFO) << "windrise: Update check already in progress, skipping";
 +    return;
 +  }
 +
@@ -269,7 +269,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 +  if (cmd->HasSwitch(browseros::kServerAppcastUrl)) {
 +    appcast_url = cmd->GetSwitchValueASCII(browseros::kServerAppcastUrl);
-+    LOG(INFO) << "browseros: Using custom appcast URL: " << appcast_url;
++    LOG(INFO) << "windrise: Using custom appcast URL: " << appcast_url;
 +  } else if (base::FeatureList::IsEnabled(features::kBrowserOsAlphaFeatures)) {
 +    appcast_url = std::string(descriptor_->updater.alpha_appcast_url);
 +  } else {
@@ -282,7 +282,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Fetching appcast from " << url;
++  LOG(INFO) << "windrise: Fetching appcast from " << url;
 +
 +  auto request = std::make_unique<network::ResourceRequest>();
 +  request->url = url;
@@ -312,7 +312,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Received appcast (" << response->size() << " bytes)";
++  LOG(INFO) << "windrise: Received appcast (" << response->size() << " bytes)";
 +
 +  // Parse the appcast
 +  std::optional<AppcastItem> item =
@@ -322,7 +322,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Latest version in appcast: "
++  LOG(INFO) << "windrise: Latest version in appcast: "
 +            << item->version.GetString();
 +
 +  // Find enclosure for current platform
@@ -332,17 +332,17 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Found enclosure for current platform: "
++  LOG(INFO) << "windrise: Found enclosure for current platform: "
 +            << enclosure->url;
 +
 +  // Discovery asks whether another download is needed. The manager separately
 +  // compares its running installation with the store's ready installation.
 +  base::Version current = version_store_->GetBestAvailable().version;
-+  LOG(INFO) << "browseros: Best available version: "
++  LOG(INFO) << "windrise: Best available version: "
 +            << (current.IsValid() ? current.GetString() : "(none)");
 +
 +  if (current.IsValid() && current >= item->version) {
-+    LOG(INFO) << "browseros: Latest server already available locally";
++    LOG(INFO) << "windrise: Latest server already available locally";
 +    ResetState();
 +    return;
 +  }
@@ -352,7 +352,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +  // retries it, and the manager readmits it sooner if bundled can't serve.
 +  const base::Version& rejected = version_store_->rejected_version();
 +  if (rejected.IsValid() && item->version == rejected) {
-+    LOG(INFO) << "browseros: Skipping rejected server version "
++    LOG(INFO) << "windrise: Skipping rejected server version "
 +              << rejected.GetString();
 +    if (reported_skipped_versions_.insert(rejected).second) {
 +      base::DictValue props;
@@ -364,7 +364,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: New version available: "
++  LOG(INFO) << "windrise: New version available: "
 +            << item->version.GetString();
 +  pending_item_ = *item;
 +  pending_signature_ = enclosure->signature;
@@ -387,7 +387,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    const base::Version& version,
 +    bool exists) {
 +  if (exists) {
-+    LOG(INFO) << "browseros: Version " << version.GetString()
++    LOG(INFO) << "windrise: Version " << version.GetString()
 +              << " already downloaded, skipping to test";
 +    TestBinary(version);
 +    return;
@@ -428,7 +428,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +            }
 +
 +            GURL download_url(enc.url);
-+            LOG(INFO) << "browseros: Downloading " << download_url;
++            LOG(INFO) << "windrise: Downloading " << download_url;
 +
 +            auto request = std::make_unique<network::ResourceRequest>();
 +            request->url = download_url;
@@ -442,7 +442,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +            // Add progress logging (visible with --vmodule=*browseros*=1)
 +            self->download_loader_->SetOnDownloadProgressCallback(
 +                base::BindRepeating([](uint64_t current) {
-+                  LOG(INFO) << "browseros: Download progress: "
++                  LOG(INFO) << "windrise: Download progress: "
 +                            << (current / 1024 / 1024) << " MB";
 +                }));
 +
@@ -470,7 +470,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Download complete: " << zip_path;
++  LOG(INFO) << "windrise: Download complete: " << zip_path;
 +
 +  // Now verify and extract
 +  VerifyAndExtract(zip_path, pending_signature_, version);
@@ -483,7 +483,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +
 +  base::FilePath dest_dir = GetVersionDir(version);
 +
-+  LOG(INFO) << "browseros: Verifying signature and extracting to " << dest_dir;
++  LOG(INFO) << "windrise: Verifying signature and extracting to " << dest_dir;
 +
 +  // Run verification and extraction on background thread
 +  version_store_->file_task_runner()->PostTaskAndReplyWithResult(
@@ -510,7 +510,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Verification and extraction successful";
++  LOG(INFO) << "windrise: Verification and extraction successful";
 +
 +  // Test the binary
 +  TestBinary(version);
@@ -530,7 +530,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +    return;
 +  }
 +
-+  LOG(INFO) << "browseros: Server version " << version.GetString()
++  LOG(INFO) << "windrise: Server version " << version.GetString()
 +            << " is ready for activation";
 +  // Ready state belongs to the store and survives both busy deferrals and
 +  // browser shutdown. Only transient network work ends here.
@@ -618,7 +618,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +                  (ready_version.IsValid() && version == ready_version)) {
 +                continue;
 +              }
-+              LOG(INFO) << "browseros: Cleaning up old version: "
++              LOG(INFO) << "windrise: Cleaning up old version: "
 +                        << version.GetString();
 +              base::DeletePathRecursively(version_path);
 +              deleted++;
@@ -641,7 +641,7 @@ index 0000000000000000000000000000000000000000..776dee2e279693e201cd9387e2b158b2
 +
 +void BrowserOSServerUpdater::OnError(const std::string& stage,
 +                                     const std::string& error) {
-+  LOG(ERROR) << "browseros: Update error at " << stage << ": " << error;
++  LOG(ERROR) << "windrise: Update error at " << stage << ": " << error;
 +
 +  base::DictValue props;
 +  props.Set("stage", stage);

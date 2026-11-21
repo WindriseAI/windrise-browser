@@ -78,7 +78,7 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
 -  }
 +  // Explicit debugging transports and --disable-browseros-server take
 +  // precedence over the managed service's CDP listener.
-+  LOG(INFO) << "browseros: Starting Windrise server process";
++  LOG(INFO) << "windrise: Starting Windrise server process";
 +  browseros::BrowserOSServerManager::GetInstance()->Start();
 +
 +  // Register packaged/cached components before PostProfileInit (including SODA).
@@ -93,7 +93,7 @@ index 9aa6f338c73e80ee878c068db1811230ee3e6339..2393744d830c67d80d55cf0da6c0aac7
    }
  
 +  // BrowserOS: Stop the BrowserOS server during shutdown
-+  LOG(INFO) << "browseros: Stopping Windrise server process";
++  LOG(INFO) << "windrise: Stopping Windrise server process";
 +  browseros::BrowserOSServerManager::GetInstance()->Shutdown();
 +
    TranslateService::Shutdown();

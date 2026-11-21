@@ -62,13 +62,13 @@ index 0000000000000000000000000000000000000000..4bd56cb4fbf63f779ac155255c2005e7
 +      continue;
 +    }
 +
-+    LOG(INFO) << "browseros: Uninstalling inactive product extension " << id;
++    LOG(INFO) << "windrise: Uninstalling inactive product extension " << id;
 +
 +    std::u16string error;
 +    if (!registrar->UninstallExtension(
 +            id, extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
 +            &error)) {
-+      LOG(WARNING) << "browseros: Failed to uninstall " << id << ": " << error;
++      LOG(WARNING) << "windrise: Failed to uninstall " << id << ": " << error;
 +    }
 +  }
 +}
@@ -94,7 +94,7 @@ index 0000000000000000000000000000000000000000..4bd56cb4fbf63f779ac155255c2005e7
 +      }
 +    }
 +    if (can_reenable) {
-+      LOG(INFO) << "browseros: Re-enabling managed extension " << id;
++      LOG(INFO) << "windrise: Re-enabling managed extension " << id;
 +      registrar->EnableExtension(id);
 +    }
 +  }
@@ -149,7 +149,7 @@ index 0000000000000000000000000000000000000000..4bd56cb4fbf63f779ac155255c2005e7
 +    browseros_metrics::BrowserOSMetrics::Log("ota.extension.unexpected_state",
 +                                             std::move(properties));
 +
-+    LOG(WARNING) << "browseros: Extension " << id << " in state: " << state
++    LOG(WARNING) << "windrise: Extension " << id << " in state: " << state
 +                 << " (context: " << context << ")";
 +  }
 +}

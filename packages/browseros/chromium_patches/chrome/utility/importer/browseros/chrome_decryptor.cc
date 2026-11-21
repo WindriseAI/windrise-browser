@@ -18,7 +18,7 @@ index 0000000000000..36088220e95b9
 +
 +std::string ExtractChromeKey(const base::FilePath& profile_path,
 +                             KeyExtractionResult* result) {
-+  LOG(INFO) << "browseros: Linux key extraction not yet implemented";
++  LOG(INFO) << "windrise: Linux key extraction not yet implemented";
 +  if (result) {
 +    *result = KeyExtractionResult::kPlatformNotSupported;
 +  }
@@ -28,7 +28,7 @@ index 0000000000000..36088220e95b9
 +DecryptResult DecryptChromeValue(const std::string& ciphertext,
 +                                 const std::string& key,
 +                                 std::string* plaintext) {
-+  LOG(INFO) << "browseros: Linux decryption not yet implemented";
++  LOG(INFO) << "windrise: Linux decryption not yet implemented";
 +  return DecryptResult::kError;
 +}
 +

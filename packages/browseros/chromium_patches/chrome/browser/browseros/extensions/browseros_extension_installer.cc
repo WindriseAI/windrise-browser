@@ -61,7 +61,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +  BundleDiscoveryResult result;
 +  if (!base::PathService::Get(chrome::DIR_BROWSEROS_BUNDLED_EXTENSIONS,
 +                              &result.bundled_path)) {
-+    LOG(WARNING) << "browseros: Bundled extension path unavailable";
++    LOG(WARNING) << "windrise: Bundled extension path unavailable";
 +    return result;
 +  }
 +
@@ -70,7 +70,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +  std::string json_content;
 +  if (!base::ReadFileToStringWithMaxSize(manifest_path, &json_content,
 +                                         kMaxBundledManifestBytes)) {
-+    LOG(WARNING) << "browseros: Bundled manifest missing or unreadable at "
++    LOG(WARNING) << "windrise: Bundled manifest missing or unreadable at "
 +                 << manifest_path.value();
 +    return result;
 +  }
@@ -78,7 +78,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +  std::optional<base::Value> parsed =
 +      base::JSONReader::Read(json_content, base::JSON_PARSE_RFC);
 +  if (!parsed || !parsed->is_dict()) {
-+    LOG(ERROR) << "browseros: Invalid bundled manifest JSON";
++    LOG(ERROR) << "windrise: Invalid bundled manifest JSON";
 +    return result;
 +  }
 +
@@ -92,7 +92,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +    const std::string* crx_file = config->FindString("external_crx");
 +    const std::string* version = config->FindString("external_version");
 +    if (!crx_file || !version || !base::Version(*version).IsValid()) {
-+      LOG(WARNING) << "browseros: Invalid bundled crx/version for " << id;
++      LOG(WARNING) << "windrise: Invalid bundled crx/version for " << id;
 +      continue;
 +    }
 +
@@ -101,7 +101,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +    if (relative_path.empty() || relative_path.IsAbsolute() ||
 +        relative_path.ReferencesParent() ||
 +        !relative_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
-+      LOG(WARNING) << "browseros: Invalid bundled CRX path for " << id;
++      LOG(WARNING) << "windrise: Invalid bundled CRX path for " << id;
 +      continue;
 +    }
 +
@@ -109,7 +109,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +    base::File::Info info;
 +    if (!base::GetFileInfo(crx_path, &info) || info.is_directory ||
 +        info.size <= 0 || base::IsLink(crx_path)) {
-+      LOG(WARNING) << "browseros: Bundled CRX missing or invalid for " << id;
++      LOG(WARNING) << "windrise: Bundled CRX missing or invalid for " << id;
 +      continue;
 +    }
 +
@@ -129,7 +129,7 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +    DiscoveryCallback callback,
 +    BundleDiscoveryResult result) {
 +  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-+  LOG(INFO) << "browseros: Local extension metadata ready, "
++  LOG(INFO) << "windrise: Local extension metadata ready, "
 +            << result.prefs.size() << " entries; complete=" << result.complete;
 +  std::move(callback).Run(std::move(result));
 +}

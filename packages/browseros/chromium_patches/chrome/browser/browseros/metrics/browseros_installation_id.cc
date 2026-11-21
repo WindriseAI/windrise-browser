@@ -51,7 +51,7 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +      installation ? installation->FindString(kInstallIdKey) : nullptr;
 +  if (!install_id ||
 +      !base::Uuid::ParseCaseInsensitive(*install_id).is_valid()) {
-+    LOG(ERROR) << "browseros: Invalid installation identity file: "
++    LOG(ERROR) << "windrise: Invalid installation identity file: "
 +               << installation_path;
 +    return std::nullopt;
 +  }
@@ -129,7 +129,7 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +  }
 +
 +  if (!base::CreateDirectory(product_state_directory)) {
-+    LOG(ERROR) << "browseros: Failed to create product state directory: "
++    LOG(ERROR) << "windrise: Failed to create product state directory: "
 +               << product_state_directory;
 +    return std::nullopt;
 +  }
@@ -154,20 +154,20 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +  base::FilePath temporary_path;
 +  if (!base::CreateTemporaryFileInDir(product_state_directory,
 +                                      &temporary_path)) {
-+    LOG(ERROR) << "browseros: Failed to create temporary installation file";
++    LOG(ERROR) << "windrise: Failed to create temporary installation file";
 +    return std::nullopt;
 +  }
 +  base::ScopedClosureRunner delete_temporary_file(base::BindOnce(
 +      [](base::FilePath path) { base::DeleteFile(path); }, temporary_path));
 +
 +  if (!base::WriteFile(temporary_path, *json)) {
-+    LOG(ERROR) << "browseros: Failed to write temporary installation file";
++    LOG(ERROR) << "windrise: Failed to write temporary installation file";
 +    return std::nullopt;
 +  }
 +  base::File temporary_file(temporary_path,
 +                            base::File::FLAG_OPEN | base::File::FLAG_WRITE);
 +  if (!temporary_file.IsValid() || !temporary_file.Flush()) {
-+    LOG(ERROR) << "browseros: Failed to flush temporary installation file";
++    LOG(ERROR) << "windrise: Failed to flush temporary installation file";
 +    return std::nullopt;
 +  }
 +  temporary_file.Close();
@@ -183,7 +183,7 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +    return ReadInstallationId(installation_path);
 +  }
 +
-+  LOG(ERROR) << "browseros: Failed to publish installation identity: "
++  LOG(ERROR) << "windrise: Failed to publish installation identity: "
 +             << installation_path;
 +  return std::nullopt;
 +}

@@ -57,14 +57,14 @@ index 0000000000000000000000000000000000000000..2e72060f85302d065b2baa91d620fa12
 +      if (path.IsAbsolute()) {
 +        return path;
 +      }
-+      LOG(WARNING) << "browseros: Ignoring relative "
++      LOG(WARNING) << "windrise: Ignoring relative "
 +                   << environment_name.c_str() << " override: " << path;
 +    }
 +  }
 +
 +  base::FilePath home;
 +  if (!base::PathService::Get(base::DIR_HOME, &home)) {
-+    LOG(ERROR) << "browseros: Failed to resolve the product state root";
++    LOG(ERROR) << "windrise: Failed to resolve the product state root";
 +    return base::FilePath();
 +  }
 +  return home.Append(GetDefaultDirectoryName(product));

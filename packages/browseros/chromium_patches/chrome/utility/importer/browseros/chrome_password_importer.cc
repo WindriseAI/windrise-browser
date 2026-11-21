@@ -34,7 +34,7 @@ index 0000000000000..3aaeb073d7554
 +    const std::string& encryption_key) {
 +  std::vector<user_data_importer::ImportedPasswordForm> passwords;
 +  if (encryption_key.empty()) {
-+    LOG(WARNING) << "browseros: Chrome encryption key unavailable; "
++    LOG(WARNING) << "windrise: Chrome encryption key unavailable; "
 +                 << "skipping password import";
 +    return passwords;
 +  }
@@ -42,7 +42,7 @@ index 0000000000000..3aaeb073d7554
 +  // Path to Login Data database
 +  base::FilePath login_data_path = profile_path.AppendASCII(kLoginDataFilename);
 +  if (!base::PathExists(login_data_path)) {
-+    LOG(WARNING) << "browseros: Login Data not found at: "
++    LOG(WARNING) << "windrise: Login Data not found at: "
 +                 << login_data_path.value();
 +    return passwords;
 +  }
@@ -56,7 +56,7 @@ index 0000000000000..3aaeb073d7554
 +  // Open database
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_db_path)) {
-+    LOG(WARNING) << "browseros: Failed to open Login Data database";
++    LOG(WARNING) << "windrise: Failed to open Login Data database";
 +    DeleteDatabaseTemp(temp_db_path);
 +    return passwords;
 +  }
@@ -74,7 +74,7 @@ index 0000000000000..3aaeb073d7554
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "browseros: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare query";
 +      DeleteDatabaseTemp(temp_db_path);
 +      return passwords;
 +    }
@@ -104,7 +104,7 @@ index 0000000000000..3aaeb073d7554
 +          continue;
 +        }
 +        if (decrypt_result != DecryptResult::kSuccess) {
-+          LOG(WARNING) << "browseros: Failed to decrypt password for: "
++          LOG(WARNING) << "windrise: Failed to decrypt password for: "
 +                       << origin_url;
 +          continue;
 +        }
@@ -136,9 +136,9 @@ index 0000000000000..3aaeb073d7554
 +  db.Close();
 +  DeleteDatabaseTemp(temp_db_path);
 +
-+  LOG(INFO) << "browseros: Imported " << passwords.size() << " passwords";
++  LOG(INFO) << "windrise: Imported " << passwords.size() << " passwords";
 +  if (skipped_app_bound > 0) {
-+    LOG(WARNING) << "browseros: Skipped " << skipped_app_bound
++    LOG(WARNING) << "windrise: Skipped " << skipped_app_bound
 +                 << " App-Bound (v20) passwords that require Chrome's SYSTEM "
 +                    "elevation service and cannot be imported.";
 +  }

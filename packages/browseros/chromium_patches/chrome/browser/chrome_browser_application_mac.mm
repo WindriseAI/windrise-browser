@@ -59,7 +59,7 @@ index 823b03b27cc31d2535d748dcf79b3a1e78a3d7ca..8bdcd99ae6ac9367c0855b27b32533ce
 +    }
 +  }
 +
-+  LOG(WARNING) << "browseros: Ignoring unsupported --" << browseros::kDockIcon
++  LOG(WARNING) << "windrise: Ignoring unsupported --" << browseros::kDockIcon
 +               << "=" << value << " (expected dev, alpha, or beta)";
 +}
 +

@@ -30,7 +30,7 @@ index 0000000000000000000000000000000000000000..209392c1f22fe57c7e4a3f232007cad0
 +  if (service) {
 +    service->CaptureEvent(std::move(event_name), std::move(properties));
 +  } else {
-+    VLOG(1) << "browseros: Metrics reporter is not available for event: "
++    VLOG(1) << "windrise: Metrics reporter is not available for event: "
 +            << event_name;
 +  }
 +}
