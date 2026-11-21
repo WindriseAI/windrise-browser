@@ -766,3 +766,8 @@ features:
       - "chrome/app/settings_strings.grdp"
       - "chrome/app/resources/generated_resources_zh-CN.xtb"
       - "chrome/browser/ui/views/frame/windrise_ai_section_view.cc"
+
+  windrise-browser-slim-1121:
+    description: "perf: BR-2a gzip-compress repacked locale pak files on all desktop platforms"
+    files:
+      - "chrome/chrome_repack_locales.gni"
