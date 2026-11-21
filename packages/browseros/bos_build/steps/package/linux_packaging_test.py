@@ -83,9 +83,8 @@ def _write_complete_runtime(ctx: SimpleNamespace) -> None:
     ):
         (out_dir / name).write_bytes(f"contents:{name}".encode())
     for directory, filename in (
-        ("browseros_extensions", "manifest.json"),
+        ("windrise_extensions", "manifest.json"),
         ("locales", "en-US.pak"),
-        ("BrowserOSServer", "browseros_server"),
     ):
         path = out_dir / directory / filename
         path.parent.mkdir(parents=True)
@@ -407,9 +406,8 @@ class LinuxArtifactBuildTest(unittest.TestCase):
         self.assertIn("chrome_crashpad_handler", message)
         self.assertIn("chrome_sandbox", message)
         self.assertIn("libEGL.so", message)
-        self.assertIn("browseros_extensions/", message)
+        self.assertIn("windrise_extensions/", message)
         self.assertIn("locales/", message)
-        self.assertIn("BrowserOSServer/", message)
         self.assertIn("product icon", message)
 
     def test_build_rejects_unresolved_same_host_libraries_before_packaging(

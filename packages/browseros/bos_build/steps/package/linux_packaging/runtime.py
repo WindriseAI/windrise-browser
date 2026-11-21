@@ -52,7 +52,7 @@ _OPTIONAL_FILES = (
     "vk_swiftshader_icd.json",
     "snapshot_blob.bin",
 )
-_REQUIRED_DIRECTORIES = ("browseros_extensions", "locales")
+_REQUIRED_DIRECTORIES = ("windrise_extensions", "locales")
 _OPTIONAL_DIRECTORIES = ("MEIPreload",)
 _EXECUTABLE_FILES = ("chrome_crashpad_handler", "chrome_sandbox", "chromedriver")
 

@@ -56,11 +56,15 @@ class ProductPayloadManifestPatchTest(unittest.TestCase):
         lines = manifest.splitlines()
 
         self.assertIn(
+            "windrise_extensions\\bundled_extensions.json: %(VersionDir)s\\windrise_extensions\\",
+            lines,
+        )
+        self.assertNotIn(
             "browseros_extensions\\bundled_extensions.json: %(VersionDir)s\\browseros_extensions\\",
             lines,
         )
         self.assertNotIn(
-            "browseros_extensions\\*.*: %(VersionDir)s\\browseros_extensions\\",
+            "windrise_extensions\\*.*: %(VersionDir)s\\windrise_extensions\\",
             lines,
         )
 

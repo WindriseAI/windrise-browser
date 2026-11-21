@@ -93,9 +93,9 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 chrome_path.write_bytes(executable)
                 (browser_tree / "chrome.exe").write_bytes(executable)
                 (version_tree / "chrome.dll").write_bytes(b"runtime DLL")
-                resource = version_tree / "BrowserOSServer/default/resources/server.js"
+                resource = version_tree / "windrise_extensions/bundled_extensions.json"
                 resource.parent.mkdir(parents=True)
-                resource.write_bytes(b"bundled server")
+                resource.write_bytes(b"{}\n")
                 (build_output_dir / "mini_installer.exe").write_bytes(b"signed installer")
                 # Raw build-output profiles and unrelated files must not leak.
                 profile = build_output_dir / "User Data/Default"
@@ -118,7 +118,7 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 with zipfile.ZipFile(registry.get("browser_directory_zip")) as archive:
                     self.assertEqual(archive.read("chrome.exe"), bytes(executable))
                     self.assertEqual(archive.read(f"{version}/chrome.dll"), b"runtime DLL")
-                    self.assertEqual(archive.read(f"{version}/BrowserOSServer/default/resources/server.js"), b"bundled server")
+                    self.assertEqual(archive.read(f"{version}/windrise_extensions/bundled_extensions.json"), b"{}\n")
                     self.assertNotIn("User Data/Default/Preferences", archive.namelist())
                     self.assertNotIn("mini_installer.exe", archive.namelist())
                 metadata = json.loads(registry.get("browser_directory_metadata").read_text())
@@ -131,8 +131,9 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
     def test_directory_zip_rejects_retired_extension_and_stale_manifest(self):
         version = "158.0.8127.41"
         cases = (
-            ("browseros_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx", b"crx"),
-            ("browseros_extensions/bundled_extensions.json", b'{"adlpneommgkgeanpaekgoaolcpncohkf": {}}'),
+            ("windrise_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx", b"crx"),
+            ("windrise_extensions/bundled_extensions.json", b'{"adlpneommgkgeanpaekgoaolcpncohkf": {}}'),
+            ("browseros_extensions/bundled_extensions.json", b"{}\n"),
             ("158.0.8127.18.manifest", b"<assembly/>"),
         )
         for rel, content in cases:

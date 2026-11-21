@@ -30,12 +30,12 @@ index 0000000000000000000000000000000000000000..a136cf0636fa14ae2feb9aa8223c968c
 +if (!is_mac) {
 +  copy("bundled_extensions") {
 +    sources = _bundled_extensions_sources
-+    outputs = [ "$root_out_dir/browseros_extensions/{{source_file_part}}" ]
++    outputs = [ "$root_out_dir/windrise_extensions/{{source_file_part}}" ]
 +  }
 +} else {
 +  # On Mac, bundle data goes into the framework bundle
 +  bundle_data("bundled_extensions") {
 +    sources = _bundled_extensions_sources
-+    outputs = [ "{{bundle_contents_dir}}/Resources/browseros_extensions/{{source_file_part}}" ]
++    outputs = [ "{{bundle_contents_dir}}/Resources/windrise_extensions/{{source_file_part}}" ]
 +  }
 +}

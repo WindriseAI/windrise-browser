@@ -114,7 +114,9 @@ def check_layout(entries: list[tuple[str, bool, int]], version: str) -> str:
             continue
         posix = PurePosixPath(key)
         original = raw_names[key]
-        if posix.parent.name == "browseros_extensions" and posix.suffix == ".crx":
+        if "browseros_extensions" in posix.parts:
+            raise ValueError(f"Legacy browseros_extensions directory is forbidden in browser ZIP: {original}")
+        if posix.parent.name in {"windrise_extensions", "browseros_extensions"} and posix.suffix == ".crx":
             raise ValueError(f"Bundled extension CRX is forbidden in browser ZIP: {original}")
         if posix.name == "bundled_extensions.json" and (size < 2 or size > 6):
             raise ValueError(

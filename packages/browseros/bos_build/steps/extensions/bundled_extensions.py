@@ -137,11 +137,12 @@ class BundledExtensionsModule(Step):
         for crx_path in output_dir.glob("*.crx"):
             crx_path.unlink()
         (output_dir / "bundled_extensions.json").unlink(missing_ok=True)
-        generated = ctx.chromium_src / ctx.out_dir / "browseros_extensions"
-        if generated.is_symlink() or generated.is_file():
-            generated.unlink()
-        elif generated.exists():
-            shutil.rmtree(generated)
+        for dirname in ("windrise_extensions", "browseros_extensions"):
+            generated = ctx.chromium_src / ctx.out_dir / dirname
+            if generated.is_symlink() or generated.is_file():
+                generated.unlink()
+            elif generated.exists():
+                shutil.rmtree(generated)
 
     def _fetch_and_parse_manifest(self, url: str) -> List[ExtensionInfo]:
         log_info(f"  Fetching manifest: {url}")

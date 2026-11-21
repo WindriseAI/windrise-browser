@@ -33,8 +33,8 @@ def _base_entries() -> list[tuple[str, bool, int]]:
         (f"{VERSION}/", True, 0),
         (f"{VERSION}/chrome.dll", False, 128),
         (f"{VERSION}/{VERSION}.manifest", False, 64),
-        (f"{VERSION}/browseros_extensions/", True, 0),
-        (f"{VERSION}/browseros_extensions/bundled_extensions.json", False, 3),
+        (f"{VERSION}/windrise_extensions/", True, 0),
+        (f"{VERSION}/windrise_extensions/bundled_extensions.json", False, 3),
     ]
 
 
@@ -42,10 +42,17 @@ class BrowserDirectoryZipLayoutTest(unittest.TestCase):
     def test_accepts_empty_bundled_manifest_and_matching_version_manifest(self) -> None:
         self.assertEqual(check_layout(_base_entries(), VERSION), "chrome.exe")
 
+    def test_rejects_legacy_browseros_extensions_dir(self) -> None:
+        entries = _base_entries() + [
+            (f"{VERSION}/browseros_extensions/bundled_extensions.json", False, 3),
+        ]
+        with self.assertRaisesRegex(ValueError, "Legacy browseros_extensions directory is forbidden"):
+            check_layout(entries, VERSION)
+
     def test_rejects_bundled_extension_crx(self) -> None:
         entries = _base_entries() + [
             (
-                f"{VERSION}/browseros_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx",
+                f"{VERSION}/windrise_extensions/adlpneommgkgeanpaekgoaolcpncohkf.crx",
                 False,
                 104327,
             )
@@ -76,7 +83,7 @@ class BrowserDirectoryZipLayoutTest(unittest.TestCase):
             entry
             for entry in _base_entries()
             if not entry[0].endswith("bundled_extensions.json")
-        ] + [(f"{VERSION}/browseros_extensions/bundled_extensions.json", False, 149)]
+        ] + [(f"{VERSION}/windrise_extensions/bundled_extensions.json", False, 149)]
         with self.assertRaisesRegex(ValueError, "Non-empty bundled_extensions.json"):
             check_layout(entries, VERSION)
         with self.assertRaisesRegex(ValueError, "Non-empty bundled_extensions.json"):
@@ -94,7 +101,7 @@ class BrowserDirectoryZipLayoutTest(unittest.TestCase):
                 archive.writestr(f"{VERSION}/chrome.dll", b"dll")
                 archive.writestr(f"{VERSION}/{VERSION}.manifest", b"<assembly/>")
                 archive.writestr(
-                    f"{VERSION}/browseros_extensions/bundled_extensions.json",
+                    f"{VERSION}/windrise_extensions/bundled_extensions.json",
                     b'{"x":1}',
                 )
             digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()

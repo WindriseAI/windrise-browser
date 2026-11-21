@@ -10,12 +10,12 @@ index 32d01c008e1341eb8142cd80e1c91afe7928ed42..1bea0de54fb3768be7efc83c03d91c1d
 +#if BUILDFLAG(IS_MAC)
 +      cur = base::apple::FrameworkBundlePath();
 +      cur = cur.Append(FILE_PATH_LITERAL("Resources"))
-+                .Append(FILE_PATH_LITERAL("browseros_extensions"));
++                .Append(FILE_PATH_LITERAL("windrise_extensions"));
 +#else
 +      if (!base::PathService::Get(base::DIR_MODULE, &cur)) {
 +        return false;
 +      }
-+      cur = cur.Append(FILE_PATH_LITERAL("browseros_extensions"));
++      cur = cur.Append(FILE_PATH_LITERAL("windrise_extensions"));
 +#endif
 +      break;
 +
