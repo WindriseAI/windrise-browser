@@ -203,6 +203,9 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertNotIn("BrowserOS extension", delegate)
         self.assertIn('"windrise: Extension "', delegate)
 
+    def test_u22_no_browseros_about_flags(self):
+        self.assertFalse((PATCHES / "chrome/browser/about_flags.cc").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

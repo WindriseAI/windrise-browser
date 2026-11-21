@@ -393,7 +393,6 @@ features:
   chromium-ui-fixes:
     description: "fix: chromium ui and behavior fixes"
     files:
-      - chrome/browser/about_flags.cc
       - chrome/browser/background/extensions/background_mode_manager.cc
       - chrome/browser/browser_features.cc
       - chrome/browser/browser_features.h
