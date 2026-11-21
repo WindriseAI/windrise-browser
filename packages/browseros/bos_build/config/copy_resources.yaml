@@ -70,6 +70,11 @@ copy_operations:
     # onboarding inputs. A missing copy still fails the build, because
     # ui/webui/resources/BUILD.gn lists these files as generate_grd inputs.
 
+  - name: "Windrise AGPL-3.0 License"
+    source: "resources/windrise/license"
+    destination: "ui/webui/resources/windrise_license"
+    type: "directory"
+
   - name: "BrowserClaw Product Logo Icons"
     source: "resources/browserclaw/icons/*.png"
     destination: "chrome/app/theme/chromium/"

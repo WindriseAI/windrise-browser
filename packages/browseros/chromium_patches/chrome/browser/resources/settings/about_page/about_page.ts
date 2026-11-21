@@ -2,28 +2,32 @@ diff --git a/chrome/browser/resources/settings/about_page/about_page.ts b/chrome
 index 30855eca88e6139226d36767e57cda53c44f72aa..6bbe1e8d5ae8eb6a72e3932117c0d38cb9bef26b 100644
 --- a/chrome/browser/resources/settings/about_page/about_page.ts
 +++ b/chrome/browser/resources/settings/about_page/about_page.ts
-@@ -93,6 +93,9 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+@@ -93,6 +93,11 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
        // </if>
  
        feedbackAllowedPref_: {type: Object},
 +      fontLicenseText_: {type: String},
 +      showFontLicense_: {type: Boolean},
++      agplLicenseText_: {type: String},
++      showAgplLicense_: {type: Boolean},
 +      showIcp_: {type: Boolean},
      };
    }
  
-@@ -127,6 +130,10 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+@@ -127,6 +132,12 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
  
    protected accessor feedbackAllowedPref_:
        chrome.settingsPrivate.PrefObject<boolean>|undefined;
 +  protected accessor fontLicenseText_: string = '';
 +  protected accessor showFontLicense_: boolean = false;
++  protected accessor agplLicenseText_: string = '';
++  protected accessor showAgplLicense_: boolean = false;
 +  // 备案号只在中文界面显示，放在整页最下面一行（判法在 settings_localized_strings_provider.cc）。
 +  protected accessor showIcp_: boolean = loadTimeData.getBoolean('aboutShowIcp');
  
    private aboutBrowserProxy_: AboutPageBrowserProxy =
        AboutPageBrowserProxyImpl.getInstance();
-@@ -224,6 +231,33 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+@@ -224,6 +235,45 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
      this.aboutBrowserProxy_.openHelpPage();
    }
  
@@ -52,6 +56,18 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..6bbe1e8d5ae8eb6a72e3932117c0d38c
 +      this.fontLicenseText_ = text.replace(/\0/g, '').trim();
 +    }
 +    this.showFontLicense_ = !this.showFontLicense_;
++  }
++
++  // AGPL-3.0 第 5(d) 条合规：无担保说明与页内展开许可证全文。
++  protected async onAgplLicenseClick_(e: Event) {
++    e.preventDefault();
++    if (!this.agplLicenseText_) {
++      const response =
++          await fetch('chrome://resources/windrise_license/LICENSE.txt');
++      const text = await response.text();
++      this.agplLicenseText_ = text.replace(/\0/g, '').trim();
++    }
++    this.showAgplLicense_ = !this.showAgplLicense_;
 +  }
 +
    protected onRelaunchClick_() {

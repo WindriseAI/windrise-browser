@@ -51,7 +51,7 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..642e0cc005ad93557bc1e15d4fc7678a
  <if expr="_google_chrome">
    <cr-link-row class="hr" id="reportIssue" @click="${this.onReportIssueClick_}"
        ?hidden="${!this.feedbackAllowedPref_?.value}"
-@@ -108,13 +105,27 @@ export function getHtml(this: SettingsAboutPageElement) {
+@@ -108,13 +105,37 @@ export function getHtml(this: SettingsAboutPageElement) {
  <settings-section>
    <div class="info-sections">
      <div class="info-section">
@@ -66,6 +66,16 @@ index b9ac4e634feddf9e14a6da7c36fcb49fa143c032..642e0cc005ad93557bc1e15d4fc7678a
 +      ${this.fontLicenseText_ ? html`
 +        <pre id="fontLicenseText" ?hidden="${!this.showFontLicense_}"
 +            >${this.fontLicenseText_}</pre>
++      ` : ''}
++    </div>
++
++    <div class="info-section">
++      <a class="secondary" id="agplLicense" href="#" role="button"
++          aria-expanded="${this.showAgplLicense_}"
++          @click="${this.onAgplLicenseClick_}">$i18n{aboutAgplNotice}</a>
++      ${this.agplLicenseText_ ? html`
++        <pre id="agplLicenseText" ?hidden="${!this.showAgplLicense_}"
++            >${this.agplLicenseText_}</pre>
 +      ` : ''}
 +    </div>
 +

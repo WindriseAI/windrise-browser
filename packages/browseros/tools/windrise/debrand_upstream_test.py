@@ -101,6 +101,32 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn("GNU Affero General Public License v3.0", src)
         self.assertIn("https://github.com/WindriseAI/windrise-browser", src)
 
+    def test_u14_about_page_agpl_notice_and_license_viewer(self):
+        html_ts = read_patch(
+            "chrome/browser/resources/settings/about_page/about_page.html.ts"
+        )
+        self.assertIn('id="agplLicense"', html_ts)
+        self.assertIn("$i18n{aboutAgplNotice}", html_ts)
+
+        ts = read_patch(
+            "chrome/browser/resources/settings/about_page/about_page.ts"
+        )
+        self.assertIn("chrome://resources/windrise_license/LICENSE.txt", ts)
+
+        provider = read_patch(
+            "chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc"
+        )
+        self.assertIn("aboutAgplNotice", provider)
+        self.assertIn("AGPL-3.0", provider)
+        self.assertIn("不提供任何担保", provider)
+        self.assertIn("WITHOUT ANY WARRANTY", provider)
+
+        root_lic = (REPO_ROOT / "LICENSE").read_bytes()
+        webui_lic = (
+            REPO_ROOT / "packages/browseros/resources/windrise/license/LICENSE.txt"
+        ).read_bytes()
+        self.assertEqual(root_lic, webui_lic)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -18,7 +18,7 @@ index 0bdda85eaa..182fe6291a 100644
        {"aboutLearnMoreUpdatingErrors",
         IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATE_ERRORS},
        {"aboutLearnMoreSystemRequirements",
-@@ -359,6 +361,43 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
+@@ -359,6 +361,49 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
  
    html_source->AddString("managementPage",
                           GetDeviceManagedUiHelpLabel(profile));
@@ -57,12 +57,18 @@ index 0bdda85eaa..182fe6291a 100644
 +      "aboutIcpLine",
 +      l10n_util::GetStringFUTF16(IDS_SETTINGS_ABOUT_PAGE_WINDRISE_ICP,
 +                                 windrise_icp));
++  html_source->AddString(
++      "aboutAgplNotice",
++      windrise_is_chinese
++          ? u"风桥浏览器按 AGPL-3.0 开源发布，不提供任何担保 · 查看许可证全文"
++          : u"Windrise Browser is open-source software licensed under AGPL-3.0, "
++            u"provided WITHOUT ANY WARRANTY · View full license");
 +  html_source->AddBoolean("aboutShowIcp", windrise_is_chinese);
 +
    html_source->AddString(
        "aboutUpgradeUpToDate",
  #if BUILDFLAG(IS_CHROMEOS)
-@@ -1278,6 +1317,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
+@@ -1278,6 +1323,8 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
        {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
        {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
        {"importSuccess", IDS_SETTINGS_IMPORT_SUCCESS},

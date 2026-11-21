@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/BUILD.gn b/ui/webui/resources/BUILD.gn
 index ebebce61a325e6a967d198167c5152d54564c208..180b873e4e1a19ef15480cc699b1ae8a33f8aefb 100644
 --- a/ui/webui/resources/BUILD.gn
 +++ b/ui/webui/resources/BUILD.gn
-@@ -32,6 +32,18 @@ generate_grd("build_grd") {
+@@ -32,6 +32,19 @@ generate_grd("build_grd") {
      ]
    }
  
@@ -16,6 +16,7 @@ index ebebce61a325e6a967d198167c5152d54564c208..180b873e4e1a19ef15480cc699b1ae8a
 +    "harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf",
 +    "harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf",
 +    "harmonyos_sans/LICENSE.txt",
++    "windrise_license/LICENSE.txt",
 +  ]
 +
    public_deps = [
