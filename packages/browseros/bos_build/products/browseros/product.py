@@ -20,6 +20,7 @@ BROWSEROS_PRODUCT = ProductDescriptor.define(
     summary="The open source agentic browser",
     description="Windrise is a privacy-focused web browser built on Chromium.",
     company="Windrise",
+    linux_name="windrise-browser",
     # Windrise ships no upstream extensions; its assistant is supplied locally
     # by Windrise Bridge. The bundled MCP server does not depend on a CRX.
     required_extensions=(),

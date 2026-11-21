@@ -48,14 +48,14 @@ EXPECTED_BROWSEROS = ProductDescriptor(
         dmg_volume_name="Windrise",
     ),
     linux=LinuxProductIdentity(
-        package_name="browseros",
-        launcher_name="browseros",
-        desktop_id="browseros.desktop",
-        icon_name="browseros",
-        lib_dir="/usr/lib/browseros",
-        appimage_dir="/opt/browseros",
-        apparmor_profile_name="browseros",
-        metainfo_id="browseros.desktop",
+        package_name="windrise-browser",
+        launcher_name="windrise-browser",
+        desktop_id="windrise-browser.desktop",
+        icon_name="windrise-browser",
+        lib_dir="/usr/lib/windrise-browser",
+        appimage_dir="/opt/windrise-browser",
+        apparmor_profile_name="windrise-browser",
+        metainfo_id="windrise-browser.desktop",
     ),
     windows=WindowsProductIdentity(
         app_user_model_id="Windrise.Windrise",
@@ -147,6 +147,17 @@ class DefineBehaviorTest(unittest.TestCase):
         p = self._minimal(artifact_prefix="Acme")
         self.assertEqual(p.artifact_prefix, "Acme")
         self.assertEqual(p.app_base_name, "AcmeFox")
+
+    def test_linux_name_derives_all_linux_identity_fields(self):
+        p = self._minimal(linux_name="acme-browser")
+        self.assertEqual(p.linux.package_name, "acme-browser")
+        self.assertEqual(p.linux.launcher_name, "acme-browser")
+        self.assertEqual(p.linux.desktop_id, "acme-browser.desktop")
+        self.assertEqual(p.linux.icon_name, "acme-browser")
+        self.assertEqual(p.linux.lib_dir, "/usr/lib/acme-browser")
+        self.assertEqual(p.linux.appimage_dir, "/opt/acme-browser")
+        self.assertEqual(p.linux.apparmor_profile_name, "acme-browser")
+        self.assertEqual(p.linux.metainfo_id, "acme-browser.desktop")
 
     def test_unknown_override_raises(self):
         with self.assertRaisesRegex(TypeError, "Unknown ProductDescriptor override"):

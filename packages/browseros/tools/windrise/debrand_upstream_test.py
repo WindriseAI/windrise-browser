@@ -69,6 +69,24 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertIn("!command_line->HasSwitch(browseros::kEnableServer)", mgr)
         self.assertIn("browseros::kLegacyDisableServer", mgr)
 
+    def test_u08_non_windows_program_and_linux_package_names(self):
+        cc = read_patch("chrome/common/chrome_constants.cc")
+        self.assertIn('FPL("windrise-browser")', cc)
+        self.assertNotIn('FPL("browseros")', cc)
+        # Windows chrome.exe must remain unchanged.
+        self.assertNotIn('FPL("windrise-browser.exe")', cc)
+
+        products_py = (
+            REPO_ROOT / "packages/browseros/bos_build/core/products.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("linux_name: Optional[str] = None", products_py)
+        self.assertIn("package_name=linux_slug", products_py)
+
+        product_py = (
+            REPO_ROOT / "packages/browseros/bos_build/products/browseros/product.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('linux_name="windrise-browser"', product_py)
+
     def test_u09_branding_copyright_has_no_upstream(self):
         for rel in (
             "products/browseros/chrome/app/theme/chromium/BRANDING.release",

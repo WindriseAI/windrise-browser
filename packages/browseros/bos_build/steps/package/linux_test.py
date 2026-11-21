@@ -36,7 +36,7 @@ class LinuxPackageStepTest(unittest.TestCase):
                 architecture="x64",
                 chromium_src=Path(tmp),
                 out_dir="out/Default_browseros_x64",
-                BROWSEROS_APP_NAME="browseros",
+                BROWSEROS_APP_NAME="windrise-browser",
             )
             with (
                 mock.patch("bos_build.steps.package.linux.IS_LINUX", return_value=True),

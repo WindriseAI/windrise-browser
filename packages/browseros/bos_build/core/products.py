@@ -135,6 +135,7 @@ class ProductDescriptor:
         support_url: str = "https://www.windrisebridge.com/help",
         bugtracker_url: str = "https://github.com/WindriseAI/windrise-browser/issues",
         required_extensions: Tuple[Tuple[str, str], ...] = (),
+        linux_name: Optional[str] = None,
         **overrides,
     ) -> "ProductDescriptor":
         """Build a descriptor from irreducible inputs; derive the rest.
@@ -144,6 +145,7 @@ class ProductDescriptor:
         site. Unknown override names raise so typos fail loudly.
         """
         base = display_name
+        linux_slug = linux_name or id
         derived: Dict[str, Any] = dict(
             id=id,
             gn_product=id,
@@ -174,14 +176,14 @@ class ProductDescriptor:
                 dmg_volume_name=display_name,
             ),
             linux=LinuxProductIdentity(
-                package_name=id,
-                launcher_name=id,
-                desktop_id=f"{id}.desktop",
-                icon_name=id,
-                lib_dir=f"/usr/lib/{id}",
-                appimage_dir=f"/opt/{id}",
-                apparmor_profile_name=id,
-                metainfo_id=f"{id}.desktop",
+                package_name=linux_slug,
+                launcher_name=linux_slug,
+                desktop_id=f"{linux_slug}.desktop",
+                icon_name=linux_slug,
+                lib_dir=f"/usr/lib/{linux_slug}",
+                appimage_dir=f"/opt/{linux_slug}",
+                apparmor_profile_name=linux_slug,
+                metainfo_id=f"{linux_slug}.desktop",
             ),
             windows=WindowsProductIdentity(
                 app_user_model_id=f"{company}.{base}",
