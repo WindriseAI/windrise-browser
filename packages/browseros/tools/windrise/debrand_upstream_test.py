@@ -93,6 +93,14 @@ class DebrandUpstreamTest(unittest.TestCase):
         self.assertFalse(any("风桥浏览器 云端硬盘" in l for l in added))
         self.assertFalse(any("风桥浏览器浏览器" in l for l in added))
 
+    def test_u13_source_txt_clean_and_version_aligned(self):
+        src = read_patch("chrome/installer/mini_installer/SOURCE.txt")
+        self.assertNotIn("BrowserOS", src)
+        self.assertIn("158.0.8127.41", src)
+        self.assertIn("3479de84ee", src)
+        self.assertIn("GNU Affero General Public License v3.0", src)
+        self.assertIn("https://github.com/WindriseAI/windrise-browser", src)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,15 +4,15 @@ index 0000000000000000000000000000000000000000..474e1445eb86dac23388f0346ae6fc16
 --- /dev/null
 +++ b/chrome/installer/mini_installer/SOURCE.txt
 @@ -0,0 +1,12 @@
-+Windrise Browser 是 Chromium 158.0.8127.18 的分叉，基于 BrowserOS（AGPL-3.0）。
-+本程序按 GNU Affero General Public License v3.0 授权（见同目录的 LICENSE）。
++风桥浏览器（Windrise Browser）基于 Chromium 158.0.8127.41 构建，采用
++GNU Affero General Public License v3.0 开源授权（全文见同目录的 LICENSE）。
 +
 +完整对应源码（包含本二进制带有的全部修改）发布在：
-+    https://github.com/WindriseAI/windrise-browser   （分支：windrise）
++    https://github.com/WindriseAI/windrise-browser   （分支：main）
 +
-+合成方法：
-+  1. 检出 Chromium 基线提交 6449d9f9a6（158.0.8127.18）；
++构建方法：
++  1. 检出 Chromium 基线提交 3479de84ee（158.0.8127.41）；
 +  2. 应用仓库 packages/browseros/chromium_patches/ 下的全部补丁
 +     （可用 packages/browseros/tools/windrise/patch_replay.py 回放核对）；
 +  3. 叠加 packages/browseros/chromium_files/ 里的覆盖文件与
-+     packages/browseros/resources/ 里的资源。
++     packages/browseros/resources/ 里的资源后按标准 GN/Ninja 流程编译。
