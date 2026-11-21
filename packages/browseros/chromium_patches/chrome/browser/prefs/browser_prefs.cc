@@ -2,7 +2,7 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
 index 2653e37becbfa113d92456139d86c321f09ed8b5..7f9327317554c866ac283630291d5cfb3b824bb9 100644
 --- a/chrome/browser/prefs/browser_prefs.cc
 +++ b/chrome/browser/prefs/browser_prefs.cc
-@@ -24,6 +24,12 @@
+@@ -24,7 +24,13 @@
  #include "chrome/browser/accessibility/page_colors_controller.h"
  #include "chrome/browser/accessibility/prefers_default_scrollbar_styles_prefs.h"
 +#include "base/values.h"
@@ -15,6 +15,7 @@ index 2653e37becbfa113d92456139d86c321f09ed8b5..7f9327317554c866ac283630291d5cfb
  #include "chrome/browser/context_hub/prefs.h"
 +#include "components/network_time/network_time_pref_names.h"
 +#include "components/translate/core/browser/translate_pref_names.h"
+ #include "chrome/browser/contextual_cueing/prefs.h"
 @@ -1424,6 +1430,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
    breadcrumbs::RegisterPrefs(registry);
    browser_shutdown::RegisterPrefs(registry);
