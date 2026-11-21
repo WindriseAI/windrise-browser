@@ -20,11 +20,11 @@ index 0000000000000000000000000000000000000000..c7d8b69521bef220e2b0c0aaea3c0794
 +export type BrowserOSSetupState = 'idle'|'preparing'|'failed'|'ready';
 +
 +export const BrowserOSOnboardingMessage = {
-+  PAGE_READY: 'browserosOnboardingPageReady',
-+  REFRESH_SOURCES: 'browserosOnboardingRefreshSources',
-+  START_IMPORT: 'browserosOnboardingStartImport',
-+  COMPLETE: 'browserosOnboardingComplete',
-+  RETRY_SETUP: 'browserosOnboardingRetrySetup',
++  PAGE_READY: 'windriseOnboardingPageReady',
++  REFRESH_SOURCES: 'windriseOnboardingRefreshSources',
++  START_IMPORT: 'windriseOnboardingStartImport',
++  COMPLETE: 'windriseOnboardingComplete',
++  RETRY_SETUP: 'windriseOnboardingRetrySetup',
 +} as const;
 +
 +export type BrowserOSOnboardingMessage =
@@ -98,7 +98,7 @@ index 0000000000000000000000000000000000000000..c7d8b69521bef220e2b0c0aaea3c0794
 +
 +declare global {
 +  interface Window {
-+    browserosOnboarding?: BrowserOSOnboardingClient;
++    windriseOnboarding?: BrowserOSOnboardingClient;
 +  }
 +
 +  const chrome: BrowserOSOnboardingChrome;

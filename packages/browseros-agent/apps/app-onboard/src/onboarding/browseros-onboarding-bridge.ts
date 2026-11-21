@@ -72,7 +72,7 @@ function createState(
 }
 
 function emitMockState(state: BrowserOSOnboardingState) {
-  getHostWindow()?.browserosOnboarding?.receiveState(state)
+  getHostWindow()?.windriseOnboarding?.receiveState(state)
 }
 
 function scheduleMockState(state: BrowserOSOnboardingState, delayMs: number) {
@@ -253,22 +253,22 @@ export function createBrowserOSOnboardingBridge(
     registerReceiver(receiveState) {
       const hostWindow = getHostWindow()
       if (!hostWindow) return () => undefined
-      const previousClient = hostWindow.browserosOnboarding
+      const previousClient = hostWindow.windriseOnboarding
       const previousReceiver = receiver
       receiver = receiveState
       const client = { receiveState: updateState }
-      hostWindow.browserosOnboarding = client
+      hostWindow.windriseOnboarding = client
       // Effect reattachment (including StrictMode) must not lose a synchronous
       // pageReady snapshot or issue another completion request.
       if (currentState) receiveState(currentState)
       return () => {
-        if (hostWindow.browserosOnboarding !== client) return
+        if (hostWindow.windriseOnboarding !== client) return
         receiver = previousReceiver
         if (previousClient) {
-          hostWindow.browserosOnboarding = previousClient
+          hostWindow.windriseOnboarding = previousClient
           return
         }
-        delete hostWindow.browserosOnboarding
+        delete hostWindow.windriseOnboarding
       }
     },
     startImport(request) {

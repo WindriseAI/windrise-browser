@@ -236,23 +236,23 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +
 +  void RegisterMessages() override {
 +    web_ui()->RegisterMessageCallback(
-+        "browserosOnboardingPageReady",
++        "windriseOnboardingPageReady",
 +        base::BindRepeating(&BrowserOSOnboardingHandler::HandlePageReady,
 +                            base::Unretained(this)));
 +    web_ui()->RegisterMessageCallback(
-+        "browserosOnboardingRefreshSources",
++        "windriseOnboardingRefreshSources",
 +        base::BindRepeating(&BrowserOSOnboardingHandler::HandleRefreshSources,
 +                            base::Unretained(this)));
 +    web_ui()->RegisterMessageCallback(
-+        "browserosOnboardingStartImport",
++        "windriseOnboardingStartImport",
 +        base::BindRepeating(&BrowserOSOnboardingHandler::HandleStartImport,
 +                            base::Unretained(this)));
 +    web_ui()->RegisterMessageCallback(
-+        "browserosOnboardingComplete",
++        "windriseOnboardingComplete",
 +        base::BindRepeating(&BrowserOSOnboardingHandler::HandleComplete,
 +                            base::Unretained(this)));
 +    web_ui()->RegisterMessageCallback(
-+        "browserosOnboardingRetrySetup",
++        "windriseOnboardingRetrySetup",
 +        base::BindRepeating(&BrowserOSOnboardingHandler::HandleRetrySetup,
 +                            base::Unretained(this)));
 +  }
@@ -642,7 +642,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +        state.Set("progress", BuildProgress());
 +      }
 +      AddSetupState(state);
-+      CallJavascriptFunction("browserosOnboarding.receiveState", state);
++      CallJavascriptFunction("windriseOnboarding.receiveState", state);
 +    }
 +  }
 +
@@ -670,7 +670,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +      error.Set("message", message);
 +      state.Set("error", std::move(error));
 +      AddSetupState(state);
-+      CallJavascriptFunction("browserosOnboarding.receiveState", state);
++      CallJavascriptFunction("windriseOnboarding.receiveState", state);
 +    }
 +  }
 +

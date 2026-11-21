@@ -127,6 +127,19 @@ class DebrandUpstreamTest(unittest.TestCase):
         ).read_bytes()
         self.assertEqual(root_lic, webui_lic)
 
+    def test_u15_onboarding_url_and_bridge_rebranded(self):
+        hdr = read_patch("chrome/common/webui_url_constants.h")
+        self.assertIn('"windrise-onboarding"', hdr)
+        self.assertIn('"chrome://windrise-onboarding/"', hdr)
+        self.assertNotIn("browseros-onboarding", hdr)
+
+        cc = read_patch(
+            "chrome/browser/browseros/onboarding/browseros_onboarding.cc"
+        )
+        self.assertIn('"windriseOnboardingPageReady"', cc)
+        self.assertIn('"windriseOnboarding.receiveState"', cc)
+        self.assertNotIn("browserosOnboarding", cc)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,9 +7,9 @@ index 47c543c844b3348c0360fb2a38c214aeab41944f..e29e526938cdfb2d280dc7c23beb0e7a
  // Please keep in alphabetical order, with OS/feature specific sections below.
  inline constexpr char kChromeUIAboutHost[] = "about";
 +inline constexpr char kChromeUIBrowserOSOnboardingHost[] =
-+    "browseros-onboarding";
++    "windrise-onboarding";
 +inline constexpr char kChromeUIBrowserOSOnboardingURL[] =
-+    "chrome://browseros-onboarding/";
++    "chrome://windrise-onboarding/";
  inline constexpr char kChromeUIAboutURL[] = "chrome://about/";
  inline constexpr char kChromeUIAccessCodeCastHost[] = "access-code-cast";
  inline constexpr char kChromeUIAccessCodeCastURL[] =

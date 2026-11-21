@@ -95,8 +95,8 @@ describe('createBrowserOSOnboardingBridge', () => {
     const bridge = createBrowserOSOnboardingBridge({ chrome: null })
     const cleanup = bridge.registerReceiver((state) => states.push(state))
 
-    expect(window.browserosOnboarding).toBeDefined()
-    window.browserosOnboarding?.receiveState({
+    expect(window.windriseOnboarding).toBeDefined()
+    window.windriseOnboarding?.receiveState({
       apiVersion: 1,
       status: 'ready',
       sources: [],
@@ -104,7 +104,7 @@ describe('createBrowserOSOnboardingBridge', () => {
     cleanup()
 
     expect(states[0]?.status).toBe('ready')
-    expect(window.browserosOnboarding).toBeUndefined()
+    expect(window.windriseOnboarding).toBeUndefined()
   })
 
   it('emits mock ready and import success states without chrome.send', () => {
@@ -175,7 +175,7 @@ describe('native setup lifecycle', () => {
     })
     bridge.registerReceiver((state) => states.push(state))
     const receive = (state: Partial<BrowserOSOnboardingState>) => {
-      window.browserosOnboarding?.receiveState({
+      window.windriseOnboarding?.receiveState({
         apiVersion: 1,
         status: 'ready',
         sources: [],
@@ -200,7 +200,7 @@ describe('native setup lifecycle', () => {
   it('keeps native synchronous failure visible after COMPLETE', () => {
     const { bridge, states } = nativeBridge((message) => {
       if (message === BrowserOSOnboardingMessage.COMPLETE) {
-        window.browserosOnboarding?.receiveState({
+        window.windriseOnboarding?.receiveState({
           apiVersion: 1,
           status: 'ready',
           sources: [],
@@ -240,7 +240,7 @@ describe('native setup lifecycle', () => {
   it('preserves a synchronous retry failure instead of overwriting it with preparing', () => {
     const { bridge, states, receive } = nativeBridge((message) => {
       if (message === BrowserOSOnboardingMessage.RETRY_SETUP) {
-        window.browserosOnboarding?.receiveState({
+        window.windriseOnboarding?.receiveState({
           apiVersion: 1,
           status: 'ready',
           sources: [],
@@ -257,7 +257,7 @@ describe('native setup lifecycle', () => {
     it(`restores native ${setupState} on page-ready without completing again`, () => {
       const { bridge, states, sent } = nativeBridge((message) => {
         if (message === BrowserOSOnboardingMessage.PAGE_READY) {
-          window.browserosOnboarding?.receiveState({
+          window.windriseOnboarding?.receiveState({
             apiVersion: 1,
             status: 'ready',
             sources: [],
@@ -342,7 +342,7 @@ describe('native import handoff', () => {
       },
     })
     bridge.registerReceiver((state) => states.push(state))
-    window.browserosOnboarding?.receiveState({
+    window.windriseOnboarding?.receiveState({
       apiVersion: 1,
       status: 'ready',
       sources: [...MOCK_BROWSEROS_IMPORT_SOURCES],
@@ -356,7 +356,7 @@ describe('native import handoff', () => {
     expect(sent).toEqual([BrowserOSOnboardingMessage.START_IMPORT])
     expect(states.at(-1)?.status).toBe('importing')
     expect(states.at(-1)?.progress?.completedItems).toEqual([])
-    window.browserosOnboarding?.receiveState({
+    window.windriseOnboarding?.receiveState({
       apiVersion: 1,
       status: 'failed',
       sources: [...MOCK_BROWSEROS_IMPORT_SOURCES],
@@ -371,7 +371,7 @@ describe('native import handoff', () => {
     const bridge = createBrowserOSOnboardingBridge({
       chrome: {
         send() {
-          window.browserosOnboarding?.receiveState({
+          window.windriseOnboarding?.receiveState({
             apiVersion: 1,
             status: 'failed',
             sources: [],

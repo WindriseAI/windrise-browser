@@ -28,11 +28,11 @@ export type BrowserOSImportStatus =
 export type BrowserOSSetupState = 'idle' | 'preparing' | 'failed' | 'ready'
 
 export const BrowserOSOnboardingMessage = {
-  PAGE_READY: 'browserosOnboardingPageReady',
-  REFRESH_SOURCES: 'browserosOnboardingRefreshSources',
-  START_IMPORT: 'browserosOnboardingStartImport',
-  COMPLETE: 'browserosOnboardingComplete',
-  RETRY_SETUP: 'browserosOnboardingRetrySetup',
+  PAGE_READY: 'windriseOnboardingPageReady',
+  REFRESH_SOURCES: 'windriseOnboardingRefreshSources',
+  START_IMPORT: 'windriseOnboardingStartImport',
+  COMPLETE: 'windriseOnboardingComplete',
+  RETRY_SETUP: 'windriseOnboardingRetrySetup',
 } as const
 
 export type BrowserOSOnboardingMessage =
@@ -103,7 +103,7 @@ export interface BrowserOSOnboardingChrome {
 
 declare global {
   interface Window {
-    browserosOnboarding?: BrowserOSOnboardingClient
+    windriseOnboarding?: BrowserOSOnboardingClient
   }
 
   const chrome: BrowserOSOnboardingChrome
