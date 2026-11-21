@@ -19,7 +19,7 @@ export const TOOL_OUTPUT_DIR_MODE = 0o700
 export const TOOL_OUTPUT_FILE_MODE = 0o600
 
 export function getBrowserosDir(): string {
-  const override = process.env.BROWSEROS_DIR?.trim()
+  const override = process.env.WINDRISE_BROWSER_DIR?.trim()
   if (override) {
     return override
   }

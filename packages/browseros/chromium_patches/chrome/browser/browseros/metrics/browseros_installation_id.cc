@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77af97c2cf
 --- /dev/null
 +++ b/chrome/browser/browseros/metrics/browseros_installation_id.cc
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,185 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -13,13 +13,16 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +#include <optional>
 +#include <string>
 +
++#include "base/base_paths.h"
 +#include "base/files/file.h"
++#include "base/files/file_enumerator.h"
 +#include "base/files/file_util.h"
 +#include "base/functional/bind.h"
 +#include "base/functional/callback_helpers.h"
 +#include "base/json/json_reader.h"
 +#include "base/json/json_writer.h"
 +#include "base/logging.h"
++#include "base/path_service.h"
 +#include "base/uuid.h"
 +#include "base/values.h"
 +#include "build/build_config.h"
@@ -67,6 +70,47 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +#endif
 +}
 +
++constexpr base::FilePath::StringViewType kLegacyProductStateDirName =
++    FILE_PATH_LITERAL(".browseros");
++
++// Returns ~/.browseros only when it exists, differs from the current state
++// directory, and contains solely installation.json (protecting any standalone
++// upstream installation that has db/, sessions/, etc.).
++base::FilePath FindSoleLegacyProductStateDir(
++    const base::FilePath& current_state_directory) {
++  base::FilePath home;
++  if (!base::PathService::Get(base::DIR_HOME, &home)) {
++    return base::FilePath();
++  }
++  const base::FilePath legacy_dir = home.Append(kLegacyProductStateDirName);
++  if (legacy_dir == current_state_directory ||
++      !base::DirectoryExists(legacy_dir)) {
++    return base::FilePath();
++  }
++
++  base::FileEnumerator entries(
++      legacy_dir, /*recursive=*/false,
++      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
++  bool saw_installation_file = false;
++  for (base::FilePath entry = entries.Next(); !entry.empty();
++       entry = entries.Next()) {
++    if (entry.BaseName() != kInstallationFileName || saw_installation_file) {
++      return base::FilePath();
++    }
++    saw_installation_file = true;
++  }
++  return saw_installation_file ? legacy_dir : base::FilePath();
++}
++
++void RemoveLegacyProductStateDir(const base::FilePath& legacy_dir) {
++  if (legacy_dir.empty()) {
++    return;
++  }
++  base::DeleteFile(legacy_dir.Append(kInstallationFileName));
++  // Non-recursive delete: succeeds only if the directory is now empty.
++  base::DeleteFile(legacy_dir);
++}
++
 +}  // namespace
 +
 +std::optional<std::string> LoadOrCreateInstallationId(
@@ -75,9 +119,12 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +    return std::nullopt;
 +  }
 +
++  const base::FilePath legacy_dir =
++      FindSoleLegacyProductStateDir(product_state_directory);
 +  const base::FilePath installation_path =
 +      product_state_directory.Append(kInstallationFileName);
 +  if (base::PathExists(installation_path)) {
++    RemoveLegacyProductStateDir(legacy_dir);
 +    return ReadInstallationId(installation_path);
 +  }
 +
@@ -87,8 +134,15 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +    return std::nullopt;
 +  }
 +
++  std::optional<std::string> migrated_id;
++  if (!legacy_dir.empty()) {
++    migrated_id =
++        ReadInstallationId(legacy_dir.Append(kInstallationFileName));
++  }
 +  const std::string candidate_id =
-+      base::Uuid::GenerateRandomV4().AsLowercaseString();
++      migrated_id.has_value()
++          ? *migrated_id
++          : base::Uuid::GenerateRandomV4().AsLowercaseString();
 +  base::DictValue installation;
 +  installation.Set(kInstallIdKey, candidate_id);
 +  std::optional<std::string> json = base::WriteJson(installation);
@@ -121,9 +175,11 @@ index 0000000000000000000000000000000000000000..2d9259faba70aba351344624fcb70d77
 +  // A hard link publishes the complete temporary file only when the
 +  // destination is absent. If another process won the race, adopt its ID.
 +  if (PublishInstallationFile(temporary_path, installation_path)) {
++    RemoveLegacyProductStateDir(legacy_dir);
 +    return candidate_id;
 +  }
 +  if (base::PathExists(installation_path)) {
++    RemoveLegacyProductStateDir(legacy_dir);
 +    return ReadInstallationId(installation_path);
 +  }
 +

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2acb4c77e8
 --- /dev/null
 +++ b/chrome/browser/browseros/server/process_controller_impl.cc
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,172 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -99,13 +99,9 @@ index 0000000000000000000000000000000000000000..a621f70d3c24eaad319a90fc999d2b2a
 +  base::CommandLine cmd(actual_exe_path);
 +  cmd.AppendSwitchPath("config", config_path);
 +
-+  // Windrise: the server keeps its SQLite db, sessions, installation id and
-+  // server.json under BROWSEROS_DIR, defaulting to ~/.browseros. That home
-+  // directory is shared with any BrowserOS install of the same user, so a
-+  // database written (or corrupted) by another BrowserOS build makes our
-+  // server exit during startup. Pin it to this profile's execution directory.
++  // Windrise: pin the state directory to this profile's execution directory.
 +  base::EnvironmentMap environment;
-+  environment[FILE_PATH_LITERAL("BROWSEROS_DIR")] =
++  environment[FILE_PATH_LITERAL("WINDRISE_BROWSER_DIR")] =
 +      config.paths.execution.value();
 +
 +  result.process = LaunchServerProcess(cmd, environment);
