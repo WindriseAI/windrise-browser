@@ -18,12 +18,13 @@ index 59a08a4e0ec57771c631408eebaec98aee6562bd..7b595864cf4ee9787d65a0ad5ce2213e
  #include "chrome/browser/extensions/extension_url_overrides.h"
  #include "chrome/browser/extensions/settings_api_helpers.h"
  #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
-@@ -407,6 +409,13 @@ std::optional<ExtensionSettingsOverriddenDialog::Params> GetNtpOverriddenParams(
+@@ -407,6 +409,14 @@ std::optional<ExtensionSettingsOverriddenDialog::Params> GetNtpOverriddenParams(
      return std::nullopt;
    }
  
-+  if (browseros::IsActiveBrowserOSExtension(extension->id())) {
-+    LOG(INFO) << "windrise: Skipping settings override dialog for BrowserOS "
++  if (browseros::IsActiveBrowserOSExtension(extension->id()) ||
++      browseros::IsActiveURLRouteExtension(extension->id())) {
++    LOG(INFO) << "windrise: Skipping settings override dialog for Windrise "
 +                 "extension "
 +              << extension->id();
 +    return std::nullopt;

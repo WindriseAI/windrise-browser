@@ -19,13 +19,13 @@ index 565bd58..a847ff7 100644
    // Register user prefs for mapping SitePerProcess and IsolateOrigins in
    // user policy in addition to the same named ones in Local State (which are
    // used for mapping the command-line flags).
-@@ -5225,6 +5226,44 @@ ChromeContentBrowserClient::GetForcedColorsForWebContents(
+@@ -5225,6 +5226,52 @@ ChromeContentBrowserClient::GetForcedColorsForWebContents(
        .forced_colors;
  }
  
-+// Handles chrome://browseros/* URLs by rewriting to extension URLs.
-+// Forward handler: chrome://browseros/ai ->
-+// chrome-extension://[id]/options.html
++// Handles chrome://windrise/* URLs by rewriting to extension URLs.
++// Forward handler: chrome://windrise/settings#grids ->
++// chrome-extension://[id]/settings.html#grids
 +static bool HandleBrowserOSURL(GURL* url,
 +                               content::BrowserContext* browser_context) {
 +  if (!url->SchemeIs(content::kChromeUIScheme) ||
@@ -36,6 +36,14 @@ index 565bd58..a847ff7 100644
 +  std::string extension_url = browseros::GetBrowserOSExtensionURL(url->path());
 +  if (extension_url.empty()) {
 +    return false;
++  }
++
++  // Preserve virtual URL fragment (e.g. chrome://windrise/settings#grids) when
++  // the route itself does not pin a hash.
++  if (url->has_ref() && !url->ref().empty() &&
++      extension_url.find('#') == std::string::npos) {
++    extension_url.push_back('#');
++    extension_url.append(url->ref());
 +  }
 +
 +  *url = GURL(extension_url);
@@ -64,21 +72,21 @@ index 565bd58..a847ff7 100644
  void ChromeContentBrowserClient::BrowserURLHandlerCreated(
      BrowserURLHandler* handler) {
    // The group policy NTP URL handler must be registered before the other NTP
-@@ -5241,6 +5280,13 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
+@@ -5241,6 +5288,13 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
    handler->AddHandlerPair(&HandleChromeAboutAndChromeSyncRewrite,
                            BrowserURLHandler::null_handler());
  
-+  // Handler to rewrite chrome://browseros/* to extension URLs.
++  // Handler to rewrite chrome://windrise/* to extension URLs.
 +  handler->AddHandlerPair(&HandleBrowserOSURL, &ReverseBrowserOSURL);
 +  // Reverse-only handler for when extension opens its URL directly
-+  // (e.g., chrome.tabs.create({url: 'options.html#ai'}))
++  // (e.g., chrome.tabs.create({url: 'settings.html#grids'}))
 +  handler->AddHandlerPair(BrowserURLHandler::null_handler(),
 +                          &ReverseBrowserOSURL);
 +
  #if BUILDFLAG(IS_ANDROID)
    // Handler to rewrite chrome://newtab on Android.
    handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
-@@ -8453,6 +8499,15 @@ content::ContentBrowserClient::LocalNetworkAccessRequestPolicyOverride
+@@ -8453,6 +8507,15 @@ content::ContentBrowserClient::LocalNetworkAccessRequestPolicyOverride
  ChromeContentBrowserClient::ShouldOverrideLocalNetworkAccessRequestPolicy(
      content::BrowserContext* browser_context,
      const url::Origin& origin) {

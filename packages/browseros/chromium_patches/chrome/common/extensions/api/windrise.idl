@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..426ba49623
 --- /dev/null
 +++ b/chrome/common/extensions/api/windrise.idl
-@@ -0,0 +1,280 @@
+@@ -0,0 +1,312 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -158,11 +158,43 @@ index 0000000000..426ba49623
 +  };
 +  callback GetDefaultSearchEngineCallback = void(DefaultSearchEngine engine);
 +
++  // Current browser chrome color scheme.
++  dictionary ColorSchemeState {
++    // One of "system", "light", "dark".
++    DOMString mode;
++    // Effective dark-mode state resolved for the profile's windows.
++    boolean dark;
++  };
++  callback GetColorSchemeCallback = void(ColorSchemeState state);
++
 +  interface Functions {
 +    // Read-only. Never changes the profile's provider or starts navigation.
 +    static void getDefaultSearchEngine(
 +        DOMString query,
 +        GetDefaultSearchEngineCallback callback);
++
++    // Sets the profile's default search engine to a built-in preset
++    // ("google" or "baidu"). Restricted to the verified Windrise assistant.
++    static void setDefaultSearchEngine(
++        DOMString providerId,
++        SetPrefCallback callback);
++
++    // Sets both "On startup" and the Home button to open the New Tab page.
++    // Does not accept arbitrary URLs. Restricted to the verified Windrise
++    // assistant.
++    static void setNewTabAsHomePage(SetPrefCallback callback);
++
++    // Gets the profile's browser chrome color scheme ("system", "light", or
++    // "dark") and effective dark state. Restricted to the verified Windrise
++    // assistant.
++    static void getColorScheme(GetColorSchemeCallback callback);
++
++    // Sets the profile's browser chrome color scheme ("system", "light", or
++    // "dark") and repaints open windows immediately. Restricted to the
++    // verified Windrise assistant.
++    static void setColorScheme(
++        DOMString mode,
++        SetPrefCallback callback);
 +
 +    // Settings API functions - compatible with chrome.settingsPrivate
 +    // Gets a specific preference value
