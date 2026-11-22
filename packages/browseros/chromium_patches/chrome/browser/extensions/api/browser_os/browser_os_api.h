@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..07b0e3fad7
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.h
-@@ -0,0 +1,220 @@
+@@ -0,0 +1,266 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -219,6 +219,52 @@ index 0000000000..07b0e3fad7
 +  void OnLoaded();
 +  std::string query_;
 +  base::CallbackListSubscription loaded_subscription_;
++};
++
++class WindriseSetDefaultSearchEngineFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("windrise.setDefaultSearchEngine",
++                             WINDRISE_SETDEFAULTSEARCHENGINE)
++
++ protected:
++  ~WindriseSetDefaultSearchEngineFunction() override = default;
++  ResponseAction Run() override;
++
++ private:
++  ResponseValue ApplySelection();
++  void OnLoaded();
++  int prepopulate_id_ = 0;
++  base::CallbackListSubscription loaded_subscription_;
++};
++
++class WindriseSetNewTabAsHomePageFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("windrise.setNewTabAsHomePage",
++                             WINDRISE_SETNEWTABASHOMEPAGE)
++
++ protected:
++  ~WindriseSetNewTabAsHomePageFunction() override = default;
++  ResponseAction Run() override;
++};
++
++class WindriseGetColorSchemeFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("windrise.getColorScheme",
++                             WINDRISE_GETCOLORSCHEME)
++
++ protected:
++  ~WindriseGetColorSchemeFunction() override = default;
++  ResponseAction Run() override;
++};
++
++class WindriseSetColorSchemeFunction : public ExtensionFunction {
++ public:
++  DECLARE_EXTENSION_FUNCTION("windrise.setColorScheme",
++                             WINDRISE_SETCOLORSCHEME)
++
++ protected:
++  ~WindriseSetColorSchemeFunction() override = default;
++  ResponseAction Run() override;
 +};
 +
 +}  // namespace extensions::api

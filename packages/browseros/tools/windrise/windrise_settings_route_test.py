@@ -45,7 +45,7 @@ class WindriseSettingsRouteTest(unittest.TestCase):
     def test_assistant_stays_out_of_browseros_extension_catalog(self):
         text = read_patch(self.CONSTANTS)
         match = re.search(
-            r"kBrowserOSExtensions(?:\[\])?\s*=\s*\{(.*?)\};",
+            r"kBrowserOSExtensions(?:\[\])?\s*=\s*(?:\r?\n\+)?\s*\{(.*?)\};",
             text,
             re.DOTALL,
         )

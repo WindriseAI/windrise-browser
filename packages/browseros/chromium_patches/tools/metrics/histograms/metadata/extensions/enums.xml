@@ -2,7 +2,7 @@ diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metr
 index 4bcc6c1f81..587a940536 100644
 --- a/tools/metrics/histograms/metadata/extensions/enums.xml
 +++ b/tools/metrics/histograms/metadata/extensions/enums.xml
-@@ -2952,6 +2952,58 @@ Called by update_extension_histograms.py.-->
+@@ -2952,6 +2952,62 @@ Called by update_extension_histograms.py.-->
    <int value="1991" label="AUTOFILLPRIVATE_PRELOADDETAILSFORUPSERTPASS"/>
    <int value="1992" label="EXPERIMENTALAIDATA_GETAPCSNAPSHOT"/>
    <int value="1993" label="EXPERIMENTALAIDATA_GETTEXTSURROUNDINGSELECTION"/>
@@ -58,10 +58,14 @@ index 4bcc6c1f81..587a940536 100644
 +  <int value="2043" label="SIDEPANEL_WINDRISETOGGLE"/>
 +  <int value="2044" label="WINDRISE_GETWINDRISEVERSIONNUMBER"/>
 +  <int value="2045" label="SIDEPANEL_WINDRISEISOPEN"/>
++  <int value="2046" label="WINDRISE_SETDEFAULTSEARCHENGINE"/>
++  <int value="2047" label="WINDRISE_SETNEWTABASHOMEPAGE"/>
++  <int value="2048" label="WINDRISE_GETCOLORSCHEME"/>
++  <int value="2049" label="WINDRISE_SETCOLORSCHEME"/>
  </enum>
  
  <!-- LINT.ThenChange(//extensions/browser/extension_function_histogram_value.h:HistogramValue) -->
-@@ -3353,6 +3405,8 @@ Called by update_extension_permission.py.-->
+@@ -3353,6 +3409,8 @@ Called by update_extension_permission.py.-->
    <int value="273" label="kPublicSuffix"/>
    <int value="274" label="kEnterpriseWebrtc"/>
    <int value="275" label="kMimeTypesHandlerPdf"/>

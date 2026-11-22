@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..3c3d52dcbb
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,798 @@
+@@ -0,0 +1,940 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -33,8 +33,11 @@ index 0000000000..3c3d52dcbb
 +#include "chrome/browser/browseros/metrics/browseros_metrics.h"
 +#include "chrome/browser/infobars/confirm_infobar_creator.h"
 +#include "chrome/browser/platform_util.h"
++#include "chrome/browser/prefs/session_startup_pref.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/search_engines/template_url_service_factory.h"
++#include "chrome/browser/themes/theme_service.h"
++#include "chrome/browser/themes/theme_service_factory.h"
 +#include "chrome/browser/ui/actions/chrome_action_id.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface_iterator.h"
@@ -47,6 +50,7 @@ index 0000000000..3c3d52dcbb
 +#include "chrome/browser/ui/toasts/api/toast_id.h"
 +#include "chrome/browser/ui/toasts/toast_controller.h"
 +#include "chrome/common/extensions/api/windrise.h"
++#include "chrome/common/pref_names.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "components/infobars/content/content_infobar_manager.h"
 +#include "components/infobars/core/infobar.h"
@@ -65,6 +69,7 @@ index 0000000000..3c3d52dcbb
 +#include "chrome/browser/extensions/windrise_extension_protection.h"
 +#include "ui/base/l10n/l10n_util.h"
 +#include "extensions/common/extension.h"
++#include "third_party/search_engines_data/resources/definitions/prepopulated_engines.h"
 +#include "ui/gfx/range/range.h"
 +#include "ui/shell_dialogs/selected_file_info.h"
 +
@@ -798,6 +803,143 @@ index 0000000000..3c3d52dcbb
 +                        ? provider->favicon_url().spec() : std::string();
 +  result.search_url = url.spec();
 +  return ArgumentList(windrise::GetDefaultSearchEngine::Results::Create(result));
++}
++
++ExtensionFunction::ResponseAction WindriseSetDefaultSearchEngineFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  auto params = windrise::SetDefaultSearchEngine::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  if (params->provider_id == "google") {
++    prepopulate_id_ = TemplateURLPrepopulateData::google.id;
++  } else if (params->provider_id == "baidu") {
++    prepopulate_id_ = TemplateURLPrepopulateData::baidu.id;
++  } else {
++    return RespondNow(Error("Unsupported search engine"));
++  }
++
++  auto* service = TemplateURLServiceFactory::GetForProfile(
++      Profile::FromBrowserContext(browser_context()));
++  if (!service) {
++    return RespondNow(Error("Search provider unavailable"));
++  }
++  service->Load();
++  if (service->loaded()) {
++    return RespondNow(ApplySelection());
++  }
++  loaded_subscription_ = service->RegisterOnLoadedCallback(base::BindOnce(
++      &WindriseSetDefaultSearchEngineFunction::OnLoaded, this));
++  return RespondLater();
++}
++
++void WindriseSetDefaultSearchEngineFunction::OnLoaded() {
++  Respond(ApplySelection());
++}
++
++ExtensionFunction::ResponseValue
++WindriseSetDefaultSearchEngineFunction::ApplySelection() {
++  auto* service = TemplateURLServiceFactory::GetForProfile(
++      Profile::FromBrowserContext(browser_context()));
++  if (!service) {
++    return Error("Search provider unavailable");
++  }
++  if (!service->CanDefaultSearchProviderBeModifiedByUser()) {
++    return ArgumentList(
++        windrise::SetDefaultSearchEngine::Results::Create(false));
++  }
++  service->SetUserSelectedDefaultSearchProviderByPrepopulateId(prepopulate_id_);
++  return ArgumentList(windrise::SetDefaultSearchEngine::Results::Create(true));
++}
++
++ExtensionFunction::ResponseAction WindriseSetNewTabAsHomePageFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  PrefService* prefs = profile ? profile->GetPrefs() : nullptr;
++  if (!prefs) {
++    return RespondNow(Error("Preferences unavailable"));
++  }
++
++  const bool startup_managed = SessionStartupPref::TypeIsManaged(prefs);
++  const PrefService::Preference* homepage_pref =
++      prefs->FindPreference(::prefs::kHomePageIsNewTabPage);
++  const bool homepage_managed = homepage_pref && homepage_pref->IsManaged();
++  if (startup_managed && homepage_managed) {
++    return RespondNow(
++        ArgumentList(windrise::SetNewTabAsHomePage::Results::Create(false)));
++  }
++
++  if (!startup_managed) {
++    SessionStartupPref startup_pref = SessionStartupPref::GetStartupPref(prefs);
++    startup_pref.type = SessionStartupPref::DEFAULT;
++    SessionStartupPref::SetStartupPref(prefs, startup_pref);
++  }
++  if (!homepage_managed) {
++    prefs->SetBoolean(::prefs::kHomePageIsNewTabPage, true);
++  }
++  return RespondNow(
++      ArgumentList(windrise::SetNewTabAsHomePage::Results::Create(true)));
++}
++
++ExtensionFunction::ResponseAction WindriseGetColorSchemeFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  ThemeService* theme_service =
++      profile ? ThemeServiceFactory::GetForProfile(profile) : nullptr;
++  if (!theme_service) {
++    return RespondNow(Error("Theme service unavailable"));
++  }
++
++  windrise::ColorSchemeState state;
++  switch (theme_service->GetBrowserColorScheme()) {
++    case ThemeService::BrowserColorScheme::kLight:
++      state.mode = "light";
++      break;
++    case ThemeService::BrowserColorScheme::kDark:
++      state.mode = "dark";
++      break;
++    case ThemeService::BrowserColorScheme::kSystem:
++    default:
++      state.mode = "system";
++      break;
++  }
++  state.dark = theme_service->BrowserUsesDarkColors();
++  return RespondNow(
++      ArgumentList(windrise::GetColorScheme::Results::Create(state)));
++}
++
++ExtensionFunction::ResponseAction WindriseSetColorSchemeFunction::Run() {
++  if (!IsWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
++  auto params = windrise::SetColorScheme::Params::Create(args());
++  EXTENSION_FUNCTION_VALIDATE(params);
++
++  ThemeService::BrowserColorScheme scheme;
++  if (params->mode == "system") {
++    scheme = ThemeService::BrowserColorScheme::kSystem;
++  } else if (params->mode == "light") {
++    scheme = ThemeService::BrowserColorScheme::kLight;
++  } else if (params->mode == "dark") {
++    scheme = ThemeService::BrowserColorScheme::kDark;
++  } else {
++    return RespondNow(Error("mode must be system, light, or dark"));
++  }
++
++  Profile* profile = Profile::FromBrowserContext(browser_context());
++  ThemeService* theme_service =
++      profile ? ThemeServiceFactory::GetForProfile(profile) : nullptr;
++  if (!theme_service) {
++    return RespondNow(Error("Theme service unavailable"));
++  }
++  theme_service->SetBrowserColorScheme(scheme);
++  return RespondNow(
++      ArgumentList(windrise::SetColorScheme::Results::Create(true)));
 +}
 +
 +}  // namespace api
