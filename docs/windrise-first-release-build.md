@@ -66,7 +66,8 @@
 | 22 → `icon-24`；44 → `icon-48` | 加粗族 16–48 | ≤48 取对数距离最近的定稿帧 |
 | 96 → `icon-128`；192 → `icon-256` | 标准族 | >48 取不小于目标的最小定稿帧，只缩不放 |
 | 深底槽位 22/44 → `mark-white-24/48`；70/150 → `mark-white-256` | 白色图形标族 | 同上；`*_white`、`product_logo_22_mono`、`win/tiles/*` 按定稿 README 用不带底板的白标 |
-| `win/chromium.ico`、`app_list.ico`、`incognito.ico` | 定稿 ICO 帧集 16/24/32/48/64/128/256 | 仓内重组 PNG-in-ICO，每帧就是定稿原帧 |
+| `win/chromium.ico`、`app_list.ico` | 定稿 ICO 帧集 16/24/32/48/64/128/256 | 仓内重组 PNG-in-ICO，每帧就是定稿原帧 |
+| `win/incognito.ico` | `brand-src/windrise-browser-incognito-*`（16/24/32/48/64/128/256） | 每帧 = 同尺寸 B6 定稿 + 右下墨色无痕徽（白帽子 + 眼镜），`make_icons.py --render-incognito-finals` 8 倍超采样画出后入库；任务栏跳转列表「新建无痕窗口」与普通图标一眼分开（U26，11-22） |
 | `mac/app.icns`、`AppIcon.icns`、`document.icns` | 定稿 ICNS 元素集 ic07/ic08/ic09/ic10/ic11/ic12/ic13/ic14（128/256/512/1024/32/64/256/512） | 仓内重组 PNG 元素，每元素就是定稿原帧 |
 | `win/chromium_doc.ico`、`chromium_pdf.ico` | `mark-white-*`（字形 10/20/30/159）+ 既有蓝色底板合成 | 定稿未出文档图标，底板配色待设计确认 |
 

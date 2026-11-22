@@ -1,52 +1,52 @@
-import { ArrowDownToLine, Cpu, ShieldCheck } from 'lucide-react'
+import { ArrowDownToLine, LayoutPanelLeft, ShieldCheck } from 'lucide-react'
+import { copy } from '../copy'
 
-/** Persistent value rail beside the onboarding steps, in the app theme. */
+const FEATURE_ICONS = [ArrowDownToLine, LayoutPanelLeft, ShieldCheck] as const
+
+/** Value rail beside the onboarding steps. It sits straight on the silver page
+ * (one milky layer, a hairline on its right edge) — no tinted gradient, no
+ * colour accent, and the B6 mark stays icon-sized (browser checklist 甲40, 甲42). */
 export function VisualRail() {
+  const [lead, tail] = splitOnce(copy.railHeadline, copy.railHeadlineAccent)
   return (
-    <div
-      className="relative hidden w-[280px] shrink-0 flex-col justify-between overflow-hidden border-border border-r p-9 lg:flex xl:w-[360px]"
-      style={{
-        background:
-          'linear-gradient(165deg, var(--color-accent-tint) 0%, var(--color-bg-sunken) 55%, var(--color-bg-canvas) 100%)',
-      }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(420px 300px at 30% 12%, var(--color-accent-tint-2), transparent 70%)',
-        }}
-      />
+    <div className="relative hidden w-[280px] shrink-0 flex-col justify-between overflow-hidden border-line border-r-[0.75px] bg-white/[0.22] p-9 lg:flex xl:w-[340px]">
       <div className="relative flex items-center gap-2.5">
         {/* Must stay a literal public path: importing the asset or inlining it
-            breaks scripts/verify-chromium-build.ts (allowlist, no data: URLs). */}
+            breaks scripts/verify-chromium-build.ts (allowlist, no data: URLs).
+            make_icons.py writes the B6 app icon here. */}
         <img
           alt=""
           aria-hidden
-          className="size-[38px] rounded-[11px]"
+          className="size-8 rounded-[9px]"
           src="/icon/128.png"
         />
-        <div className="font-extrabold text-[17px] tracking-tight">
-          Windrise
+        <div className="font-medium text-[16px] text-ink">
+          {copy.brandName}
         </div>
       </div>
       <div className="relative">
-        <div className="mb-[22px] font-semibold text-[21px] text-ink leading-snug">
-          The Open Source <span className="text-accent">private browser</span>{' '}
-          for the web you use every day
+        <div className="mb-6 font-medium text-[20px] text-ink leading-[1.4]">
+          {lead}
+          {tail !== null && (
+            <>
+              <span className="text-accent">{copy.railHeadlineAccent}</span>
+              {tail}
+            </>
+          )}
         </div>
-        <div className="flex flex-col gap-3">
-          {FEATURES.map((feature) => {
-            const Icon = feature.icon
+        <div className="flex flex-col gap-3.5">
+          {copy.railFeatures.map((feature, index) => {
+            const Icon = FEATURE_ICONS[index] ?? ShieldCheck
             return (
-              <div key={feature.title} className="flex items-start gap-[11px]">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-card/70 text-accent-ink">
-                  <Icon className="size-[15px]" />
+              <div key={feature.title} className="flex items-start gap-3">
+                <span className="wr-sunken flex size-8 shrink-0 items-center justify-center text-ink">
+                  <Icon className="size-4" strokeWidth={1.75} />
                 </span>
-                <div>
-                  <div className="font-bold text-[13.5px]">{feature.title}</div>
-                  <div className="text-[12px] text-ink-2">
+                <div className="min-w-0">
+                  <div className="font-medium text-[14px] text-ink">
+                    {feature.title}
+                  </div>
+                  <div className="text-[12px] text-ink-2 leading-[1.5]">
                     {feature.description}
                   </div>
                 </div>
@@ -55,27 +55,14 @@ export function VisualRail() {
           })}
         </div>
       </div>
-      <div className="relative text-[11.5px] text-ink-3">
-        Local-first. Private.
-      </div>
+      <div className="relative text-[12px] text-ink-3">{copy.railFooter}</div>
     </div>
   )
 }
 
-const FEATURES = [
-  {
-    icon: ArrowDownToLine,
-    title: 'Bring your browser',
-    description: 'History, bookmarks, and saved logins.',
-  },
-  {
-    icon: Cpu,
-    title: 'Fast, focused browsing',
-    description: 'Tabs, history, and bookmarks in one place.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Runs on your machine',
-    description: 'Local-first and private.',
-  },
-] as const
+/** Splits text around the first occurrence of `marker`; tail is null if absent. */
+function splitOnce(text: string, marker: string): [string, string | null] {
+  const index = marker ? text.indexOf(marker) : -1
+  if (index < 0) return [text, null]
+  return [text.slice(0, index), text.slice(index + marker.length)]
+}

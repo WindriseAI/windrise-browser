@@ -23,6 +23,7 @@ import { ImportSourceTile } from '../components/ImportSourceTile'
 import { MacKeychainDialog } from '../components/MacKeychainDialog'
 import { MacKeychainReminder } from '../components/MacKeychainNotice'
 import { StepWrap } from '../components/StepWrap'
+import { copy } from '../copy'
 import {
   completedImportItemCount,
   defaultImportItemsForSource,
@@ -52,11 +53,11 @@ function importButtonLabelFor(
   checkedItems: readonly BrowserOSImportItem[],
   browserName: string,
 ): string {
-  if (!hasSource) return 'Pick a profile'
-  if (!hasSupportedItems) return 'Nothing to copy from this profile'
-  if (checkedItems.length === 0) return 'Select what to copy'
+  if (!hasSource) return copy.pickProfile
+  if (!hasSupportedItems) return copy.nothingToCopy
+  if (checkedItems.length === 0) return copy.selectWhatToCopy
 
-  return `Copy from ${browserName.replace(/^Google /, '')}`
+  return copy.copyFrom(browserName.replace(/^Google /, ''))
 }
 
 /** Collapsing the list must not hide the profile whose data will be copied. */
@@ -104,7 +105,7 @@ export function ImportStep({
     sourceResult?.displayName ||
     selectedSource?.profileName ||
     selectedSource?.browserName ||
-    'source'
+    copy.sourceFallback
   const isDetecting = state.status === 'detecting'
   const hasNoProfiles = !isDetecting && state.sources.length === 0
   const hasSupportedItems = (selectedSource?.supportedItems.length ?? 0) > 0
@@ -125,13 +126,13 @@ export function ImportStep({
   const importedItemSummary = state.progress
     ? importedItems.length
       ? importItemListLabel(importedItems)
-      : 'No completed items reported'
-    : 'No item details reported'
+      : copy.noCompletedItems
+    : copy.noItemDetails
   const importButtonLabel = importButtonLabelFor(
     Boolean(selectedSource),
     hasSupportedItems,
     checkedItems,
-    selectedSource?.browserName ?? 'browser',
+    selectedSource?.browserName ?? copy.browserFallback,
   )
 
   function requestImport() {
@@ -168,18 +169,17 @@ export function ImportStep({
   return (
     <StepWrap className="max-w-[800px]">
       <DisplayHeading>
-        Bring <Em>everything</Em> with you
+        {copy.importTitleLead}
+        <Em>{copy.importTitleAccent}</Em>
+        {copy.importTitleTail}
       </DisplayHeading>
-      <StepCopy>
-        Copy your history, bookmarks, and saved logins from your current
-        browser. Everything stays on this machine.
-      </StepCopy>
+      <StepCopy>{copy.importBody}</StepCopy>
 
       {phase === 'picker' && (
         <>
           <div className="mb-2.5 flex items-center justify-between gap-3">
-            <div className="font-bold text-[12.5px] text-ink-2">
-              {isDetecting ? 'Looking for profiles' : 'Pick a profile'}
+            <div className="font-medium text-[13px] text-ink-2">
+              {isDetecting ? copy.lookingForProfiles : copy.pickProfile}
             </div>
             <Button
               type="button"
@@ -189,9 +189,9 @@ export function ImportStep({
               disabled={isDetecting}
             >
               <RefreshCw
-                className={`size-3.5 ${isDetecting ? 'animate-spin' : ''}`}
+                className={`size-3.5 ${isDetecting ? 'motion-safe:animate-spin' : ''}`}
               />
-              Refresh
+              {copy.refresh}
             </Button>
           </div>
           <FormField
@@ -202,7 +202,7 @@ export function ImportStep({
                 id={profileListId}
                 className="mb-3 flex flex-col gap-2"
                 role="radiogroup"
-                aria-label="Browser profiles"
+                aria-label={copy.browserProfiles}
               >
                 {visibleSources.map((source) => (
                   <ImportSourceTile
@@ -224,8 +224,8 @@ export function ImportStep({
                   />
                 ))}
                 {hasNoProfiles && (
-                  <div className="rounded-xl border border-border-2 bg-card p-4 text-[12.5px] text-ink-2">
-                    No profiles found.
+                  <div className="wr-sunken p-4 text-[13px] text-ink-2">
+                    {copy.noProfiles}
                   </div>
                 )}
                 {/* Only ask for a pick when there is one to make. With no
@@ -251,8 +251,8 @@ export function ImportStep({
                 className={`size-3.5 ${showAllProfiles ? 'rotate-180' : ''}`}
               />
               {showAllProfiles
-                ? 'Show fewer profiles'
-                : `Show ${state.sources.length - 4} more profiles`}
+                ? copy.showFewerProfiles
+                : copy.showMoreProfiles(state.sources.length - 4)}
             </Button>
           )}
           {selectedSource && hasSupportedItems && (
@@ -263,15 +263,15 @@ export function ImportStep({
             />
           )}
           {state.error && (
-            <div className="mb-4 rounded-xl border border-amber/30 bg-amber-tint p-4 text-[12.5px] text-ink-2">
+            <div className="wr-sunken-alert mb-4 p-4 text-[13px] text-ink">
               {state.error.message}
             </div>
           )}
-          <div className="sticky -bottom-6 z-10 border-border-2 border-t bg-bg-canvas py-4">
+          <div className="wr-action-bar sticky -bottom-6 z-10 pt-6 pb-4">
             {needsPermission && (
               <p className="mb-3 flex items-center gap-2 text-ink-3 text-xs">
                 <Lock aria-hidden className="size-3.5" />
-                macOS may ask for your Mac login password.
+                {copy.macPasswordHint}
               </p>
             )}
             <div className="flex flex-wrap items-center gap-3">
@@ -291,11 +291,11 @@ export function ImportStep({
                 variant="ghost"
                 onClick={onContinue}
               >
-                Skip for now
+                {copy.skipForNow}
               </Button>
               {selectedSource?.profileName && (
                 <span className="text-ink-3 text-xs">
-                  From {selectedSource.profileName}’s profile
+                  {copy.fromProfile(selectedSource.profileName)}
                 </span>
               )}
             </div>
@@ -317,14 +317,13 @@ export function ImportStep({
 
       {phase === 'failed' && (
         <>
-          <div className="mb-4 rounded-xl border border-amber/30 bg-amber-tint p-4">
-            <div className="mb-2 flex items-center gap-2 font-bold text-[13px] text-ink">
-              <AlertTriangle className="size-4 text-amber" />
-              Something went wrong.
+          <div className="wr-sunken-alert mb-4 p-4">
+            <div className="mb-2 flex items-center gap-2 font-medium text-[14px] text-ink">
+              <AlertTriangle className="size-4 text-amber" strokeWidth={1.75} />
+              {copy.somethingWentWrong}
             </div>
-            <div className="text-[12.5px] text-ink-2">
-              {state.error?.message ??
-                "Windrise couldn't finish this import. Try again below, or refresh the profile list."}
+            <div className="text-[13px] text-ink-2">
+              {state.error?.message ?? copy.importFailedFallback}
             </div>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -336,11 +335,16 @@ export function ImportStep({
               disabled={!isPickerValid}
             >
               <Download className="size-4" />
-              Try again
+              {copy.tryAgain}
             </Button>
-            <Button type="button" size="lg" variant="ghost" onClick={onRefresh}>
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              onClick={onRefresh}
+            >
               <RefreshCw className="size-4" />
-              Refresh profiles
+              {copy.refreshProfiles}
             </Button>
             <Button
               type="button"
@@ -348,7 +352,7 @@ export function ImportStep({
               variant="ghost"
               onClick={onContinue}
             >
-              Skip for now
+              {copy.skipForNow}
             </Button>
           </div>
         </>
@@ -362,8 +366,8 @@ export function ImportStep({
             sourceName={sourceName}
           />
           <Button type="button" size="lg" onClick={onContinue}>
+            {copy.continue}
             <ArrowRight className="size-4" />
-            Continue
           </Button>
         </>
       )}

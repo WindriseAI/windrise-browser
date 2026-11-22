@@ -143,20 +143,26 @@ export function Onboarding() {
         ) : (
           <>
             {/* Re-mounts on each step (keyed) and plays a directional slide-in.
-            No exit animation, so the flow can never stall waiting on one. */}
+            No exit animation, so the flow can never stall waiting on one.
+            Full transform string (not the x shorthand) keeps it on the
+            compositor; critically damped spring, no overshoot (apple-design
+            §4: damping 1.0, response 0.4). Reduced motion: no movement. */}
             <motion.div
               key={step}
               initial={
                 reduce
                   ? false
-                  : { x: direction.current >= 0 ? 40 : -40, opacity: 0 }
+                  : {
+                      transform: `translateX(${direction.current >= 0 ? 24 : -24}px)`,
+                      opacity: 0,
+                    }
               }
-              animate={{ x: 0, opacity: 1 }}
+              animate={{ transform: 'translateX(0px)', opacity: 1 }}
               transition={{
                 type: 'spring',
-                stiffness: 300,
-                damping: 30,
-                opacity: { duration: 0.2 },
+                bounce: 0,
+                duration: 0.4,
+                opacity: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
               }}
             >
               {step === 0 && (

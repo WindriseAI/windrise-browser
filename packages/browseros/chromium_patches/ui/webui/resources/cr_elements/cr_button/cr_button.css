@@ -1,0 +1,97 @@
+diff --git a/ui/webui/resources/cr_elements/cr_button/cr_button.css b/ui/webui/resources/cr_elements/cr_button/cr_button.css
+index fac0230..a8eb5e6 100644
+--- a/ui/webui/resources/cr_elements/cr_button/cr_button.css
++++ b/ui/webui/resources/cr_elements/cr_button/cr_button.css
+@@ -188,3 +188,92 @@ cr-ripple { z-index: 1; }
+ 
+ #content,
+ ::slotted(*) { z-index: 2; }
++
++/* Copyright 2026 Windrise. Use of this source code is governed by the
++ * AGPL-3.0 license that can be found in the LICENSE file. */
++
++/* 风桥液态玻璃按钮（R673「按钮不用大黑色」、R745；乙07 的墨色主按钮被 11-18 用户意见取代）。
++ * 和电脑端 electron/ui2/tokens.css、浏览器扩展设置页同一套三层，令牌 --lg-* 同名同值，
++ * 定义在 cr_shared_vars.css 补丁末尾的风桥段（html 上，影子 DOM 里继承得到）：
++ *   主（.action-button）= 唯一凸起的白玻璃：上白 96% 下白 74% 渐变 + 0.75px 白边 + 上缘高光
++ *     + 下缘一线暗 + 近远两层阴影，字墨色；
++ *   次（默认 cr-button）= 墨色 42% 细线框 + 很淡的白玻璃 + 上缘高光。
++ * 悬停只给有鼠标的设备、瞬间换底（不用上游盖在上面的半透明层）；按下 scale(.97) 120ms、
++ * 主按钮阴影瞬间换成「凹进去一点」；禁用整体 .45；不要水波纹。只动 transform / opacity，
++ * 减少动态效果时不缩、不过渡（电脑端清单 31、33）。tonal / floating 两种不改。 */
++:host {
++  --cr-button-border-color: var(--lg-secondary-edge, rgba(20, 23, 28, .42));
++  --cr-button-text-color: var(--cr-primary-text-color);
++  background: var(--lg-secondary-bg, transparent);
++  box-shadow: var(--lg-secondary-shadow, none);
++  transition: var(--lg-btn-transition, none);
++}
++
++:host(.action-button) {
++  --cr-button-text-color: var(--cr-primary-text-color);
++  background: var(--lg-primary-bg, #fff);
++  box-shadow: var(--lg-primary-shadow, none);
++}
++
++:host(.tonal-button),
++:host(.floating-button) {
++  background: var(--cr-button-background-color);
++  box-shadow: none;
++}
++
++:host(:active:not([disabled])) {
++  transform: scale(.97);
++}
++
++:host(.action-button:active:not([disabled])) {
++  box-shadow: var(--lg-primary-shadow-press, none);
++}
++
++:host([disabled]) {
++  background: var(--cr-button-disabled-background-color);
++  box-shadow: none;
++  opacity: var(--lg-disabled-opacity, .45);
++}
++
++:host(.action-button[disabled]) {
++  background: var(--lg-primary-bg-disabled, transparent);
++  box-shadow: var(--lg-primary-shadow-disabled, none);
++  color: var(--cr-primary-text-color);
++}
++
++:host(:not(.tonal-button):not(.floating-button):hover) #hoverBackground {
++  display: none;
++}
++
++@media (hover: hover) and (pointer: fine) {
++  :host(:not(.action-button):not(.tonal-button):not(.floating-button):hover) {
++    background: var(--lg-secondary-bg-hover, transparent);
++  }
++
++  :host(.action-button:hover) {
++    background: var(--lg-primary-bg-hover, #fff);
++  }
++}
++
++/* 键盘焦点：保留玻璃本身的光影，外面加 2px 焦点环（上游这里把 box-shadow 清掉了） */
++:host-context(.focus-outline-visible):host(:focus) {
++  box-shadow: var(--lg-secondary-shadow, none);
++}
++
++:host-context(.focus-outline-visible):host(.action-button:focus) {
++  box-shadow: var(--lg-primary-shadow, none);
++}
++
++#ink {
++  display: none;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  :host {
++    transition: none;
++  }
++
++  :host(:active:not([disabled])) {
++    transform: none;
++  }
++}
