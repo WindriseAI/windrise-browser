@@ -1,12 +1,13 @@
 diff --git a/ui/webui/resources/cr_elements/cr_button/cr_button.css b/ui/webui/resources/cr_elements/cr_button/cr_button.css
-index fac0230..009cc95 100644
+index fac023087a..b9d0b8a4ff 100644
 --- a/ui/webui/resources/cr_elements/cr_button/cr_button.css
 +++ b/ui/webui/resources/cr_elements/cr_button/cr_button.css
-@@ -188,3 +188,94 @@ cr-ripple { z-index: 1; }
+@@ -188,3 +188,96 @@ cr-ripple { z-index: 1; }
  
  #content,
  ::slotted(*) { z-index: 2; }
 +
++/* stylelint-disable no-duplicate-selectors */
 +/* Copyright 2026 Windrise. Use of this source code is governed by the
 + * AGPL-3.0 license that can be found in the LICENSE file. */
 +
@@ -97,3 +98,4 @@ index fac0230..009cc95 100644
 +    transform: none;
 +  }
 +}
++/* stylelint-enable no-duplicate-selectors */

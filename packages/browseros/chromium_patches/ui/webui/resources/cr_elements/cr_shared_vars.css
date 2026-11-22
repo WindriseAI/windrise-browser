@@ -1,5 +1,5 @@
 diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
-index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acce314608a 100644
+index f478ceca5c..77e86b6082 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
 @@ -377,3 +377,300 @@ html[webui-refresh-2026] {
@@ -140,7 +140,7 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acc
 +/* 深色模式（石墨银，与浏览器外框 #262B32 / #2E343C 及电脑端 tokens.css 深色一致）：
 + * 同时响应系统/Blink prefers-color-scheme: dark 与 Chromium WebUI 的 html[dark]。 */
 +@media (prefers-color-scheme: dark) {
-+  html:not(#wr-tokens):not([data-theme="light"]) {
++  html:not(#wr-tokens):not([data-theme='light']) {
 +    color-scheme: dark;
 +    --wr-text: #EEF1F4;
 +    --wr-text-2: #BAC1C9;
