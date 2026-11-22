@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,510 @@
+@@ -0,0 +1,511 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -414,8 +414,9 @@ index 0000000000..622c8730b3
 +}
 +
 +void OnAuthorityTimer(Verification* record) {
-+  base::ScopedAllowBlocking allow_blocking;
-+  PollAuthority(record);
++  if (record && record->extension) {
++    RefreshWindriseAssistantAuthority(record->extension.get());
++  }
 +}
 +}  // namespace
 +
