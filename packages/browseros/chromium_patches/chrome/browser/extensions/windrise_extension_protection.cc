@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,341 @@
+@@ -0,0 +1,510 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -14,6 +14,7 @@ index 0000000000..622c8730b3
 +#include <map>
 +#include <memory>
 +#include <optional>
++#include <set>
 +#include <string>
 +#include <string_view>
 +#include <vector>
@@ -22,11 +23,13 @@ index 0000000000..622c8730b3
 +#include "base/callback_list.h"
 +#include "base/command_line.h"
 +#include "base/containers/span.h"
++#include "base/files/file.h"
 +#include "base/files/file_enumerator.h"
 +#include "base/files/file_util.h"
 +#include "base/files/file_path_watcher.h"
 +#include "base/functional/bind.h"
 +#include "base/no_destructor.h"
++#include "base/scoped_observation.h"
 +#include "base/strings/string_number_conversions.h"
 +#include "base/strings/string_util.h"
 +#include "base/threading/thread_restrictions.h"
@@ -35,6 +38,8 @@ index 0000000000..622c8730b3
 +#include "crypto/hash.h"
 +#include "crypto/keypair.h"
 +#include "crypto/sign.h"
++#include "extensions/browser/extension_registry.h"
++#include "extensions/browser/extension_registry_observer.h"
 +#include "extensions/browser/management_policy.h"
 +#include "extensions/common/extension.h"
 +#include "extensions/common/mojom/manifest.mojom.h"
@@ -189,18 +194,29 @@ index 0000000000..622c8730b3
 +  return *key;
 +}
 +
++// Lease TTL on the desktop side is 8000ms; polling at 1000ms reduces UI
++// thread wakeups by 75% while keeping revocation/renewal well within TTL.
++constexpr base::TimeDelta kAuthorityPollInterval = base::Milliseconds(1000);
++
 +struct Verification {
++  ~Verification() {
++    authority_timer.Stop();
++    watcher.reset();
++  }
 +  scoped_refptr<const Extension> extension;
 +  bool valid = false;
 +  bool authorized = false;
++  bool needs_reverify = false;
 +  std::string digest;
 +  std::string last_lease;
++  int64_t last_lease_size = -1;
++  base::Time last_lease_mtime;
 +  base::FilePath lease_path;
 +  std::string lease_buffer;
 +  std::string signature_buffer;
 +  base::TimeTicks lease_deadline;
 +  base::RepeatingTimer authority_timer;
-+  base::FilePathWatcher watcher;
++  std::unique_ptr<base::FilePathWatcher> watcher;
 +};
 +
 +using Verifications =
@@ -210,14 +226,132 @@ index 0000000000..622c8730b3
 +  return *records;
 +}
 +
++void EraseVerification(const base::FilePath& path, const Extension* extension) {
++  auto& records = VerifiedExtensions();
++  const auto found = records.find(path);
++  if (found == records.end()) {
++    return;
++  }
++  if (extension && found->second->extension.get() != extension) {
++    return;
++  }
++  const bool was_authorized = found->second->authorized;
++  found->second->authority_timer.Stop();
++  found->second->watcher.reset();
++  records.erase(found);
++  if (was_authorized) {
++    AuthorityObservers().Notify();
++  }
++}
++
++void ClearAllVerifications() {
++  auto& records = VerifiedExtensions();
++  bool any_authorized = false;
++  for (auto& [path, record] : records) {
++    if (record) {
++      any_authorized = any_authorized || record->authorized;
++      record->authority_timer.Stop();
++      record->watcher.reset();
++    }
++  }
++  records.clear();
++  if (any_authorized) {
++    AuthorityObservers().Notify();
++  }
++}
++
++class WindriseExtensionRegistryObserver : public ExtensionRegistryObserver {
++ public:
++  explicit WindriseExtensionRegistryObserver(ExtensionRegistry* registry) {
++    observation_.Observe(registry);
++  }
++  ~WindriseExtensionRegistryObserver() override = default;
++
++  void OnExtensionLoaded(content::BrowserContext* browser_context,
++                         const Extension* extension) override {
++    if (extension && extension->id() == kAssistantId) {
++      observed_paths_.insert(extension->path());
++    }
++  }
++
++  void OnExtensionUnloaded(content::BrowserContext* browser_context,
++                           const Extension* extension,
++                           UnloadedExtensionReason reason) override {
++    if (extension && extension->id() == kAssistantId) {
++      observed_paths_.erase(extension->path());
++      EraseVerification(extension->path(), extension);
++    }
++  }
++
++  void OnExtensionUninstalled(content::BrowserContext* browser_context,
++                              const Extension* extension,
++                              UninstallReason reason) override {
++    if (extension && extension->id() == kAssistantId) {
++      observed_paths_.erase(extension->path());
++      EraseVerification(extension->path(), extension);
++    }
++  }
++
++  void OnShutdown(ExtensionRegistry* registry) override;
++
++ private:
++  std::set<base::FilePath> observed_paths_;
++  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
++      observation_{this};
++};
++
++using RegistryObserverMap =
++    std::map<ExtensionRegistry*,
++             std::unique_ptr<WindriseExtensionRegistryObserver>>;
++RegistryObserverMap& RegistryObservers() {
++  static base::NoDestructor<RegistryObserverMap> observers;
++  return *observers;
++}
++
++void WindriseExtensionRegistryObserver::OnShutdown(
++    ExtensionRegistry* registry) {
++  for (const base::FilePath& path : observed_paths_) {
++    EraseVerification(path, nullptr);
++  }
++  observed_paths_.clear();
++  if (registry) {
++    const ExtensionSet installed = registry->GenerateInstalledExtensionsSet();
++    if (const Extension* ext = installed.GetByID(kAssistantId)) {
++      EraseVerification(ext->path(), ext);
++    }
++  }
++  observation_.Reset();
++  auto& observers = RegistryObservers();
++  const bool is_last_registry = observers.size() <= 1;
++  observers.erase(registry);
++  if (is_last_registry) {
++    ClearAllVerifications();
++  }
++}
++
 +bool HasLiveLease(Verification* record) {
-+  std::string& lease = record->lease_buffer;
-+  if (!record->valid || !LeaseKey() ||
-+      !base::ReadFileToStringWithMaxSize(record->lease_path, &lease, 2048)) {
++  if (!record->valid || !LeaseKey()) {
++    return false;
++  }
++  base::File::Info info;
++  if (!base::GetFileInfo(record->lease_path, &info)) {
++    record->last_lease.clear();
++    record->last_lease_size = -1;
++    record->last_lease_mtime = base::Time();
 +    return false;
 +  }
 +  const auto ticks = base::TimeTicks::Now();
++  if (!record->last_lease.empty() && info.size == record->last_lease_size &&
++      info.last_modified == record->last_lease_mtime) {
++    return ticks < record->lease_deadline;
++  }
++  std::string& lease = record->lease_buffer;
++  if (!base::ReadFileToStringWithMaxSize(record->lease_path, &lease, 2048)) {
++    return false;
++  }
 +  if (lease == record->last_lease) {
++    record->last_lease_size = info.size;
++    record->last_lease_mtime = info.last_modified;
 +    return ticks < record->lease_deadline;
 +  }
 +  std::array<std::string_view, 6> lines;
@@ -250,29 +384,45 @@ index 0000000000..622c8730b3
 +    return false;
 +  }
 +  record->last_lease.swap(lease);
++  record->last_lease_size = info.size;
++  record->last_lease_mtime = info.last_modified;
 +  record->lease_deadline = ticks + base::Milliseconds(expires - now);
 +  return true;
 +}
 +
 +void PollAuthority(Verification* record) {
 +  bool authorized = HasLiveLease(record);
-+  if (authorized && !record->authorized) {
-+    // Rebuilding a previously revoked layer requires every signed byte again.
++  // Only re-hash the directory when restoring after an actual revocation.
++  // Initial startup already ran VerifySignedDirectory() under the armed
++  // recursive FilePathWatcher, so avoid hashing the full bundle twice.
++  if (authorized && !record->authorized && record->needs_reverify) {
 +    std::string digest;
 +    if (!VerifySignedDirectory(record->extension->path(), &digest) ||
 +        digest != record->digest) {
 +      record->valid = false;
 +      authorized = false;
++    } else {
++      record->needs_reverify = false;
 +    }
++  } else if (!authorized && record->authorized) {
++    record->needs_reverify = true;
 +  }
 +  if (record->authorized != authorized) {
 +    record->authorized = authorized;
 +    AuthorityObservers().Notify();
 +  }
 +}
++
++void OnAuthorityTimer(Verification* record) {
++  base::ScopedAllowBlocking allow_blocking;
++  PollAuthority(record);
++}
 +}  // namespace
 +
 +void RefreshWindriseAssistantAuthority(const Extension* extension) {
++  if (!extension) {
++    return;
++  }
 +  const auto found = VerifiedExtensions().find(extension->path());
 +  if (found != VerifiedExtensions().end() &&
 +      found->second->extension.get() == extension) {
@@ -296,16 +446,18 @@ index 0000000000..622c8730b3
 +  next->extension = extension;
 +  next->lease_path = extension->path().DirName().AppendASCII(
 +      ".windrise-assistant-lease");
++  next->watcher = std::make_unique<base::FilePathWatcher>();
 +  // Start monitoring before reading any bytes. Any write, deletion, rename or
 +  // watcher failure revokes this Extension object's trust until it is reloaded.
 +  // Restoring timestamps cannot restore trust. Never rehash on activity pulses.
 +  if (base::FilePathWatcher::RecursiveWatchAvailable() &&
-+      next->watcher.Watch(
++      next->watcher->Watch(
 +          extension->path(), base::FilePathWatcher::Type::kRecursive,
 +          base::BindRepeating(
 +              [](Verification* result, const base::FilePath&, bool) {
 +                result->valid = false;
 +                result->authorized = false;
++                result->needs_reverify = true;
 +                result->authority_timer.Stop();
 +                AuthorityObservers().Notify();
 +              },
@@ -313,12 +465,17 @@ index 0000000000..622c8730b3
 +    next->valid = VerifySignedDirectory(extension->path(), &next->digest);
 +  }
 +  const bool valid = next->valid;
++  if (!valid) {
++    next->watcher.reset();
++  }
 +  record = std::move(next);
-+  if (valid) {
++  // Only run periodic lease polling when a desktop lease public key was
++  // supplied on the command line; standalone launches need no background poll.
++  if (valid && LeaseKey().has_value()) {
 +    record->authority_timer.Start(
-+        FROM_HERE, base::Milliseconds(250),
-+        base::BindRepeating(&RefreshWindriseAssistantAuthority,
-+                            base::Unretained(extension)));
++        FROM_HERE, kAuthorityPollInterval,
++        base::BindRepeating(&OnAuthorityTimer,
++                            base::Unretained(record.get())));
 +  }
 +  return valid;
 +}
@@ -340,8 +497,20 @@ index 0000000000..622c8730b3
 +  return AuthorityObservers().Add(std::move(callback));
 +}
 +
-+void RegisterWindriseExtensionProtection(ManagementPolicy* policy) {
++void RegisterWindriseExtensionProtection(
++    ManagementPolicy* policy,
++    content::BrowserContext* browser_context) {
 +  static base::NoDestructor<WindriseProtection> provider;
 +  policy->RegisterProvider(provider.get());
++  if (browser_context) {
++    if (ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context)) {
++      auto& observers = RegistryObservers();
++      if (!observers.contains(registry)) {
++        observers.emplace(
++            registry, std::make_unique<WindriseExtensionRegistryObserver>(
++                          registry));
++      }
++    }
++  }
 +}
 +}  // namespace extensions

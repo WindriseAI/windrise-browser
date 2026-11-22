@@ -65,7 +65,7 @@ class WindriseNativeFuncTest(unittest.TestCase):
 
         fn_body = api_cc.split("WindriseSetDefaultSearchEngineFunction::Run()")[1]
         fn_body = fn_body.split("WindriseSetNewTabAsHomePageFunction::Run()")[0]
-        self.assertIn("if (!IsWindriseCaller(extension()))", fn_body)
+        self.assertIn("if (!IsVerifiedWindriseCaller(extension()))", fn_body)
         self.assertIn('params->provider_id == "google"', fn_body)
         self.assertIn("TemplateURLPrepopulateData::google.id", fn_body)
         self.assertIn('params->provider_id == "baidu"', fn_body)
@@ -100,7 +100,7 @@ class WindriseNativeFuncTest(unittest.TestCase):
 
         fn_body = api_cc.split("WindriseSetNewTabAsHomePageFunction::Run()")[1]
         fn_body = fn_body.split("WindriseGetColorSchemeFunction::Run()")[0]
-        self.assertIn("if (!IsWindriseCaller(extension()))", fn_body)
+        self.assertIn("if (!IsVerifiedWindriseCaller(extension()))", fn_body)
         self.assertIn("SessionStartupPref::TypeIsManaged(prefs)", fn_body)
         self.assertIn("SessionStartupPref::DEFAULT", fn_body)
         self.assertIn("SessionStartupPref::SetStartupPref(prefs, startup_pref)", fn_body)
@@ -131,17 +131,84 @@ class WindriseNativeFuncTest(unittest.TestCase):
 
         get_body = api_cc.split("WindriseGetColorSchemeFunction::Run()")[1]
         get_body = get_body.split("WindriseSetColorSchemeFunction::Run()")[0]
-        self.assertIn("if (!IsWindriseCaller(extension()))", get_body)
+        self.assertIn("if (!IsVerifiedWindriseCaller(extension()))", get_body)
         self.assertIn("ThemeServiceFactory::GetForProfile(profile)", get_body)
         self.assertIn("GetBrowserColorScheme()", get_body)
         self.assertIn("BrowserUsesDarkColors()", get_body)
 
         set_body = api_cc.split("WindriseSetColorSchemeFunction::Run()")[1]
-        self.assertIn("if (!IsWindriseCaller(extension()))", set_body)
+        self.assertIn("if (!IsVerifiedWindriseCaller(extension()))", set_body)
         self.assertIn('params->mode == "system"', set_body)
         self.assertIn('params->mode == "light"', set_body)
         self.assertIn('params->mode == "dark"', set_body)
         self.assertIn("SetBrowserColorScheme(scheme)", set_body)
+
+    def test_p0_security_allowlist_and_pref_whitelist(self):
+        import hashlib
+
+        expected_sha1 = hashlib.sha1(ASSISTANT_ID.encode("ascii")).hexdigest().upper()
+        perm_features = read_patch(
+            "chrome/common/extensions/api/_permission_features.json"
+        )
+        self.assertIn('"allowlist": [', perm_features)
+        self.assertIn(f'"{expected_sha1}"', perm_features)
+
+        api_cc = read_patch(
+            "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
+        )
+        self.assertIn("bool IsReadableWindrisePref(", api_cc)
+        self.assertIn('pref_name.starts_with("windrise.")', api_cc)
+        self.assertIn('pref_name.starts_with("browser.theme.")', api_cc)
+        self.assertIn('pref_name == "browser.color_scheme"', api_cc)
+
+        for fn_name in (
+            "WindriseGetPrefFunction::Run()",
+            "WindriseSetPrefFunction::Run()",
+            "WindriseChoosePathFunction::Run()",
+            "WindriseShowToastFunction::Run()",
+            "WindriseShowInfoBarFunction::Run()",
+            "WindriseSetAddressBarSlotFunction::Run()",
+            "WindriseGetDefaultSearchEngineFunction::Run()",
+            "WindriseGetVersionNumberFunction::Run()",
+            "WindriseGetWindriseVersionNumberFunction::Run()",
+        ):
+            snippet = api_cc.split(fn_name)[1][:300]
+            self.assertIn("if (!IsVerifiedWindriseCaller(extension()))", snippet)
+
+        for lease_fn in (
+            "WindriseSetAiTabsFunction::Run()",
+            "WindriseSetConnectedAisFunction::Run()",
+            "WindriseSetAiActivityFunction::Run()",
+            "WindriseSetEdgeLightModeFunction::Run()",
+            "WindrisePulseAiActivityFunction::Run()",
+        ):
+            snippet = api_cc.split(lease_fn)[1][:200]
+            self.assertIn("if (!IsWindriseCaller(extension()))", snippet)
+
+    def test_incognito_120hz_and_protection_cleanup(self):
+        mixer = read_patch("chrome/browser/ui/color/windrise_color_mixer.cc")
+        self.assertIn("GetIncognitoColors()", mixer)
+        self.assertIn("UserColorSource::kGrayscale", mixer)
+
+        card_cc = read_patch(
+            "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc"
+        )
+        self.assertNotIn("kDefaultFrameRate", card_cc)
+        self.assertIn("kContentFadeFrameRate = 120", card_cc)
+        self.assertIn("RichAnimationDuration(kContentFadeDuration)", card_cc)
+
+        protection = read_patch(
+            "chrome/browser/extensions/windrise_extension_protection.cc"
+        )
+        self.assertIn("OnExtensionUnloaded(", protection)
+        self.assertIn("OnShutdown(ExtensionRegistry* registry)", protection)
+        self.assertIn("EraseVerification(", protection)
+        self.assertIn("base::Milliseconds(1000)", protection)
+        self.assertIn("LeaseKey().has_value()", protection)
+
+        shared_vars = read_patch("ui/webui/resources/cr_elements/cr_shared_vars.css")
+        self.assertNotIn("fixed !important", shared_vars)
+        self.assertIn("body::before", shared_vars)
 
 
 if __name__ == "__main__":

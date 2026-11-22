@@ -440,8 +440,8 @@ class DebrandUpstreamTest(unittest.TestCase):
             "chrome/browser/extensions/api/browser_os/browser_os_api.cc"
         )
         self.assertIn('!params->name.starts_with("windrise.")', api_cc)
-        self.assertIn('params->name.starts_with("windrise.theme.")', api_cc)
-        self.assertIn('params->name.starts_with("windrise.layout.")', api_cc)
+        self.assertIn('pref_name.starts_with("windrise.")', api_cc)
+        self.assertIn("browseros::prefs::kWindriseEdgeLightMode", api_cc)
 
     def test_r728_default_google_service_prefs_disabled(self):
         prefs_cc = read_patch("chrome/browser/prefs/browser_prefs.cc")

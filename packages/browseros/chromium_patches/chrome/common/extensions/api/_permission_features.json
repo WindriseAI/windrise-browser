@@ -2,13 +2,17 @@ diff --git a/chrome/common/extensions/api/_permission_features.json b/chrome/com
 index 8fc9516817eed135909939de32918823cf7186b5..647c6983a7b30acf7a6954ec17f03139cb60334e 100644
 --- a/chrome/common/extensions/api/_permission_features.json
 +++ b/chrome/common/extensions/api/_permission_features.json
-@@ -93,6 +93,10 @@
+@@ -93,6 +93,14 @@
      // "desktop_android" is not supported.
      "platforms": ["chromeos", "linux", "mac", "win"]
    },
 +  "windrise": {
 +    "channel": "stable",
-+    "extension_types": ["extension", "platform_app"]
++    "extension_types": ["extension", "platform_app"],
++    "allowlist": [
++      // Built-in Windrise assistant extension (amlnokjigkbgngdgkofikfphjbknfodp).
++      "BC3AA24447626DACBD17CB28F1EB5B40D1E92F96"
++    ]
 +  },
    "browsingData": {
      "channel": "stable",

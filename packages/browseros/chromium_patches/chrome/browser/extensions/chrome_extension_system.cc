@@ -64,7 +64,7 @@ index 53e2ad0e8..b2e2ed3ca 100644
  }
  
  void ChromeExtensionSystem::Shared::RegisterManagementPolicyProviders() {
-+  RegisterWindriseExtensionProtection(management_policy_.get());
++  RegisterWindriseExtensionProtection(management_policy_.get(), profile_);
    management_policy_->RegisterProviders(
        ExtensionManagementFactory::GetForBrowserContext(profile_)
            ->GetProviders());

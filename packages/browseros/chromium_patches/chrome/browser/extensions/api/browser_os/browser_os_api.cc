@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..3c3d52dcbb
 --- /dev/null
 +++ b/chrome/browser/extensions/api/browser_os/browser_os_api.cc
-@@ -0,0 +1,940 @@
+@@ -0,0 +1,983 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -120,9 +120,24 @@ index 0000000000..3c3d52dcbb
 +  return found;
 +}
 +
-+// Product-only APIs require the fixed identity and authentic signed resources.
++// Local browser UI and preference APIs only require the verified built-in
++// extension (fixed ID + pinned RSA public key + signed directory), so they
++// keep working on standalone launch and during desktop restarts.
++bool IsVerifiedWindriseCaller(const extensions::Extension* extension) {
++  return extensions::IsVerifiedWindriseExtension(extension);
++}
++
++// AI takeover and edge-light APIs additionally require a live desktop lease.
 +bool IsWindriseCaller(const extensions::Extension* extension) {
 +  return extensions::IsAuthorizedWindriseExtension(extension);
++}
++
++// Explicit allowlist for chrome.windrise.getPref so callers cannot read
++// arbitrary Chromium local_state or Profile preferences.
++bool IsReadableWindrisePref(const std::string& pref_name) {
++  return pref_name.starts_with("windrise.") ||
++         pref_name.starts_with("browser.theme.") ||
++         pref_name == "browser.color_scheme";
 +}
 +
 +// 扩展推来的图标只收 PNG，宽高各不超过 256：先看 IHDR 再交给解码器，
@@ -169,9 +184,16 @@ index 0000000000..3c3d52dcbb
 +}  // namespace
 +
 +ExtensionFunction::ResponseAction WindriseGetPrefFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::GetPref::Params> params =
 +      windrise::GetPref::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
++
++  if (!IsReadableWindrisePref(params->name)) {
++    return RespondNow(Error("Preference is not allowed: " + params->name));
++  }
 +
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
 +  PrefService* prefs = FindPrefService(params->name, profile);
@@ -195,6 +217,9 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseSetPrefFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::SetPref::Params> params =
 +      windrise::SetPref::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -203,9 +228,9 @@ index 0000000000..3c3d52dcbb
 +  if (!params->name.starts_with("windrise.")) {
 +    return RespondNow(Error("Only windrise.* preferences can be modified"));
 +  }
-+  if ((params->name.starts_with("windrise.theme.") ||
-+       params->name.starts_with("windrise.layout.") ||
-+       params->name == browseros::prefs::kWindriseEdgeLightMode ||
++  // Edge-light prefs stay bound to desktop lease authority (same as
++  // setEdgeLightMode); theme/layout and other local prefs work standalone.
++  if ((params->name == browseros::prefs::kWindriseEdgeLightMode ||
 +       params->name == browseros::prefs::kWindriseEdgeLightExtensionId) &&
 +      !IsWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
@@ -224,6 +249,9 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseLogMetricFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::LogMetric::Params> params =
 +      windrise::LogMetric::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -254,6 +282,9 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseGetVersionNumberFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::string version = std::string(version_info::GetVersionNumber());
 +
 +  return RespondNow(
@@ -262,6 +293,9 @@ index 0000000000..3c3d52dcbb
 +
 +ExtensionFunction::ResponseAction
 +WindriseGetWindriseVersionNumberFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::string version = std::string(version_info::GetBrowserOSVersionNumber());
 +
 +  return RespondNow(ArgumentList(
@@ -293,6 +327,9 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseChoosePathFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::ChoosePath::Params> params =
 +      windrise::ChoosePath::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -361,6 +398,9 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseShowToastFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::ShowToast::Params> params =
 +      windrise::ShowToast::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -399,6 +439,9 @@ index 0000000000..3c3d52dcbb
 +
 +// Bridges chrome.windrise.showInfoBar to Chrome's tab-scoped alert infobar.
 +ExtensionFunction::ResponseAction WindriseShowInfoBarFunction::Run() {
++  if (!IsVerifiedWindriseCaller(extension())) {
++    return RespondNow(Error("Not allowed"));
++  }
 +  std::optional<windrise::ShowInfoBar::Params> params =
 +      windrise::ShowInfoBar::Params::Create(args());
 +  EXTENSION_FUNCTION_VALIDATE(params);
@@ -446,7 +489,7 @@ index 0000000000..3c3d52dcbb
 +// Bridges chrome.windrise.setAddressBarSlot to the tab-scoped page action
 +// controller. State is kept per tab, so switching tabs preserves each slot.
 +ExtensionFunction::ResponseAction WindriseSetAddressBarSlotFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  std::optional<windrise::SetAddressBarSlot::Params> params =
@@ -761,7 +804,7 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseGetDefaultSearchEngineFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  auto params = windrise::GetDefaultSearchEngine::Params::Create(args());
@@ -806,7 +849,7 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseSetDefaultSearchEngineFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  auto params = windrise::SetDefaultSearchEngine::Params::Create(args());
@@ -854,7 +897,7 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseSetNewTabAsHomePageFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -885,7 +928,7 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseGetColorSchemeFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -914,7 +957,7 @@ index 0000000000..3c3d52dcbb
 +}
 +
 +ExtensionFunction::ResponseAction WindriseSetColorSchemeFunction::Run() {
-+  if (!IsWindriseCaller(extension())) {
++  if (!IsVerifiedWindriseCaller(extension())) {
 +    return RespondNow(Error("Not allowed"));
 +  }
 +  auto params = windrise::SetColorScheme::Params::Create(args());

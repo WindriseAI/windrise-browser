@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..51be809ca6
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,607 @@
+@@ -0,0 +1,630 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -59,6 +59,9 @@ index 0000000000..51be809ca6
 +
 +// 每一组内容淡入 / 淡出各 180ms（状态切换档），曲线 T0。
 +constexpr base::TimeDelta kContentFadeDuration = base::Milliseconds(180);
++// 对齐 WindriseAiSectionView：在窗口内由合成器按屏幕刷新率驱动（120Hz 屏 120 帧），
++// 进窗口前退回 120Hz 节拍，不再写死 60Hz 默认帧率。
++constexpr int kContentFadeFrameRate = 120;
 +// 旧组透明度降到这个值时，新组无论如何都开始淡入（兜底，保证两组有重叠）。
 +// 不按时间兜底：T0 前段很陡，旧组在 1/3 时长时已经接近 0，按时间等会留空档
 +// （补录 R1：展开 / 首次收起时卡片有约 33ms 近乎全空，见盘点 8.14）。
@@ -79,16 +82,36 @@ index 0000000000..51be809ca6
 +
 +}  // namespace
 +
++WindriseAiCardView::FadeDelegate::FadeDelegate(views::View* host,
++                                               WindriseAiCardView* owner)
++    : views::AnimationDelegateViews(host), owner_(owner) {}
++
++WindriseAiCardView::FadeDelegate::~FadeDelegate() = default;
++
++void WindriseAiCardView::FadeDelegate::AnimationProgressed(
++    const gfx::Animation* animation) {
++  owner_->AnimationProgressed(animation);
++}
++
++void WindriseAiCardView::FadeDelegate::AnimationEnded(
++    const gfx::Animation* animation) {
++  owner_->AnimationEnded(animation);
++}
++
 +WindriseAiCardView::WindriseAiCardView(BrowserWindowInterface* browser)
 +    : views::Button(base::BindRepeating(&WindriseAiCardView::ShowPanel,
 +                                        base::Unretained(this))),
 +      browser_(browser),
-+      fade_out_animation_(kContentFadeDuration,
-+                          gfx::LinearAnimation::kDefaultFrameRate,
-+                          this),
-+      fade_in_animation_(kContentFadeDuration,
-+                         gfx::LinearAnimation::kDefaultFrameRate,
-+                         this) {
++      fade_out_delegate_(this, this),
++      fade_in_delegate_(this, this),
++      fade_out_animation_(
++          gfx::Animation::RichAnimationDuration(kContentFadeDuration),
++          kContentFadeFrameRate,
++          &fade_out_delegate_),
++      fade_in_animation_(
++          gfx::Animation::RichAnimationDuration(kContentFadeDuration),
++          kContentFadeFrameRate,
++          &fade_in_delegate_) {
 +  SetAccessibleName(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
 +  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 +  SetTooltipText(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_OPEN_APP));

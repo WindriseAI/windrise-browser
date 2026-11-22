@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..e0b94bf9ef
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,28 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -12,6 +12,10 @@ index 0000000000..e0b94bf9ef
 +
 +#include "base/callback_list.h"
 +#include "base/functional/callback.h"
++
++namespace content {
++class BrowserContext;
++}  // namespace content
 +
 +namespace extensions {
 +class Extension;
@@ -23,6 +27,8 @@ index 0000000000..e0b94bf9ef
 +void RefreshWindriseAssistantAuthority(const Extension* extension);
 +base::CallbackListSubscription AddWindriseAssistantAuthorityObserver(
 +    base::RepeatingClosure callback);
-+void RegisterWindriseExtensionProtection(ManagementPolicy* policy);
++void RegisterWindriseExtensionProtection(
++    ManagementPolicy* policy,
++    content::BrowserContext* browser_context = nullptr);
 +}  // namespace extensions
 +#endif  // CHROME_BROWSER_EXTENSIONS_WINDRISE_EXTENSION_PROTECTION_H_

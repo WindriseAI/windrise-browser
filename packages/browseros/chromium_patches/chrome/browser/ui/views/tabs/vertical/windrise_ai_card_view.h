@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..76ce7d0228
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,151 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -128,6 +128,26 @@ index 0000000000..76ce7d0228
 +  int settled_width_[2] = {0, 0};
 +  // 见 SetCollapsedContentWidth；0 = 不知道，退回按这一刻的宽度。
 +  int collapsed_content_width_ = 0;
++  // 为两条交叉淡动画各自挂独立的 AnimationDelegateViews（同
++  // WindriseAiSectionView::Transition），由宿主视图的 CompositorAnimationRunner
++  // 按屏幕刷新率（120Hz 屏 120 帧）驱动，且不与 views::Button 自带的悬停动画
++  // 共用同一个 AnimationContainer。
++  class FadeDelegate : public views::AnimationDelegateViews {
++   public:
++    FadeDelegate(views::View* host, WindriseAiCardView* owner);
++    FadeDelegate(const FadeDelegate&) = delete;
++    FadeDelegate& operator=(const FadeDelegate&) = delete;
++    ~FadeDelegate() override;
++
++    void AnimationProgressed(const gfx::Animation* animation) override;
++    void AnimationEnded(const gfx::Animation* animation) override;
++
++   private:
++    const raw_ptr<WindriseAiCardView> owner_;
++  };
++
++  FadeDelegate fade_out_delegate_;
++  FadeDelegate fade_in_delegate_;
 +  gfx::LinearAnimation fade_out_animation_;
 +  gfx::LinearAnimation fade_in_animation_;
 +  // AI 图标只在 AI 状态变化时解码一次（切换时不再解 PNG）。

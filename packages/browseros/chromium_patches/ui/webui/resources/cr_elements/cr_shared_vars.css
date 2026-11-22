@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resour
 index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acce314608a 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,134 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,147 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -131,9 +131,22 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acc
 +      opacity 180ms cubic-bezier(.23, 1, .32, 1);
 +
 +  font-family: 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
++  background: #d5dadf;
 +}
 +
 +body {
-+  background: var(--wr-page-bg) fixed !important;
++  background: transparent !important;
 +  color: var(--wr-text);
++  isolation: isolate;
++}
++
++/* 独立固定背景层替代 background-attachment: fixed，避免滚屏触发主线程重绘。 */
++body::before {
++  content: '';
++  position: fixed;
++  inset: 0;
++  z-index: -1;
++  pointer-events: none;
++  background: var(--wr-page-bg);
++  will-change: transform;
 +}

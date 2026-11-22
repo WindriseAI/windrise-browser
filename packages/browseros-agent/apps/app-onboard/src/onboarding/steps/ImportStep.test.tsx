@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { useForm } from 'react-hook-form'
-import { MemoryRouter } from 'react-router'
 import { Form } from '@/components/ui/form'
 import type { BrowserOSOnboardingState } from '../browseros-onboarding-api'
 import { BROWSEROS_ONBOARDING_API_VERSION } from '../browseros-onboarding-api'
@@ -86,14 +85,12 @@ function render(
   unpicked = false,
 ): string {
   return renderToStaticMarkup(
-    <MemoryRouter>
-      <Harness
-        phase={phase}
-        state={state}
-        formValues={formValues}
-        unpicked={unpicked}
-      />
-    </MemoryRouter>,
+    <Harness
+      phase={phase}
+      state={state}
+      formValues={formValues}
+      unpicked={unpicked}
+    />,
   )
 }
 

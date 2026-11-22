@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..62b6aaaad0
 --- /dev/null
 +++ b/chrome/browser/ui/color/windrise_color_mixer.cc
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,173 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -18,16 +18,64 @@ index 0000000000..62b6aaaad0
 +
 +namespace {
 +
++using browseros::windrise::ThemeColors;
 +using browseros::windrise::ThemeToken;
++
++// 无痕窗口独立深石墨银配色：与普通浅色窗（#DDE1E5/#EEF0F2）及普通深色窗
++// （#262B32/#2E343C）均有清晰视觉区分，保持无彩色银灰体系与高可读对比度。
++const ThemeColors& GetIncognitoColors() {
++  static const ThemeColors kIncognito = [] {
++    ThemeColors colors;
++    const auto set = [&colors](ThemeToken token, SkColor value) {
++      colors.color[static_cast<size_t>(token)] = value;
++    };
++    set(ThemeToken::kFrame, SkColorSetRGB(0x16, 0x19, 0x1D));
++    set(ThemeToken::kBar, SkColorSetRGB(0x1E, 0x22, 0x28));
++    set(ThemeToken::kOmnibox, SkColorSetRGB(0x12, 0x15, 0x19));
++    set(ThemeToken::kTabActive, SkColorSetRGB(0x2A, 0x30, 0x38));
++    set(ThemeToken::kTile, SkColorSetRGB(0x24, 0x29, 0x30));
++    set(ThemeToken::kPopup, SkColorSetRGB(0x23, 0x28, 0x30));
++    set(ThemeToken::kText, SkColorSetRGB(0xF2, 0xF4, 0xF7));
++    set(ThemeToken::kTextSecondary, SkColorSetRGB(0x9A, 0xA3, 0xAE));
++    set(ThemeToken::kIcon, SkColorSetRGB(0xD0, 0xD6, 0xDE));
++    set(ThemeToken::kLine, SkColorSetRGB(0x34, 0x3B, 0x44));
++    set(ThemeToken::kWebContentsGap, SkColorSetRGB(0x16, 0x19, 0x1D));
++    set(ThemeToken::kPanel, SkColorSetRGB(0x23, 0x28, 0x30));
++    set(ThemeToken::kCard, SkColorSetRGB(0x23, 0x28, 0x30));
++    set(ThemeToken::kSectionHeaderText, SkColorSetRGB(0x9A, 0xA3, 0xAE));
++    set(ThemeToken::kSectionDivider, SkColorSetRGB(0x34, 0x3B, 0x44));
++    set(ThemeToken::kSlotChipBackground, SkColorSetRGB(0x0E, 0x10, 0x13));
++    set(ThemeToken::kSlotChipForeground, SkColorSetRGB(0xF2, 0xF4, 0xF7));
++    set(ThemeToken::kAiCardBackground, SkColorSetRGB(0x23, 0x28, 0x30));
++    set(ThemeToken::kAiPanelBackground, SkColorSetRGB(0x23, 0x28, 0x30));
++    set(ThemeToken::kAiPanelButtonBackground, SkColorSetRGB(0x34, 0x3B, 0x44));
++    set(ThemeToken::kAiCardBackgroundTop, SkColorSetRGB(0x2A, 0x30, 0x38));
++    set(ThemeToken::kAiCardBackgroundBottom, SkColorSetRGB(0x1E, 0x22, 0x28));
++    set(ThemeToken::kAiPanelBackgroundTop, SkColorSetRGB(0x2A, 0x30, 0x38));
++    set(ThemeToken::kAiPanelBackgroundBottom, SkColorSetRGB(0x1E, 0x22, 0x28));
++    return colors;
++  }();
++  return kIncognito;
++}
 +
 +}  // namespace
 +
 +void AddWindriseColorMixer(ui::ColorProvider* provider,
 +                           const ui::ColorProviderKey& key) {
 +  const bool dark = key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
-+  const browseros::windrise::ThemeColors& colors =
-+      dark ? browseros::windrise::GetDarkColors()
-+           : browseros::windrise::GetLightColors();
++  // ThemeService::GetColorProviderKey 对无痕 Profile 固定设置
++  // kDark + UserColorSource::kGrayscale + custom_theme == nullptr；
++  // 风桥普通窗口由 SyncDefaultTheme 置 kUserColor（走 kAccent），据此可靠区分
++  // 无痕窗口与普通深浅色窗口，避免无痕与普通深色 100% 同色。
++  const bool incognito =
++      dark &&
++      key.user_color_source ==
++          ui::ColorProviderKey::UserColorSource::kGrayscale &&
++      !key.custom_theme;
++  const ThemeColors& colors =
++      incognito ? GetIncognitoColors()
++                : (dark ? browseros::windrise::GetDarkColors()
++                        : browseros::windrise::GetLightColors());
 +  const auto token = [&colors](ThemeToken id) { return colors.Get(id); };
 +
 +  ui::ColorMixer& mixer = provider->AddMixer();

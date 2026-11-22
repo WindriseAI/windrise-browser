@@ -183,11 +183,24 @@
     linear-gradient(155deg, #edeff1 0%, #d5dadf 26%, #aeb6bf 58%, #8c96a1 100%);
 }
 
-/* 整页的银色底：和电脑端窗口板、扩展设置页同一组渐变 + 一层乳白，固定在视口上 */
+/* 整页的银色底：用独立固定合成层替代 background-attachment: fixed，恢复 GPU 滚动合成 */
 html {
   min-height: 100%;
+  background: #d5dadf;
+}
+
+body {
+  isolation: isolate;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background: var(--wr-page-bg);
-  background-attachment: fixed;
+  will-change: transform;
 }
 
 @theme inline {
@@ -374,11 +387,21 @@ html {
 }
 
 /* 底部常驻操作条：内容从它下面滚过时托住按钮（apple-design 第 12 节 scroll edge），不画硬分隔线。
-   重画一遍和 html 完全相同、同样固定在视口的底，再用遮罩把上沿 28px 渐隐——和页面是同一张图，
-   看不出一条色带或接缝（浏览器清单甲39 那类问题）。 */
+   用独立背景伪元素按视口尺寸对齐底图并用遮罩把上沿 28px 渐隐，去掉 background-attachment: fixed
+   以保持合成器滚动（同时避免遮罩裁掉按钮投影与焦点环）。 */
 .wr-action-bar {
+  isolation: isolate;
+}
+
+.wr-action-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background: var(--wr-page-bg);
-  background-attachment: fixed;
+  background-size: 100vw 100vh;
+  background-position: right bottom;
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 28px);
   mask-image: linear-gradient(180deg, transparent, #000 28px);
 }

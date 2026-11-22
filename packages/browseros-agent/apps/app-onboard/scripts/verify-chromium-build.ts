@@ -27,7 +27,6 @@ const expectedRuntimeUrlPatterns = [
   /^https:\/\/base-ui\.com\/production-error$/,
   /^https:\/\/json-schema\.org\/draft\/2020-12\/schema$/,
   /^https:\/\/react\.dev\/errors\/(?:[A-Za-z0-9_-]+)?$/,
-  /^https:\/\/reactrouter\.com\/en\/main\/routers\/picking-a-router\.(?:$|[^\w./:-])/,
 ]
 
 function fail(message: string): never {
