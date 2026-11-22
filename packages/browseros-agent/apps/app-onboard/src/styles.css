@@ -25,8 +25,8 @@
  * electron/ui2/tokens.css）同名同值；改那边要一起改。上游 shadcn 的令牌名
  * （--primary、--accent、--color-green …）保留，只把值指到这一套上，组件类名不用逐个改。
  *
- * 只做浅色：浏览器默认浅色（theme_service 补丁把 kBrowserColorScheme 默认成 kLight），
- * 引导页里也没有任何地方加 .dark。
+ * 浅色 / 深色自动跟随系统与浏览器深浅色设置（color_scheme2 / prefers-color-scheme: dark），
+ * 深色采用与电脑端 tokens.css 和浏览器外框一致的石墨银体系，不再硬锁浅色。
  *
  * Chromium WebUI 资源约定不许带字体文件和 data: URL：HarmonyOS Sans 先找本机已装的，
  * 再从 chrome://resources（内部页 harmonyos_sans.css 同一份原样字体）取，都没有就退到系统字体。
@@ -56,7 +56,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --radius: 0.75rem;
 
   /* 文字（同电脑端 --ink / --sub / --ink3） */
@@ -78,6 +78,15 @@
   --btn-glass: rgba(255, 255, 255, 0.78);
   --btn-glass-hover: rgba(255, 255, 255, 0.9);
   --btn-shadow: rgba(20, 26, 33, 0.14);
+  --wr-checkbox-bg: rgba(255, 255, 255, 0.7);
+  --wr-rail-bg: rgba(255, 255, 255, 0.22);
+  --wr-sunken-alert-border: rgba(20, 23, 28, 0.4);
+  --wr-scrim-bg: rgba(20, 23, 28, 0.22);
+  --wr-page-fallback: #d5dadf;
+  --wr-ink-4: rgba(20, 23, 28, 0.42);
+  --wr-accent-tint-2: rgba(20, 23, 28, 0.08);
+  --wr-card-reduced-transparency: rgba(255, 255, 255, 0.95);
+  --wr-card-high-contrast: rgba(255, 255, 255, 0.96);
 
   /* 动效（同电脑端：按下 120、状态 180、进场 240，曲线统一 --ease） */
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
@@ -183,10 +192,109 @@
     linear-gradient(155deg, #edeff1 0%, #d5dadf 26%, #aeb6bf 58%, #8c96a1 100%);
 }
 
+/* 深色（石墨银，与电脑端 tokens.css 及浏览器外框 #262B32 / #2E343C 协调） */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ink: #eef1f4;
+    --ink-2: #bac1c9;
+    --ink-3: #a4acb6;
+    --on-ink: #14171c;
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-strong: rgba(255, 255, 255, 0.14);
+    --glass-rim: rgba(255, 255, 255, 0.16);
+    --line: rgba(255, 255, 255, 0.14);
+    --hover: rgba(255, 255, 255, 0.08);
+    --sunken: rgba(0, 0, 0, 0.14);
+    --focus: #c9d0d8;
+    --popup: #3a4149;
+    --btn-glass: rgba(255, 255, 255, 0.1);
+    --btn-glass-hover: rgba(255, 255, 255, 0.16);
+    --btn-shadow: rgba(0, 0, 0, 0.28);
+    --wr-checkbox-bg: rgba(255, 255, 255, 0.08);
+    --wr-rail-bg: rgba(0, 0, 0, 0.14);
+    --wr-sunken-alert-border: rgba(255, 255, 255, 0.34);
+    --wr-scrim-bg: rgba(22, 26, 32, 0.56);
+    --wr-page-fallback: #3b424a;
+    --wr-ink-4: rgba(238, 241, 244, 0.45);
+    --wr-accent-tint-2: rgba(255, 255, 255, 0.1);
+    --wr-card-reduced-transparency: rgba(58, 65, 73, 0.95);
+    --wr-card-high-contrast: rgba(58, 65, 73, 0.96);
+    --lg-fill-top: rgba(255, 255, 255, 0.2);
+    --lg-fill-bottom: rgba(255, 255, 255, 0.08);
+    --lg-fill-top-hover: rgba(255, 255, 255, 0.26);
+    --lg-fill-bottom-hover: rgba(255, 255, 255, 0.12);
+    --lg-rim: rgba(255, 255, 255, 0.22);
+    --lg-highlight: rgba(255, 255, 255, 0.34);
+    --lg-lowlight: rgba(0, 0, 0, 0.18);
+    --lg-shadow-near: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --lg-shadow-far: 0 6px 16px rgba(0, 0, 0, 0.3);
+    --lg-press-shade: rgba(0, 0, 0, 0.2);
+    --lg-quiet-fill: rgba(255, 255, 255, 0.06);
+    --lg-quiet-fill-hover: rgba(255, 255, 255, 0.12);
+    --lg-quiet-edge: rgba(255, 255, 255, 0.42);
+    --lg-quiet-highlight: rgba(255, 255, 255, 0.14);
+    --lg-text-hover: rgba(255, 255, 255, 0.1);
+    --lg-text-hover-rim: rgba(255, 255, 255, 0.18);
+    --wr-page-bg: linear-gradient(
+      160deg,
+      #4b535d 0%,
+      #3b424a 48%,
+      #2e343b 100%
+    );
+  }
+}
+
+:root[data-theme="dark"],
+:root.dark {
+  color-scheme: dark;
+  --ink: #eef1f4;
+  --ink-2: #bac1c9;
+  --ink-3: #a4acb6;
+  --on-ink: #14171c;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-strong: rgba(255, 255, 255, 0.14);
+  --glass-rim: rgba(255, 255, 255, 0.16);
+  --line: rgba(255, 255, 255, 0.14);
+  --hover: rgba(255, 255, 255, 0.08);
+  --sunken: rgba(0, 0, 0, 0.14);
+  --focus: #c9d0d8;
+  --popup: #3a4149;
+  --btn-glass: rgba(255, 255, 255, 0.1);
+  --btn-glass-hover: rgba(255, 255, 255, 0.16);
+  --btn-shadow: rgba(0, 0, 0, 0.28);
+  --wr-checkbox-bg: rgba(255, 255, 255, 0.08);
+  --wr-rail-bg: rgba(0, 0, 0, 0.14);
+  --wr-sunken-alert-border: rgba(255, 255, 255, 0.34);
+  --wr-scrim-bg: rgba(22, 26, 32, 0.56);
+  --wr-page-fallback: #3b424a;
+  --wr-ink-4: rgba(238, 241, 244, 0.45);
+  --wr-accent-tint-2: rgba(255, 255, 255, 0.1);
+  --wr-card-reduced-transparency: rgba(58, 65, 73, 0.95);
+  --wr-card-high-contrast: rgba(58, 65, 73, 0.96);
+  --lg-fill-top: rgba(255, 255, 255, 0.2);
+  --lg-fill-bottom: rgba(255, 255, 255, 0.08);
+  --lg-fill-top-hover: rgba(255, 255, 255, 0.26);
+  --lg-fill-bottom-hover: rgba(255, 255, 255, 0.12);
+  --lg-rim: rgba(255, 255, 255, 0.22);
+  --lg-highlight: rgba(255, 255, 255, 0.34);
+  --lg-lowlight: rgba(0, 0, 0, 0.18);
+  --lg-shadow-near: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --lg-shadow-far: 0 6px 16px rgba(0, 0, 0, 0.3);
+  --lg-press-shade: rgba(0, 0, 0, 0.2);
+  --lg-quiet-fill: rgba(255, 255, 255, 0.06);
+  --lg-quiet-fill-hover: rgba(255, 255, 255, 0.12);
+  --lg-quiet-edge: rgba(255, 255, 255, 0.42);
+  --lg-quiet-highlight: rgba(255, 255, 255, 0.14);
+  --lg-text-hover: rgba(255, 255, 255, 0.1);
+  --lg-text-hover-rim: rgba(255, 255, 255, 0.18);
+  --wr-page-bg: linear-gradient(160deg, #4b535d 0%, #3b424a 48%, #2e343b 100%);
+}
+
 /* 整页的银色底：用独立固定合成层替代 background-attachment: fixed，恢复 GPU 滚动合成 */
 html {
   min-height: 100%;
-  background: #d5dadf;
+  background: var(--wr-page-fallback);
 }
 
 body {
@@ -238,11 +346,11 @@ body::before {
   --color-accent-2: var(--ink-2);
   --color-accent-ink: var(--ink);
   --color-accent-tint: var(--sunken);
-  --color-accent-tint-2: rgba(20, 23, 28, 0.08);
+  --color-accent-tint-2: var(--wr-accent-tint-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
-  --color-ink-4: rgba(20, 23, 28, 0.42);
+  --color-ink-4: var(--wr-ink-4);
   --color-on-ink: var(--on-ink);
   --color-line: var(--line);
   --color-bg-canvas: transparent;
@@ -368,7 +476,7 @@ body::before {
 /* 凹槽 + 墨色细边：出错、要注意的那一块（定稿出错也是墨色，不用红 / 琥珀） */
 .wr-sunken-alert {
   background: var(--sunken);
-  border: 0.75px solid rgba(20, 23, 28, 0.4);
+  border: 0.75px solid var(--wr-sunken-alert-border);
   border-radius: 12px;
 }
 
@@ -408,14 +516,14 @@ body::before {
 
 /* 对话框遮罩：轻压暗 + 3px 模糊 */
 .wr-scrim {
-  background: rgba(20, 23, 28, 0.22);
+  background: var(--wr-scrim-bg);
   backdrop-filter: blur(3px);
 }
 
 /* 减少透明（apple-design 第 14 节）：半透明的面换成近实心，去模糊 */
 @media (prefers-reduced-transparency: reduce) {
   .wr-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--wr-card-reduced-transparency);
   }
   .wr-scrim {
     background: rgba(20, 23, 28, 0.4);
@@ -426,7 +534,7 @@ body::before {
 /* 高对比：卡片近实心 + 看得清的边 */
 @media (prefers-contrast: more) {
   .wr-card {
-    background: rgba(255, 255, 255, 0.96);
+    background: var(--wr-card-high-contrast);
     border-color: var(--lg-quiet-edge);
   }
   .lg-btn-primary {

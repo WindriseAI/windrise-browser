@@ -2,19 +2,18 @@ diff --git a/chrome/browser/resources/settings/settings_page/settings_section.cs
 index 620aad3462a4addb1dc69283b5466aa24bf32a4f..7620c7ea69ad76f647164e9c74f9d93833909964 100644
 --- a/chrome/browser/resources/settings/settings_page/settings_section.css
 +++ b/chrome/browser/resources/settings/settings_page/settings_section.css
-@@ -59,10 +59,13 @@
+@@ -59,10 +59,12 @@
    margin-top: var(--cr-section-vertical-margin);
  }
  
-+/* Windrise / 卡片和电脑端「设置中窗口」.card、浏览器扩展设置页同一种：白 72% 平涂透出页面的
-+ * 银色渐变，0.75px 白 90% 边（画在内侧），圆角 16，无外投影；不随主题色表的近白不透明底
-+ * （rgb(253 252 252)）走。关于页也在这里。 */
++/* Windrise / 卡片随 cr_shared_vars.css 浅/深色令牌切换（浅色白 72% + 0.75px 白边，
++ * 深色石墨玻璃 8% + 0.75px 亮边，圆角 16，无外投影）。关于页也在这里。 */
  #card {
 -  background-color: var(--cr-card-background-color);
-+  background-color: rgb(255 255 255 / .72);
++  background-color: var(--wr-card, rgb(255 255 255 / .72));
    border-radius: var(--cr-card-border-radius);
 -  box-shadow: var(--cr-card-shadow);
-+  box-shadow: inset 0 0 0 .75px rgb(255 255 255 / .9);
++  box-shadow: var(--wr-card-shadow, inset 0 0 0 .75px rgb(255 255 255 / .9));
    flex: 1;
    overflow: hidden;
  }

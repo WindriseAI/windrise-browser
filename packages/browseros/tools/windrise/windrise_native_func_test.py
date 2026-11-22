@@ -209,6 +209,39 @@ class WindriseNativeFuncTest(unittest.TestCase):
         shared_vars = read_patch("ui/webui/resources/cr_elements/cr_shared_vars.css")
         self.assertNotIn("fixed !important", shared_vars)
         self.assertIn("body::before", shared_vars)
+        self.assertIn("color-scheme: light dark;", shared_vars)
+        self.assertIn("html:not(#wr-tokens)[dark]", shared_vars)
+        self.assertIn("@media (prefers-color-scheme: dark)", shared_vars)
+
+        settings_sec = read_patch(
+            "chrome/browser/resources/settings/settings_page/settings_section.css"
+        )
+        self.assertIn("var(--wr-card,", settings_sec)
+        self.assertIn("var(--wr-card-shadow,", settings_sec)
+
+        neterror = read_patch("components/neterror/resources/neterror.css")
+        self.assertNotIn("background-attachment: fixed", neterror)
+        self.assertIn("@media (prefers-color-scheme: dark)", neterror)
+
+        for zh_xtb in (
+            "chrome/app/resources/chromium_strings_zh-CN.xtb",
+            "chrome/app/resources/chromium_strings_zh-HK.xtb",
+            "chrome/app/resources/chromium_strings_zh-TW.xtb",
+            "chrome/app/resources/generated_resources_zh-CN.xtb",
+            "chrome/app/resources/generated_resources_zh-HK.xtb",
+            "chrome/app/resources/generated_resources_zh-TW.xtb",
+        ):
+            added = [
+                line for line in read_patch(zh_xtb).splitlines() if line.startswith("+")
+            ]
+            self.assertFalse(
+                any("Windrise Browser" in line for line in added),
+                f"unexpected English brand in Chinese xtb: {zh_xtb}",
+            )
+            self.assertTrue(
+                any("风桥浏览器" in line for line in added),
+                f"missing Chinese brand in Chinese xtb: {zh_xtb}",
+            )
 
 
 if __name__ == "__main__":

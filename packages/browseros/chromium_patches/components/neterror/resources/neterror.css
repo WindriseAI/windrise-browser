@@ -2,7 +2,7 @@ diff --git a/components/neterror/resources/neterror.css b/components/neterror/re
 index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead50333e313 100644
 --- a/components/neterror/resources/neterror.css
 +++ b/components/neterror/resources/neterror.css
-@@ -701,3 +701,40 @@ html[dir='rtl'].offline .icon-offline {
+@@ -701,3 +701,83 @@ html[dir='rtl'].offline .icon-offline {
      display: none;
    }
  }
@@ -15,15 +15,24 @@ index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead5
 + */
 +html {
 +  min-height: 100%;
++  color-scheme: light dark;
 +  background-color: #C3CAD1;
++}
++body.neterror {
++  isolation: isolate;
++}
++body.neterror::before {
++  content: '';
++  position: fixed;
++  inset: 0;
++  z-index: -1;
++  pointer-events: none;
 +  background-image:
 +    radial-gradient(70% 60% at 84% 6%, rgb(255 255 255 / .5), rgb(255 255 255 / 0) 85%),
 +    radial-gradient(75% 85% at 0% 60%, rgb(98 108 120 / .18), rgb(98 108 120 / 0) 85%),
 +    radial-gradient(80% 50% at 60% 100%, rgb(255 255 255 / .45), rgb(255 255 255 / 0) 85%),
 +    linear-gradient(135deg, #D6DBE0, #C0C7CE 45%, #CBD1D7 75%, #E3E6E9);
-+  background-repeat: no-repeat;
-+  background-size: 100% 100%;
-+  background-attachment: fixed;
++  will-change: transform;
 +}
 +body, body.neterror, #main-frame-error, .interstitial-wrapper, #main-content, #content, .nav-wrapper, #details {
 +  background: transparent !important;
@@ -43,3 +52,37 @@ index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead5
 +  background: #E8EBEE !important; color: #0E1116; border: 0; border-radius: 10px;
 +}
 +body.neterror #details { color: #4A515C; }
++
++@media (prefers-color-scheme: dark) {
++  html {
++    background-color: #3B424A;
++  }
++  body.neterror::before {
++    background-image: linear-gradient(160deg, #4B535D 0%, #3B424A 48%, #2E343B 100%);
++  }
++  body.neterror,
++  body.neterror a,
++  body.neterror .error-code,
++  body.neterror #details {
++    color: #BAC1C9;
++  }
++  body.neterror h1,
++  body.neterror #main-message h1 {
++    color: #EEF1F4;
++  }
++  body.neterror .icon {
++    filter: grayscale(1) invert(1) brightness(1.1);
++    opacity: .85;
++  }
++  body.neterror button,
++  body.neterror .blue-button,
++  body.neterror #reload-button {
++    background: #EEF1F4 !important;
++    color: #14171C;
++  }
++  body.neterror .secondary-button,
++  body.neterror #details-button {
++    background: rgb(255 255 255 / .12) !important;
++    color: #EEF1F4;
++  }
++}

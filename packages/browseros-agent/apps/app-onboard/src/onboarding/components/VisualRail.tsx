@@ -9,7 +9,7 @@ const FEATURE_ICONS = [ArrowDownToLine, LayoutPanelLeft, ShieldCheck] as const
 export function VisualRail() {
   const [lead, tail] = splitOnce(copy.railHeadline, copy.railHeadlineAccent)
   return (
-    <div className="relative hidden w-[280px] shrink-0 flex-col justify-between overflow-hidden border-line border-r-[0.75px] bg-white/[0.22] p-9 lg:flex xl:w-[340px]">
+    <div className="relative hidden w-[280px] shrink-0 flex-col justify-between overflow-hidden border-line border-r-[0.75px] bg-[var(--wr-rail-bg)] p-9 lg:flex xl:w-[340px]">
       <div className="relative flex items-center gap-2.5">
         {/* Must stay a literal public path: importing the asset or inlining it
             breaks scripts/verify-chromium-build.ts (allowlist, no data: URLs).

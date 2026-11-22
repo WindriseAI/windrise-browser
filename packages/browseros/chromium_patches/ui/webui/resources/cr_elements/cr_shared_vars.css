@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resour
 index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acce314608a 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,147 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,300 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -19,15 +19,16 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acc
 + * html / body 两条规则对所有内部页共用；--color-sys-* 由 ColorMixer 补丁
 + * （windrise_color_mixer.cc）从同一组偏好值给出，这里写的是同值兜底。
 + *
-+ * 暗色分支等于亮色：选择器用 html:not(#wr-tokens)（一个 id 级的
-+ * 特异度，任何 html 都匹配），压过上游 html[webui-refresh-2026]、html[dark] 和主题
-+ * 色表在暗色下给 html 的同名变量；再加 color-scheme: light，滚动条、表单控件也走亮色。
-+ * 避免暗色下卡片底被更高特异度的规则换掉，而文字仍是这里的墨色。
++ * 配色响应系统与浏览器深浅色设置（color_scheme2）：
++ * 选择器用 html:not(#wr-tokens)（一个 id 级特异度，任何 html 都匹配），压过上游
++ * html[webui-refresh-2026]、html[dark] 与默认主题色表；亮色用银雾渐变 + 72% 乳白卡片，
++ * 深色（@media (prefers-color-scheme: dark) 或 Chromium WebUI 的 html[dark]）切到
++ * 与外框石墨深灰协调的石墨银渐变 + 半透明暗玻璃卡片，不再硬锁浅色白底。
 + *
 + * --wr-page-bg 使用反差小、过渡长的渐变。
 + */
 +html:not(#wr-tokens) {
-+  color-scheme: light;
++  color-scheme: light dark;
 +  --wr-text: #0E1116;
 +  --wr-text-2: #4A515C;
 +  --wr-line: #C9CED5;
@@ -37,6 +38,8 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acc
 +  /* 卡片：和电脑端 settings.css .card、扩展设置页同一种（白 72% 平涂 + 0.75px 白 90% 边、
 +     圆角 16，无外投影、无毛玻璃）；11-22 前是 .74 + 一层外投影、圆角 12。 */
 +  --wr-card: rgb(255 255 255 / .72);
++  --wr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .9);
++  --wr-page-fallback: #d5dadf;
 +  --wr-page-bg:
 +    radial-gradient(70% 60% at 84% 6%, rgb(255 255 255 / .5), rgb(255 255 255 / 0) 85%),
 +    radial-gradient(75% 85% at 0% 60%, rgb(98 108 120 / .18), rgb(98 108 120 / 0) 85%),
@@ -131,7 +134,157 @@ index f478ceca5c9604af6d8677c2f30af9d92e98c4c7..3789e8a788724d19bb6fbdcd1c2a2acc
 +      opacity 180ms cubic-bezier(.23, 1, .32, 1);
 +
 +  font-family: 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
-+  background: #d5dadf;
++  background: var(--wr-page-fallback);
++}
++
++/* 深色模式（石墨银，与浏览器外框 #262B32 / #2E343C 及电脑端 tokens.css 深色一致）：
++ * 同时响应系统/Blink prefers-color-scheme: dark 与 Chromium WebUI 的 html[dark]。 */
++@media (prefers-color-scheme: dark) {
++  html:not(#wr-tokens):not([data-theme="light"]) {
++    color-scheme: dark;
++    --wr-text: #EEF1F4;
++    --wr-text-2: #BAC1C9;
++    --wr-line: rgb(255 255 255 / .14);
++    --wr-tile: rgb(255 255 255 / .08);
++    --wr-surface: #3A4149;
++    --wr-accent: #EEF1F4;
++    --wr-card: rgb(255 255 255 / .08);
++    --wr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .16);
++    --wr-page-fallback: #3B424A;
++    --wr-page-bg: linear-gradient(160deg, #4B535D 0%, #3B424A 48%, #2E343B 100%);
++
++    --google-blue-50-rgb: 58, 65, 73;
++    --google-blue-100-rgb: 75, 83, 93;
++    --google-blue-300-rgb: 201, 208, 216;
++    --google-blue-400-rgb: 214, 220, 226;
++    --google-blue-500-rgb: 238, 241, 244;
++    --google-blue-600-rgb: 238, 241, 244;
++    --google-blue-700-rgb: 238, 241, 244;
++    --google-blue-800-rgb: 238, 241, 244;
++    --google-blue-900-rgb: 238, 241, 244;
++
++    --color-sys-primary: #EEF1F4;
++    --color-sys-on-primary: #14171C;
++    --color-sys-tonal-container: rgb(255 255 255 / .10);
++    --color-sys-on-tonal-container: #EEF1F4;
++    --color-sys-base-container: rgb(255 255 255 / .08);
++    --color-sys-base-container-elevated: rgb(58 65 73 / .96);
++    --color-sys-neutral-container: rgb(255 255 255 / .08);
++    --color-sys-divider: rgb(255 255 255 / .14);
++    --color-sys-state-focus-ring: #C9D0D8;
++    --color-sys-state-hover: rgb(255 255 255 / .08);
++    --color-sys-on-surface: #EEF1F4;
++    --color-sys-on-surface-subtle: #BAC1C9;
++    --color-primary-foreground: #EEF1F4;
++    --color-secondary-foreground: #BAC1C9;
++    --color-link-foreground-default: #EEF1F4;
++    --color-checkbox-foreground-checked: #EEF1F4;
++    --color-toggle-button-thumb-on: #14171C;
++    --color-toggle-button-track-on: #EEF1F4;
++    --color-webui-card-background: rgb(255 255 255 / .08);
++
++    --cr-primary-text-color: #EEF1F4;
++    --cr-secondary-text-color: #BAC1C9;
++    --cr-link-color: #EEF1F4;
++    --cr-checked-color: #EEF1F4;
++    --cr-focus-outline-color: #C9D0D8;
++    --wr-focus-ring: 0 0 0 1px #C9D0D8, 0 0 0 3px rgb(201 208 216 / .24);
++    --cr-card-background-color: rgb(255 255 255 / .08);
++    --cr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .16);
++    --cr-separator-color: rgb(255 255 255 / .14);
++    --cr-menu-background-color: #3A4149;
++    --cr-menu-shadow: 0 0 0 .5px rgb(255 255 255 / .16), 0 10px 28px rgb(0 0 0 / .42);
++    --cr-hover-background-color: rgb(255 255 255 / .08);
++
++    --lg-fill-top: rgb(255 255 255 / .20);
++    --lg-fill-bottom: rgb(255 255 255 / .08);
++    --lg-fill-top-hover: rgb(255 255 255 / .26);
++    --lg-fill-bottom-hover: rgb(255 255 255 / .12);
++    --lg-rim: rgb(255 255 255 / .22);
++    --lg-highlight: rgb(255 255 255 / .34);
++    --lg-lowlight: rgb(0 0 0 / .18);
++    --lg-shadow-near: 0 1px 2px rgb(0 0 0 / .24);
++    --lg-shadow-far: 0 6px 16px rgb(0 0 0 / .30);
++    --lg-press-shade: rgb(0 0 0 / .20);
++    --lg-quiet-fill: rgb(255 255 255 / .06);
++    --lg-quiet-fill-hover: rgb(255 255 255 / .12);
++    --lg-quiet-edge: rgb(255 255 255 / .42);
++    --lg-quiet-highlight: rgb(255 255 255 / .14);
++    --lg-text-hover-rim: rgb(255 255 255 / .18);
++  }
++}
++
++html:not(#wr-tokens)[dark] {
++  color-scheme: dark;
++  --wr-text: #EEF1F4;
++  --wr-text-2: #BAC1C9;
++  --wr-line: rgb(255 255 255 / .14);
++  --wr-tile: rgb(255 255 255 / .08);
++  --wr-surface: #3A4149;
++  --wr-accent: #EEF1F4;
++  --wr-card: rgb(255 255 255 / .08);
++  --wr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .16);
++  --wr-page-fallback: #3B424A;
++  --wr-page-bg: linear-gradient(160deg, #4B535D 0%, #3B424A 48%, #2E343B 100%);
++
++  --google-blue-50-rgb: 58, 65, 73;
++  --google-blue-100-rgb: 75, 83, 93;
++  --google-blue-300-rgb: 201, 208, 216;
++  --google-blue-400-rgb: 214, 220, 226;
++  --google-blue-500-rgb: 238, 241, 244;
++  --google-blue-600-rgb: 238, 241, 244;
++  --google-blue-700-rgb: 238, 241, 244;
++  --google-blue-800-rgb: 238, 241, 244;
++  --google-blue-900-rgb: 238, 241, 244;
++
++  --color-sys-primary: #EEF1F4;
++  --color-sys-on-primary: #14171C;
++  --color-sys-tonal-container: rgb(255 255 255 / .10);
++  --color-sys-on-tonal-container: #EEF1F4;
++  --color-sys-base-container: rgb(255 255 255 / .08);
++  --color-sys-base-container-elevated: rgb(58 65 73 / .96);
++  --color-sys-neutral-container: rgb(255 255 255 / .08);
++  --color-sys-divider: rgb(255 255 255 / .14);
++  --color-sys-state-focus-ring: #C9D0D8;
++  --color-sys-state-hover: rgb(255 255 255 / .08);
++  --color-sys-on-surface: #EEF1F4;
++  --color-sys-on-surface-subtle: #BAC1C9;
++  --color-primary-foreground: #EEF1F4;
++  --color-secondary-foreground: #BAC1C9;
++  --color-link-foreground-default: #EEF1F4;
++  --color-checkbox-foreground-checked: #EEF1F4;
++  --color-toggle-button-thumb-on: #14171C;
++  --color-toggle-button-track-on: #EEF1F4;
++  --color-webui-card-background: rgb(255 255 255 / .08);
++
++  --cr-primary-text-color: #EEF1F4;
++  --cr-secondary-text-color: #BAC1C9;
++  --cr-link-color: #EEF1F4;
++  --cr-checked-color: #EEF1F4;
++  --cr-focus-outline-color: #C9D0D8;
++  --wr-focus-ring: 0 0 0 1px #C9D0D8, 0 0 0 3px rgb(201 208 216 / .24);
++  --cr-card-background-color: rgb(255 255 255 / .08);
++  --cr-card-shadow: inset 0 0 0 .75px rgb(255 255 255 / .16);
++  --cr-separator-color: rgb(255 255 255 / .14);
++  --cr-menu-background-color: #3A4149;
++  --cr-menu-shadow: 0 0 0 .5px rgb(255 255 255 / .16), 0 10px 28px rgb(0 0 0 / .42);
++  --cr-hover-background-color: rgb(255 255 255 / .08);
++
++  --lg-fill-top: rgb(255 255 255 / .20);
++  --lg-fill-bottom: rgb(255 255 255 / .08);
++  --lg-fill-top-hover: rgb(255 255 255 / .26);
++  --lg-fill-bottom-hover: rgb(255 255 255 / .12);
++  --lg-rim: rgb(255 255 255 / .22);
++  --lg-highlight: rgb(255 255 255 / .34);
++  --lg-lowlight: rgb(0 0 0 / .18);
++  --lg-shadow-near: 0 1px 2px rgb(0 0 0 / .24);
++  --lg-shadow-far: 0 6px 16px rgb(0 0 0 / .30);
++  --lg-press-shade: rgb(0 0 0 / .20);
++  --lg-quiet-fill: rgb(255 255 255 / .06);
++  --lg-quiet-fill-hover: rgb(255 255 255 / .12);
++  --lg-quiet-edge: rgb(255 255 255 / .42);
++  --lg-quiet-highlight: rgb(255 255 255 / .14);
++  --lg-text-hover-rim: rgb(255 255 255 / .18);
 +}
 +
 +body {

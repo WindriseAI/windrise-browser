@@ -1,12 +1,18 @@
 <!doctype html>
-<html lang="en" style="background:#d5dadf">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" sizes="32x32" href="/icon/32.png" />
     <title>Windrise Browser</title>
+    <style>
+      html, body { margin: 0; background: #d5dadf; color-scheme: light dark; }
+      @media (prefers-color-scheme: dark) {
+        html, body { background: #3b424a; }
+      }
+    </style>
   </head>
-  <body style="margin:0;background:#d5dadf">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

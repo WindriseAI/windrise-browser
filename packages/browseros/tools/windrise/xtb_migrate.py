@@ -60,6 +60,12 @@ BRAND_TOKENS = (
 )
 
 REPLACEMENT = "Windrise Browser"
+ZH_REPLACEMENT = "风桥浏览器"
+
+
+def replacement_for_lang(lang: str) -> str:
+    """中文界面统一叫「风桥浏览器」，英文及其他语言用「Windrise Browser」。"""
+    return ZH_REPLACEMENT if lang.lower().startswith("zh") else REPLACEMENT
 
 
 def _apply_pairs(text: str, pairs: Sequence[Tuple[str, str]]) -> str:
@@ -221,6 +227,8 @@ def migrate_language(
                 )
                 continue
 
+            target_brand = replacement_for_lang(lang)
+            localized_pairs = [(old, target_brand) for old, _ in pairs]
             migrated = rebrand_translations(
                 original,
                 [
@@ -229,7 +237,7 @@ def migrate_language(
                         "legacy_ids": [detail["translation_source"]],
                     }
                 ],
-                dict(pairs),
+                dict(localized_pairs),
             )
             if detail["current_id"] in migrated["missing"]:
                 summary["skipped"].append(
