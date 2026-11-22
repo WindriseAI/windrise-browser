@@ -36,8 +36,11 @@
   font-family: "HarmonyOS Sans SC";
   font-style: normal;
   font-weight: 400;
-  src: local("HarmonyOS Sans SC"), local("HarmonyOS_Sans_SC"),
-    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf) format("truetype");
+  src:
+    local("HarmonyOS Sans SC"),
+    local("HarmonyOS_Sans_SC"),
+    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf)
+    format("truetype");
 }
 
 @font-face {
@@ -45,8 +48,11 @@
   font-family: "HarmonyOS Sans SC";
   font-style: normal;
   font-weight: 500;
-  src: local("HarmonyOS Sans SC Medium"), local("HarmonyOS_Sans_SC_Medium"),
-    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf) format("truetype");
+  src:
+    local("HarmonyOS Sans SC Medium"),
+    local("HarmonyOS_Sans_SC_Medium"),
+    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf)
+    format("truetype");
 }
 
 :root {
@@ -98,11 +104,22 @@
   --lg-text-hover-rim: rgba(255, 255, 255, 0.7);
 
   /* 液态玻璃按钮组合令牌（同电脑端 tokens.css 314-343 行） */
-  --lg-primary-bg: linear-gradient(180deg, var(--lg-fill-top), var(--lg-fill-bottom)) border-box;
-  --lg-primary-bg-hover: linear-gradient(180deg, var(--lg-fill-top-hover), var(--lg-fill-bottom-hover)) border-box;
+  --lg-primary-bg: linear-gradient(
+      180deg,
+      var(--lg-fill-top),
+      var(--lg-fill-bottom)
+    )
+    border-box;
+  --lg-primary-bg-hover: linear-gradient(
+      180deg,
+      var(--lg-fill-top-hover),
+      var(--lg-fill-bottom-hover)
+    )
+    border-box;
   --lg-primary-shadow:
     inset 0 0 0 0.75px var(--lg-rim), inset 0 1px 0 var(--lg-highlight),
-    inset 0 -1px 0 var(--lg-lowlight), var(--lg-shadow-near), var(--lg-shadow-far);
+    inset 0 -1px 0 var(--lg-lowlight), var(--lg-shadow-near),
+    var(--lg-shadow-far);
   --lg-primary-shadow-press:
     inset 0 0 0 0.75px var(--lg-rim), inset 0 1px 2px var(--lg-press-shade),
     var(--lg-shadow-near);
@@ -110,12 +127,17 @@
   --lg-primary-shadow-disabled: inset 0 0 0 0.75px var(--lg-text-hover-rim);
   --lg-secondary-edge: var(--lg-quiet-edge);
   --lg-secondary-bg: linear-gradient(180deg, var(--lg-quiet-fill), transparent);
-  --lg-secondary-bg-hover: linear-gradient(180deg, var(--lg-quiet-fill-hover), var(--lg-quiet-fill));
+  --lg-secondary-bg-hover: linear-gradient(
+    180deg,
+    var(--lg-quiet-fill-hover),
+    var(--lg-quiet-fill)
+  );
   --lg-secondary-shadow: inset 0 1px 0 var(--lg-quiet-highlight);
   --lg-text-hover-shadow: inset 0 0 0 0.75px var(--lg-text-hover-rim);
   --lg-disabled-opacity: 0.45;
   /* 只动合成器属性：按下 / 松开 transform 120ms，禁用 ↔ 可用 opacity 180ms */
-  --lg-btn-transition: transform var(--dur-press) var(--ease), opacity var(--dur-state) var(--ease);
+  --lg-btn-transition:
+    transform var(--dur-press) var(--ease), opacity var(--dur-state) var(--ease);
 
   /* 上游 shadcn 令牌名，值指到上面这一套（组件里的 bg-primary / text-accent 等类名不用改） */
   --background: transparent;
@@ -139,16 +161,32 @@
   --border: var(--line);
   --input: var(--lg-quiet-edge);
   --ring: var(--focus);
+
+  /* 整页银色底（同电脑端窗口板、扩展 dashboard.css 的 html 底）：渐变 + 一层乳白 */
+  --wr-page-bg:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.62),
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0.6)
+    ),
+    radial-gradient(
+      60% 50% at 0% 0%,
+      rgba(255, 255, 255, 0.85),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 45% at 100% 30%,
+      rgba(78, 89, 102, 0.28),
+      transparent 70%
+    ),
+    linear-gradient(155deg, #edeff1 0%, #d5dadf 26%, #aeb6bf 58%, #8c96a1 100%);
 }
 
 /* 整页的银色底：和电脑端窗口板、扩展设置页同一组渐变 + 一层乳白，固定在视口上 */
 html {
   min-height: 100%;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.6)),
-    radial-gradient(60% 50% at 0% 0%, rgba(255, 255, 255, 0.85), transparent 70%),
-    radial-gradient(50% 45% at 100% 30%, rgba(78, 89, 102, 0.28), transparent 70%),
-    linear-gradient(155deg, #edeff1 0%, #d5dadf 26%, #aeb6bf 58%, #8c96a1 100%);
+  background: var(--wr-page-bg);
   background-attachment: fixed;
 }
 
@@ -335,9 +373,14 @@ html {
   }
 }
 
-/* 底部常驻操作条：内容从它下面滚过时用一段渐隐托住按钮（apple-design 第 12 节 scroll edge），不画硬分隔线 */
+/* 底部常驻操作条：内容从它下面滚过时托住按钮（apple-design 第 12 节 scroll edge），不画硬分隔线。
+   重画一遍和 html 完全相同、同样固定在视口的底，再用遮罩把上沿 28px 渐隐——和页面是同一张图，
+   看不出一条色带或接缝（浏览器清单甲39 那类问题）。 */
 .wr-action-bar {
-  background: linear-gradient(180deg, rgba(222, 226, 230, 0), rgba(222, 226, 230, 0.94) 28px);
+  background: var(--wr-page-bg);
+  background-attachment: fixed;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 28px);
+  mask-image: linear-gradient(180deg, transparent, #000 28px);
 }
 
 /* 对话框遮罩：轻压暗 + 3px 模糊 */
@@ -350,9 +393,6 @@ html {
 @media (prefers-reduced-transparency: reduce) {
   .wr-card {
     background: rgba(255, 255, 255, 0.95);
-  }
-  .wr-action-bar {
-    background: #dee2e6;
   }
   .wr-scrim {
     background: rgba(20, 23, 28, 0.4);
@@ -367,7 +407,9 @@ html {
     border-color: var(--lg-quiet-edge);
   }
   .lg-btn-primary {
-    box-shadow: inset 0 0 0 1px var(--ink), var(--lg-shadow-near);
+    box-shadow:
+      inset 0 0 0 1px var(--ink),
+      var(--lg-shadow-near);
   }
 }
 

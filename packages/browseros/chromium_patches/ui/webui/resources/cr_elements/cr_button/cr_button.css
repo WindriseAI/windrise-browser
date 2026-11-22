@@ -1,8 +1,8 @@
 diff --git a/ui/webui/resources/cr_elements/cr_button/cr_button.css b/ui/webui/resources/cr_elements/cr_button/cr_button.css
-index fac0230..a8eb5e6 100644
+index fac0230..009cc95 100644
 --- a/ui/webui/resources/cr_elements/cr_button/cr_button.css
 +++ b/ui/webui/resources/cr_elements/cr_button/cr_button.css
-@@ -188,3 +188,92 @@ cr-ripple { z-index: 1; }
+@@ -188,3 +188,94 @@ cr-ripple { z-index: 1; }
  
  #content,
  ::slotted(*) { z-index: 2; }
@@ -49,7 +49,9 @@ index fac0230..a8eb5e6 100644
 +
 +:host([disabled]) {
 +  background: var(--cr-button-disabled-background-color);
++  border-color: var(--lg-secondary-edge, rgba(20, 23, 28, .42));
 +  box-shadow: none;
++  color: var(--cr-primary-text-color);
 +  opacity: var(--lg-disabled-opacity, .45);
 +}
 +

@@ -12,9 +12,9 @@
  * chrome.send bridge already localized by Chromium and is shown as-is.
  */
 
-export type OnboardingLocale = 'en' | 'zh'
+type OnboardingLocale = 'en' | 'zh'
 
-export function detectOnboardingLocale(): OnboardingLocale {
+function detectOnboardingLocale(): OnboardingLocale {
   if (typeof document === 'undefined' || typeof navigator === 'undefined') {
     return 'en'
   }
@@ -94,14 +94,16 @@ const en = {
   setupBody: 'Preparing Windrise. This should only take a moment.',
   retry: 'Retry',
   keychainTitle: 'Import your Chrome logins',
-  keychainBodyLead: 'Windrise needs your permission to import your logins from Chrome.',
+  keychainBodyLead:
+    'Windrise needs your permission to import your logins from Chrome.',
   keychainBodyAsk: 'When macOS asks, enter your Mac login password and click ',
   keychainAllow: 'Allow',
   keychainBack: 'Back',
   keychainBackLabel: 'Back to import options',
   keychainExample: 'Example macOS dialog',
   keychainNote: 'Allow gives access for this import.',
-  keychainReminderLead: 'If macOS asks, enter your Mac login password and click ',
+  keychainReminderLead:
+    'If macOS asks, enter your Mac login password and click ',
   keychainPromptBody:
     'Windrise Helper wants to use your confidential information stored in “Chrome Safe Storage” in your keychain.',
   keychainPromptHint: 'To allow this, enter the “login” keychain password.',
@@ -122,7 +124,7 @@ const en = {
   listSeparator: ', ',
 }
 
-export type OnboardingCopy = typeof en
+type OnboardingCopy = typeof en
 
 // 中文：浏览器中文名「风桥浏览器」（R726，11-21，晚于 11-12 的「不要说风桥浏览器」）。
 // 句子短、动词在前（U080：用户只看第一句、只点最亮的那颗），全角标点。
@@ -133,7 +135,10 @@ const zh: OnboardingCopy = {
   railHeadline: '开源、私密，天天用的网页都在这里',
   railHeadlineAccent: '私密',
   railFeatures: [
-    { title: '旧浏览器一键搬过来', description: '历史记录、书签、保存的登录。' },
+    {
+      title: '旧浏览器一键搬过来',
+      description: '历史记录、书签、保存的登录。',
+    },
     { title: '干净好用', description: '标签、历史、书签都在一处。' },
     { title: '只在你的电脑上', description: '数据留在本机，不上传。' },
   ],
@@ -215,5 +220,4 @@ const zh: OnboardingCopy = {
 }
 
 /** Copy for the current browser UI language; English when no DOM is present. */
-export const copy: OnboardingCopy =
-  detectOnboardingLocale() === 'zh' ? zh : en
+export const copy: OnboardingCopy = detectOnboardingLocale() === 'zh' ? zh : en

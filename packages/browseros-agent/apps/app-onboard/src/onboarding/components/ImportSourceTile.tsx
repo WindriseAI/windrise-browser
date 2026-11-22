@@ -19,7 +19,7 @@ export function ImportSourceTile({
   return (
     <label
       className={cn(
-        'wr-card flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-(--focus) has-[:focus-visible]:outline-offset-2',
+        'wr-card flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left has-[:focus-visible]:outline-(--focus) has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2',
         selected ? 'wr-selected' : 'wr-hoverable',
       )}
     >

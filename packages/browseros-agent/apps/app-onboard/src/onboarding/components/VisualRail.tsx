@@ -20,9 +20,7 @@ export function VisualRail() {
           className="size-8 rounded-[9px]"
           src="/icon/128.png"
         />
-        <div className="font-medium text-[16px] text-ink">
-          {copy.brandName}
-        </div>
+        <div className="font-medium text-[16px] text-ink">{copy.brandName}</div>
       </div>
       <div className="relative">
         <div className="mb-6 font-medium text-[20px] text-ink leading-[1.4]">
