@@ -1,6 +1,7 @@
 import { CircleAlert, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DisplayHeading, StepCopy } from '../components/DisplayHeading'
+import { copy } from '../copy'
 
 interface SetupStepProps {
   failed: boolean
@@ -8,7 +9,8 @@ interface SetupStepProps {
 }
 
 /** Holds the browser-owned WebUI open while native prepares the product extension.
- * Native owns success navigation; this view only offers recovery after failure. */
+ * Native owns success navigation; this view only offers recovery after failure.
+ * Status marks are ink (no red / amber); the spinner stops under reduced motion. */
 export function SetupStep({ failed, onRetry }: SetupStepProps) {
   return (
     <div className="flex flex-1 items-center">
@@ -18,25 +20,23 @@ export function SetupStep({ failed, onRetry }: SetupStepProps) {
             <CircleAlert
               aria-hidden="true"
               className="mb-6 size-8 text-accent"
+              strokeWidth={1.75}
             />
           ) : (
             <LoaderCircle
               aria-hidden="true"
               className="mb-6 size-8 text-accent motion-safe:animate-spin"
+              strokeWidth={1.75}
             />
           )}
           <DisplayHeading>
-            {failed ? 'Setup didn’t finish' : 'Finishing setup'}
+            {failed ? copy.setupFailedTitle : copy.setupTitle}
           </DisplayHeading>
-          <StepCopy>
-            {failed
-              ? 'Please try again.'
-              : 'Preparing Windrise. This should only take a moment.'}
-          </StepCopy>
+          <StepCopy>{failed ? copy.setupFailedBody : copy.setupBody}</StepCopy>
         </div>
         {failed && (
           <Button type="button" size="lg" onClick={onRetry}>
-            Retry
+            {copy.retry}
           </Button>
         )}
       </div>

@@ -5,92 +5,197 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* System font stack. The Chromium WebUI resource contract forbids shipping
-   font files and data: URLs, so app-onboard keeps app's theme tokens but
-   uses the platform UI font instead of the bundled Geist face. */
-
-:root {
-  --radius: 0.65rem;
-  --background: oklch(0.985 0.002 85);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(0.99 0.001 85);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(0.99 0.001 85);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.5446 0.1598 255.0646);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0.002 85);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0.002 85);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.97 0.002 85);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.7138 0.1279 247.0912);
-  --chart-1: oklch(0.8091 0.0956 251.8128);
-  --chart-2: oklch(0.7138 0.1279 247.0912);
-  --chart-3: oklch(0.6604 0.1476 249.1339);
-  --chart-4: oklch(0.6121 0.1551 251.9825);
-  --chart-5: oklch(0.5461 0.153 254.624);
-  --sidebar: oklch(0.98 0.002 85);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.5446 0.1598 255.0646);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.92 0.004 85);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.7138 0.1279 247.0912);
-  /* Brand accent (legacy token name, Windrise blue). */
-  --accent-orange: oklch(0.6604 0.1476 249.1339);
-  /* Brighter brand variant for shimmer animation. */
-  --accent-orange-bright: oklch(0.7138 0.1279 247.0912);
+/* 悬停只给有鼠标的设备（review-animations 标准 8、emil「Touch device hover
+   states」）：触屏点一下会误触 :hover，所以整页的 hover: 变体统一加这层门控。 */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
 }
 
-.dark {
-  --background: oklch(0.25 0.01 265);
-  --foreground: oklch(0.92 0 0);
-  --card: oklch(0.28 0.01 265);
-  --card-foreground: oklch(0.92 0 0);
-  --popover: oklch(0.28 0.01 265);
-  --popover-foreground: oklch(0.92 0 0);
-  --primary: oklch(0.7138 0.1279 247.0912);
-  --primary-foreground: oklch(0.2 0.01 255);
-  --secondary: oklch(0.32 0.01 265);
-  --secondary-foreground: oklch(0.92 0 0);
-  --muted: oklch(0.32 0.01 265);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.32 0.01 265);
-  --accent-foreground: oklch(0.92 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.92 0 0);
-  --border: oklch(0.38 0.01 265);
-  --input: oklch(0.38 0.01 265);
-  --ring: oklch(0.6604 0.1476 249.1339);
-  --chart-1: oklch(0.8091 0.0956 251.8128);
-  --chart-2: oklch(0.7138 0.1279 247.0912);
-  --chart-3: oklch(0.6604 0.1476 249.1339);
-  --chart-4: oklch(0.6121 0.1551 251.9825);
-  --chart-5: oklch(0.5461 0.153 254.624);
-  --sidebar: oklch(0.25 0.01 265);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.7138 0.1279 247.0912);
-  --sidebar-primary-foreground: oklch(0.2 0.01 255);
-  --sidebar-accent: oklch(0.32 0.01 265);
-  --sidebar-accent-foreground: oklch(0.92 0 0);
-  --sidebar-border: oklch(0.38 0.01 265);
-  --sidebar-ring: oklch(0.6604 0.1476 249.1339);
+/*
+ * Windrise Browser 首次引导页的样子（U26，11-22）：和风桥电脑端「设置中窗口」、
+ * 浏览器扩展设置页同一套——乳白银雾底、白 72% 平涂卡片 + 0.75px 白边（无投影）、
+ * 液态玻璃三层按钮（主 = 唯一凸起的白玻璃，次 = 墨色 42% 线框，文字 = 悬停才浮出薄玻璃）、
+ * 卡里嵌入区用凹槽、状态一律墨色（不用绿 / 琥珀 / 红，不用上游的蓝）。
+ *
+ * 下面的 --ink … --lg-* 与 electron/windrise-extension/ext-tokens.css（= 电脑端
+ * electron/ui2/tokens.css）同名同值；改那边要一起改。上游 shadcn 的令牌名
+ * （--primary、--accent、--color-green …）保留，只把值指到这一套上，组件类名不用逐个改。
+ *
+ * 只做浅色：浏览器默认浅色（theme_service 补丁把 kBrowserColorScheme 默认成 kLight），
+ * 引导页里也没有任何地方加 .dark。
+ *
+ * Chromium WebUI 资源约定不许带字体文件和 data: URL：HarmonyOS Sans 先找本机已装的，
+ * 再从 chrome://resources（内部页 harmonyos_sans.css 同一份原样字体）取，都没有就退到系统字体。
+ */
+@font-face {
+  font-display: swap;
+  font-family: "HarmonyOS Sans SC";
+  font-style: normal;
+  font-weight: 400;
+  src:
+    local("HarmonyOS Sans SC"),
+    local("HarmonyOS_Sans_SC"),
+    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Regular.ttf)
+    format("truetype");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "HarmonyOS Sans SC";
+  font-style: normal;
+  font-weight: 500;
+  src:
+    local("HarmonyOS Sans SC Medium"),
+    local("HarmonyOS_Sans_SC_Medium"),
+    url(//resources/harmonyos_sans/HarmonyOS_Sans_SC_Medium.ttf)
+    format("truetype");
+}
+
+:root {
+  color-scheme: light;
+  --radius: 0.75rem;
+
+  /* 文字（同电脑端 --ink / --sub / --ink3） */
+  --ink: #14171c;
+  --ink-2: #3c434d;
+  --ink-3: #4a515c;
+  --on-ink: #ffffff;
+
+  /* 面（同电脑端 --card / --glass-2 / --card-rim / --line / --hover / --sunken） */
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.9);
+  --glass-rim: rgba(255, 255, 255, 0.9);
+  --line: rgba(60, 60, 67, 0.16);
+  --hover: rgba(255, 255, 255, 0.34);
+  --sunken: rgba(20, 23, 28, 0.045);
+  --focus: #4a515c;
+  --popup: #f7f8f9; /* 浮层 / 对话框底（浏览器清单乙08） */
+  /* 「选中」用的白玻璃（同电脑端 --btn-glass / --btn-shadow）：这是选中，不是按钮 */
+  --btn-glass: rgba(255, 255, 255, 0.78);
+  --btn-glass-hover: rgba(255, 255, 255, 0.9);
+  --btn-shadow: rgba(20, 26, 33, 0.14);
+
+  /* 动效（同电脑端：按下 120、状态 180、进场 240，曲线统一 --ease） */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-press: 120ms;
+  --dur-state: 180ms;
+  --dur-enter: 240ms;
+
+  /* 液态玻璃按钮原子令牌（同电脑端 tokens.css --lg-*） */
+  --lg-fill-top: rgba(255, 255, 255, 0.96);
+  --lg-fill-bottom: rgba(255, 255, 255, 0.74);
+  --lg-fill-top-hover: rgba(255, 255, 255, 1);
+  --lg-fill-bottom-hover: rgba(255, 255, 255, 0.86);
+  --lg-rim: rgba(255, 255, 255, 0.92);
+  --lg-highlight: rgba(255, 255, 255, 1);
+  --lg-lowlight: rgba(20, 23, 28, 0.07);
+  --lg-shadow-near: 0 1px 2px rgba(20, 26, 33, 0.1);
+  --lg-shadow-far: 0 6px 16px rgba(20, 26, 33, 0.12);
+  --lg-press-shade: rgba(20, 23, 28, 0.06);
+  --lg-quiet-fill: rgba(255, 255, 255, 0.14);
+  --lg-quiet-fill-hover: rgba(255, 255, 255, 0.4);
+  --lg-quiet-edge: rgba(20, 23, 28, 0.42);
+  --lg-quiet-highlight: rgba(255, 255, 255, 0.55);
+  --lg-text-hover: rgba(255, 255, 255, 0.46);
+  --lg-text-hover-rim: rgba(255, 255, 255, 0.7);
+
+  /* 液态玻璃按钮组合令牌（同电脑端 tokens.css 314-343 行） */
+  --lg-primary-bg: linear-gradient(
+      180deg,
+      var(--lg-fill-top),
+      var(--lg-fill-bottom)
+    )
+    border-box;
+  --lg-primary-bg-hover: linear-gradient(
+      180deg,
+      var(--lg-fill-top-hover),
+      var(--lg-fill-bottom-hover)
+    )
+    border-box;
+  --lg-primary-shadow:
+    inset 0 0 0 0.75px var(--lg-rim), inset 0 1px 0 var(--lg-highlight),
+    inset 0 -1px 0 var(--lg-lowlight), var(--lg-shadow-near),
+    var(--lg-shadow-far);
+  --lg-primary-shadow-press:
+    inset 0 0 0 0.75px var(--lg-rim), inset 0 1px 2px var(--lg-press-shade),
+    var(--lg-shadow-near);
+  --lg-primary-bg-disabled: var(--lg-quiet-fill);
+  --lg-primary-shadow-disabled: inset 0 0 0 0.75px var(--lg-text-hover-rim);
+  --lg-secondary-edge: var(--lg-quiet-edge);
+  --lg-secondary-bg: linear-gradient(180deg, var(--lg-quiet-fill), transparent);
+  --lg-secondary-bg-hover: linear-gradient(
+    180deg,
+    var(--lg-quiet-fill-hover),
+    var(--lg-quiet-fill)
+  );
+  --lg-secondary-shadow: inset 0 1px 0 var(--lg-quiet-highlight);
+  --lg-text-hover-shadow: inset 0 0 0 0.75px var(--lg-text-hover-rim);
+  --lg-disabled-opacity: 0.45;
+  /* 只动合成器属性：按下 / 松开 transform 120ms，禁用 ↔ 可用 opacity 180ms */
+  --lg-btn-transition:
+    transform var(--dur-press) var(--ease), opacity var(--dur-state) var(--ease);
+
+  /* 上游 shadcn 令牌名，值指到上面这一套（组件里的 bg-primary / text-accent 等类名不用改） */
+  --background: transparent;
+  --foreground: var(--ink);
+  --card: var(--glass);
+  --card-foreground: var(--ink);
+  --popover: var(--popup);
+  --popover-foreground: var(--ink);
+  /* 主按钮的平涂退路（真正的样子是 .lg-btn-primary 的渐变 + 三层光影） */
+  --primary: var(--lg-fill-top);
+  --primary-foreground: var(--ink);
+  --secondary: var(--sunken);
+  --secondary-foreground: var(--ink);
+  --muted: var(--sunken);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--sunken);
+  --accent-foreground: var(--ink);
+  /* 定稿没有红色：出错也用墨色，靠文字和记号区分（红只在证书警告页） */
+  --destructive: var(--ink);
+  --destructive-foreground: var(--on-ink);
+  --border: var(--line);
+  --input: var(--lg-quiet-edge);
+  --ring: var(--focus);
+
+  /* 整页银色底（同电脑端窗口板、扩展 dashboard.css 的 html 底）：渐变 + 一层乳白 */
+  --wr-page-bg:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.62),
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0.6)
+    ),
+    radial-gradient(
+      60% 50% at 0% 0%,
+      rgba(255, 255, 255, 0.85),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 45% at 100% 30%,
+      rgba(78, 89, 102, 0.28),
+      transparent 70%
+    ),
+    linear-gradient(155deg, #edeff1 0%, #d5dadf 26%, #aeb6bf 58%, #8c96a1 100%);
+}
+
+/* 整页的银色底：和电脑端窗口板、扩展设置页同一组渐变 + 一层乳白，固定在视口上 */
+html {
+  min-height: 100%;
+  background: var(--wr-page-bg);
+  background-attachment: fixed;
 }
 
 @theme inline {
   --font-sans:
-    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji";
+    "HarmonyOS Sans SC", "HarmonyOS Sans", Inter, "Microsoft YaHei UI",
+    "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+    "Cascadia Mono", ui-monospace, Consolas, "Courier New", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -103,102 +208,57 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-accent-orange: var(--accent-orange);
-  /* Brighter brand variant. */
-  --color-accent-orange-bright: var(--accent-orange-bright);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
-  /* Custom keyframe animations for hero section */
-  --animate-float: float 3s ease-in-out infinite;
-  --animate-shimmer: shimmer 3s ease-in-out infinite;
-  --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
-  --animate-pulse-slow-delayed: pulse-slow 4s ease-in-out infinite 2s;
-  /* One-time glow animation for the brand text. */
-  --animate-glow-once: glow-once 1.5s ease-out 1s forwards;
-  /* Added shine animation for card hover highlight effect */
-  --animate-shine: shine 0.8s ease-in-out;
-
-  /* app-onboard compatibility layer: the onboarding UI is ported from
-     claw-onboard, which uses its own token vocabulary. These map that
-     vocabulary onto the app's blue/neutral palette so the shared
-     onboarding components wear the app theme without per-class edits. */
-  --color-accent: var(--accent-orange);
-  --color-accent-foreground: var(--primary-foreground);
-  --color-accent-2: var(--accent-orange-bright);
-  --color-accent-ink: oklch(0.5 0.14 250);
-  --color-accent-tint: oklch(0.6604 0.1476 249.1339 / 0.1);
-  --color-accent-tint-2: oklch(0.6604 0.1476 249.1339 / 0.2);
-  --color-ink: var(--foreground);
-  --color-ink-2: oklch(0.42 0.012 285);
-  --color-ink-3: var(--muted-foreground);
-  --color-ink-4: oklch(0.72 0.012 285);
-  --color-bg-canvas: var(--background);
-  --color-bg-sunken: var(--muted);
-  --color-border-2: var(--border);
-  --color-border-strong: oklch(0.84 0.006 286);
-  --color-card-tint: var(--muted);
-  --color-green: oklch(0.6 0.14 150);
-  --color-green-tint: oklch(0.6 0.14 150 / 0.14);
-  --color-amber: oklch(0.7 0.15 70);
-  --color-amber-tint: oklch(0.7 0.15 70 / 0.14);
-  --color-red: var(--destructive);
-  --color-red-tint: oklch(0.577 0.245 27 / 0.12);
+  /* 引导组件沿用的令牌名（从 claw-onboard 移植来的那一套）：全部落到墨色 + 银色。
+     强调色就是墨色本身（浏览器清单甲04：没有彩色强调色）；「淡底」= 凹槽。 */
+  --color-accent: var(--ink);
+  --color-accent-foreground: var(--on-ink);
+  --color-accent-2: var(--ink-2);
+  --color-accent-ink: var(--ink);
+  --color-accent-tint: var(--sunken);
+  --color-accent-tint-2: rgba(20, 23, 28, 0.08);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: rgba(20, 23, 28, 0.42);
+  --color-on-ink: var(--on-ink);
+  --color-line: var(--line);
+  --color-bg-canvas: transparent;
+  --color-bg-sunken: var(--sunken);
+  --color-border-2: var(--line);
+  --color-border-strong: var(--lg-quiet-edge);
+  --color-card-tint: var(--sunken);
+  /* 状态色全部回到墨色（电脑端 --st-* 11-12 起、扩展 ext-tokens.css 11-22 起同样） */
+  --color-green: var(--ink);
+  --color-green-tint: var(--sunken);
+  --color-amber: var(--ink);
+  --color-amber-tint: var(--sunken);
+  --color-red: var(--ink);
+  --color-red-tint: var(--sunken);
   --font-serif: var(--font-sans);
-  --shadow-card: 0 1px 2px oklch(0.5 0.05 60 / 0.06);
-  --shadow-pop: 0 12px 32px oklch(0.5 0.05 60 / 0.14);
-  --animate-fade-up: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-fade-in: fade-in 0.3s ease-out;
-  --animate-pulse-dot: pulse-dot 1.4s ease-in-out infinite;
+  --shadow-card: none;
+  --shadow-pop: var(--lg-shadow-near), 0 8px 24px rgba(13, 18, 23, 0.2);
+  /* 进场 240ms --ease，只动 transform / opacity（电脑端清单 31） */
+  --animate-fade-up: fade-up 240ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
     transform: none;
-  }
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
   }
 }
 
@@ -208,193 +268,161 @@
   }
   body {
     @apply bg-background text-foreground font-sans! antialiased;
+    font-size: 14px;
+    line-height: 1.5;
   }
+}
 
-  /* Styled scrollbar with stable gutter and theme-aware colors */
-  .styled-scrollbar {
-    /* Firefox support */
-    scrollbar-width: thin;
-    scrollbar-color: oklch(from var(--border) l c h / 0.4) transparent;
+/*
+ * 液态玻璃三层按钮（同电脑端 / 扩展设置页 --lg-* 组合令牌；components/ui/button.tsx 只写「用哪一层」）。
+ * 不放进 @layer：要压过 Tailwind 工具类里 bg-primary 那种平涂退路。
+ * 悬停只给有鼠标的设备、瞬间换底；按下 scale(.97) 120ms；禁用 ↔ 可用 opacity 180ms；
+ * 减少动态效果时不缩、不过渡（电脑端清单 31、33）。
+ */
+.lg-btn {
+  transition: var(--lg-btn-transition);
+}
+.lg-btn:active:not(:disabled):not([data-disabled]) {
+  transform: scale(0.97);
+}
+.lg-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.lg-btn:disabled,
+.lg-btn[data-disabled] {
+  opacity: var(--lg-disabled-opacity);
+  cursor: default;
+}
+
+.lg-btn-primary {
+  color: var(--ink);
+  background: var(--lg-primary-bg);
+  border-color: transparent;
+  box-shadow: var(--lg-primary-shadow);
+}
+.lg-btn-primary:active:not(:disabled):not([data-disabled]) {
+  box-shadow: var(--lg-primary-shadow-press);
+}
+.lg-btn-primary:disabled,
+.lg-btn-primary[data-disabled] {
+  background: var(--lg-primary-bg-disabled);
+  box-shadow: var(--lg-primary-shadow-disabled);
+}
+
+.lg-btn-secondary {
+  color: var(--ink);
+  background: var(--lg-secondary-bg);
+  border: 1px solid var(--lg-secondary-edge);
+  box-shadow: var(--lg-secondary-shadow);
+}
+
+.lg-btn-text {
+  color: var(--ink-2);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lg-btn-primary:hover:not(:disabled):not([data-disabled]) {
+    background: var(--lg-primary-bg-hover);
   }
-
-  /* Webkit browsers (Chrome, Safari, Edge) */
-  .styled-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  .lg-btn-secondary:hover:not(:disabled):not([data-disabled]) {
+    background: var(--lg-secondary-bg-hover);
   }
-
-  .styled-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+  .lg-btn-text:hover:not(:disabled):not([data-disabled]) {
+    color: var(--ink);
+    background: var(--lg-text-hover);
+    box-shadow: var(--lg-text-hover-shadow);
   }
+}
 
-  .styled-scrollbar::-webkit-scrollbar-thumb {
-    background: oklch(from var(--border) l c h / 0.4);
-    border-radius: 4px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+/* 卡片：同电脑端 settings.css .card（白 72% 平涂 + 0.75px 白边、圆角 16，无投影、无毛玻璃） */
+.wr-card {
+  background: var(--glass);
+  border: 0.75px solid var(--glass-rim);
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+/* 凹槽：卡片里 / 底上的嵌入区（同电脑端 --sunken），不在白卡上再叠白玻璃（apple-design 第 12 节） */
+.wr-sunken {
+  background: var(--sunken);
+  border: 0.75px solid transparent;
+  border-radius: 12px;
+}
+/* 凹槽 + 墨色细边：出错、要注意的那一块（定稿出错也是墨色，不用红 / 琥珀） */
+.wr-sunken-alert {
+  background: var(--sunken);
+  border: 0.75px solid rgba(20, 23, 28, 0.4);
+  border-radius: 12px;
+}
+
+/* 选中：白玻璃（同电脑端设置左列当前项 / 扩展设置页分段选中） */
+.wr-selected {
+  background: var(--btn-glass);
+  border-color: var(--glass-rim);
+  box-shadow: 0 4px 12px var(--btn-shadow);
+}
+
+/* 可点的卡片行：悬停瞬间换成白 90%（只给有鼠标的设备；高频，不做补间） */
+@media (hover: hover) and (pointer: fine) {
+  .wr-card.wr-hoverable:hover {
+    background: var(--glass-strong);
   }
+}
 
-  .styled-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: oklch(from var(--border) l c h / 0.6);
-    background-clip: padding-box;
+/* 底部常驻操作条：内容从它下面滚过时托住按钮（apple-design 第 12 节 scroll edge），不画硬分隔线。
+   重画一遍和 html 完全相同、同样固定在视口的底，再用遮罩把上沿 28px 渐隐——和页面是同一张图，
+   看不出一条色带或接缝（浏览器清单甲39 那类问题）。 */
+.wr-action-bar {
+  background: var(--wr-page-bg);
+  background-attachment: fixed;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 28px);
+  mask-image: linear-gradient(180deg, transparent, #000 28px);
+}
+
+/* 对话框遮罩：轻压暗 + 3px 模糊 */
+.wr-scrim {
+  background: rgba(20, 23, 28, 0.22);
+  backdrop-filter: blur(3px);
+}
+
+/* 减少透明（apple-design 第 14 节）：半透明的面换成近实心，去模糊 */
+@media (prefers-reduced-transparency: reduce) {
+  .wr-card {
+    background: rgba(255, 255, 255, 0.95);
   }
-
-  /* Dark mode adjustments */
-  .dark .styled-scrollbar {
-    scrollbar-color: oklch(from var(--border) l c h / 0.6) transparent;
+  .wr-scrim {
+    background: rgba(20, 23, 28, 0.4);
+    backdrop-filter: none;
   }
+}
 
-  .dark .styled-scrollbar::-webkit-scrollbar-thumb {
-    background: oklch(from var(--border) l c h / 0.6);
-    background-clip: padding-box;
+/* 高对比：卡片近实心 + 看得清的边 */
+@media (prefers-contrast: more) {
+  .wr-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: var(--lg-quiet-edge);
   }
-
-  .dark .styled-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: oklch(from var(--border) l c h / 0.8);
-    background-clip: padding-box;
+  .lg-btn-primary {
+    box-shadow:
+      inset 0 0 0 1px var(--ink),
+      var(--lg-shadow-near);
   }
+}
 
-  /* Custom animation keyframes for minimal, elegant hero animations */
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+/* 减少动态效果：直接终态（电脑端清单 33）——按钮不缩、不过渡，进场动画、转圈都停 */
+@media (prefers-reduced-motion: reduce) {
+  .lg-btn {
+    transition: none;
   }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% center;
-    }
-    100% {
-      background-position: 200% center;
-    }
+  .lg-btn:active:not(:disabled):not([data-disabled]) {
+    transform: none;
   }
-
-  @keyframes pulse-slow {
-    0%,
-    100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.5;
-      transform: scale(1.05);
-    }
-  }
-
-  /* Added subtle one-time glow animation that draws focus then settles */
-  @keyframes glow-once {
-    0% {
-      text-shadow: none;
-      transform: scale(1);
-    }
-    50% {
-      text-shadow:
-        0 0 20px rgba(214, 123, 68, 0.6),
-        0 0 40px rgba(214, 123, 68, 0.4),
-        0 0 60px rgba(214, 123, 68, 0.2);
-      transform: scale(1.02);
-    }
-    100% {
-      text-shadow: none;
-      transform: scale(1);
-    }
-  }
-
-  /* Added shine animation for card hover highlight effect */
-  @keyframes shine {
-    0% {
-      transform: translateX(-100%) translateY(-100%) rotate(30deg);
-    }
-    100% {
-      transform: translateX(100%) translateY(100%) rotate(30deg);
-    }
-  }
-
-  /* Collapsible animations for smooth expand/collapse */
-  @keyframes collapsible-down {
-    from {
-      height: 0;
-      opacity: 0;
-    }
-    to {
-      height: var(--radix-collapsible-content-height);
-      opacity: 1;
-    }
-  }
-
-  @keyframes collapsible-up {
-    from {
-      height: var(--radix-collapsible-content-height);
-      opacity: 1;
-    }
-    to {
-      height: 0;
-      opacity: 0;
-    }
-  }
-
-  .bg-grid-pattern {
-    background-image:
-      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-
-  .dark .bg-grid-pattern {
-    background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-
-  .bg-gradient-radial-focus {
-    background: radial-gradient(
-      circle at center,
-      transparent 0%,
-      transparent 30%,
-      var(--background) 70%
-    );
-  }
-
-  /* Animation utility classes */
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 3s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 4s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow-delayed {
-    animation: pulse-slow 4s ease-in-out infinite 2s;
-  }
-
-  /* Added utility class for one-time glow animation */
-  .animate-glow-once {
-    animation: glow-once 1.5s ease-out forwards;
-  }
-
-  /* Added utility class for shine animation on card hover */
-  .animate-shine {
-    animation: shine 0.8s ease-in-out;
-  }
-
-  /* Collapsible animation utility classes */
-  .animate-collapsible-down {
-    animation: collapsible-down 0.2s ease-out;
-  }
-
-  .animate-collapsible-up {
-    animation: collapsible-up 0.2s ease-out;
+  .animate-fade-up {
+    animation: none;
   }
 }
 

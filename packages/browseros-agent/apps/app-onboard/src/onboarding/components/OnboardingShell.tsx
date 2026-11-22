@@ -9,7 +9,8 @@ interface OnboardingShellProps {
   children: ReactNode
 }
 
-/** Full-bleed onboarding frame: visual rail + scrollable step column, sized to fill the embedded popup viewport. */
+/** Full-bleed onboarding frame: visual rail + scrollable step column on the
+ * silver page background, sized to fill the embedded popup viewport. */
 export function OnboardingShell({
   step,
   totalSteps,
@@ -17,11 +18,11 @@ export function OnboardingShell({
   children,
 }: OnboardingShellProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-bg-canvas">
+    <div className="flex h-screen overflow-hidden">
       <VisualRail />
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-5 pt-8 pb-6 sm:px-8 lg:px-12 lg:pt-11">
         {showProgress && (
-          <div className="mb-6">
+          <div className="mb-7">
             <StepDots step={step} total={totalSteps} />
           </div>
         )}

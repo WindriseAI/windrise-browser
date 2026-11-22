@@ -1,17 +1,20 @@
 import { cn } from '@/lib/utils'
+import { copy } from '../copy'
 
 interface StepDotsProps {
   step: number
   total: number
 }
 
-/** Renders compact step progress dots for the onboarding frame. */
+/** Compact step progress: the current step is a short ink pill, done steps are
+ * ink 40%, the rest hairline grey. It changes instantly — the step content
+ * already slides in, and animating the pill width would be a layout animation. */
 export function StepDots({ step, total }: StepDotsProps) {
   return (
     <div
       className="flex items-center gap-[7px]"
       role="progressbar"
-      aria-label="Onboarding progress"
+      aria-label={copy.progressLabel}
       aria-valuemin={1}
       aria-valuemax={total}
       aria-valuenow={step + 1}
@@ -26,10 +29,10 @@ export function StepDots({ step, total }: StepDotsProps) {
             data-step-dot="true"
             aria-hidden
             className={cn(
-              'h-[7px] rounded-full transition-all duration-300',
-              isActive ? 'w-[22px] bg-accent' : 'w-[7px]',
-              !isActive && isDone && 'bg-accent-tint-2',
-              !isActive && !isDone && 'bg-border-2',
+              'h-[7px] rounded-full',
+              isActive ? 'w-[22px] bg-ink' : 'w-[7px]',
+              !isActive && isDone && 'bg-ink/40',
+              !isActive && !isDone && 'bg-ink/15',
             )}
           />
         )

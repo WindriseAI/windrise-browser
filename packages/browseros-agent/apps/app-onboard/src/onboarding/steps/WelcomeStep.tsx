@@ -2,30 +2,31 @@ import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DisplayHeading, Em, StepCopy } from '../components/DisplayHeading'
 import { StepWrap } from '../components/StepWrap'
+import { copy } from '../copy'
 
 interface WelcomeStepProps {
   onPrimary: () => void
   onSkip: () => void
 }
 
-/** Opening step: names the two things onboarding will do, then gets out of the way. */
+/** Opening step: names the two things onboarding will do, then gets out of the
+ * way. One raised white-glass button to press; skipping is a quiet text button. */
 export function WelcomeStep({ onPrimary, onSkip }: WelcomeStepProps) {
   return (
     <StepWrap>
       <DisplayHeading>
-        Welcome to <Em>Windrise</Em>
+        {copy.welcomeTitleLead}
+        <Em>{copy.welcomeTitleAccent}</Em>
+        {copy.welcomeTitleTail}
       </DisplayHeading>
-      <StepCopy>
-        Two quick steps to get set up: bring your browser over, then finish
-        setup.
-      </StepCopy>
+      <StepCopy>{copy.welcomeBody}</StepCopy>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" size="lg" onClick={onPrimary}>
-          Get started
+          {copy.getStarted}
           <ArrowRight className="size-4" />
         </Button>
         <Button type="button" size="lg" variant="ghost" onClick={onSkip}>
-          Skip for now
+          {copy.skipForNow}
         </Button>
       </div>
     </StepWrap>

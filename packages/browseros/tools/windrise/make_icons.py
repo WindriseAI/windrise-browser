@@ -22,6 +22,13 @@ the B6 brand export, so the build never reads a directory outside the repo:
   ``*_white`` logo slots. The export's 1024 px white glyph is not checked in
   because no consumer slot asks for it, and neither is the ink variant: no slot
   needs a light-background glyph yet.
+* ``windrise-browser-incognito-<size>.png`` — the incognito app icon
+  (16/24/32/48/64/128/256), assembled into ``win/incognito.ico`` so the
+  Windows taskbar / shortcut of an incognito window is not the same picture
+  as the normal one (U26). Each final is the B6 render of that size with an
+  ink badge (white hat + glasses) in the lower right, drawn by
+  ``--render-incognito-finals`` at 8x and downsampled; the PNGs are checked in
+  so ``--check`` never depends on the local Pillow resampler.
 * ``windrise-browser-icon-256.svg``          — vector master, copied as-is for
   the ``product_logo*.svg`` slots. The per-size 16/24/32/48 SVGs are bolded for
   their own pixel grid and must not be scaled up, so only the 256 vector is
@@ -90,6 +97,8 @@ FAMILIES: dict[str, tuple[str, tuple[int, ...]]] = {
              (16, 24, 32, 48, 64, 128, 256, 512, 1024)),
     "mark": ("windrise-browser-mark-white-{size}.png",
              (16, 24, 32, 48, 256)),
+    "incognito": ("windrise-browser-incognito-{size}.png",
+                  (16, 24, 32, 48, 64, 128, 256)),
 }
 
 # Native renders for the Chromium theme's 22 dp slots (product_logo_name_22*,
@@ -100,6 +109,7 @@ FAMILIES: dict[str, tuple[str, tuple[int, ...]]] = {
 EXACT_ONLY: dict[str, tuple[int, ...]] = {
     "icon": (22, 44),
     "mark": (22, 44),
+    "incognito": (),
 }
 
 # (relative path, pixel size, brand family) — mirrors the shipped file list.
@@ -159,10 +169,12 @@ MARK_TARGETS: tuple[tuple[str, int], ...] = (
 
 # The 定稿 ICO frame set, one pre-rendered frame per size.
 APP_ICO_SIZES: tuple[int, ...] = (16, 24, 32, 48, 64, 128, 256)
-ICO_TARGETS: tuple[tuple[str, tuple[int, ...]], ...] = (
-    ("win/app_list.ico", APP_ICO_SIZES),
-    ("win/chromium.ico", APP_ICO_SIZES),
-    ("win/incognito.ico", APP_ICO_SIZES),
+# (relative path, frame sizes, brand family). incognito.ico gets its own
+# finals so an incognito window's taskbar button differs from a normal one.
+ICO_TARGETS: tuple[tuple[str, tuple[int, ...], str], ...] = (
+    ("win/app_list.ico", APP_ICO_SIZES, "icon"),
+    ("win/chromium.ico", APP_ICO_SIZES, "icon"),
+    ("win/incognito.ico", APP_ICO_SIZES, "incognito"),
 )
 
 # Document icons: white glyph on a blue plate, so file types stay readable at
@@ -203,6 +215,11 @@ UI_PNG_TARGETS: tuple[tuple[str, int], ...] = tuple(
     (root.relative_to(REPO_ROOT).as_posix() + f"/{size}.png", size)
     for root in (APP_ICONS_ROOT, ONBOARD_ICONS_ROOT)
     for size in UI_ICON_SIZES
+) + (
+    # Leftover upstream art the onboarding WebUI resource list still ships
+    # (verify-chromium-build.ts allowlist); nothing renders it, but it must not
+    # carry the upstream mark, so it holds the B6 icon too.
+    (ONBOARD_ICONS_ROOT.relative_to(REPO_ROOT).as_posix() + "/hermes.png", 128),
 )
 APP_LOGO_SVG_RELATIVE = APP_LOGO_SVG.relative_to(REPO_ROOT).as_posix()
 REPO_LOGO_RELATIVE = REPO_LOGO_PNG.relative_to(REPO_ROOT).as_posix()
@@ -454,6 +471,92 @@ def _write_xpm(image: Image.Image, path: Path) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
+# Incognito badge: an ink disc (#14171C, the product ink) on a white rim, with
+# a white hat + glasses glyph -- the incognito sign people already know, drawn
+# in Windrise ink instead of a colour. Per-size geometry as fractions of the
+# icon edge (diameter, centre, rim): small sizes get a bigger badge so the hat
+# still reads at 16 px; large sizes keep it inside the rounded plate.
+INCOGNITO_INK = (0x14, 0x17, 0x1C, 0xFF)
+INCOGNITO_RIM = (0xFF, 0xFF, 0xFF, 0xF5)
+INCOGNITO_GLYPH = (0xFF, 0xFF, 0xFF, 0xFF)
+INCOGNITO_SUPERSAMPLE = 8
+
+
+def _incognito_badge_geometry(size: int) -> tuple[float, float, float]:
+    if size <= 16:
+        return 0.62, 0.66, 0.05
+    if size <= 24:
+        return 0.56, 0.68, 0.045
+    if size <= 48:
+        return 0.50, 0.70, 0.036
+    return 0.42, 0.705, 0.026
+
+
+def _incognito_badge(size: int) -> Image.Image:
+    """Badge layer for one icon size, drawn at 8x and downsampled."""
+    big = size * INCOGNITO_SUPERSAMPLE
+    layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    diameter, centre, rim_width = _incognito_badge_geometry(size)
+    radius = diameter * big / 2
+    cx = cy = centre * big
+    rim = rim_width * big
+    draw.ellipse((cx - radius - rim, cy - radius - rim,
+                  cx + radius + rim, cy + radius + rim), fill=INCOGNITO_RIM)
+    draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius),
+                 fill=INCOGNITO_INK)
+
+    def at(x: float, y: float) -> tuple[float, float]:
+        return (cx + x * radius, cy + y * radius)
+
+    # At 16/24 px the lenses become solid dots and the brim / bridge thicken,
+    # otherwise they dissolve into the disc.
+    small = size <= 24
+    crown_top = -0.60 if small else -0.56
+    brim_y = -0.04 if small else -0.06
+    draw.polygon([at(-0.30, crown_top), at(0.30, crown_top),
+                  at(0.42, brim_y - 0.05), at(-0.42, brim_y - 0.05)],
+                 fill=INCOGNITO_GLYPH)
+    brim_h = 0.17 if small else 0.13
+    draw.rounded_rectangle((*at(-0.66, brim_y - brim_h / 2),
+                            *at(0.66, brim_y + brim_h / 2)),
+                           radius=brim_h * radius / 2, fill=INCOGNITO_GLYPH)
+    lens_r = 0.24 if small else 0.21
+    lens_y = 0.40
+    for lens_x in (-0.31, 0.31):
+        draw.ellipse((*at(lens_x - lens_r, lens_y - lens_r),
+                      *at(lens_x + lens_r, lens_y + lens_r)),
+                     fill=INCOGNITO_GLYPH)
+        if not small:
+            inner = lens_r * 0.52
+            draw.ellipse((*at(lens_x - inner, lens_y - inner),
+                          *at(lens_x + inner, lens_y + inner)),
+                         fill=INCOGNITO_INK)
+    bridge = 0.12 if small else 0.08
+    draw.rectangle((*at(-0.31 + lens_r * 0.8, lens_y - bridge / 2),
+                    *at(0.31 - lens_r * 0.8, lens_y + bridge / 2)),
+                   fill=INCOGNITO_GLYPH)
+    return layer.resize((size, size), Image.Resampling.LANCZOS)
+
+
+def render_incognito_finals(brand_dir: Path) -> list[Path]:
+    """Write ``windrise-browser-incognito-<size>.png`` next to the B6 finals.
+
+    Run once when the badge design changes, then commit the PNGs; the normal
+    generate / --check path only reads them.
+    """
+    art = BrandArt(brand_dir)
+    pattern, sizes = FAMILIES["incognito"]
+    written: list[Path] = []
+    for size in sizes:
+        image = art.final("icon", size)[1].copy()
+        image.alpha_composite(_incognito_badge(size))
+        target = brand_dir / pattern.format(size=size)
+        image.save(target, format="PNG", optimize=True)
+        written.append(target)
+    return written
+
+
 def generate(brand_dir: Path, destination: Path) -> list[Path]:
     art = BrandArt(brand_dir)
     written: list[Path] = []
@@ -470,13 +573,13 @@ def generate(brand_dir: Path, destination: Path) -> list[Path]:
         _write_png(image, target, raw)
         written.append(target)
 
-    for relative, sizes in ICO_TARGETS:
+    for relative, sizes, family in ICO_TARGETS:
         target = destination / relative
         if relative == "win/chromium.ico":
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes((brand_dir / "windrise-browser.ico").read_bytes())
         else:
-            _write_ico({size: art.blob("icon", size) for size in sizes}, target)
+            _write_ico({size: art.blob(family, size) for size in sizes}, target)
         written.append(target)
 
     for relative, sizes in DOC_ICO_TARGETS:
@@ -569,12 +672,22 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Regenerate into a temp dir and fail if the committed icons differ",
     )
+    parser.add_argument(
+        "--render-incognito-finals",
+        action="store_true",
+        help="Redraw the incognito badge finals into --brand-dir and exit",
+    )
     args = parser.parse_args(argv)
 
     brand_dir = args.brand_dir.expanduser()
     if not brand_dir.is_dir():
         print(f"brand directory not found: {brand_dir}", file=sys.stderr)
         return 2
+
+    if args.render_incognito_finals:
+        for path in render_incognito_finals(brand_dir):
+            print(f"  {path.name}")
+        return 0
 
     if not args.check:
         written = generate(brand_dir, args.out)

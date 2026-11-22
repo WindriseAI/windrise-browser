@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import { useId } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { BrowserOSImportItem } from '../browseros-onboarding-api'
+import { copy } from '../copy'
 import { importItemLabel, splitImportSelection } from '../onboarding-v2.helpers'
 
 interface ImportItemChecklistProps {
@@ -32,29 +33,36 @@ export function ImportItemChecklist({
           checked={checkedItemSet.has(item)}
           onCheckedChange={() => onToggle(item)}
         />
-        <span className="text-[12.5px] text-ink">{importItemLabel(item)}</span>
+        <span className="text-[13px] text-ink">{importItemLabel(item)}</span>
       </label>
     )
   }
 
   return (
-    <div className="mb-5 border-border-2 border-t pt-5">
+    <div className="wr-card mb-5 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="font-bold text-[12.5px] text-ink-2">What to copy</div>
-        <div className="font-mono text-[11.5px] text-ink-3">
-          {checkedItems.length} categories selected
+        <div className="font-medium text-[13px] text-ink-2">
+          {copy.whatToCopy}
+        </div>
+        <div className="text-[12px] text-ink-3 tabular-nums">
+          {copy.categoriesSelected(checkedItems.length)}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 min-[420px]:grid-cols-2">
         {defaultItems.map(renderRow)}
       </div>
       {optionalItems.length > 0 && (
-        <details className="group mt-3 border-border-2 border-t pt-3">
-          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12px] text-ink-3 transition-colors hover:text-ink-2">
-            <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
-            Also copy my browsing setup
+        <details className="group mt-3 border-line border-t-[0.75px] pt-3">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[12px] text-ink-3 hover:text-ink-2">
+            <ChevronRight className="size-3.5 transition-transform duration-180 ease-(--ease) group-open:rotate-90 motion-reduce:transition-none" />
+            {copy.alsoCopySetup}
             <span className="text-ink-4">
-              ({optionalItems.map(importItemLabel).join(', ').toLowerCase()})
+              (
+              {optionalItems
+                .map(importItemLabel)
+                .join(copy.listSeparator)
+                .toLowerCase()}
+              )
             </span>
           </summary>
           <div className="mt-2.5 grid grid-cols-1 gap-x-4 gap-y-2.5 min-[420px]:grid-cols-2">

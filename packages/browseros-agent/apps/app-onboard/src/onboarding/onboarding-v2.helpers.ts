@@ -10,6 +10,7 @@ import type {
   BrowserOSImportSource,
   BrowserOSStartImportRequest,
 } from './browseros-onboarding-api'
+import { copy } from './copy'
 
 export const MOCK_BROWSEROS_IMPORT_SOURCES: readonly BrowserOSImportSource[] = [
   {
@@ -69,32 +70,23 @@ export const MOCK_BROWSEROS_IMPORT_SOURCES: readonly BrowserOSImportSource[] = [
 export const DEFAULT_BROWSEROS_IMPORT_SOURCE_ID =
   MOCK_BROWSEROS_IMPORT_SOURCES[0]?.id ?? ''
 
-const IMPORT_ITEM_LABELS: Record<string, string> = {
-  history: 'History',
-  bookmarks: 'Bookmarks',
-  cookies: 'Signed-in sessions (cookies)',
-  passwords: 'Saved passwords',
-  searchEngines: 'Search engines',
-  autofill: 'Autofill',
-  extensions: 'Extensions',
-}
-
 function humanizeImportItem(item: string): string {
   const label = item
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/[-_]+/g, ' ')
     .trim()
-  if (!label) return 'Unknown data'
+  if (!label) return copy.unknownData
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
+/** Localized label for one Chromium import item (English without a DOM). */
 export function importItemLabel(item: string): string {
-  return IMPORT_ITEM_LABELS[item] ?? humanizeImportItem(item)
+  return copy.importItems[item] ?? humanizeImportItem(item)
 }
 
 export function importItemListLabel(items: readonly string[]): string {
-  if (items.length === 0) return 'No supported data'
-  return items.map(importItemLabel).join(', ')
+  if (items.length === 0) return copy.noSupportedData
+  return items.map(importItemLabel).join(copy.listSeparator)
 }
 
 export const OPTIONAL_IMPORT_ITEMS: readonly BrowserOSImportItem[] = [
