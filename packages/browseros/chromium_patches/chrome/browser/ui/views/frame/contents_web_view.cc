@@ -2,13 +2,14 @@ diff --git a/chrome/browser/ui/views/frame/contents_web_view.cc b/chrome/browser
 index 184614e93d..4d4fafc7c2 100644
 --- a/chrome/browser/ui/views/frame/contents_web_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_web_view.cc
-@@ -11,10 +11,15 @@
+@@ -11,10 +11,16 @@
  #include "chrome/browser/ui/views/frame/safe_invoke/safe_invoke.h"
  #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
  #include "chrome/browser/ui/views/status_bubble_views.h"
 +#include "chrome/common/webui_url_constants.h"
  #include "components/tabs/public/tab_interface.h"
  #include "components/web_modal/web_contents_modal_dialog_manager.h"
++#include "content/public/browser/browser_context.h"
 +#include "content/public/browser/navigation_controller.h"
 +#include "content/public/browser/navigation_entry.h"
 +#include "content/public/browser/render_frame_host.h"
@@ -18,7 +19,7 @@ index 184614e93d..4d4fafc7c2 100644
  #include "third_party/blink/public/common/input/web_input_event.h"
  #include "third_party/skia/include/core/SkColor.h"
  #include "ui/base/metadata/metadata_impl_macros.h"
-@@ -23,6 +28,7 @@
+@@ -23,6 +29,7 @@
  #include "ui/compositor/layer_tree_owner.h"
  #include "ui/views/view_class_properties.h"
  #include "ui/views/widget/widget.h"
@@ -26,7 +27,7 @@ index 184614e93d..4d4fafc7c2 100644
  
  #if defined(USE_AURA)
  #include "ui/aura/window.h"
-@@ -36,6 +42,41 @@
+@@ -36,6 +43,43 @@
  DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentsWebView,
                                        kContentsWebViewElementId);
  
@@ -53,7 +54,9 @@ index 184614e93d..4d4fafc7c2 100644
 +}
 +
 +bool IsWindriseNewTabPage(content::WebContents* web_contents) {
-+  if (!web_contents) {
++  if (!web_contents ||
++      (web_contents->GetBrowserContext() &&
++       web_contents->GetBrowserContext()->IsOffTheRecord())) {
 +    return false;
 +  }
 +  content::NavigationController& controller = web_contents->GetController();
@@ -68,7 +71,7 @@ index 184614e93d..4d4fafc7c2 100644
  ContentsWebView::ContentsWebView(content::BrowserContext* browser_context)
      : views::WebView(browser_context),
        use_default_deadline_when_animating_(
-@@ -167,6 +208,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
+@@ -167,6 +211,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
      return;
    }
  
@@ -82,7 +85,7 @@ index 184614e93d..4d4fafc7c2 100644
    UpdateIsBlockedByModal();
  
    if (!status_bubble_) {
-@@ -208,9 +256,12 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
+@@ -208,9 +259,12 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
  #endif
  
  void ContentsWebView::UpdateBackgroundColor() {
@@ -98,7 +101,7 @@ index 184614e93d..4d4fafc7c2 100644
    // `color` must be opaque, see RenderWidgetHostView::SetBackgroundColor() for
    // details.
    // TODO(crbug.com/456309057): Update this to be a CHECK.
-@@ -286,6 +337,16 @@ void ContentsWebView::DestroyClonedLayer() {
+@@ -286,6 +340,16 @@ void ContentsWebView::DestroyClonedLayer() {
    cloned_layer_tree_.reset();
  }
  
