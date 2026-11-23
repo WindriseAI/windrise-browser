@@ -73,6 +73,7 @@ function Harness({
         onImport={() => undefined}
         onRefresh={() => undefined}
         onContinue={() => undefined}
+        onBack={() => undefined}
       />
     </Form>
   )
@@ -128,7 +129,8 @@ describe('ImportStep', () => {
     expect(html).toContain('Pick a profile')
     expect(html).toContain('Work')
     expect(html).toContain('Personal')
-    expect(html).toContain('Microsoft Edge')
+    expect(html).toContain('>Edge</div>')
+    expect(html).toContain('>Default profile</div>')
     expect(html).toContain('What to copy')
     for (const item of defaultImportItemsForSource(
       MOCK_BROWSEROS_IMPORT_SOURCES[0],
@@ -371,7 +373,7 @@ describe('ImportStep', () => {
     const skip = buttonMarkupFor(html, 'Skip for now')
 
     expect(html).toContain('Try again')
-    expect(html).toContain('Refresh profiles')
+    expect(html).toContain('Choose again')
     expect(skip).toContain('Skip for now')
     expect(skip).not.toContain('disabled=""')
   })
@@ -424,10 +426,121 @@ describe('ImportStep', () => {
     const html = render('picker', readyState({ sources }), {
       selectedSourceId: 'profile-6',
     })
-    expect(html).toContain('Person 6')
-    expect(html).not.toContain('Person 3')
-    expect(html).not.toContain('Person 4')
+    // "Person N" is a Chromium placeholder: it shows as Profile N under the
+    // browser name, never as the tile's title.
+    expect(html).toContain('Profile 6')
+    expect(html).not.toContain('Person 6')
+    expect(html).not.toContain('Profile 3')
+    expect(html).not.toContain('Profile 4')
     expect(html).toContain('Show 3 more profiles')
     expect(html.match(/type="radio"/g)).toHaveLength(4)
+  })
+
+  // DS9-P0-11: a failed import must never trap the user on the failure screen.
+  it('offers retry, choose again and skip after a failed import', () => {
+    const html = render(
+      'failed',
+      readyState({
+        status: 'failed',
+        error: { code: 'import_failed', message: 'Close Chrome first.' },
+      }),
+    )
+    const retry = buttonMarkupFor(html, 'Try again')
+    const chooseAgain = buttonMarkupFor(html, 'Choose again')
+
+    expect(retry).not.toContain('disabled=""')
+    expect(chooseAgain).toContain('Choose again')
+    expect(chooseAgain).not.toContain('disabled=""')
+    expect(buttonMarkupFor(html, 'Skip for now')).not.toContain('disabled=""')
+    // The failure screen itself has no back: choose again is the way back.
+    expect(html).not.toContain('>Back<')
+  })
+
+  it('names choose again in the fallback failure text', () => {
+    const html = render('failed', readyState({ status: 'failed' }))
+
+    expect(html).toContain('choose another profile or fewer items')
+    expect(html).not.toContain('refresh the profile list')
+  })
+
+  // DS9-P1-18: step two has a way back to the welcome step.
+  it('offers a quiet back button in the picker only', () => {
+    const picker = render('picker')
+    const back = buttonMarkupFor(picker, '>Back<')
+
+    expect(back).toContain('lg-btn-text')
+    expect(back).not.toContain('disabled=""')
+    expect(
+      render('importing', readyState({ status: 'importing' })),
+    ).not.toContain('>Back<')
+    expect(
+      render('imported', readyState({ status: 'succeeded' })),
+    ).not.toContain('>Back<')
+  })
+
+  // DS9-P1-19: Chromium placeholder names never lead.
+  it('leads with the browser name for an untouched Default profile', () => {
+    const edge = MOCK_BROWSEROS_IMPORT_SOURCES[2]
+    const html = render('picker', readyState(), {
+      selectedSourceId: edge.id,
+      selectedItems: defaultImportItemsForSource(edge),
+    })
+
+    expect(html).toContain('>Edge</div>')
+    expect(html).toContain('>Default profile</div>')
+    expect(html).not.toContain('>Default</div>')
+    expect(html).toContain('Copy from Edge')
+    expect(html).not.toContain('Microsoft Edge</div>')
+    expect(html).toContain('From Default profile<')
+    expect(html).not.toContain('From Default’s profile')
+  })
+
+  it('keeps a real profile name as the title', () => {
+    const html = render('picker')
+
+    expect(html).toContain('>Work</div>')
+    expect(html).toContain('>Google Chrome</div>')
+    expect(html).toContain('From Work’s profile')
+  })
+
+  it('names a placeholder profile kindly in the summary and progress cards', () => {
+    const edge = MOCK_BROWSEROS_IMPORT_SOURCES[2]
+    const imported = render(
+      'imported',
+      readyState({
+        status: 'succeeded',
+        progress: {
+          completedItems: edge.recommendedItems,
+          totalItems: 3,
+        },
+        results: [
+          {
+            sourceId: edge.id,
+            displayName: edge.displayName,
+            status: 'succeeded',
+          },
+        ],
+      }),
+      { selectedSourceId: edge.id },
+    )
+    const importing = render(
+      'importing',
+      readyState({
+        status: 'importing',
+        progress: {
+          currentItem: 'history',
+          currentSourceId: edge.id,
+          currentSourceName: edge.displayName,
+          completedItems: [],
+          totalItems: 3,
+        },
+      }),
+      { selectedSourceId: edge.id },
+    )
+
+    expect(imported).toContain('Copied 3 items from Edge (Default profile).')
+    expect(imported).not.toContain('Microsoft Edge - Default')
+    expect(importing).toContain('Edge (Default profile)')
+    expect(importing).not.toContain('Microsoft Edge - Default')
   })
 })

@@ -6,6 +6,7 @@
 
 import type { FieldErrors, Resolver, ResolverResult } from 'react-hook-form'
 import type { BrowserOSImportItem } from './browseros-onboarding-api'
+import { copy } from './copy'
 import {
   DEFAULT_BROWSEROS_IMPORT_SOURCE_ID,
   defaultImportItemsForSource,
@@ -60,7 +61,7 @@ function validateFormValues(
   return {
     success: false,
     error: {
-      issues: [{ message: 'Pick a profile.', path: ['selectedSourceId'] }],
+      issues: [{ message: copy.pickProfile, path: ['selectedSourceId'] }],
     },
   }
 }

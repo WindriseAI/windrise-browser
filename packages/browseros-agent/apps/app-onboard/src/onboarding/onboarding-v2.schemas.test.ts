@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { copy } from './copy'
 import {
   defaultImportItemsForSource,
   MOCK_BROWSEROS_IMPORT_SOURCES,
@@ -22,7 +23,8 @@ describe('onboardingFormSchema', () => {
     const result = onboardingFormSchema.safeParse({ selectedSourceId: '' })
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe('Pick a profile.')
+      // Same localized line as the picker heading, never hardcoded English.
+      expect(result.error.issues[0]?.message).toBe(copy.pickProfile)
     }
   })
 

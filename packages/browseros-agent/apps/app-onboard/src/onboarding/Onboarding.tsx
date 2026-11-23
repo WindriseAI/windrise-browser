@@ -29,6 +29,7 @@ import type { ImportPhase, Step } from './onboarding-v2.types'
 import { ImportStep } from './steps/ImportStep'
 import { SetupStep } from './steps/SetupStep'
 import { WelcomeStep } from './steps/WelcomeStep'
+import { useStepKeys } from './useStepKeys'
 
 const TOTAL_STEPS = 2
 
@@ -70,6 +71,11 @@ export function Onboarding() {
     direction.current = next >= step ? 1 : -1
     setStep(next)
   }
+
+  // Welcome: Enter starts, like its raised button. Nothing is focused on load,
+  // so the page keeps its look; a Tab-focused button still answers Enter
+  // itself. The import step registers its own keys.
+  useStepKeys({ onPrimary: () => goTo(1) }, step === 0 && !isFinishing)
 
   useEffect(() => {
     // Install first: pageReady may synchronously restore an in-flight setup
@@ -185,6 +191,7 @@ export function Onboarding() {
                   onImport={startImport}
                   onRefresh={() => bridge.refreshSources()}
                   onContinue={finishOnboarding}
+                  onBack={() => goTo(0)}
                 />
               )}
             </motion.div>

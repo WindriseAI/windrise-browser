@@ -1,6 +1,7 @@
 import { CheckCircle2, Circle, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { BrowserOSImportSource } from '../browseros-onboarding-api'
+import { importSourceLabels } from '../onboarding-v2.helpers'
 
 interface ImportSourceTileProps {
   source: BrowserOSImportSource
@@ -10,12 +11,15 @@ interface ImportSourceTileProps {
 
 /** One Chromium import source in the picker. Unselected rows are the shared
  * white-72% card; the chosen one is the white "selected" glass (same as the
- * desktop settings nav), marked by an ink check — never a colour fill. */
+ * desktop settings nav), marked by an ink check — never a colour fill.
+ * A placeholder profile ("Default", "Profile 1") never leads: the tile reads
+ * 「Chrome / 默认账号」 instead of 「Default / Google Chrome」. */
 export function ImportSourceTile({
   source,
   selected,
   onSelect,
 }: ImportSourceTileProps) {
+  const { title, subtitle } = importSourceLabels(source)
   return (
     <label
       className={cn(
@@ -39,12 +43,8 @@ export function ImportSourceTile({
         <User className="size-[15px]" strokeWidth={1.75} />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate font-medium text-[14px] text-ink">
-          {source.profileName || source.displayName}
-        </div>
-        <div className="truncate text-[12px] text-ink-3">
-          {source.browserName}
-        </div>
+        <div className="truncate font-medium text-[14px] text-ink">{title}</div>
+        <div className="truncate text-[12px] text-ink-3">{subtitle}</div>
       </div>
     </label>
   )

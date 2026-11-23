@@ -208,3 +208,125 @@ export function needsMacKeychainPermission(
     (item) => item === 'cookies' || item === 'passwords',
   )
 }
+
+/** Chromium's untouched profile names. Most people never rename their Chrome or
+ * Edge profile, so these would otherwise be the biggest text on the tile. */
+const PLACEHOLDER_PROFILE_NAME = /^(Default|Profile (\d+)|Person (\d+))$/i
+
+/** "Google Chrome" → "Chrome", "Microsoft Edge" → "Edge". */
+export function shortBrowserName(browserName: string): string {
+  return browserName.replace(/^(Google|Microsoft) /, '')
+}
+
+export interface ImportSourceLabels {
+  /** First line of the profile tile. */
+  title: string
+  /** Second line of the profile tile. */
+  subtitle: string
+  /** The profile as people should read it (a real name, or 默认账号 / 账号 N). */
+  profileLabel: string
+  /** True when Chromium only had a placeholder name ("Default", "Profile 1"). */
+  isPlaceholder: boolean
+}
+
+/** Tile and status wording for one source. A real profile name leads; a
+ * placeholder ("Default", "Profile 1", "Person 2", or nothing) never does —
+ * the browser leads and the profile becomes 默认账号 / 账号 N. */
+export function importSourceLabels(
+  source: BrowserOSImportSource,
+): ImportSourceLabels {
+  const profileName = source.profileName.trim()
+  const placeholder = PLACEHOLDER_PROFILE_NAME.exec(profileName)
+  if (profileName && !placeholder) {
+    return {
+      title: profileName,
+      subtitle: source.browserName,
+      profileLabel: profileName,
+      isPlaceholder: false,
+    }
+  }
+  const number = placeholder?.[2] ?? placeholder?.[3]
+  const profileLabel = number
+    ? copy.numberedProfile(number)
+    : copy.defaultProfile
+  return {
+    title:
+      shortBrowserName(source.browserName) ||
+      source.displayName ||
+      copy.browserFallback,
+    subtitle: profileLabel,
+    profileLabel,
+    isPlaceholder: true,
+  }
+}
+
+/** One-line source name for the progress and summary cards. Chromium joins
+ * its own displayName ("Microsoft Edge - Default"), so placeholder profiles
+ * are rebuilt from the source; real names keep the native wording. */
+export function importSourceName(
+  source: BrowserOSImportSource | undefined,
+  nativeName: string | undefined,
+): string | undefined {
+  if (!source) return nativeName
+  const labels = importSourceLabels(source)
+  if (labels.isPlaceholder) {
+    return copy.sourceWithProfile(labels.title, labels.profileLabel)
+  }
+  return nativeName || source.profileName
+}
+
+/** What a step-level key press should do. Enter runs the step's main action
+ * and Escape steps back, but only when the key is not already owned by the
+ * focused control (a button, checkbox, radio or link activates itself on
+ * Enter) or by an open dialog. Held keys never repeat an action, so holding
+ * Enter cannot run from the welcome screen straight into an import. */
+export type StepKeyAction = 'primary' | 'back' | null
+
+export interface StepKeyEvent {
+  key: string
+  repeat: boolean
+  isComposing: boolean
+  altKey: boolean
+  ctrlKey: boolean
+  metaKey: boolean
+  shiftKey: boolean
+  defaultPrevented: boolean
+  target: EventTarget | null
+}
+
+const KEY_OWNING_CONTROL = [
+  'a[href]',
+  'button',
+  'input',
+  'select',
+  'textarea',
+  'summary',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="button"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="switch"]',
+  '[role="link"]',
+  '[role="menuitem"]',
+  '[role="option"]',
+  '[role="combobox"]',
+].join(',')
+
+const DIALOG = '[role="dialog"],[role="alertdialog"]'
+
+function closestFrom(target: EventTarget | null, selector: string): boolean {
+  const element = target as { closest?: (selector: string) => unknown } | null
+  return typeof element?.closest === 'function'
+    ? Boolean(element.closest(selector))
+    : false
+}
+
+export function stepKeyActionFor(event: StepKeyEvent): StepKeyAction {
+  if (event.defaultPrevented || event.repeat || event.isComposing) return null
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+    return null
+  if (closestFrom(event.target, DIALOG)) return null
+  if (event.key === 'Escape') return 'back'
+  if (event.key !== 'Enter') return null
+  return closestFrom(event.target, KEY_OWNING_CONTROL) ? null : 'primary'
+}
