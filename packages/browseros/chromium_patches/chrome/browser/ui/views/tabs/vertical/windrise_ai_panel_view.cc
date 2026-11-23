@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
 new file mode 100644
-index 0000000000..c579b88530
+index 0000000000..80f4944f06
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,527 @@
+@@ -0,0 +1,577 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -14,6 +14,7 @@ index 0000000000..c579b88530
 +#include <memory>
 +#include <utility>
 +
++#include "base/containers/span.h"
 +#include "base/functional/bind.h"
 +#include "base/i18n/number_formatting.h"
 +#include "base/i18n/rtl.h"
@@ -28,6 +29,7 @@ index 0000000000..c579b88530
 +#include "chrome/grit/generated_resources.h"
 +#include "extensions/browser/event_router.h"
 +#include "extensions/browser/extension_event_histogram_value.h"
++#include "third_party/skia/include/core/SkBitmap.h"
 +#include "third_party/skia/include/core/SkRRect.h"
 +#include "ui/base/l10n/l10n_util.h"
 +#include "ui/base/metadata/metadata_impl_macros.h"
@@ -37,6 +39,8 @@ index 0000000000..c579b88530
 +#include "ui/compositor/layer.h"
 +#include "ui/compositor/scoped_layer_animation_settings.h"
 +#include "ui/gfx/canvas.h"
++#include "ui/gfx/codec/png_codec.h"
++#include "ui/gfx/image/image_skia.h"
 +#include "ui/gfx/color_utils.h"
 +#include "ui/gfx/font.h"
 +#include "ui/gfx/font_list.h"
@@ -53,6 +57,7 @@ index 0000000000..c579b88530
 +#include "ui/views/controls/button/label_button.h"
 +#include "ui/views/controls/focus_ring.h"
 +#include "ui/views/controls/highlight_path_generator.h"
++#include "ui/views/controls/image_view.h"
 +#include "ui/views/controls/label.h"
 +#include "ui/views/controls/separator.h"
 +#include "ui/views/layout/box_layout.h"
@@ -79,8 +84,22 @@ index 0000000000..c579b88530
 +// 「接一个 AI」按钮 36 高（偏好 ai_panel_button_height）、圆角 10、字 14
 +// Medium，底 rgb(255 255 255 / .78)；底部文字行字 14，线到字顶 10；
 +// 「闪办广场」下面的小字 11。
++// 字级（Opus-2 11-23，去「调试框感」）：标题 15 Medium（面板里唯一的标题），
++// 行里 AI 名 14 Regular、时间 12 次级色，底部文字行 14；以前标题取的是对话框
++// 标题字体，字号随系统走，和行字没有拉开层次。
++constexpr int kTitleSize = 15;
 +constexpr int kTextSize = 14;
++constexpr int kTimeSize = 12;
 +constexpr int kCaptionSize = 11;
++// 标题到第一行 / 到「接一个 AI」：已连接时 6（行自带 35 行高的上下留白），
++// 还没接时 12（标题下面直接是按钮，给一点呼吸）。
++constexpr int kTitleGapConnected = 6;
++constexpr int kTitleGapEmpty = 12;
++// 行里 AI 标志：16 见方、白底圆角 4（和左下卡片里的同一种小方块，乙05），
++// 到名字 8。
++constexpr int kRowIconSize = 16;
++constexpr int kRowIconRadius = 4;
++constexpr int kRowIconGap = 8;
 +constexpr int kConnectButtonRadius = 10;
 +constexpr SkAlpha kConnectButtonAlpha = 0xC7;  // .78
 +constexpr int kSectionGap = 10;
@@ -108,6 +127,19 @@ index 0000000000..c579b88530
 +// 不可用：整颗按钮 45% 不透明（design-language.md 按钮三态「禁用 45% 不透明」）。
 +constexpr float kDisabledOpacity = 0.45f;
 +
++gfx::ImageSkia DecodeIcon(const std::string& png) {
++  if (png.empty()) {
++    return gfx::ImageSkia();
++  }
++  // 同 windrise_ai_card_view.cc：158 的 PNGCodec 只剩返回 SkBitmap 的重载；
++  // 尺寸已在扩展接口处按 IHDR 限过。
++  const SkBitmap bitmap = gfx::PNGCodec::Decode(base::as_byte_span(png));
++  if (bitmap.isNull()) {
++    return gfx::ImageSkia();
++  }
++  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
++}
++
 +int Metric(LayoutMetric metric) {
 +  return browseros::windrise::GetLayoutMetrics().Get(metric);
 +}
@@ -123,10 +155,7 @@ index 0000000000..c579b88530
 +  auto label = std::make_unique<views::Label>(text);
 +  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 +  label->SetEnabledColor(ui::ColorVariant(color_id));
-+  if (medium) {
-+    label->SetFontList(views::TypographyProvider::Get().GetFont(
-+        views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
-+  }
++  label->SetFontList(SizedFont(label->font_list(), kTextSize, medium));
 +  return label;
 +}
 +
@@ -381,7 +410,7 @@ index 0000000000..c579b88530
 +  // 小字的宽会算进这一列的宽：英文用短的 Coming soon，中英文三项加小字都在
 +  // 196 + 12 以内。
 +  caption->SetProperty(views::kMarginsKey,
-+                       gfx::Insets::TLBR(-2, kTextButtonInsetH, 0, 0));
++                       gfx::Insets::TLBR(0, kTextButtonInsetH, 0, 0));
 +  // 名字和说明已经由按钮读出，小字本身不再单独读一遍。
 +  caption->GetViewAccessibility().SetIsIgnored(true);
 +
@@ -421,7 +450,7 @@ index 0000000000..c579b88530
 +  if (!color_provider) {
 +    return;
 +  }
-+  // 和卡片同一套银色玻璃（windrise_ai_card_view.cc OnPaintBackground；方案 
++  // 和卡片同一套银色玻璃（windrise_ai_card_view.cc OnPaintBackground；方案
 +  // 面板定值）：上浅下深的竖向渐变 + 上缘 1px 白高光 .95 + 内圈 .75px 白 .6。
 +  // 暗色下底是深色两档，高光收弱，不出现一圈亮白边。
 +  const float radius =
@@ -475,8 +504,16 @@ index 0000000000..c579b88530
 +          : l10n_util::GetStringFUTF16(
 +                IDS_WINDRISE_AI_CONNECTED_COUNT,
 +                base::FormatNumber(static_cast<int>(count)));
-+  rows_container_->AddChildView(MakeLabel(
++  views::Label* title_label = rows_container_->AddChildView(MakeLabel(
 +      title, kColorTabForegroundActiveFrameActive, /*medium=*/true));
++  title_label->SetFontList(
++      SizedFont(title_label->font_list(), kTitleSize, /*medium=*/true));
++  title_label->SetProperty(
++      views::kMarginsKey,
++      gfx::Insets::TLBR(0, 0,
++                        count == 0 ? kTitleGapEmpty - kSectionGap
++                                   : kTitleGapConnected,
++                        0));
 +
 +  const int row_height = Metric(LayoutMetric::kAiPanelRowHeight);
 +  for (size_t i = 0; i < count; ++i) {
@@ -488,17 +525,30 @@ index 0000000000..c579b88530
 +    row->SetMinimumCrossAxisSize(row_height);
 +    row->SetCrossAxisAlignment(
 +        views::BoxLayout::CrossAxisAlignment::kCenter);
++    // 各家 AI 的真标志（扩展推来的 PNG，乙05）；没给就不占位，名字顶到左边。
++    const gfx::ImageSkia icon = DecodeIcon(connection.icon_png);
++    if (!icon.isNull()) {
++      auto* image = row->AddChildView(std::make_unique<views::ImageView>());
++      image->SetImage(ui::ImageModel::FromImageSkia(icon));
++      image->SetImageSize(gfx::Size(kRowIconSize, kRowIconSize));
++      image->SetBackground(views::CreateRoundedRectBackground(
++          ui::ColorVariant(SK_ColorWHITE), static_cast<float>(kRowIconRadius)));
++      image->SetProperty(views::kMarginsKey,
++                         gfx::Insets::TLBR(0, 0, 0, kRowIconGap));
++    }
 +    views::Label* name = row->AddChildView(MakeLabel(
 +        connection.name, kColorTabForegroundActiveFrameActive,
 +        /*medium=*/false));
-+    views::View* spacer = row->AddChildView(std::make_unique<views::View>());
-+    row->SetFlexForView(spacer, 1, true);
++    name->SetElideBehavior(gfx::ELIDE_TAIL);
++    // 名字占满中间（长名字省略号收尾，不把时间挤出面板）。
++    row->SetFlexForView(name, 1, /*use_min_size=*/true);
 +    if (connection.last_active_minutes >= 0) {
-+      row->AddChildView(MakeLabel(
++      views::Label* when = row->AddChildView(MakeLabel(
 +          FormatLastActive(connection.last_active_minutes),
 +          kColorTabForegroundInactiveFrameActive, /*medium=*/false));
++      when->SetFontList(SizedFont(when->font_list(), kTimeSize, false));
++      when->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 8, 0, 0));
 +    }
-+    (void)name;
 +
 +    auto separator = std::make_unique<views::Separator>();
 +    separator->SetColorId(kColorWindriseDivider);

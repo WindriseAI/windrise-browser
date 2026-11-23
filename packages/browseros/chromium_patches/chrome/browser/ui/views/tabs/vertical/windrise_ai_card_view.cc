@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..51be809ca6
+index 0000000000..c015253555
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
-@@ -0,0 +1,630 @@
+@@ -0,0 +1,717 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -43,7 +43,11 @@ index 0000000000..51be809ca6
 +#include "ui/gfx/geometry/skia_conversions.h"
 +#include "ui/gfx/skia_paint_util.h"
 +#include "ui/gfx/image/image_skia.h"
++#include "ui/events/event.h"
 +#include "ui/views/background.h"
++#include "ui/views/controls/focus_ring.h"
++#include "ui/views/controls/highlight_path_generator.h"
++#include "ui/views/focus/focus_manager.h"
 +#include "ui/views/widget/widget.h"
 +
 +namespace {
@@ -66,6 +70,17 @@ index 0000000000..51be809ca6
 +// 不按时间兜底：T0 前段很陡，旧组在 1/3 时长时已经接近 0，按时间等会留空档
 +// （补录 R1：展开 / 首次收起时卡片有约 33ms 近乎全空，见盘点 8.14）。
 +constexpr float kFadeInStartOpacity = 0.5f;
++
++// 焦点环（Opus-2 11-23，根因分析 B7②：深 / 浅色下点完卡片外圈挂一圈亮白粗矩形）。
++// 形状 = 卡片自己的圆角（HighlightPathGenerator），1.5px 单层，颜色跟卡片文字
++// （浅色墨色、深色石墨白，甲48「清晰单层墨色圈」），只在键盘 Tab 走到卡片、或
++// 键盘打开面板后焦点还回卡片时显示；鼠标点开再关面板不显示。
++constexpr float kFocusRingThickness = 1.5f;
++
++// 三态的描边（Opus-2 11-23）。未连接 / 已连接：.5px 分隔线色；AI 正在操作：
++// 描边换成文字色 24%，像玻璃边缘被点亮一圈（不加新元素、不加动效——AI 操作时
++// 网页四周已经有流光，这里只是安静地标一下状态）。
++constexpr SkAlpha kWorkingRimAlpha = 0x3D;
 +
 +gfx::ImageSkia DecodeIcon(const std::string& png) {
 +  if (png.empty()) {
@@ -114,6 +129,7 @@ index 0000000000..51be809ca6
 +          &fade_in_delegate_) {
 +  SetAccessibleName(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
 +  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
++  InstallFocusRingStyle();
 +  SetTooltipText(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_OPEN_APP));
 +  SetPaintToLayer();
 +  layer()->SetFillsBoundsOpaquely(false);
@@ -158,6 +174,65 @@ index 0000000000..51be809ca6
 +WindriseAiCardView::~WindriseAiCardView() {
 +  state_subscription_ = {};
 +  browseros::windrise::AiWindowState::Detach(browser_.get());
++}
++
++void WindriseAiCardView::InstallFocusRingStyle() {
++  views::InstallRoundRectHighlightPathGenerator(
++      this, gfx::Insets(),
++      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardRadius));
++  views::FocusRing* ring = views::FocusRing::Get(this);
++  if (!ring) {
++    return;
++  }
++  ring->SetColorId(kColorTabForegroundActiveFrameActive);
++  ring->SetHaloThickness(kFocusRingThickness);
++  // 只认键盘带来的焦点（见 OnFocus）。
++  ring->SetHasFocusPredicate(base::BindRepeating([](const views::View* view) {
++    const auto* card = static_cast<const WindriseAiCardView*>(view);
++    return card->HasFocus() && card->keyboard_focus_;
++  }));
++}
++
++void WindriseAiCardView::OnFocus() {
++  const views::FocusManager* focus_manager = GetFocusManager();
++  const views::FocusManager::FocusChangeReason reason =
++      focus_manager ? focus_manager->focus_change_reason()
++                    : views::FocusManager::FocusChangeReason::kDirectFocusChange;
++  // Tab / Shift+Tab 走到这里：显示。面板关掉、焦点还回来：上一次是用键盘
++  // 打开的才显示。其它（程序直接给焦点）不显示。
++  keyboard_focus_ =
++      reason == views::FocusManager::FocusChangeReason::kFocusTraversal ||
++      (reason == views::FocusManager::FocusChangeReason::kFocusRestore &&
++       last_input_was_key_);
++  views::Button::OnFocus();
++  if (views::FocusRing* ring = views::FocusRing::Get(this)) {
++    ring->Refresh();
++  }
++}
++
++void WindriseAiCardView::OnBlur() {
++  keyboard_focus_ = false;
++  views::Button::OnBlur();
++  if (views::FocusRing* ring = views::FocusRing::Get(this)) {
++    ring->Refresh();
++  }
++}
++
++bool WindriseAiCardView::OnMousePressed(const ui::MouseEvent& event) {
++  last_input_was_key_ = false;
++  if (keyboard_focus_) {
++    // 键盘走到卡片后又用鼠标点：从这一下起按鼠标算，焦点环收起。
++    keyboard_focus_ = false;
++    if (views::FocusRing* ring = views::FocusRing::Get(this)) {
++      ring->Refresh();
++    }
++  }
++  return views::Button::OnMousePressed(event);
++}
++
++bool WindriseAiCardView::OnKeyPressed(const ui::KeyEvent& event) {
++  last_input_was_key_ = true;
++  return views::Button::OnKeyPressed(event);
 +}
 +
 +void WindriseAiCardView::SetCollapsed(bool collapsed) {
@@ -341,6 +416,7 @@ index 0000000000..51be809ca6
 +      state ? &state->state() : nullptr;
 +  const size_t count = ai_state ? ai_state->connections.size() : 0;
 +
++  working_ = ai_state && !ai_state->active_tab_ids.empty();
 +  if (count == 0) {
 +    SetAccessibleName(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
 +    text_->SetText(l10n_util::GetStringUTF16(IDS_WINDRISE_AI_NONE_CONNECTED));
@@ -379,7 +455,11 @@ index 0000000000..51be809ca6
 +        ui::ColorVariant(SK_ColorWHITE), 4.0f));
 +  }
 +
-+  text_->SetEnabledColor(ui::ColorVariant(kColorTabForegroundActiveFrameActive));
++  // 未连接时「还没接 AI」用次级文字色（层次退一档：这是提示，不是状态值）；
++  // 已连接 / AI 正在操作用主文字色。
++  text_->SetEnabledColor(ui::ColorVariant(
++      count == 0 ? kColorTabForegroundInactiveFrameActive
++                 : kColorTabForegroundActiveFrameActive));
 +  count_label_->SetEnabledColor(
 +      ui::ColorVariant(kColorTabForegroundActiveFrameActive));
 +  // theme-v2 §5：折叠时「标志 + 数字」和标签的「图标 + 一个字」同构，数字用
@@ -555,11 +635,16 @@ index 0000000000..51be809ca6
 +        hover);
 +  }
 +
-+  // .5px 边线（同样走偏好）。
++  // .5px 边线（同样走偏好）。AI 正在操作时换成文字色 24% 的亮边（见 kWorkingRimAlpha）。
 +  cc::PaintFlags hairline = flags;
 +  hairline.setStyle(cc::PaintFlags::kStroke_Style);
 +  hairline.setStrokeWidth(1.0f);
-+  hairline.setColor(GetColorProvider()->GetColor(kColorWindriseDivider));
++  hairline.setColor(
++      working_
++          ? SkColorSetA(GetColorProvider()->GetColor(
++                            kColorTabForegroundActiveFrameActive),
++                        kWorkingRimAlpha)
++          : GetColorProvider()->GetColor(kColorWindriseDivider));
 +  const SkRect inset = gfx::RectToSkRect(GetLocalBounds());
 +  canvas->sk_canvas()->drawRRect(
 +      SkRRect::MakeRectXY(inset.makeInset(0.5f, 0.5f), radius, radius),
@@ -573,6 +658,8 @@ index 0000000000..51be809ca6
 +
 +void WindriseAiCardView::OnThemeChanged() {
 +  views::Button::OnThemeChanged();
++  // 圆角走偏好，换主题时一起刷新焦点环的形状。
++  InstallFocusRingStyle();
 +  mark_->SetImage(ui::ImageModel::FromVectorIcon(
 +      kWindriseBridgeMarkIcon, kColorTabForegroundActiveFrameActive,
 +      browseros::windrise::GetLayoutMetrics().Get(LayoutMetric::kAiCardIconSize)));

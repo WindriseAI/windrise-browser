@@ -1,15 +1,18 @@
 diff --git a/components/neterror/resources/neterror.css b/components/neterror/resources/neterror.css
-index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead50333e313 100644
+index dbdbeac156..a357dd6a5a 100644
 --- a/components/neterror/resources/neterror.css
 +++ b/components/neterror/resources/neterror.css
-@@ -701,3 +701,83 @@ html[dir='rtl'].offline .icon-offline {
+@@ -701,3 +701,200 @@ html[dir='rtl'].offline .icon-offline {
      display: none;
    }
  }
 +
 +/* Windrise Browser：出错页（网络错误 / 无法访问此网站）统一样式，和其余内部页同一套变量。
 + * 原生落点：追加到 components/neterror/resources/neterror.css 末尾（出错页不读 cr_shared_vars.css，所以单补）。
-+ * 依据：kb/browser-internal-style-v1.md（页面底银色渐变、墨色文字、强调色只有墨色、按钮墨色实心）；颜色和 cr_shared_vars.windrise.css 同值。
++ * 依据：kb/browser-internal-style-v1.md（页面底银色渐变、墨色文字、强调色只有墨色）；颜色和 cr_shared_vars.windrise.css 同值。
++ * 按钮：用户 11-18「按钮为什么是黑色的？我手机上的液态玻璃呢？」取代了乙07 / 乙09 的墨色实心主按钮（Opus-2 11-23），
++ * 改成和内部页 cr_button.css 同一套液态玻璃两层：主 = 唯一凸起的白玻璃（重新加载），次 = 墨色 42% 细线框（详情）。
++ * 出错页不读 cr_shared_vars.css，--lg-* 的值在这里按电脑端 tokens.css 原样抄一份（浅 / 深各一组）。
 + * 银色渐变只画在一层上（html，至少铺满视口、不重复）；body 和里面的容器一律透明——两层都画、内层只有内容那么高时会叠出直线硬边（11-13 挑出）。
 + * 安全警告页（红色）不动（用户已定）。
 + */
@@ -45,13 +48,116 @@ index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead5
 +body.neterror h1, body.neterror #main-message h1 { color: #0E1116; }
 +body.neterror a, body.neterror .error-code { color: #4A515C; }
 +body.neterror .icon { filter: grayscale(1) brightness(.35); opacity: .8; }
-+body.neterror button, body.neterror .blue-button, body.neterror #reload-button {
-+  background: #14171C !important; color: #fff; border: 0; border-radius: 10px; box-shadow: none;
++body.neterror {
++  --lg-fill-top: rgb(255 255 255 / .96);
++  --lg-fill-bottom: rgb(255 255 255 / .74);
++  --lg-fill-top-hover: rgb(255 255 255 / 1);
++  --lg-fill-bottom-hover: rgb(255 255 255 / .86);
++  --lg-rim: rgb(255 255 255 / .92);
++  --lg-highlight: rgb(255 255 255 / 1);
++  --lg-lowlight: rgb(20 23 28 / .07);
++  --lg-shadow-near: 0 1px 2px rgb(20 26 33 / .10);
++  --lg-shadow-far: 0 6px 16px rgb(20 26 33 / .12);
++  --lg-press-shade: rgb(20 23 28 / .06);
++  --lg-quiet-fill: rgb(255 255 255 / .14);
++  --lg-quiet-fill-hover: rgb(255 255 255 / .40);
++  --lg-quiet-edge: rgb(20 23 28 / .42);
++  --lg-quiet-highlight: rgb(255 255 255 / .55);
++  --wr-btn-ink: #0E1116;
++  --wr-focus: #0E1116;
++  --wr-focus-halo: rgb(14 17 22 / .16);
++  --wr-scrollbar-thumb-rest: rgb(20 23 28 / .16);
++  --wr-scrollbar-thumb: rgb(20 23 28 / .28);
++  --wr-scrollbar-thumb-active: rgb(20 23 28 / .45);
 +}
-+body.neterror .secondary-button, body.neterror #details-button {
-+  background: #E8EBEE !important; color: #0E1116; border: 0; border-radius: 10px;
++/* 主按钮（重新加载 / 上游 .blue-button 那一档）：白玻璃 + 三层光影，墨色字。
++   按下 scale(.97) 120ms、松开 160ms，只动 transform（emil「Buttons must feel responsive」，
++   review-animations 第 9 条按 / 松不对称）。高 36、圆角全圆，和内部页 cr-button 一样。 */
++body.neterror button,
++body.neterror .blue-button,
++body.neterror #reload-button {
++  background: linear-gradient(180deg, var(--lg-fill-top), var(--lg-fill-bottom)) border-box !important;
++  border: 0;
++  border-radius: 999px;
++  box-shadow: inset 0 0 0 .75px var(--lg-rim), inset 0 1px 0 var(--lg-highlight),
++      inset 0 -1px 0 var(--lg-lowlight), var(--lg-shadow-near), var(--lg-shadow-far);
++  color: var(--wr-btn-ink);
++  font-weight: 500;
++  min-height: 36px;
++  padding-inline: 20px;
++  transition: transform 160ms cubic-bezier(.23, 1, .32, 1);
++}
++/* 次按钮（详情 / 上游 .secondary-button）：墨色 42% 细线框 + 很淡的玻璃，不凸起。 */
++body.neterror .secondary-button,
++body.neterror #details-button {
++  background: linear-gradient(180deg, var(--lg-quiet-fill), transparent) !important;
++  border: 1px solid var(--lg-quiet-edge);
++  border-radius: 999px;
++  box-shadow: inset 0 1px 0 var(--lg-quiet-highlight);
++  color: var(--wr-btn-ink);
++  font-weight: 500;
++}
++@media (hover: hover) and (pointer: fine) {
++  body.neterror button:hover,
++  body.neterror .blue-button:hover,
++  body.neterror #reload-button:hover {
++    background: linear-gradient(180deg, var(--lg-fill-top-hover), var(--lg-fill-bottom-hover)) border-box !important;
++  }
++  body.neterror .secondary-button:hover,
++  body.neterror #details-button:hover {
++    background: linear-gradient(180deg, var(--lg-quiet-fill-hover), var(--lg-quiet-fill)) !important;
++  }
++}
++body.neterror button:active {
++  box-shadow: inset 0 0 0 .75px var(--lg-rim), inset 0 1px 2px var(--lg-press-shade),
++      var(--lg-shadow-near);
++  transform: scale(.97);
++  transition-duration: 120ms;
++}
++body.neterror .secondary-button:active,
++body.neterror #details-button:active {
++  box-shadow: none;
++}
++/* 键盘焦点：单层墨色细圈 + 外面一圈淡光（同内部页 --wr-focus-ring），鼠标点不出框。 */
++body.neterror button:focus {
++  outline: none;
++}
++body.neterror button:focus-visible {
++  box-shadow: 0 0 0 1px var(--wr-focus), 0 0 0 3px var(--wr-focus-halo);
++  outline: none;
 +}
 +body.neterror #details { color: #4A515C; }
++/* 细滚动条：同 cr_shared_vars.css 那一段（出错页不读那张表，照抄）。 */
++::-webkit-scrollbar {
++  height: 6px;
++  width: 6px;
++}
++::-webkit-scrollbar-track,
++::-webkit-scrollbar-corner {
++  background: transparent;
++}
++::-webkit-scrollbar-button {
++  display: none;
++}
++::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb-rest, rgb(20 23 28 / .16));
++  border-radius: 3px;
++}
++:hover::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb, rgb(20 23 28 / .28));
++}
++::-webkit-scrollbar-thumb:hover,
++::-webkit-scrollbar-thumb:active {
++  background: var(--wr-scrollbar-thumb-active, rgb(20 23 28 / .45));
++}
++@media (prefers-reduced-motion: reduce) {
++  body.neterror button {
++    transition: none;
++  }
++  body.neterror button:active {
++    transform: none;
++  }
++}
 +
 +@media (prefers-color-scheme: dark) {
 +  html {
@@ -74,15 +180,26 @@ index dbdbeac156b5043c34fde9bddf19a0d0b60a1891..85a578faaa903859c83a09dc680bead5
 +    filter: grayscale(1) invert(1) brightness(1.1);
 +    opacity: .85;
 +  }
-+  body.neterror button,
-+  body.neterror .blue-button,
-+  body.neterror #reload-button {
-+    background: #EEF1F4 !important;
-+    color: #14171C;
-+  }
-+  body.neterror .secondary-button,
-+  body.neterror #details-button {
-+    background: rgb(255 255 255 / .12) !important;
-+    color: #EEF1F4;
++  body.neterror {
++    --lg-fill-top: rgb(255 255 255 / .20);
++    --lg-fill-bottom: rgb(255 255 255 / .08);
++    --lg-fill-top-hover: rgb(255 255 255 / .26);
++    --lg-fill-bottom-hover: rgb(255 255 255 / .12);
++    --lg-rim: rgb(255 255 255 / .22);
++    --lg-highlight: rgb(255 255 255 / .34);
++    --lg-lowlight: rgb(0 0 0 / .18);
++    --lg-shadow-near: 0 1px 2px rgb(0 0 0 / .24);
++    --lg-shadow-far: 0 6px 16px rgb(0 0 0 / .30);
++    --lg-press-shade: rgb(0 0 0 / .20);
++    --lg-quiet-fill: rgb(255 255 255 / .06);
++    --lg-quiet-fill-hover: rgb(255 255 255 / .12);
++    --lg-quiet-edge: rgb(255 255 255 / .42);
++    --lg-quiet-highlight: rgb(255 255 255 / .14);
++    --wr-btn-ink: #EEF1F4;
++    --wr-focus: #C9D0D8;
++    --wr-focus-halo: rgb(201 208 216 / .24);
++    --wr-scrollbar-thumb-rest: rgb(238 241 244 / .18);
++    --wr-scrollbar-thumb: rgb(238 241 244 / .30);
++    --wr-scrollbar-thumb-active: rgb(238 241 244 / .48);
 +  }
 +}

@@ -810,3 +810,17 @@ features:
       - "components/strings/components_strings_zh-HK.xtb"
       - "components/strings/components_strings_zh-TW.xtb"
       - "ui/webui/resources/css/md_colors.css"
+
+  windrise-browser-visual-1123:
+    description: "fix: Opus-2 one-pass browser visual finish: keyboard-only rounded focus ring and three-state rim on the AI card, typographic AI panel with real AI logos, hover card suppressed for fully visible vertical tab titles, high-contrast graphite incognito page and glass splash, 6px WebUI scrollbars in document and shadow roots, liquid-glass neterror buttons"
+    files:
+      - "chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css"
+      - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_controller.cc"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h"
+      - "chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc"
+      - "components/neterror/resources/neterror.css"
+      - "ui/webui/resources/cr_elements/cr_scrollable_lit.css"
+      - "ui/webui/resources/cr_elements/cr_shared_style_lit.css"
+      - "ui/webui/resources/cr_elements/cr_shared_vars.css"
+      - "ui/webui/resources/images/incognito_splash.svg"

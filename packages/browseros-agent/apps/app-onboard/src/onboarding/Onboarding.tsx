@@ -142,18 +142,23 @@ export function Onboarding() {
           />
         ) : (
           <>
-            {/* Re-mounts on each step (keyed) and plays a directional slide-in.
-            No exit animation, so the flow can never stall waiting on one.
-            Full transform string (not the x shorthand) keeps it on the
-            compositor; critically damped spring, no overshoot (apple-design
-            §4: damping 1.0, response 0.4). Reduced motion: no movement. */}
+            {/* Re-mounts on each step (keyed) and plays a short directional
+            slide-in: 12px + fade, nothing else moves (the card outline and the
+            rail stay put, so the step change reads as the content turning a
+            page, not the window jumping). No exit animation, so the flow can
+            never stall waiting on one. Full transform string (not the x
+            shorthand) keeps it on the compositor; critically damped spring,
+            no overshoot (apple-design §4: damping 1.0, response ~0.3);
+            opacity 220ms on the strong ease-out (animate §5). Reduced motion:
+            no movement, no fade — the step simply appears. */}
             <motion.div
               key={step}
+              className="flex min-h-full flex-1 flex-col"
               initial={
                 reduce
                   ? false
                   : {
-                      transform: `translateX(${direction.current >= 0 ? 24 : -24}px)`,
+                      transform: `translateX(${direction.current >= 0 ? 12 : -12}px)`,
                       opacity: 0,
                     }
               }
@@ -161,8 +166,8 @@ export function Onboarding() {
               transition={{
                 type: 'spring',
                 bounce: 0,
-                duration: 0.4,
-                opacity: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
+                duration: 0.32,
+                opacity: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
               }}
             >
               {step === 0 && (

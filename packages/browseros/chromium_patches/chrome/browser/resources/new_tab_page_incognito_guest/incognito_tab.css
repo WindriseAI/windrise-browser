@@ -1,0 +1,110 @@
+diff --git a/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css b/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
+index 9c5ca7a283..b4557d4129 100644
+--- a/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
++++ b/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
+@@ -322,3 +322,105 @@ h1 {
+     padding-inline-start: 24px;
+   }
+ }
++
++/* Copyright 2026 Windrise. Use of this source code is governed by the
++ * AGPL-3.0 license that can be found in the LICENSE file. */
++
++/* 风桥浏览器无痕页（Opus-2 11-23，浏览器清单甲53 4B 深色、根因分析 B6/B13）。
++ *
++ * 这一页异步加载 cr_toggle.js，顺带把 cr_shared_vars.css 当 adopted
++ * stylesheet 全局挂上：那张表比这里晚进层叠，html 规则带 id 级特异度，浅色
++ * 系统（prefers-color-scheme: light）下还会给 body 墨色字、用 body::before 盖一层
++ * 银灰渐变——无痕页于是文字发黑、底色和 #16191D 外框割裂（b_072）。
++ * 所以这里全部写死字面颜色（那张表晚到，变量靠不住），并用更高特异度 + !important
++ * 锁住，浅色 / 深色系统下都是同一张深石墨页：
++ *   底 #1E2228（= windrise_color_mixer.cc 无痕 kColorWebContentsBackground / NTP 底）
++ *   标题、正文 #F2F4F7（对 #1E2228 约 14.6:1）；次级说明 #B8C0CC（约 8.7:1）
++ *   链接 #F2F4F7 + 下划线（不用上游的蓝，界面不出彩色，甲04）
++ *   Cookie 说明卡：白 5% + 1px 白 14% 边，圆角 12（同内部页暗色卡）。
++ * 用户自己装了带背景图的主题（hascustombackground='true'）时底色交还主题。 */
++html:not([hascustombackground='true']),
++html:not([hascustombackground='true']) body {
++  background: #1E2228 !important;
++}
++
++html,
++html body {
++  color-scheme: dark !important;
++  color: #F2F4F7 !important;
++}
++
++html body::before {
++  content: none !important;
++  display: none !important;
++}
++
++html body .content {
++  color: #B8C0CC !important;
++  font-family: 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
++}
++
++html body .content h1 {
++  color: #F2F4F7 !important;
++  font-weight: 500;
++  letter-spacing: -0.01em;
++}
++
++html body .content #subtitle,
++html body .content #subtitle span {
++  color: #DCE0E6 !important;
++}
++
++html body .content .bulletpoints,
++html body .content .bulletpoints li,
++html body .content .bulletpoints p {
++  color: #B8C0CC !important;
++}
++
++html body .content em,
++html body .content .bulletpoints em,
++html body .content #cookie-controls-header em {
++  color: #F2F4F7 !important;
++}
++
++html body .content a,
++html body .content .learn-more-button,
++html body .content #cookie-controls-description a {
++  color: #F2F4F7 !important;
++  text-decoration: underline;
++  text-decoration-color: rgb(242 244 247 / .45);
++  text-underline-offset: 3px;
++}
++
++@media (hover: hover) and (pointer: fine) {
++  html body .content a:hover,
++  html body .content .learn-more-button:hover {
++    text-decoration-color: #F2F4F7;
++  }
++}
++
++html body .content a:focus-visible {
++  border-radius: 4px;
++  outline: 2px solid #C9D0D8;
++  outline-offset: 2px;
++}
++
++html body .content #cookie-controls {
++  /* 卡里的开关（若有）按深色取值，不读 cr_shared_vars 浅色那组。 */
++  --color-toggle-button-track-on: #F2F4F7;
++  --color-toggle-button-thumb-on: #1E2228;
++  --color-toggle-button-track-off: rgb(255 255 255 / .18);
++  --color-toggle-button-thumb-off: #B8C0CC;
++  background-color: rgb(255 255 255 / .05) !important;
++  border: 1px solid rgb(255 255 255 / .14);
++  border-radius: 12px;
++  color: #B8C0CC !important;
++}
++
++html body .content #cookie-controls-header svg {
++  fill: #F2F4F7;
++}
++
++html body .content #cookie-controls-description span {
++  color: #B8C0CC !important;
++}

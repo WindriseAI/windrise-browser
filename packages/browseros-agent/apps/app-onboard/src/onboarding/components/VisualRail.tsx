@@ -3,13 +3,17 @@ import { copy } from '../copy'
 
 const FEATURE_ICONS = [ArrowDownToLine, LayoutPanelLeft, ShieldCheck] as const
 
-/** Value rail beside the onboarding steps. It sits straight on the silver page
- * (one milky layer, a hairline on its right edge) — no tinted gradient, no
- * colour accent, and the B6 mark stays icon-sized (browser checklist 甲40, 甲42). */
+/** Left column of the onboarding card (Opus-2, 11-23). It is the heavier
+ * structural layer of the card (apple-design §12: structure reads darker, the
+ * interactive column lighter): one faint milky wash and a hairline on its right
+ * edge, no tinted gradient, no colour accent. The B6 mark stays icon-sized
+ * (browser checklist 甲40, 甲42). Brand at the top, the value points sit on the
+ * bottom edge; the old footer line repeated the third point word for word and
+ * was the line that got cut by the taskbar, so it is gone. */
 export function VisualRail() {
   const [lead, tail] = splitOnce(copy.railHeadline, copy.railHeadlineAccent)
   return (
-    <div className="relative hidden w-[280px] shrink-0 flex-col justify-between overflow-hidden border-line border-r-[0.75px] bg-[var(--wr-rail-bg)] p-9 lg:flex xl:w-[340px]">
+    <div className="wr-rail relative hidden w-[300px] shrink-0 flex-col justify-between overflow-hidden border-line border-r-[0.75px] px-8 pt-9 pb-9 md:flex lg:w-[320px]">
       <div className="relative flex items-center gap-2.5">
         {/* Must stay a literal public path: importing the asset or inlining it
             breaks scripts/verify-chromium-build.ts (allowlist, no data: URLs).
@@ -20,10 +24,12 @@ export function VisualRail() {
           className="size-8 rounded-[9px]"
           src="/icon/128.png"
         />
-        <div className="font-medium text-[16px] text-ink">{copy.brandName}</div>
+        <div className="font-medium text-[16px] text-ink tracking-[0.01em]">
+          {copy.brandName}
+        </div>
       </div>
       <div className="relative">
-        <div className="mb-6 font-medium text-[20px] text-ink leading-[1.4]">
+        <div className="mb-7 font-medium text-[20px] text-ink leading-[1.4] tracking-[-0.005em]">
           {lead}
           {tail !== null && (
             <>
@@ -32,7 +38,7 @@ export function VisualRail() {
             </>
           )}
         </div>
-        <div className="flex flex-col gap-3.5">
+        <div className="flex flex-col gap-4">
           {copy.railFeatures.map((feature, index) => {
             const Icon = FEATURE_ICONS[index] ?? ShieldCheck
             return (
@@ -53,7 +59,6 @@ export function VisualRail() {
           })}
         </div>
       </div>
-      <div className="relative text-[12px] text-ink-3">{copy.railFooter}</div>
     </div>
   )
 }

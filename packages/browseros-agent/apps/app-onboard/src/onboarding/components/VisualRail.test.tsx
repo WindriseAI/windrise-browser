@@ -13,6 +13,8 @@ describe('VisualRail', () => {
     expect(html).toContain('private browser')
     expect(html).toContain('for the web you use every day')
     expect(html).toContain('Bring your browser')
-    expect(html).toContain('Local-first. Private.')
+    // The footer repeated the third value point and was removed (Opus-2).
+    expect(html).not.toContain('Local-first. Private.')
+    expect(html).toContain('Local-first and private.')
   })
 })

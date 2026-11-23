@@ -13,7 +13,7 @@ interface SetupStepProps {
  * Status marks are ink (no red / amber); the spinner stops under reduced motion. */
 export function SetupStep({ failed, onRetry }: SetupStepProps) {
   return (
-    <div className="flex flex-1 items-center">
+    <div className="flex flex-1 items-center pb-10">
       <div className="w-full max-w-[560px]">
         <div role={failed ? 'alert' : 'status'} aria-atomic="true">
           {failed ? (

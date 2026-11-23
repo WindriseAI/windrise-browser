@@ -10,10 +10,12 @@ interface WelcomeStepProps {
 }
 
 /** Opening step: names the two things onboarding will do, then gets out of the
- * way. One raised white-glass button to press; skipping is a quiet text button. */
+ * way. One raised white-glass button to press; skipping is a quiet text button.
+ * It sits in the vertical middle of the card's step column (my-auto in the
+ * scrolling flex column), so the short step never leaves a hole at the bottom. */
 export function WelcomeStep({ onPrimary, onSkip }: WelcomeStepProps) {
   return (
-    <StepWrap>
+    <StepWrap className="my-auto max-w-[460px] pb-10">
       <DisplayHeading>
         {copy.welcomeTitleLead}
         <Em>{copy.welcomeTitleAccent}</Em>

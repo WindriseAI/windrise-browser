@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
 new file mode 100644
-index 0000000000..76ce7d0228
+index 0000000000..c4be5fa62e
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.h
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,163 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -62,6 +62,10 @@ index 0000000000..76ce7d0228
 +  void Layout(PassKey pass_key) override;
 +  void OnPaintBackground(gfx::Canvas* canvas) override;
 +  void OnThemeChanged() override;
++  void OnFocus() override;
++  void OnBlur() override;
++  bool OnMousePressed(const ui::MouseEvent& event) override;
++  bool OnKeyPressed(const ui::KeyEvent& event) override;
 +
 +  // views::WidgetObserver:
 +  void OnWidgetDestroyed(views::Widget* widget) override;
@@ -79,6 +83,8 @@ index 0000000000..76ce7d0228
 + private:
 +  void OnAiStateChanged();
 +  void RebuildFromState();
++  // 圆角焦点路径 + 只在键盘焦点时显示的单层焦点环（构造和换主题时调）。
++  void InstallFocusRingStyle();
 +  void ShowPanel();
 +
 +  // ：折叠态 ⇄ 展开态内容真正的交叉淡。两组内容
@@ -118,6 +124,12 @@ index 0000000000..76ce7d0228
 +      panel_observation_{this};
 +  // 目标状态（侧栏收没收）。
 +  bool collapsed_ = false;
++  // 这次焦点是键盘带来的（Tab，或键盘开过面板后还回来）：焦点环只在这时显示。
++  bool keyboard_focus_ = false;
++  // 最近一次操作卡片用的是键盘（回车 / 空格）还是鼠标。
++  bool last_input_was_key_ = false;
++  // 有 AI 正在操作标签（AiState::active_tab_ids 非空）：描边换亮边。
++  bool working_ = false;
 +  // 两组内容当前的透明度和这一段淡入 / 淡出的起点（下标见 GroupIndex）。
 +  float group_opacity_[2] = {1.0f, 0.0f};
 +  float group_from_[2] = {1.0f, 0.0f};

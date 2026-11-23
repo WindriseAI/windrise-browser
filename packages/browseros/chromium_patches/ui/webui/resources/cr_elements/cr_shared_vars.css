@@ -1,8 +1,8 @@
 diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resources/cr_elements/cr_shared_vars.css
-index f478ceca5c..77e86b6082 100644
+index f478ceca5c..e1f30408e7 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,300 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,358 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -302,4 +302,62 @@ index f478ceca5c..77e86b6082 100644
 +  pointer-events: none;
 +  background: var(--wr-page-bg);
 +  will-change: transform;
++}
++
++/* 全站内部页统一细滚动条（Opus-2 11-23；电脑端清单 #3 / #64，根因分析 A3④：
++ * chrome://extensions 右侧露出 14px 带上下箭头的系统粗灰条）。
++ * 6px 圆角细条、轨道透明、没有箭头；平时墨色 16% 轻轻在、指到滚动区上 28%、
++ * 指到条上或拖动 45%（深色同比例的石墨白）。滚动条伪元素不支持过渡，换色是瞬间的
++ * ——一天几十次的悬停，按 animate 第 1 步本来也不做补间。
++ * 这张表只被 document 采用，这里的规则管文档层的滚动区（含整页滚动）；各页面
++ * 影子 DOM 里的主滚动区由 cr_scrollable_lit.css / cr_shared_style(_lit).css 里同一段
++ * 规则接住（颜色读这里定义的变量，变量会穿过影子边界继承）。
++ * 不用标准属性 scrollbar-width / scrollbar-color：在 Chromium 里它们一旦生效就会
++ * 让 ::-webkit-scrollbar 失效，而且 scrollbar-width 不继承、进不了影子 DOM。 */
++html:not(#wr-tokens) {
++  --wr-scrollbar-thumb-rest: rgb(20 23 28 / .16);
++  --wr-scrollbar-thumb: rgb(20 23 28 / .28);
++  --wr-scrollbar-thumb-active: rgb(20 23 28 / .45);
++}
++
++@media (prefers-color-scheme: dark) {
++  html:not(#wr-tokens):not([data-theme='light']) {
++    --wr-scrollbar-thumb-rest: rgb(238 241 244 / .18);
++    --wr-scrollbar-thumb: rgb(238 241 244 / .30);
++    --wr-scrollbar-thumb-active: rgb(238 241 244 / .48);
++  }
++}
++
++html:not(#wr-tokens)[dark] {
++  --wr-scrollbar-thumb-rest: rgb(238 241 244 / .18);
++  --wr-scrollbar-thumb: rgb(238 241 244 / .30);
++  --wr-scrollbar-thumb-active: rgb(238 241 244 / .48);
++}
++
++::-webkit-scrollbar {
++  height: 6px;
++  width: 6px;
++}
++
++::-webkit-scrollbar-track,
++::-webkit-scrollbar-corner {
++  background: transparent;
++}
++
++::-webkit-scrollbar-button {
++  display: none;
++}
++
++::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb-rest);
++  border-radius: 3px;
++}
++
++:hover::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb);
++}
++
++::-webkit-scrollbar-thumb:hover,
++::-webkit-scrollbar-thumb:active {
++  background: var(--wr-scrollbar-thumb-active);
 +}

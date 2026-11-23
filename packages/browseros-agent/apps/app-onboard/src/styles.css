@@ -87,6 +87,20 @@
   --wr-accent-tint-2: rgba(20, 23, 28, 0.08);
   --wr-card-reduced-transparency: rgba(255, 255, 255, 0.95);
   --wr-card-high-contrast: rgba(255, 255, 255, 0.96);
+  /* 引导大卡（Opus-2 11-23）：整张卡是一块液态玻璃窗口板（同电脑端设置中窗的板），
+     上缘一道亮边、两层投影，背后的银底被模糊；卡里的白卡照旧是 72% 平涂（同中窗里的卡）。 */
+  --wr-stage-top: rgba(255, 255, 255, 0.6);
+  --wr-stage-bottom: rgba(255, 255, 255, 0.42);
+  --wr-stage-rim: rgba(255, 255, 255, 0.86);
+  --wr-stage-highlight: rgba(255, 255, 255, 0.95);
+  --wr-stage-shadow:
+    0 1px 2px rgba(20, 26, 33, 0.08), 0 20px 56px rgba(20, 26, 33, 0.16);
+  --wr-stage-solid: rgba(236, 239, 242, 0.97);
+  /* 底部操作条托底：和卡同色的半透明 + 背后模糊（scroll edge，不画硬线） */
+  --wr-action-veil: rgba(239, 241, 244, 0.62);
+  /* 细滚动条（同电脑端清单 #64：墨色 28%，悬停 45%） */
+  --wr-scroll-thumb: rgba(20, 23, 28, 0.28);
+  --wr-scroll-thumb-hover: rgba(20, 23, 28, 0.45);
 
   /* 动效（同电脑端：按下 120、状态 180、进场 240，曲线统一 --ease） */
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
@@ -220,6 +234,16 @@
     --wr-accent-tint-2: rgba(255, 255, 255, 0.1);
     --wr-card-reduced-transparency: rgba(58, 65, 73, 0.95);
     --wr-card-high-contrast: rgba(58, 65, 73, 0.96);
+    --wr-stage-top: rgba(255, 255, 255, 0.1);
+    --wr-stage-bottom: rgba(255, 255, 255, 0.04);
+    --wr-stage-rim: rgba(255, 255, 255, 0.14);
+    --wr-stage-highlight: rgba(255, 255, 255, 0.16);
+    --wr-stage-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.28), 0 20px 56px rgba(0, 0, 0, 0.34);
+    --wr-stage-solid: rgba(52, 59, 67, 0.97);
+    --wr-action-veil: rgba(56, 63, 71, 0.6);
+    --wr-scroll-thumb: rgba(238, 241, 244, 0.28);
+    --wr-scroll-thumb-hover: rgba(238, 241, 244, 0.45);
     --lg-fill-top: rgba(255, 255, 255, 0.2);
     --lg-fill-bottom: rgba(255, 255, 255, 0.08);
     --lg-fill-top-hover: rgba(255, 255, 255, 0.26);
@@ -272,6 +296,16 @@
   --wr-accent-tint-2: rgba(255, 255, 255, 0.1);
   --wr-card-reduced-transparency: rgba(58, 65, 73, 0.95);
   --wr-card-high-contrast: rgba(58, 65, 73, 0.96);
+  --wr-stage-top: rgba(255, 255, 255, 0.1);
+  --wr-stage-bottom: rgba(255, 255, 255, 0.04);
+  --wr-stage-rim: rgba(255, 255, 255, 0.14);
+  --wr-stage-highlight: rgba(255, 255, 255, 0.16);
+  --wr-stage-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.28), 0 20px 56px rgba(0, 0, 0, 0.34);
+  --wr-stage-solid: rgba(52, 59, 67, 0.97);
+  --wr-action-veil: rgba(56, 63, 71, 0.6);
+  --wr-scroll-thumb: rgba(238, 241, 244, 0.28);
+  --wr-scroll-thumb-hover: rgba(238, 241, 244, 0.45);
   --lg-fill-top: rgba(255, 255, 255, 0.2);
   --lg-fill-bottom: rgba(255, 255, 255, 0.08);
   --lg-fill-top-hover: rgba(255, 255, 255, 0.26);
@@ -494,9 +528,33 @@ body::before {
   }
 }
 
+/* 引导大卡（视口正中，一张液态玻璃窗口板）。材质按 apple-design 第 12 节：
+   大面更厚——背后模糊 + 两层投影；上缘一道亮边代表光落在玻璃上；不再叠第二层同样
+   半透明的玻璃（卡里的白卡是 72% 平涂，同电脑端中窗）。圆角 20：大于卡里白卡的 16、
+   小于电脑端小窗板的 28，嵌套圆角由外向内递减。 */
+.wr-stage-card {
+  background: linear-gradient(
+    180deg,
+    var(--wr-stage-top),
+    var(--wr-stage-bottom)
+  );
+  border-radius: 20px;
+  box-shadow:
+    inset 0 0 0 0.75px var(--wr-stage-rim),
+    inset 0 1px 0 var(--wr-stage-highlight),
+    var(--wr-stage-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+/* 卡的左栏：结构层略沉一点（同一张卡里分出两层，不另起一块卡） */
+.wr-rail {
+  background: var(--wr-rail-bg);
+}
+
 /* 底部常驻操作条：内容从它下面滚过时托住按钮（apple-design 第 12 节 scroll edge），不画硬分隔线。
-   用独立背景伪元素按视口尺寸对齐底图并用遮罩把上沿 28px 渐隐，去掉 background-attachment: fixed
-   以保持合成器滚动（同时避免遮罩裁掉按钮投影与焦点环）。 */
+   以前这里按视口尺寸重画一遍整页银底——放进卡里以后会露出一块直边的「另一张底」
+   （甲39 那类毛病），现在改成和卡同色的薄纱 + 背后模糊，上沿 28px 渐隐。 */
 .wr-action-bar {
   isolation: isolate;
 }
@@ -504,14 +562,38 @@ body::before {
 .wr-action-bar::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 0 -40px;
   z-index: -1;
   pointer-events: none;
-  background: var(--wr-page-bg);
-  background-size: 100vw 100vh;
-  background-position: right bottom;
+  background: var(--wr-action-veil);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 28px);
   mask-image: linear-gradient(180deg, transparent, #000 28px);
+}
+
+/* 卡里右栏的细滚动条（同电脑端清单 #64）：6px、透明轨道、无箭头、圆角拇指；
+   平时墨色 28%，指到滚动区上 / 拖动时 45%。滚动条伪元素没有过渡，瞬间换色
+   （一天几十次的悬停，按 animate 第 1 步不做补间）。 */
+.wr-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.wr-scroll::-webkit-scrollbar-track,
+.wr-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.wr-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+.wr-scroll::-webkit-scrollbar-thumb {
+  background: var(--wr-scroll-thumb);
+  background-clip: padding-box;
+  border-radius: 3px;
+}
+.wr-scroll::-webkit-scrollbar-thumb:hover,
+.wr-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--wr-scroll-thumb-hover);
 }
 
 /* 对话框遮罩：轻压暗 + 3px 模糊 */
@@ -525,6 +607,16 @@ body::before {
   .wr-card {
     background: var(--wr-card-reduced-transparency);
   }
+  .wr-stage-card {
+    background: var(--wr-stage-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wr-action-bar::before {
+    background: var(--wr-stage-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
   .wr-scrim {
     background: rgba(20, 23, 28, 0.4);
     backdrop-filter: none;
@@ -536,6 +628,12 @@ body::before {
   .wr-card {
     background: var(--wr-card-high-contrast);
     border-color: var(--lg-quiet-edge);
+  }
+  .wr-stage-card {
+    background: var(--wr-stage-solid);
+    box-shadow:
+      inset 0 0 0 1px var(--lg-quiet-edge),
+      var(--wr-stage-shadow);
   }
   .lg-btn-primary {
     box-shadow:

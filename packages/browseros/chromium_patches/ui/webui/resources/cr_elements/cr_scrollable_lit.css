@@ -1,0 +1,39 @@
+diff --git a/ui/webui/resources/cr_elements/cr_scrollable_lit.css b/ui/webui/resources/cr_elements/cr_scrollable_lit.css
+index 0f12b79b62..d4c2899b51 100644
+--- a/ui/webui/resources/cr_elements/cr_scrollable_lit.css
++++ b/ui/webui/resources/cr_elements/cr_scrollable_lit.css
+@@ -84,3 +84,34 @@
+     opacity: 1;
+   }
+ }
++
++/* Windrise：影子 DOM 里的滚动区用同一条 6px 细滚动条（Opus-2 11-23）。
++ * 颜色变量由 cr_shared_vars.css 定义在 html 上、继承进来；规则与那里同一段，
++ * 改一处要一起改。没有变量时退回浅色墨色。 */
++::-webkit-scrollbar {
++  height: 6px;
++  width: 6px;
++}
++
++::-webkit-scrollbar-track,
++::-webkit-scrollbar-corner {
++  background: transparent;
++}
++
++::-webkit-scrollbar-button {
++  display: none;
++}
++
++::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb-rest, rgb(20 23 28 / .16));
++  border-radius: 3px;
++}
++
++:hover::-webkit-scrollbar-thumb {
++  background: var(--wr-scrollbar-thumb, rgb(20 23 28 / .28));
++}
++
++::-webkit-scrollbar-thumb:hover,
++::-webkit-scrollbar-thumb:active {
++  background: var(--wr-scrollbar-thumb-active, rgb(20 23 28 / .45));
++}

@@ -167,7 +167,7 @@ export function ImportStep({
   }
 
   return (
-    <StepWrap className="max-w-[800px]">
+    <StepWrap className="max-w-[560px]">
       <DisplayHeading>
         {copy.importTitleLead}
         <Em>{copy.importTitleAccent}</Em>
