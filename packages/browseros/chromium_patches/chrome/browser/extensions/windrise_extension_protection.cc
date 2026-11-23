@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,538 @@
+@@ -0,0 +1,545 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -346,11 +346,15 @@ index 0000000000..622c8730b3
 +  if (!record->valid || !LeaseKey()) {
 +    return false;
 +  }
-+  base::File::Info info;
-+  if (!base::GetFileInfo(record->lease_path, &info)) {
++  auto clear_cached_lease = [record]() {
 +    record->last_lease.clear();
 +    record->last_lease_size = -1;
 +    record->last_lease_mtime = base::Time();
++    record->lease_deadline = base::TimeTicks();
++  };
++  base::File::Info info;
++  if (!base::GetFileInfo(record->lease_path, &info)) {
++    clear_cached_lease();
 +    return false;
 +  }
 +  const auto ticks = base::TimeTicks::Now();
@@ -360,6 +364,7 @@ index 0000000000..622c8730b3
 +  }
 +  std::string& lease = record->lease_buffer;
 +  if (!base::ReadFileToStringWithMaxSize(record->lease_path, &lease, 2048)) {
++    clear_cached_lease();
 +    return false;
 +  }
 +  if (lease == record->last_lease) {
@@ -372,6 +377,7 @@ index 0000000000..622c8730b3
 +  for (size_t i = 0; i < 5; ++i) {
 +    const size_t end = remaining.find('\n');
 +    if (end == std::string_view::npos) {
++      clear_cached_lease();
 +      return false;
 +    }
 +    lines[i] = remaining.substr(0, end);
@@ -379,34 +385,35 @@ index 0000000000..622c8730b3
 +  }
 +  lines[5] = remaining;
 +  constexpr int64_t kMaxLeaseTtlMs = 8000;
-+  // Windows base::Time::Now() interpolates from QPC between wall-clock
-+  // resyncs (up to 60s), while the desktop lease writer reads system time
-+  // directly. Allow a small bounded skew tolerance on validation while
-+  // strictly capping the effective monotonic lease deadline to 8s.
-+  constexpr int64_t kClockSkewToleranceMs = 250;
 +  int64_t expires = 0;
-+  const int64_t now = base::Time::Now().InMillisecondsSinceUnixEpoch();
++  // Read system wall clock directly (matching desktop Date.now()) so Windows
++  // QPC-interpolated Time::Now() drift cannot reject fresh leases or accept
++  // leases whose signed expiry has already passed.
++  const int64_t now =
++      base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();
 +  if (lines[0] != "windrise-assistant-lease-v1" ||
 +      lines[1] != kAssistantId || lines[2] != record->digest ||
 +      !lines[5].empty() || !base::StringToInt64(lines[3], &expires) ||
-+      expires <= now || expires - now > kMaxLeaseTtlMs + kClockSkewToleranceMs) {
++      expires <= now || expires - now > kMaxLeaseTtlMs) {
++    clear_cached_lease();
 +    return false;
 +  }
 +  std::string& signature = record->signature_buffer;
 +  if (!base::Base64Decode(lines[4], &signature)) {
++    clear_cached_lease();
 +    return false;
 +  }
 +  const std::string_view payload(lease.data(), lines[4].data() - lease.data());
 +  if (!crypto::sign::Verify(crypto::sign::RSA_PKCS1_SHA256, *LeaseKey(),
 +                            base::as_byte_span(payload),
 +                            base::as_byte_span(signature))) {
++    clear_cached_lease();
 +    return false;
 +  }
 +  record->last_lease.swap(lease);
 +  record->last_lease_size = info.size;
 +  record->last_lease_mtime = info.last_modified;
-+  const int64_t remaining_ms = std::min(expires - now, kMaxLeaseTtlMs);
-+  record->lease_deadline = ticks + base::Milliseconds(remaining_ms);
++  record->lease_deadline = ticks + base::Milliseconds(expires - now);
 +  return true;
 +}
 +

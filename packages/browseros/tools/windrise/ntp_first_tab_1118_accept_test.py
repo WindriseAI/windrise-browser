@@ -83,11 +83,14 @@ class OverrideGate(unittest.TestCase):
             text,
         )
 
-    def test_remote_debugging_pipe_skips_auto_de_elevate(self):
-        # 提权主程序以 --remote-debugging-pipe 拉起浏览器时，MaybeAutoDeElevate 不得
-        # 走 RunDeElevated 重启并切断继承的匿名管道 FD 3/4。
-        delegate = read("chrome/app/chrome_main_delegate.cc")
-        self.assertIn("+      switches::kRemoteDebuggingPipe,", delegate)
+    def test_remote_debugging_pipe_does_not_bypass_auto_de_elevate(self):
+        # 通用 --remote-debugging-pipe 开关不得绕过上游 MaybeAutoDeElevate 自动降权。
+        # 托管启动必须在普通用户令牌上下文创建并持有调试管道。
+        delegate_patch = PATCHES / "chrome/app/chrome_main_delegate.cc"
+        self.assertFalse(
+            delegate_patch.exists(),
+            "chrome_main_delegate.cc must not exempt generic --remote-debugging-pipe from MaybeAutoDeElevate",
+        )
 
 
 class StartupFirstTab(unittest.TestCase):

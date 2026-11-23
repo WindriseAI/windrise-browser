@@ -16,30 +16,46 @@ def read_patch(rel: str) -> str:
 
 
 class WindriseP2Brw1123Test(unittest.TestCase):
-    def test_item1_deelevate_guard_present(self):
-        delegate = read_patch("chrome/app/chrome_main_delegate.cc")
-        self.assertIn("switches::kRemoteDebuggingPipe", delegate)
-        self.assertIn("switches::kDoNotDeElevateOnLaunch", delegate)
+    def test_item1_deelevate_boundary_restored(self):
+        delegate_path = PATCHES / "chrome/app/chrome_main_delegate.cc"
+        self.assertFalse(
+            delegate_path.exists(),
+            "upstream MaybeAutoDeElevate must not exempt --remote-debugging-pipe",
+        )
+        features_yaml = (PATCHES / ".features.yaml").read_text(encoding="utf-8")
+        self.assertNotIn("chrome/app/chrome_main_delegate.cc", features_yaml)
 
-    def test_item2_lease_refresh_on_stale_deadline_and_bounded_skew(self):
+    def test_item2_lease_system_clock_strict_ttl_and_refresh(self):
         protection = read_patch(
             "chrome/browser/extensions/windrise_extension_protection.cc"
         )
         # Security boundary must remain intact: 5 privileged APIs still require
-        # live desktop-signed lease, capped strictly at <= 8000ms monotonic TTL.
+        # live desktop-signed lease, checked against system wall clock with
+        # strict 8000ms TTL ceiling (no skew tolerance expansion).
         self.assertIn("constexpr int64_t kMaxLeaseTtlMs = 8000;", protection)
-        self.assertIn("constexpr int64_t kClockSkewToleranceMs = 250;", protection)
+        self.assertNotIn("kClockSkewToleranceMs", protection)
         self.assertIn(
-            "expires - now > kMaxLeaseTtlMs + kClockSkewToleranceMs", protection
-        )
-        self.assertIn(
-            "const int64_t remaining_ms = std::min(expires - now, kMaxLeaseTtlMs);",
+            "base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();",
             protection,
         )
+        self.assertNotIn(
+            "base::Time::Now().InMillisecondsSinceUnixEpoch()", protection
+        )
+        self.assertIn("expires <= now || expires - now > kMaxLeaseTtlMs)", protection)
         self.assertIn(
-            "record->lease_deadline = ticks + base::Milliseconds(remaining_ms);",
+            "record->lease_deadline = ticks + base::Milliseconds(expires - now);",
             protection,
         )
+        # Existing security checks must remain intact.
+        self.assertIn('constexpr char kAssistantId[] = "' + ASSISTANT_ID + '";', protection)
+        self.assertIn("lines[1] != kAssistantId || lines[2] != record->digest", protection)
+        self.assertIn(
+            "crypto::sign::Verify(crypto::sign::RSA_PKCS1_SHA256, *LeaseKey(),",
+            protection,
+        )
+        self.assertIn("VerifySignedDirectory(record->extension->path(), &digest)", protection)
+        self.assertIn("record->needs_reverify = true;", protection)
+        self.assertIn("base::FilePathWatcher::RecursiveWatchAvailable()", protection)
 
         # IsAuthorizedWindriseExtension must refresh when lease_deadline elapsed
         # even if record->authorized was still true from an earlier poll.
@@ -62,6 +78,137 @@ class WindriseP2Brw1123Test(unittest.TestCase):
         ):
             snippet = api_cc.split(fn_name)[1][:220]
             self.assertIn("if (!IsWindriseCaller(extension()))", snippet)
+
+    def test_item2_lease_state_machine_expiry_renewal_drift_refresh_and_revocation(self):
+        """Model exact HasLiveLease/PollAuthority/IsAuthorizedWindriseExtension semantics."""
+        MAX_TTL_MS = 8000
+
+        class LeaseVerifier:
+            def __init__(self, digest="abc123", valid=True):
+                self.valid = valid
+                self.authorized = False
+                self.needs_reverify = False
+                self.digest = digest
+                self.last_lease = ""
+                self.last_size = -1
+                self.last_mtime = None
+                self.lease_deadline = 0
+                self.reverify_count = 0
+                self.reverify_ok = True
+
+            def _clear(self):
+                self.last_lease = ""
+                self.last_size = -1
+                self.last_mtime = None
+                self.lease_deadline = 0
+
+            def has_live_lease(self, lease_file, now_system_ms, ticks_ms):
+                if not self.valid or lease_file is None:
+                    self._clear()
+                    return False
+                content, mtime = lease_file
+                size = len(content)
+                if self.last_lease and size == self.last_size and mtime == self.last_mtime:
+                    return ticks_ms < self.lease_deadline
+                if content == self.last_lease:
+                    self.last_size = size
+                    self.last_mtime = mtime
+                    return ticks_ms < self.lease_deadline
+                lines = content.split("\n")
+                if len(lines) != 6 or lines[5] != "":
+                    self._clear()
+                    return False
+                if lines[0] != "windrise-assistant-lease-v1" or lines[1] != ASSISTANT_ID or lines[2] != self.digest:
+                    self._clear()
+                    return False
+                try:
+                    expires = int(lines[3])
+                except ValueError:
+                    self._clear()
+                    return False
+                if expires <= now_system_ms or expires - now_system_ms > MAX_TTL_MS:
+                    self._clear()
+                    return False
+                if lines[4] != "VALID_SIG":
+                    self._clear()
+                    return False
+                self.last_lease = content
+                self.last_size = size
+                self.last_mtime = mtime
+                self.lease_deadline = ticks_ms + (expires - now_system_ms)
+                return True
+
+            def poll(self, lease_file, now_system_ms, ticks_ms):
+                authorized = self.has_live_lease(lease_file, now_system_ms, ticks_ms)
+                if authorized and not self.authorized and self.needs_reverify:
+                    self.reverify_count += 1
+                    if not self.reverify_ok:
+                        self.valid = False
+                        authorized = False
+                    else:
+                        self.needs_reverify = False
+                elif not authorized and self.authorized:
+                    self.needs_reverify = True
+                self.authorized = authorized
+
+            def is_authorized(self, lease_file, now_system_ms, ticks_ms):
+                if not self.valid:
+                    return False
+                if not self.authorized or ticks_ms >= self.lease_deadline:
+                    self.poll(lease_file, now_system_ms, ticks_ms)
+                return self.authorized and ticks_ms < self.lease_deadline
+
+        def make_lease(expires_ms, sig="VALID_SIG", digest="abc123", ext_id=ASSISTANT_ID):
+            return f"windrise-assistant-lease-v1\n{ext_id}\n{digest}\n{expires_ms}\n{sig}\n"
+
+        v = LeaseVerifier()
+
+        # 1. Fresh renewal: signed with desktop Date.now() + 8000ms -> accepted
+        fresh = (make_lease(108_000), 1)
+        self.assertTrue(v.is_authorized(fresh, now_system_ms=100_000, ticks_ms=1_000))
+        self.assertEqual(v.lease_deadline, 9_000)
+
+        # 2. Exceeds strict 8000ms ceiling (e.g. 8001ms / 8250ms) -> rejected
+        v_over = LeaseVerifier()
+        self.assertFalse(
+            v_over.is_authorized((make_lease(108_001), 1), now_system_ms=100_000, ticks_ms=1_000)
+        )
+        self.assertFalse(
+            v_over.is_authorized((make_lease(108_250), 2), now_system_ms=100_000, ticks_ms=1_000)
+        )
+
+        # 3. Expired lease (system clock past signed expiry, even if an interpolated
+        #    QPC clock lagged by 200ms behind system time) -> rejected
+        v_drift = LeaseVerifier()
+        self.assertFalse(
+            v_drift.is_authorized((make_lease(100_000), 1), now_system_ms=100_000, ticks_ms=1_000)
+        )
+        self.assertFalse(
+            v_drift.is_authorized((make_lease(99_950), 2), now_system_ms=100_000, ticks_ms=1_000)
+        )
+
+        # 4. Monotonic deadline expiry triggers active refresh:
+        #    - stale file on disk stays rejected and marks needs_reverify
+        self.assertFalse(v.is_authorized(fresh, now_system_ms=108_000, ticks_ms=9_000))
+        self.assertTrue(v.needs_reverify)
+        #    - renewed file on disk restores authority and forces directory reverify
+        renewed = (make_lease(116_000), 2)
+        self.assertTrue(v.is_authorized(renewed, now_system_ms=108_000, ticks_ms=9_000))
+        self.assertEqual(v.reverify_count, 1)
+        self.assertFalse(v.needs_reverify)
+
+        # 5. Revocation (expires=0) immediately revokes and clears cached deadline;
+        #    tampered directory during post-revocation recovery permanently fails.
+        revoked = (make_lease(0), 3)
+        v.poll(revoked, now_system_ms=109_000, ticks_ms=10_000)
+        self.assertFalse(v.authorized)
+        self.assertTrue(v.needs_reverify)
+        self.assertEqual(v.lease_deadline, 0)
+        v.reverify_ok = False
+        reissued = (make_lease(117_000), 4)
+        self.assertFalse(v.is_authorized(reissued, now_system_ms=109_500, ticks_ms=10_500))
+        self.assertEqual(v.reverify_count, 2)
+        self.assertFalse(v.valid)
 
     def test_item3_rail_glyph_rules_and_default_tab_fallback(self):
         glyph_cc = read_patch("chrome/browser/browseros/core/windrise_rail_glyph.cc")
