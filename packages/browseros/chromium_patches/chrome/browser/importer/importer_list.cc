@@ -27,14 +27,10 @@ index 62546b572bab8..df99dae8f9719 100644
 
  #if BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
-@@ -29,6 +36,293 @@
-
- namespace {
-
-+#if BUILDFLAG(IS_WIN)
-+#include <windows.h>
-+#endif
-+
+@@ -29,6 +36,279 @@
+ 
+  namespace {
+ 
 +// Forward declarations for platform-specific Chromium-family user data folders
 +base::FilePath GetChromeUserDataFolder();
 +base::FilePath GetChromiumEdgeUserDataFolder();
@@ -46,16 +42,6 @@ index 62546b572bab8..df99dae8f9719 100644
 +  if (base::PathExists(path)) {
 +    return true;
 +  }
-+#if BUILDFLAG(IS_WIN)
-+  const DWORD attrs = ::GetFileAttributesW(path.value().c_str());
-+  if (attrs != INVALID_FILE_ATTRIBUTES) {
-+    return true;
-+  }
-+  const DWORD err = ::GetLastError();
-+  if (err == ERROR_SHARING_VIOLATION || err == ERROR_LOCK_VIOLATION) {
-+    return true;
-+  }
-+#endif
 +  base::File probe(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 +  return probe.IsValid() ||
 +         probe.error_details() == base::File::FILE_ERROR_IN_USE;
@@ -321,7 +307,7 @@ index 62546b572bab8..df99dae8f9719 100644
  #if BUILDFLAG(IS_WIN)
  void DetectIEProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -51,27 +345,59 @@ void DetectEdgeProfiles(
+@@ -51,27 +331,59 @@ void DetectEdgeProfiles(
    if (!importer::EdgeImporterCanImport()) {
      return;
    }
@@ -385,7 +371,7 @@ index 62546b572bab8..df99dae8f9719 100644
  #if BUILDFLAG(IS_MAC)
  void DetectSafariProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -88,8 +414,48 @@ void DetectSafariProfiles(
+@@ -88,8 +400,48 @@ void DetectSafariProfiles(
    safari.services_supported = items;
    profiles->push_back(safari);
  }
@@ -434,7 +420,7 @@ index 62546b572bab8..df99dae8f9719 100644
  // |locale|: The application locale used for lookups in Firefox's
  // locale-specific search engines feature (see firefox_importer.cc for
  // details).
-@@ -170,20 +536,37 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
+@@ -170,20 +522,37 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
  #if BUILDFLAG(IS_WIN)
    if (shell_integration::IsFirefoxDefaultBrowser()) {
      DetectFirefoxProfiles(locale, &profiles);

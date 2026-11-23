@@ -190,7 +190,7 @@ index 0000000000000..ff65fb5f3bc9e
 +    if (status) {
 +      *status = final_status;
 +    }
-+    return result;
++    return std::move(result);
 +  };
 +
 +  // Read bookmarks JSON file
