@@ -248,6 +248,40 @@ class WindriseNativeFuncTest(unittest.TestCase):
                 f"missing Chinese brand in Chinese xtb: {zh_xtb}",
             )
 
+    def test_brw001_zh_cn_product_name_for_shortcut_and_profile_picker(self):
+        # 5906362466875665739 is tclib.GenerateMessageId("Windrise Browser"),
+        # used by both Windows installer shortcuts (IDS_PRODUCT_NAME_BASE via
+        # create_installer_string_rc) and ProfilePickerView::SetTitle(IDS_PRODUCT_NAME).
+        expected_entry = '+<translation id="5906362466875665739">风桥浏览器</translation>'
+        for zh_xtb in (
+            "chrome/app/resources/chromium_strings_zh-CN.xtb",
+            "chrome/app/resources/chromium_strings_zh-HK.xtb",
+            "chrome/app/resources/chromium_strings_zh-TW.xtb",
+        ):
+            self.assertIn(expected_entry, read_patch(zh_xtb))
+
+        string_replaces_py = (
+            HERE.parents[1] / "bos_build/steps/resources/string_replaces.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('IDS_(?:SHORT_)?PRODUCT_NAME', string_replaces_py)
+        self.assertIn('translateable="true"', string_replaces_py)
+
+        # ProfilePickerView must keep upstream kWindowTitleId (IDS_PRODUCT_NAME)
+        # without hardcoding "Windrise Browser" in GetWindowTitle / SetTitle.
+        picker_cc = read_patch(
+            "chrome/browser/ui/views/profiles/profile_picker_view.cc"
+        )
+        self.assertNotIn("Windrise Browser", picker_cc)
+        self.assertNotIn("GetWindowTitle(", picker_cc)
+
+        # Installer patches must not override InstallUtil::GetShortcutName with
+        # a hardcoded "Windrise Browser" shortcut name.
+        for inst_rel in (
+            "chrome/installer/setup/setup_main.cc",
+            "chrome/installer/setup/browseros_install_ui.cc",
+        ):
+            self.assertNotIn("set_shortcut_name", read_patch(inst_rel))
+
 
 if __name__ == "__main__":
     unittest.main()
