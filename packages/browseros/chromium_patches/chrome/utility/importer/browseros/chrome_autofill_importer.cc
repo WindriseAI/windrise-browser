@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3d1e95eaf3461
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_autofill_importer.cc
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,100 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome autofill importer implementation
 +
@@ -31,19 +31,12 @@ index 0000000000000..3d1e95eaf3461
 +
 +  // Web Data lives in the profile directory (fall back to parent if absent).
 +  base::FilePath web_data_path = profile_path.AppendASCII(kWebDataFilename);
-+  if (!base::PathExists(web_data_path)) {
-+    web_data_path = profile_path.DirName().AppendASCII(kWebDataFilename);
-+    if (!base::PathExists(web_data_path)) {
-+      LOG(WARNING) << "windrise: Web Data file not found";
-+      if (status) {
-+        *status = ImportItemStatus::kEmpty;
-+      }
-+      return entries;
-+    }
-+  }
-+
 +  ImportItemStatus copy_status = ImportItemStatus::kError;
 +  base::FilePath temp_path = CopyDatabaseToTemp(web_data_path, &copy_status);
++  if (temp_path.empty() && copy_status == ImportItemStatus::kEmpty) {
++    web_data_path = profile_path.DirName().AppendASCII(kWebDataFilename);
++    temp_path = CopyDatabaseToTemp(web_data_path, &copy_status);
++  }
 +  if (temp_path.empty()) {
 +    if (status) {
 +      *status = copy_status;
@@ -87,6 +80,16 @@ index 0000000000000..3d1e95eaf3461
 +      entry.last_used = ChromeTimeToBaseTime(statement.ColumnInt64(4));
 +
 +      entries.push_back(std::move(entry));
++    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: Web Data SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      entries.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
++      return entries;
 +    }
 +  }  // statement destroyed here
 +

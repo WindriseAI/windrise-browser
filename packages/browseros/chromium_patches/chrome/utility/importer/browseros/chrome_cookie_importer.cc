@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..21b17a08e1a8e
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_cookie_importer.cc
-@@ -0,0 +1,326 @@
+@@ -0,0 +1,329 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome cookie importer implementation
 +
@@ -162,21 +162,14 @@ index 0000000000000..21b17a08e1a8e
 +  base::FilePath cookies_path =
 +      profile_path.Append(FILE_PATH_LITERAL("Network"))
 +          .Append(FILE_PATH_LITERAL("Cookies"));
-+  if (!base::PathExists(cookies_path)) {
-+    cookies_path = profile_path.AppendASCII(kCookiesFilename);
-+  }
-+  if (!base::PathExists(cookies_path)) {
-+    LOG(WARNING) << "windrise: Cookies not found at: " << cookies_path.value();
-+    if (status) {
-+      *status = ImportItemStatus::kEmpty;
-+    }
-+    return cookies;
-+  }
-+
 +  // Copy to temp location first so an exclusive lock held by a running source
 +  // browser is accurately classified as kLocked before key/query checks.
 +  ImportItemStatus copy_status = ImportItemStatus::kError;
 +  base::FilePath temp_db_path = CopyDatabaseToTemp(cookies_path, &copy_status);
++  if (temp_db_path.empty() && copy_status == ImportItemStatus::kEmpty) {
++    cookies_path = profile_path.AppendASCII(kCookiesFilename);
++    temp_db_path = CopyDatabaseToTemp(cookies_path, &copy_status);
++  }
 +  if (temp_db_path.empty()) {
 +    if (status) {
 +      *status = copy_status;
@@ -307,6 +300,16 @@ index 0000000000000..21b17a08e1a8e
 +      }
 +
 +      cookies.push_back(std::move(entry));
++    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: Cookies SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      cookies.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_db_path);
++      return cookies;
 +    }
 +
 +  }  // statement destroyed here

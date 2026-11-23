@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..bd13aa92a2373
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_extensions_importer.cc
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,141 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome extensions importer implementation
 +
@@ -97,21 +97,12 @@ index 0000000000000..bd13aa92a2373
 +  base::FilePath secure_preferences_path =
 +      profile_path.AppendASCII(kSecurePreferencesFilename);
 +
-+  if (!base::PathExists(preferences_path) &&
-+      !base::PathExists(secure_preferences_path)) {
-+    LOG(WARNING) << "windrise: No preferences files found";
-+    if (status) {
-+      *status = ImportItemStatus::kEmpty;
-+    }
-+    return extension_ids;
-+  }
-+
 +  bool any_locked = false;
 +  bool any_error = false;
 +  bool any_readable = false;
 +
 +  // Secure Preferences takes priority
-+  if (base::PathExists(secure_preferences_path)) {
++  {
 +    ImportItemStatus file_status = ImportItemStatus::kEmpty;
 +    extension_ids =
 +        GetExtensionsFromPreferencesFile(secure_preferences_path, &file_status);
@@ -119,13 +110,13 @@ index 0000000000000..bd13aa92a2373
 +      any_locked = true;
 +    } else if (file_status == ImportItemStatus::kError) {
 +      any_error = true;
-+    } else {
++    } else if (file_status == ImportItemStatus::kSuccess) {
 +      any_readable = true;
 +    }
 +  }
 +
 +  // Also check regular Preferences for additional extensions
-+  if (base::PathExists(preferences_path)) {
++  {
 +    ImportItemStatus file_status = ImportItemStatus::kEmpty;
 +    std::vector<std::string> pref_extension_ids =
 +        GetExtensionsFromPreferencesFile(preferences_path, &file_status);
@@ -133,7 +124,7 @@ index 0000000000000..bd13aa92a2373
 +      any_locked = true;
 +    } else if (file_status == ImportItemStatus::kError) {
 +      any_error = true;
-+    } else {
++    } else if (file_status == ImportItemStatus::kSuccess) {
 +      any_readable = true;
 +      extension_ids.insert(extension_ids.end(), pref_extension_ids.begin(),
 +                           pref_extension_ids.end());

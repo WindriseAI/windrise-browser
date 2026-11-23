@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..ec7b96bb6b854
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_history_importer.cc
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,114 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome history importer implementation
 +
@@ -32,14 +32,6 @@ index 0000000000000..ec7b96bb6b854
 +  std::vector<user_data_importer::ImporterURLRow> rows;
 +
 +  base::FilePath history_path = profile_path.AppendASCII(kHistoryFilename);
-+  if (!base::PathExists(history_path)) {
-+    LOG(WARNING) << "windrise: History file not found";
-+    if (status) {
-+      *status = ImportItemStatus::kEmpty;
-+    }
-+    return rows;
-+  }
-+
 +  ImportItemStatus copy_status = ImportItemStatus::kError;
 +  base::FilePath temp_path = CopyDatabaseToTemp(history_path, &copy_status);
 +  if (temp_path.empty()) {
@@ -102,6 +94,16 @@ index 0000000000000..ec7b96bb6b854
 +      row.visit_count = statement.ColumnInt(4);
 +
 +      rows.push_back(std::move(row));
++    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: History SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      rows.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
++      return rows;
 +    }
 +  }  // statement destroyed here
 +

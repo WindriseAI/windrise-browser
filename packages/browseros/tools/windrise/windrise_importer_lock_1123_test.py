@@ -36,7 +36,7 @@ class WindriseImporterLock1123Test(unittest.TestCase):
         self.assertIn("ERROR_SHARING_VIOLATION", utils_cc)
         self.assertIn("ERROR_LOCK_VIOLATION", utils_cc)
         self.assertIn("FILE_ERROR_IN_USE", utils_cc)
-        self.assertIn("WAL sidecar locked", utils_cc)
+        self.assertIn("WAL sidecar copy failed", utils_cc)
         self.assertIn("primary == 5 || primary == 6", utils_cc)
 
     def test_cookie_and_all_importers_propagate_lock_and_support_network_cookies(self):
@@ -57,6 +57,8 @@ class WindriseImporterLock1123Test(unittest.TestCase):
         ):
             src = read_patch(rel)
             self.assertIn("ImportItemStatus", src, rel)
+            if "sql/statement.h" in src and "chrome_bookmarks_importer" not in rel:
+                self.assertIn("if (!statement.Succeeded())", src, rel)
 
     def test_chrome_importer_never_emits_item_ended_on_lock_and_sends_structured_result(self):
         importer_cc = read_patch(

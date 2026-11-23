@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..ff65fb5f3bc9e
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_bookmarks_importer.cc
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,253 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome bookmarks importer implementation
 +
@@ -189,11 +189,6 @@ index 0000000000000..ff65fb5f3bc9e
 +
 +  // Read bookmarks JSON file
 +  base::FilePath bookmarks_path = profile_path.AppendASCII(kBookmarksFilename);
-+  if (!base::PathExists(bookmarks_path)) {
-+    LOG(WARNING) << "windrise: Bookmarks file not found";
-+    return finish(ImportItemStatus::kEmpty);
-+  }
-+
 +  std::string bookmarks_content;
 +  ImportItemStatus read_status = ImportItemStatus::kError;
 +  if (!ReadFileToStringClassified(bookmarks_path, &bookmarks_content,

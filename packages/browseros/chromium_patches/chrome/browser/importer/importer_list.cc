@@ -26,7 +26,7 @@ index 62546b572bab8..df99dae8f9719 100644
 
  #if BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
-@@ -29,6 +35,262 @@
+@@ -29,6 +35,267 @@
 
  namespace {
 
@@ -164,33 +164,32 @@ index 62546b572bab8..df99dae8f9719 100644
 +
 +  if (base::PathExists(local_state_path)) {
 +    std::string local_state_content;
-+    if (!base::ReadFileToString(local_state_path, &local_state_content)) {
-+      return profiles;
-+    }
++    if (base::ReadFileToString(local_state_path, &local_state_content)) {
++      std::optional<base::DictValue> local_state_dict =
++          base::JSONReader::ReadDict(local_state_content,
++                                     base::JSON_PARSE_CHROMIUM_EXTENSIONS);
 +
-+    std::optional<base::DictValue> local_state_dict =
-+        base::JSONReader::ReadDict(local_state_content, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
++      if (local_state_dict) {
++        const auto* profile_dict = local_state_dict->FindDict("profile");
++        if (profile_dict) {
++          const auto* info_cache = profile_dict->FindDict("info_cache");
++          if (info_cache) {
++            for (const auto value : *info_cache) {
++              const auto* profile = value.second.GetIfDict();
++              if (!profile)
++                continue;
 +
-+    if (local_state_dict) {
-+      const auto* profile_dict = local_state_dict->FindDict("profile");
-+      if (profile_dict) {
-+        const auto* info_cache = profile_dict->FindDict("info_cache");
-+        if (info_cache) {
-+          for (const auto value : *info_cache) {
-+            const auto* profile = value.second.GetIfDict();
-+            if (!profile)
-+              continue;
++              auto* name = profile->FindString("name");
++              if (!name)
++                continue;
 +
-+            auto* name = profile->FindString("name");
-+            if (!name)
-+              continue;
-+
-+            base::DictValue entry;
-+            entry.Set("id", value.first);
-+            entry.Set("name", *name);
-+            entry.Set("account_name", GetChromeAccountName(*profile));
-+            entry.Set("is_managed", IsManagedChromeProfile(*profile));
-+            profiles.Append(std::move(entry));
++              base::DictValue entry;
++              entry.Set("id", value.first);
++              entry.Set("name", *name);
++              entry.Set("account_name", GetChromeAccountName(*profile));
++              entry.Set("is_managed", IsManagedChromeProfile(*profile));
++              profiles.Append(std::move(entry));
++            }
 +          }
 +        }
 +      }
@@ -276,20 +275,26 @@ index 62546b572bab8..df99dae8f9719 100644
 +
 +bool DetectChromiumEdgeProfiles(
 +    std::vector<user_data_importer::SourceProfile>* profiles) {
++  const base::FilePath edge_data_dir = GetChromiumEdgeUserDataFolder();
++  const bool edge_dir_present =
++      !edge_data_dir.empty() && base::PathExists(edge_data_dir);
 +#if BUILDFLAG(IS_WIN)
 +  const std::u16string edge_name =
 +      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
 +#else
 +  const std::u16string edge_name = u"Microsoft Edge";
 +#endif
-+  return DetectChromiumProfiles(GetChromiumEdgeUserDataFolder(), edge_name,
-+                                profiles);
++  const bool added = DetectChromiumProfiles(edge_data_dir, edge_name, profiles);
++  // When the modern Chromium Edge User Data directory is present on disk,
++  // return true even if Local State was locked/unreadable so Windows never
++  // falls back to legacy UWP EdgeHTML favorites under the same Edge label.
++  return added || edge_dir_present;
 +}
 +
  #if BUILDFLAG(IS_WIN)
  void DetectIEProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -60,18 +322,49 @@ void DetectEdgeProfiles(
+@@ -60,18 +327,49 @@ void DetectEdgeProfiles(
  }
 
  void DetectBuiltinWindowsProfiles(
@@ -342,7 +347,7 @@ index 62546b572bab8..df99dae8f9719 100644
  #if BUILDFLAG(IS_MAC)
  void DetectSafariProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -88,8 +381,48 @@ void DetectSafariProfiles(
+@@ -88,8 +386,48 @@ void DetectSafariProfiles(
    safari.services_supported = items;
    profiles->push_back(safari);
  }
@@ -391,7 +396,7 @@ index 62546b572bab8..df99dae8f9719 100644
  // |locale|: The application locale used for lookups in Firefox's
  // locale-specific search engines feature (see firefox_importer.cc for
  // details).
-@@ -170,20 +503,33 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
+@@ -170,20 +508,33 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
  #if BUILDFLAG(IS_WIN)
    if (shell_integration::IsFirefoxDefaultBrowser()) {
      DetectFirefoxProfiles(locale, &profiles);

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3000a42871631
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_importer_utils.cc
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,230 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome importer shared utilities
 +
@@ -75,9 +75,22 @@ index 0000000000000..3000a42871631
 +
 +base::FilePath CopyToTempFile(const base::FilePath& source_path,
 +                              ImportItemStatus* status) {
-+  if (!base::PathExists(source_path)) {
-+    SetStatus(status, ImportItemStatus::kEmpty);
-+    return base::FilePath();
++  // Probe open first so Windows sharing violations or permission errors are
++  // never swallowed by base::PathExists() returning false.
++  {
++    base::File probe(source_path,
++                     base::File::FLAG_OPEN | base::File::FLAG_READ);
++    if (!probe.IsValid()) {
++      const base::File::Error err = probe.error_details();
++      if (err == base::File::FILE_ERROR_NOT_FOUND) {
++        SetStatus(status, ImportItemStatus::kEmpty);
++      } else if (err == base::File::FILE_ERROR_IN_USE) {
++        SetStatus(status, ImportItemStatus::kLocked);
++      } else {
++        SetStatus(status, ImportItemStatus::kError);
++      }
++      return base::FilePath();
++    }
 +  }
 +
 +  base::FilePath temp_path;
@@ -121,11 +134,27 @@ index 0000000000000..3000a42871631
 +  }
 +
 +  // Also copy the "-wal" sidecar if present. If the WAL is exclusively locked
-+  // by a running source browser, treat the database as locked rather than
-+  // silently importing stale or incomplete data.
++  // or unreadable, propagate kLocked/kError rather than silently importing
++  // stale or incomplete data.
 +  const base::FilePath::StringType kWalSuffix = FILE_PATH_LITERAL("-wal");
 +  base::FilePath wal_src(db_path.value() + kWalSuffix);
-+  if (base::PathExists(wal_src)) {
++  base::File wal_probe(wal_src, base::File::FLAG_OPEN | base::File::FLAG_READ);
++  const bool wal_exists =
++      wal_probe.IsValid() ||
++      wal_probe.error_details() != base::File::FILE_ERROR_NOT_FOUND;
++  const base::File::Error wal_probe_err =
++      wal_probe.IsValid() ? base::File::FILE_OK : wal_probe.error_details();
++  wal_probe.Close();
++  if (wal_exists) {
++    if (wal_probe_err != base::File::FILE_OK) {
++      const ImportItemStatus wal_status =
++          (wal_probe_err == base::File::FILE_ERROR_IN_USE)
++              ? ImportItemStatus::kLocked
++              : ImportItemStatus::kError;
++      DeleteDatabaseTemp(temp_path);
++      SetStatus(status, wal_status);
++      return base::FilePath();
++    }
 +    if (!base::CopyFile(wal_src, base::FilePath(temp_path.value() + kWalSuffix))) {
 +#if BUILDFLAG(IS_WIN)
 +      const DWORD win_err = ::GetLastError();
@@ -137,13 +166,14 @@ index 0000000000000..3000a42871631
 +#else
 +      const ImportItemStatus wal_status = ImportItemStatus::kError;
 +#endif
-+      if (wal_status == ImportItemStatus::kLocked) {
-+        LOG(WARNING) << "windrise: WAL sidecar locked for "
-+                     << db_path.BaseName().value();
-+        DeleteDatabaseTemp(temp_path);
-+        SetStatus(status, ImportItemStatus::kLocked);
-+        return base::FilePath();
-+      }
++      LOG(WARNING) << "windrise: WAL sidecar copy failed for "
++                   << db_path.BaseName().value() << " (status="
++                   << static_cast<int>(wal_status) << ")";
++      DeleteDatabaseTemp(temp_path);
++      SetStatus(status, wal_status == ImportItemStatus::kEmpty
++                            ? ImportItemStatus::kError
++                            : wal_status);
++      return base::FilePath();
 +    }
 +  }
 +
@@ -154,9 +184,20 @@ index 0000000000000..3000a42871631
 +bool ReadFileToStringClassified(const base::FilePath& source_path,
 +                                std::string* content,
 +                                ImportItemStatus* status) {
-+  if (!base::PathExists(source_path)) {
-+    SetStatus(status, ImportItemStatus::kEmpty);
-+    return false;
++  {
++    base::File probe(source_path,
++                     base::File::FLAG_OPEN | base::File::FLAG_READ);
++    if (!probe.IsValid()) {
++      const base::File::Error err = probe.error_details();
++      if (err == base::File::FILE_ERROR_NOT_FOUND) {
++        SetStatus(status, ImportItemStatus::kEmpty);
++      } else if (err == base::File::FILE_ERROR_IN_USE) {
++        SetStatus(status, ImportItemStatus::kLocked);
++      } else {
++        SetStatus(status, ImportItemStatus::kError);
++      }
++      return false;
++    }
 +  }
 +  if (!base::ReadFileToString(source_path, content)) {
 +#if BUILDFLAG(IS_WIN)

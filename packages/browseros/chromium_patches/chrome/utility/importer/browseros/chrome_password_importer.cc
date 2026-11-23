@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3aaeb073d7554
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_password_importer.cc
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,169 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome password importer implementation
 +
@@ -37,15 +37,6 @@ index 0000000000000..3aaeb073d7554
 +
 +  // Path to Login Data database
 +  base::FilePath login_data_path = profile_path.AppendASCII(kLoginDataFilename);
-+  if (!base::PathExists(login_data_path)) {
-+    LOG(WARNING) << "windrise: Login Data not found at: "
-+                 << login_data_path.value();
-+    if (status) {
-+      *status = ImportItemStatus::kEmpty;
-+    }
-+    return passwords;
-+  }
-+
 +  // Copy to temp location first so an exclusive lock is classified as kLocked.
 +  ImportItemStatus copy_status = ImportItemStatus::kError;
 +  base::FilePath temp_db_path =
@@ -151,6 +142,16 @@ index 0000000000000..3aaeb073d7554
 +      form.blocked_by_user = blacklisted;
 +
 +      passwords.push_back(std::move(form));
++    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: Login Data SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      passwords.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_db_path);
++      return passwords;
 +    }
 +  }  // statement destroyed here
 +

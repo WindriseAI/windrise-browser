@@ -74,8 +74,8 @@ index 0000000000000..3674707cab113
 +        bridge_->NotifyItemEnded(item);
 +        break;
 +      case browseros_importer::ImportItemStatus::kLocked:
-+        // Never send NotifyItemEnded when a database/file is locked so the
-+        // host never misclassifies a locked import as succeeded.
++        // Do not emit item-completed notification when a database/file is
++        // locked so the host never misclassifies a locked import as succeeded.
 +        locked_items |= static_cast<uint16_t>(item);
 +        break;
 +      case browseros_importer::ImportItemStatus::kError:
