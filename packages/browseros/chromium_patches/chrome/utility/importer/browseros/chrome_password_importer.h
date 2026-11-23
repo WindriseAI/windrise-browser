@@ -14,17 +14,17 @@ index 0000000000000..7111af4e124b5
 +#include <vector>
 +
 +#include "base/files/file_path.h"
++#include "chrome/utility/importer/browseros/chrome_importer_utils.h"
 +#include "components/user_data_importer/common/importer_data_types.h"
 +
 +namespace browseros_importer {
 +
-+// Import passwords from Chrome's Login Data database.
-+// |profile_path| should be the Chrome profile directory (e.g., .../Default)
-+// Returns a vector of ImportedPasswordForm structs.
-+// On failure, returns an empty vector.
++// Import passwords from Chrome/Chromium-Edge Login Data database.
++// Populates |status| when provided to distinguish empty vs locked vs error.
 +std::vector<user_data_importer::ImportedPasswordForm> ImportChromePasswords(
 +    const base::FilePath& profile_path,
-+    const std::string& encryption_key);
++    const std::string& encryption_key,
++    ImportItemStatus* status = nullptr);
 +
 +}  // namespace browseros_importer
 +

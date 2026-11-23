@@ -4,12 +4,14 @@ import {
   completedImportItemCount,
   DEFAULT_BROWSEROS_IMPORT_SOURCE_ID,
   defaultImportItemsForSource,
+  importFailureMessageFor,
   importItemLabel,
   importItemListLabel,
   importProgressTotal,
   importSourceLabels,
   importSourceName,
   importSourceSelectionChangeFor,
+  isImportLockedError,
   MOCK_BROWSEROS_IMPORT_SOURCES,
   needsMacKeychainPermission,
   OPTIONAL_IMPORT_ITEMS,
@@ -436,5 +438,84 @@ describe('step keys (DS9-P1-18)', () => {
     expect(stepKeyActionFor(keyEvent({ altKey: true }))).toBe(null)
     expect(stepKeyActionFor(keyEvent({ defaultPrevented: true }))).toBe(null)
     expect(stepKeyActionFor(keyEvent({ key: 'a' }))).toBe(null)
+  })
+})
+
+describe('import lock error helpers (F-16)', () => {
+  it('recognizes explicit lock error codes including partial lock and raw SQLite / OS lock messages', () => {
+    expect(
+      isImportLockedError({ code: 'source_browser_locked', message: '' }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({
+        code: 'partial_source_browser_locked',
+        message: '',
+      }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({ code: 'SQLITE_BUSY', message: 'busy' }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({
+        code: 'import_failed',
+        message: 'database is locked',
+      }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({
+        code: 'import_failed',
+        message: 'ERROR_SHARING_VIOLATION on Cookies',
+      }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({
+        code: 'import_failed',
+        message: 'Chrome needs to be closed before importing.',
+      }),
+    ).toBe(false)
+    expect(isImportLockedError(undefined)).toBe(false)
+  })
+
+  it('formats a browser-specific close-and-retry message for locked and partially locked sources', () => {
+    expect(
+      importFailureMessageFor(
+        { code: 'source_browser_locked', message: 'locked' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[0],
+      ),
+    ).toBe(
+      'Chrome is running and locking your bookmarks and sign-in data. Please close Chrome completely, then click Try again.',
+    )
+    expect(
+      importFailureMessageFor(
+        { code: 'partial_source_browser_locked', message: 'partial' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[0],
+      ),
+    ).toBe(
+      'Chrome is running and locking part of your browsing data. Please close Chrome completely, then click Try again to finish importing the remaining items.',
+    )
+    expect(
+      importFailureMessageFor(
+        { code: 'source_browser_locked', message: 'locked' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[2],
+      ),
+    ).toBe(
+      'Edge is running and locking your bookmarks and sign-in data. Please close Edge completely, then click Try again.',
+    )
+    expect(
+      importFailureMessageFor(
+        { code: 'partial_source_browser_locked', message: 'partial' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[2],
+      ),
+    ).toBe(
+      'Edge is running and locking part of your browsing data. Please close Edge completely, then click Try again to finish importing the remaining items.',
+    )
+    expect(
+      importFailureMessageFor(
+        { code: 'source_browser_locked', message: 'locked' },
+        undefined,
+      ),
+    ).toBe(
+      'Chrome or Edge is running and locking your bookmarks and sign-in data. Please close Chrome or Edge completely, then click Try again.',
+    )
   })
 })

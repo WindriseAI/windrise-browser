@@ -212,7 +212,10 @@ features:
       - chrome/browser/extensions/api/settings_private/prefs_util.cc
       - chrome/browser/importer/external_process_importer_client.cc
       - chrome/browser/importer/external_process_importer_client.h
+      - chrome/browser/importer/external_process_importer_host.cc
+      - chrome/browser/importer/external_process_importer_host.h
       - chrome/browser/importer/importer_list.cc
+      - chrome/browser/importer/importer_progress_observer.h
       - chrome/browser/importer/importer_uma.cc
       - chrome/browser/importer/in_process_importer_bridge.cc
       - chrome/browser/importer/in_process_importer_bridge.h

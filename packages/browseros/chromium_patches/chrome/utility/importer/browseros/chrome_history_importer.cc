@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..ec7b96bb6b854
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_history_importer.cc
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,114 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome history importer implementation
 +
@@ -27,24 +27,27 @@ index 0000000000000..ec7b96bb6b854
 +}  // namespace
 +
 +std::vector<user_data_importer::ImporterURLRow> ImportChromeHistory(
-+    const base::FilePath& profile_path) {
++    const base::FilePath& profile_path,
++    ImportItemStatus* status) {
 +  std::vector<user_data_importer::ImporterURLRow> rows;
 +
 +  base::FilePath history_path = profile_path.AppendASCII(kHistoryFilename);
-+  if (!base::PathExists(history_path)) {
-+    LOG(WARNING) << "windrise: History file not found";
-+    return rows;
-+  }
-+
-+  base::FilePath temp_path = CopyToTempFile(history_path);
++  ImportItemStatus copy_status = ImportItemStatus::kError;
++  base::FilePath temp_path = CopyDatabaseToTemp(history_path, &copy_status);
 +  if (temp_path.empty()) {
++    if (status) {
++      *status = copy_status;
++    }
 +    return rows;
 +  }
 +
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_path)) {
-+    LOG(WARNING) << "windrise: Failed to open database";
-+    base::DeleteFile(temp_path);
++    LOG(WARNING) << "windrise: Failed to open History database";
++    if (status) {
++      *status = ClassifySqliteError(db.GetErrorCode());
++    }
++    DeleteDatabaseTemp(temp_path);
 +    return rows;
 +  }
 +
@@ -62,8 +65,12 @@ index 0000000000000..ec7b96bb6b854
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "windrise: Failed to prepare query";
-+      base::DeleteFile(temp_path);
++      LOG(WARNING) << "windrise: Failed to prepare History query";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
 +      return rows;
 +    }
 +
@@ -88,10 +95,25 @@ index 0000000000000..ec7b96bb6b854
 +
 +      rows.push_back(std::move(row));
 +    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: History SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      rows.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
++      return rows;
++    }
 +  }  // statement destroyed here
 +
-+  base::DeleteFile(temp_path);
++  db.Close();
++  DeleteDatabaseTemp(temp_path);
 +
++  if (status) {
++    *status = rows.empty() ? ImportItemStatus::kEmpty
++                           : ImportItemStatus::kSuccess;
++  }
 +  return rows;
 +}
 +

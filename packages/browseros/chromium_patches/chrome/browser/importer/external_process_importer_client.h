@@ -17,6 +17,16 @@ index 42b466d3ce66b..eaa231f2015c3 100644
            autofill_form_data_entry_group) override;
 +  void OnExtensionsImportReady(
 +      const std::vector<std::string>& extension_ids) override;
- 
+
   protected:
    ~ExternalProcessImporterClient() override;
+@@ -141,5 +145,9 @@ class ExternalProcessImporterClient
+   // True if import process has been cancelled.
+   bool cancelled_;
+
++  // Final outcome reported by ProfileImportObserver::OnImportFinished().
++  bool import_succeeded_ = true;
++  std::string import_error_msg_;
++
+   // Used to start and stop the actual importer running in a different process.
+   mojo::Remote<chrome::mojom::ProfileImport> profile_import_;

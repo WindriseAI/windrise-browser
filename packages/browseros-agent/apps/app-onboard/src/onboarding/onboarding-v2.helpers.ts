@@ -8,6 +8,7 @@ import type {
   BrowserOSImportItem,
   BrowserOSImportProgress,
   BrowserOSImportSource,
+  BrowserOSOnboardingError,
   BrowserOSStartImportRequest,
 } from './browseros-onboarding-api'
 import { copy } from './copy'
@@ -321,6 +322,51 @@ function closestFrom(target: EventTarget | null, selector: string): boolean {
   return typeof element?.closest === 'function'
     ? Boolean(element.closest(selector))
     : false
+}
+
+/** Error codes reported when the source browser profile/database is locked. */
+const IMPORT_LOCKED_ERROR_CODES = new Set([
+  'source_browser_locked',
+  'partial_source_browser_locked',
+  'source_locked',
+  'profile_locked',
+  'database_locked',
+  'file_locked',
+  'sqlite_busy',
+  'browser_running',
+  'profile_busy',
+])
+
+/** Raw OS / SQLite lock signatures when native surfaces an underlying error. */
+const IMPORT_LOCKED_MESSAGE_PATTERN =
+  /sqlite_busy|database is locked|sharing violation|error_sharing_violation|\bebusy\b|being used by another process|file is in use|file locked|profile is locked/i
+
+/** True when an import failure is caused by a running browser locking its DB. */
+export function isImportLockedError(
+  error: BrowserOSOnboardingError | undefined,
+): boolean {
+  if (!error) return false
+  if (IMPORT_LOCKED_ERROR_CODES.has(error.code.trim().toLowerCase())) {
+    return true
+  }
+  return IMPORT_LOCKED_MESSAGE_PATTERN.test(error.message)
+}
+
+/** Human-readable explanation for an import failure, localizing lock errors. */
+export function importFailureMessageFor(
+  error: BrowserOSOnboardingError | undefined,
+  source: BrowserOSImportSource | undefined,
+): string {
+  if (isImportLockedError(error)) {
+    const browser =
+      (source ? shortBrowserName(source.browserName).trim() : '') ||
+      copy.lockedBrowserFallback
+    if (error?.code.trim().toLowerCase() === 'partial_source_browser_locked') {
+      return copy.importFailedPartialLocked(browser)
+    }
+    return copy.importFailedLocked(browser)
+  }
+  return error?.message || copy.importFailedFallback
 }
 
 export function stepKeyActionFor(event: StepKeyEvent): StepKeyAction {

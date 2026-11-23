@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3d1e95eaf3461
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_autofill_importer.cc
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,100 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome autofill importer implementation
 +
@@ -25,30 +25,32 @@ index 0000000000000..3d1e95eaf3461
 +}  // namespace
 +
 +std::vector<ImporterAutofillFormDataEntry> ImportChromeAutofill(
-+    const base::FilePath& profile_path) {
++    const base::FilePath& profile_path,
++    ImportItemStatus* status) {
 +  std::vector<ImporterAutofillFormDataEntry> entries;
 +
-+  // Web Data is in the parent directory of the profile
-+  base::FilePath web_data_path =
-+      profile_path.DirName().AppendASCII(kWebDataFilename);
-+  if (!base::PathExists(web_data_path)) {
-+    // Try profile directory as fallback
-+    web_data_path = profile_path.AppendASCII(kWebDataFilename);
-+    if (!base::PathExists(web_data_path)) {
-+      LOG(WARNING) << "windrise: Web Data file not found";
-+      return entries;
-+    }
++  // Web Data lives in the profile directory (fall back to parent if absent).
++  base::FilePath web_data_path = profile_path.AppendASCII(kWebDataFilename);
++  ImportItemStatus copy_status = ImportItemStatus::kError;
++  base::FilePath temp_path = CopyDatabaseToTemp(web_data_path, &copy_status);
++  if (temp_path.empty() && copy_status == ImportItemStatus::kEmpty) {
++    web_data_path = profile_path.DirName().AppendASCII(kWebDataFilename);
++    temp_path = CopyDatabaseToTemp(web_data_path, &copy_status);
 +  }
-+
-+  base::FilePath temp_path = CopyToTempFile(web_data_path);
 +  if (temp_path.empty()) {
++    if (status) {
++      *status = copy_status;
++    }
 +    return entries;
 +  }
 +
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_path)) {
-+    LOG(WARNING) << "windrise: Failed to open database";
-+    base::DeleteFile(temp_path);
++    LOG(WARNING) << "windrise: Failed to open Web Data database";
++    if (status) {
++      *status = ClassifySqliteError(db.GetErrorCode());
++    }
++    DeleteDatabaseTemp(temp_path);
 +    return entries;
 +  }
 +
@@ -60,8 +62,12 @@ index 0000000000000..3d1e95eaf3461
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "windrise: Failed to prepare query";
-+      base::DeleteFile(temp_path);
++      LOG(WARNING) << "windrise: Failed to prepare Web Data query";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
 +      return entries;
 +    }
 +
@@ -75,10 +81,25 @@ index 0000000000000..3d1e95eaf3461
 +
 +      entries.push_back(std::move(entry));
 +    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: Web Data SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      entries.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_path);
++      return entries;
++    }
 +  }  // statement destroyed here
 +
-+  base::DeleteFile(temp_path);
++  db.Close();
++  DeleteDatabaseTemp(temp_path);
 +
++  if (status) {
++    *status = entries.empty() ? ImportItemStatus::kEmpty
++                              : ImportItemStatus::kSuccess;
++  }
 +  return entries;
 +}
 +

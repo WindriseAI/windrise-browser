@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3aaeb073d7554
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_password_importer.cc
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,169 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome password importer implementation
 +
@@ -31,25 +31,30 @@ index 0000000000000..3aaeb073d7554
 +
 +std::vector<user_data_importer::ImportedPasswordForm> ImportChromePasswords(
 +    const base::FilePath& profile_path,
-+    const std::string& encryption_key) {
++    const std::string& encryption_key,
++    ImportItemStatus* status) {
 +  std::vector<user_data_importer::ImportedPasswordForm> passwords;
-+  if (encryption_key.empty()) {
-+    LOG(WARNING) << "windrise: Chrome encryption key unavailable; "
-+                 << "skipping password import";
-+    return passwords;
-+  }
 +
 +  // Path to Login Data database
 +  base::FilePath login_data_path = profile_path.AppendASCII(kLoginDataFilename);
-+  if (!base::PathExists(login_data_path)) {
-+    LOG(WARNING) << "windrise: Login Data not found at: "
-+                 << login_data_path.value();
++  // Copy to temp location first so an exclusive lock is classified as kLocked.
++  ImportItemStatus copy_status = ImportItemStatus::kError;
++  base::FilePath temp_db_path =
++      CopyDatabaseToTemp(login_data_path, &copy_status);
++  if (temp_db_path.empty()) {
++    if (status) {
++      *status = copy_status;
++    }
 +    return passwords;
 +  }
 +
-+  // Copy to temp location to avoid locking issues
-+  base::FilePath temp_db_path = CopyDatabaseToTemp(login_data_path);
-+  if (temp_db_path.empty()) {
++  if (encryption_key.empty()) {
++    LOG(WARNING) << "windrise: Chrome encryption key unavailable; "
++                 << "skipping password import";
++    DeleteDatabaseTemp(temp_db_path);
++    if (status) {
++      *status = ImportItemStatus::kError;
++    }
 +    return passwords;
 +  }
 +
@@ -57,6 +62,9 @@ index 0000000000000..3aaeb073d7554
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_db_path)) {
 +    LOG(WARNING) << "windrise: Failed to open Login Data database";
++    if (status) {
++      *status = ClassifySqliteError(db.GetErrorCode());
++    }
 +    DeleteDatabaseTemp(temp_db_path);
 +    return passwords;
 +  }
@@ -74,7 +82,11 @@ index 0000000000000..3aaeb073d7554
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "windrise: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare Login Data query";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      db.Close();
 +      DeleteDatabaseTemp(temp_db_path);
 +      return passwords;
 +    }
@@ -131,6 +143,16 @@ index 0000000000000..3aaeb073d7554
 +
 +      passwords.push_back(std::move(form));
 +    }
++    if (!statement.Succeeded()) {
++      LOG(WARNING) << "windrise: Login Data SQLite query execution failed";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      passwords.clear();
++      db.Close();
++      DeleteDatabaseTemp(temp_db_path);
++      return passwords;
++    }
 +  }  // statement destroyed here
 +
 +  db.Close();
@@ -143,6 +165,10 @@ index 0000000000000..3aaeb073d7554
 +                    "elevation service and cannot be imported.";
 +  }
 +
++  if (status) {
++    *status = passwords.empty() ? ImportItemStatus::kEmpty
++                                : ImportItemStatus::kSuccess;
++  }
 +  return passwords;
 +}
 +

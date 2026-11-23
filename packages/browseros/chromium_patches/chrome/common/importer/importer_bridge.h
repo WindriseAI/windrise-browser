@@ -5,7 +5,7 @@ index 1738a3baff3e4..5f62d61cc7d08 100644
 @@ -17,6 +17,10 @@
  class GURL;
  struct ImporterAutofillFormDataEntry;
- 
+
 +namespace browseros_importer {
 +struct ImportedCookieEntry;
 +}  // namespace browseros_importer
@@ -16,15 +16,27 @@ index 1738a3baff3e4..5f62d61cc7d08 100644
 @@ -48,9 +52,14 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
    virtual void SetPasswordForm(
        const user_data_importer::ImportedPasswordForm& form) = 0;
- 
+
 +  virtual void SetCookie(
 +      const browseros_importer::ImportedCookieEntry& cookie) = 0;
 +
    virtual void SetAutofillFormData(
        const std::vector<ImporterAutofillFormDataEntry>& entries) = 0;
- 
+
 +  virtual void SetExtensions(const std::vector<std::string>& extension_ids) = 0;
 +
    // Notifies the coordinator that the import operation has begun.
    virtual void NotifyStarted() = 0;
- 
+
+@@ -64,4 +73,11 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
+   // Notifies the coordinator that the entire import operation has completed.
+   virtual void NotifyEnded() = 0;
+
++  // Notifies the coordinator that the import operation completed with an
++  // explicit success/error classification (e.g. "source_browser_locked").
++  virtual void NotifyEndedWithResult(bool succeeded,
++                                     const std::string& error_msg) {
++    NotifyEnded();
++  }
++
+   // For InProcessImporters this calls l10n_util. For ExternalProcessImporters

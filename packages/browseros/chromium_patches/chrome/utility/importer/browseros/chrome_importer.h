@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..5b45173f702b7
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_importer.h
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,51 @@
 +// Copyright 2023 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -15,9 +15,11 @@ index 0000000000000..5b45173f702b7
 +#include <string>
 +
 +#include "base/files/file_path.h"
++#include "chrome/utility/importer/browseros/chrome_importer_utils.h"
 +#include "chrome/utility/importer/importer.h"
 +
-+// ChromeImporter orchestrates importing user data from Chrome/Chromium browsers.
++// ChromeImporter orchestrates importing user data from Chrome/Chromium browsers
++// (including modern Chromium-based Microsoft Edge).
 +// The actual data extraction is delegated to specialized importer modules:
 +// - chrome_history_importer: browsing history
 +// - chrome_bookmarks_importer: bookmarks and favicons
@@ -39,14 +41,15 @@ index 0000000000000..5b45173f702b7
 + private:
 +  ~ChromeImporter() override;
 +
-+  void ImportBookmarks();
-+  void ImportHistory();
-+  void ImportPasswords();
-+  void ImportCookies();
-+  void ImportAutofillFormData();
-+  void ImportExtensions();
++  browseros_importer::ImportItemStatus ImportBookmarks();
++  browseros_importer::ImportItemStatus ImportHistory();
++  browseros_importer::ImportItemStatus ImportPasswords();
++  browseros_importer::ImportItemStatus ImportCookies();
++  browseros_importer::ImportItemStatus ImportAutofillFormData();
++  browseros_importer::ImportItemStatus ImportExtensions();
 +
 +  base::FilePath source_path_;
++  std::u16string source_browser_name_;
 +  std::u16string source_profile_name_;
 +  std::string chrome_encryption_key_;
 +};
