@@ -189,8 +189,9 @@ class WindriseNativeFuncTest(unittest.TestCase):
         mixer = read_patch("chrome/browser/ui/color/windrise_color_mixer.cc")
         self.assertIn("GetIncognitoColors()", mixer)
         self.assertIn("UserColorSource::kGrayscale", mixer)
-        self.assertIn("kColorNewTabPageBackground", mixer)
-        self.assertIn("kColorWebContentsBackground", mixer)
+        # Chromium derives the generic WebContents background from the NTP token.
+        self.assertNotIn("kColorNewTabPageBackground", mixer)
+        self.assertNotIn("kColorWebContentsBackground", mixer)
 
         contents_view = read_patch("chrome/browser/ui/views/frame/contents_web_view.cc")
         self.assertIn("IsOffTheRecord()", contents_view)

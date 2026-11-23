@@ -48,11 +48,11 @@ index 0000000000000000000000000000000000000000..3ae50227291e4765a2250b0cd9d8c693
 +  BrowserOSExtensionLoader(const BrowserOSExtensionLoader&) = delete;
 +  BrowserOSExtensionLoader& operator=(const BrowserOSExtensionLoader&) = delete;
 +
-+  // Loads the optional bundled signed Windrise assistant directory when the
-+  // browser is launched standalone (i.e. desktop did not pass a higher-priority
-+  // copy via --load-extension). Returns true if the assistant is already loaded
-+  // or was started from the bundled directory.
-+  static bool LoadBundledWindriseAssistantIfNeeded(Profile* profile);
++  // Called on UI during ExtensionService::Init, after command-line loading.
++  // A submitted desktop copy of the signed assistant wins.
++  static void LoadBundledWindriseAssistantIfNeeded(Profile* profile,
++                                                  bool desktop_assistant);
++  static bool IsSignedWindriseAssistantPath(const base::FilePath& path);
 +
 +  // UI-sequence callers join the existing operation. A false result is
 +  // recoverable: another call retries local publication.

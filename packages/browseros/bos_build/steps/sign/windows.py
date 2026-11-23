@@ -9,6 +9,7 @@ from typing import List, Optional
 from ...core.step import Step, ValidationError, step
 from ...core.context import Context
 from ...lib.env import EnvConfig
+from ...lib.windrise_extension import verify_bundled_extension
 from ...products.server_binaries import (
     all_server_bundles,
     expected_windows_bundle_binary_paths,
@@ -25,6 +26,7 @@ from ...lib.utils import (
     redact_command,
     redact_sensitive_text,
 )
+from ..package.windows import collect_validated_installer_tree
 
 
 @step(
@@ -77,8 +79,11 @@ class WindowsSignModule(Step):
 
         build_output_dir = join_paths(ctx.chromium_src, ctx.out_dir)
 
+        verify_bundled_extension(build_output_dir, ctx.product.id)
         self._sign_executables(build_output_dir, ctx)
         self._build_mini_installer(ctx)
+        if ctx.product.id == "browseros":
+            collect_validated_installer_tree(ctx)
         mini_installer_path = self._sign_installer(build_output_dir, ctx.env)
 
         ctx.artifact_registry.add("signed_installer", mini_installer_path)

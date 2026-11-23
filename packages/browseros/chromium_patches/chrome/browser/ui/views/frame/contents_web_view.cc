@@ -2,7 +2,7 @@ diff --git a/chrome/browser/ui/views/frame/contents_web_view.cc b/chrome/browser
 index 184614e..581f990 100644
 --- a/chrome/browser/ui/views/frame/contents_web_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_web_view.cc
-@@ -11,18 +11,26 @@
+@@ -11,18 +11,27 @@
  #include "chrome/browser/ui/views/frame/safe_invoke/safe_invoke.h"
  #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
  #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -12,6 +12,7 @@ index 184614e..581f990 100644
 +#include "content/public/browser/browser_context.h"
 +#include "content/public/browser/navigation_controller.h"
 +#include "content/public/browser/navigation_entry.h"
++#include "content/public/browser/navigation_handle.h"
 +#include "content/public/browser/render_frame_host.h"
  #include "content/public/browser/render_widget_host_view.h"
  #include "content/public/browser/web_contents.h"
@@ -29,7 +30,7 @@ index 184614e..581f990 100644
  
  #if defined(USE_AURA)
  #include "ui/aura/window.h"
-@@ -36,6 +44,71 @@
+@@ -36,6 +45,62 @@
  DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentsWebView,
                                        kContentsWebViewElementId);
  
@@ -53,42 +54,33 @@ index 184614e..581f990 100644
 +    return true;
 +  }
 +  if (url.SchemeIs(content::kChromeUIScheme)) {
-+    // chrome://newtab and chrome://new-tab-page before rewrite or fallback.
-+    return url.host() == chrome::kChromeUINewTabHost ||
-+           url.host() == chrome::kChromeUINewTabPageHost ||
-+           url.host() == chrome::kChromeUINewTabPageThirdPartyHost;
++    // chrome://newtab before the extension overrides the original URL.
++    return url.host() == chrome::kChromeUINewTabHost;
 +  }
 +  return url.SchemeIs("chrome-extension") &&
 +         url.host() == kWindriseNewTabExtensionHost &&
 +         url.path() == kWindriseNewTabPath;
 +}
 +
-+bool IsWindriseNewTabPage(content::WebContents* web_contents) {
++bool IsWindriseNewTabPage(content::WebContents* web_contents,
++                         const GURL& url) {
 +  if (!web_contents ||
 +      (web_contents->GetBrowserContext() &&
 +       web_contents->GetBrowserContext()->IsOffTheRecord())) {
 +    return false;
 +  }
-+  content::NavigationController& controller = web_contents->GetController();
-+  const content::NavigationEntry* entry = controller.GetPendingEntry()
-+                                              ? controller.GetPendingEntry()
-+                                              : controller.GetLastCommittedEntry();
-+  if (!entry) {
-+    // Brand-new tab/window before any navigation entry commits.
-+    return true;
-+  }
-+  return IsWindriseNewTabUrl(entry->GetURL());
++  return IsWindriseNewTabUrl(url);
 +}
 +
-+bool IsChromeInternalPage(content::WebContents* web_contents) {
++GURL GetBackgroundUrl(content::WebContents* web_contents) {
 +  if (!web_contents) {
-+    return false;
++    return GURL();
 +  }
 +  content::NavigationController& controller = web_contents->GetController();
 +  const content::NavigationEntry* entry = controller.GetPendingEntry()
 +                                              ? controller.GetPendingEntry()
 +                                              : controller.GetLastCommittedEntry();
-+  return entry && entry->GetURL().SchemeIs(content::kChromeUIScheme);
++  return entry ? entry->GetURL() : GURL();
 +}
 +
 +SkColor GetWindriseNewTabPrePaintColor(SkColor default_color) {
@@ -101,7 +93,7 @@ index 184614e..581f990 100644
  ContentsWebView::ContentsWebView(content::BrowserContext* browser_context)
      : views::WebView(browser_context),
        use_default_deadline_when_animating_(
-@@ -167,6 +240,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
+@@ -167,6 +232,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
      return;
    }
  
@@ -115,10 +107,10 @@ index 184614e..581f990 100644
    UpdateIsBlockedByModal();
  
    if (!status_bubble_) {
-@@ -181,6 +261,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
+@@ -181,6 +253,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
        .Then(&web_modal::WebContentsModalDialogManager::UpdateDialogHost);
  }
- 
+
 +void ContentsWebView::AddedToWidget() {
 +  views::WebView::AddedToWidget();
 +  if (GetWidget()) {
@@ -129,23 +121,36 @@ index 184614e..581f990 100644
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
  void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
    // If the user interacts with the web contents, ensure it is activated.
-@@ -208,9 +295,14 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
+@@ -208,9 +287,26 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
  #endif
  
- void ContentsWebView::UpdateBackgroundColor() {
+-void ContentsWebView::UpdateBackgroundColor() {
++void ContentsWebView::UpdateBackgroundColor(const GURL* commit_url) {
++  const GURL url = commit_url ? *commit_url : GetBackgroundUrl(web_contents());
 -  const SkColor color = GetColorProvider()->GetColor(
 +  const SkColor default_color = GetColorProvider()->GetColor(
        is_letterboxing() ? kColorWebContentsBackgroundLetterboxing
                          : kColorWebContentsBackground);
 +  const bool is_windrise_ntp =
-+      !is_letterboxing() && IsWindriseNewTabPage(web_contents());
-+  const SkColor color = is_windrise_ntp
-+                            ? GetWindriseNewTabPrePaintColor(default_color)
-+                            : default_color;
++      !is_letterboxing() && IsWindriseNewTabPage(web_contents(), url);
++  const bool is_web_ui =
++      !is_letterboxing() && url.SchemeIs(content::kChromeUIScheme);
++  SkColor color = default_color;
++  if (is_windrise_ntp) {
++    color = GetWindriseNewTabPrePaintColor(default_color);
++  } else if (is_web_ui &&
++             web_contents()->GetBrowserContext()->IsOffTheRecord() &&
++             url.host() == chrome::kChromeUINewTabHost) {
++    color = SkColorSetRGB(0x1E, 0x22, 0x28);
++  } else if (is_web_ui && url.host() != chrome::kChromeUINewTabPageHost &&
++             url.host() != chrome::kChromeUINewTabPageThirdPartyHost) {
++    color = color_utils::IsDark(default_color) ? SkColorSetRGB(0x3B, 0x42, 0x4A)
++                                               : SkColorSetRGB(0xD5, 0xDA, 0xDF);
++  }
    // `color` must be opaque, see RenderWidgetHostView::SetBackgroundColor() for
    // details.
    // TODO(crbug.com/456309057): Update this to be a CHECK.
-@@ -229,6 +321,20 @@ void ContentsWebView::UpdateBackgroundColor() {
+@@ -229,6 +325,17 @@ void ContentsWebView::UpdateBackgroundColor() {
        .Then(&content::WebContents::GetRenderWidgetHostView)
        .Then(&content::RenderWidgetHostView::SetBackgroundColor,
              background_visible_ ? color : SK_ColorTRANSPARENT);
@@ -154,22 +159,27 @@ index 184614e..581f990 100644
 +  // internal pages so first-paint frames never flash white or #202124 black,
 +  // while leaving regular websites untouched (std::nullopt).
 +  if (content::WebContents* contents = web_contents()) {
-+    if (background_visible_ && is_windrise_ntp) {
++    if (background_visible_ && (is_windrise_ntp || is_web_ui)) {
 +      contents->SetPageBaseBackgroundColor(color);
-+    } else if (background_visible_ && !is_letterboxing() &&
-+               IsChromeInternalPage(contents)) {
-+      contents->SetPageBaseBackgroundColor(default_color);
 +    } else {
 +      contents->SetPageBaseBackgroundColor(std::nullopt);
 +    }
 +  }
  }
- 
+
  std::unique_ptr<ui::Layer> ContentsWebView::RecreateLayer() {
-@@ -286,6 +392,16 @@ void ContentsWebView::DestroyClonedLayer() {
+@@ -286,6 +393,24 @@ void ContentsWebView::DestroyClonedLayer() {
    cloned_layer_tree_.reset();
  }
  
++void ContentsWebView::ReadyToCommitNavigation(
++    content::NavigationHandle* navigation) {
++  if (GetWidget() && navigation->IsInPrimaryMainFrame()) {
++    // Same-renderer and redirected navigations may not swap frame hosts.
++    UpdateBackgroundColor(&navigation->GetURL());
++  }
++}
++
 +void ContentsWebView::RenderFrameHostChanged(
 +    content::RenderFrameHost* old_host,
 +    content::RenderFrameHost* new_host) {

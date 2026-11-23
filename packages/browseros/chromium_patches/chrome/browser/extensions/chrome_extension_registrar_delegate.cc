@@ -15,9 +15,9 @@ index 7ff5fb309529d5a776f0fdb29e07ef1e001f06f4..276eb347ba2d61fca627ad34b68b28a4
    }
  
 -  DataDeleter::StartDeleting(profile_, extension.get(), subtask_done_callback);
-+  // Preserve chrome.storage.local data for BrowserOS extensions. These may be
-+  // transiently uninstalled during update cycles (e.g., when both bundled CRX
-+  // and remote config fail on startup). User configuration must survive.
++  // Preserve chrome.storage.local data for product-managed extensions.
++  // Temporary uninstalls during an update can otherwise erase users' settings,
++  // for example when both bundled CRX and remote config fail on startup.
 +  if (browseros::IsKnownBrowserOSExtension(extension->id())) {
 +    LOG(INFO) << "windrise: Preserving storage for extension "
 +              << extension->id();

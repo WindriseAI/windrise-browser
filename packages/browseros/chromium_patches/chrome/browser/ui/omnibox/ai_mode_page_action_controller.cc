@@ -78,5 +78,5 @@ index aecbcfb..9c53a42 100644
 +  // Windrise: suppress upstream Google AI Mode omnibox page action button.
 +  return false;
  }
- 
+
  void AiModePageActionController::OnPageActionIconShown(

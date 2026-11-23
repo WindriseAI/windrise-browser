@@ -73,8 +73,12 @@ function Test-NewFilePatch {
 }
 
 function Invoke-ChromiumCheckout {
-    param([string]$Path)
-    $result = & git -C $ChromiumSrc checkout -- $Path 2>&1
+    param([string]$Path, [switch]$Upstream)
+    if ($Upstream) {
+        $result = & git -C $ChromiumSrc restore --source=HEAD --worktree -- $Path 2>&1
+    } else {
+        $result = & git -C $ChromiumSrc checkout -- $Path 2>&1
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "Could not restore upstream '$Path' in '$ChromiumSrc': $result"
     }
@@ -185,6 +189,13 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     throw "uv is required"
 }
 
+$resolvedExtensionDir = $null
+if ($Product -eq "browseros" -and -not $SkipWindriseExtension) {
+    $resolvedExtensionDir = Resolve-WindriseExtensionSource -ExplicitDir $WindriseExtensionDir
+    Write-Host "`n==> Verifying signed windrise-extension before applying patches" -ForegroundColor Cyan
+    Invoke-StageWindriseExtension -SourceDir $resolvedExtensionDir -CheckOnly
+}
+
 $changed = @(
     Get-GitOutput -Repo $BrowserosRoot -GitArgs @(
         "diff", "--name-status", "--relative", $From, $To, "--", "chromium_patches"
@@ -205,7 +216,6 @@ foreach ($line in $changed) {
 
 if ($patchRows.Count -eq 0) {
     Write-Host "No chromium patch files changed between '$From' and '$To'." -ForegroundColor Yellow
-    exit 0
 }
 
 Write-Host "Changed patch files ($From..$To):" -ForegroundColor Cyan
@@ -224,7 +234,7 @@ foreach ($row in $patchRows) {
         & git -C $ChromiumSrc cat-file -e "HEAD:$targetPath" 2>$null
         if ($LASTEXITCODE -eq 0) { $existsUpstream = $true }
         if ($existsUpstream) {
-            Invoke-ChromiumCheckout $targetPath
+            Invoke-ChromiumCheckout $targetPath -Upstream
             Write-Host "  restored upstream: $targetPath" -ForegroundColor Yellow
         }
         else {
@@ -245,7 +255,7 @@ foreach ($row in $patchRows) {
         Invoke-ChromiumRemove $targetPath
     }
     else {
-        Invoke-ChromiumCheckout $targetPath
+        Invoke-ChromiumCheckout $targetPath -Upstream
     }
 
     & git -C $ChromiumSrc apply --recount --whitespace=nowarn -p1 $patchPath
@@ -263,13 +273,6 @@ Write-Host "`n==> reset branded string files before string_replaces" -Foreground
 Invoke-ChromiumCheckout "chrome/app/chromium_strings.grd"
 Invoke-ChromiumCheckout "chrome/app/settings_chromium_strings.grdp"
 Invoke-BuildModule "string_replaces"
-
-$resolvedExtensionDir = $null
-if ($Product -eq "browseros" -and -not $SkipWindriseExtension) {
-    $resolvedExtensionDir = Resolve-WindriseExtensionSource -ExplicitDir $WindriseExtensionDir
-    Write-Host "`n==> Verifying signed windrise-extension before clearing output" -ForegroundColor Cyan
-    Invoke-StageWindriseExtension -SourceDir $resolvedExtensionDir -CheckOnly
-}
 
 Invoke-BuildModule "resources,bundled_extensions"
 

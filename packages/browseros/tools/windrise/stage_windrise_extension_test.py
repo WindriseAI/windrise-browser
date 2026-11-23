@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest import mock
 
 import stage_windrise_extension as stager
+from bos_build.lib.windrise_extension import _verify_rsa_sha256_signature
 
 SIGNED_EXTENSION_DIR = Path(
     "F:/worktrees/bridge-replica-e45/desktop-integ-1123/electron/windrise-extension"
@@ -85,9 +86,9 @@ class StageWindriseExtensionTest(unittest.TestCase):
             return orig_import(name, *args, **kwargs)
 
         with mock.patch("builtins.__import__", side_effect=block_cryptography):
-            stager._verify_rsa_sha256_signature(payload, sig_bytes)
+            _verify_rsa_sha256_signature(payload, sig_bytes)
             with self.assertRaisesRegex(ValueError, "RSA-SHA256 verification failed"):
-                stager._verify_rsa_sha256_signature(payload + b"x", sig_bytes)
+                _verify_rsa_sha256_signature(payload + b"x", sig_bytes)
 
 
 if __name__ == "__main__":

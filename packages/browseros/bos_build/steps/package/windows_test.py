@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the Windows packaging module (autoninja routing and validate())."""
 
+import base64
 import json
 import struct
 import tarfile
@@ -22,6 +23,7 @@ from ...lib.browser_directory_zip import (
     inspect_directory_tar_xz,
     inspect_directory_zip,
 )
+from ...lib.windrise_extension import EXPECTED_PUBLIC_KEY
 
 
 class BuildMiniInstallerTest(unittest.TestCase):
@@ -29,7 +31,8 @@ class BuildMiniInstallerTest(unittest.TestCase):
         ctx = cast(
             Context,
             SimpleNamespace(
-                out_dir="out/Default_x64", chromium_src=Path("/tmp/chromium-src")
+                out_dir="out/Default_x64", chromium_src=Path("/tmp/chromium-src"),
+                product=get_product_descriptor("browserclaw"),
             ),
         )
         with (
@@ -60,14 +63,20 @@ class BuildMiniInstallerTest(unittest.TestCase):
                     SimpleNamespace(
                         chromium_src=Path(tmp),
                         out_dir="out/Default",
+                        product=product,
                         get_app_path=lambda: product_path,
                     ),
                 )
 
-                with mock.patch.object(
-                    windows, "build_mini_installer", return_value=True
+                with (
+                    mock.patch.object(windows, "build_mini_installer", return_value=True),
+                    mock.patch.object(windows, "collect_validated_installer_tree") as verify,
                 ):
                     windows.MiniInstallerModule().execute(ctx)
+                if product_id == "browseros":
+                    verify.assert_called_once_with(ctx)
+                else:
+                    verify.assert_not_called()
 
                 self.assertEqual(chrome_path.read_bytes(), b"chrome")
                 self.assertFalse(product_path.exists())
@@ -102,10 +111,6 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 resource = version_tree / "windrise_extensions/bundled_extensions.json"
                 resource.parent.mkdir(parents=True)
                 resource.write_bytes(b"{}\n")
-                if product_id == "browseros":
-                    ext_dir = version_tree / "windrise_extensions/windrise-extension"
-                    ext_dir.mkdir(parents=True)
-                    (ext_dir / ".windrise-signature").write_bytes(b"signed-sig")
                 (build_output_dir / "mini_installer.exe").write_bytes(b"signed installer")
                 # Raw build-output profiles and unrelated files must not leak.
                 profile = build_output_dir / "User Data/Default"
@@ -129,7 +134,9 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                     get_dist_dir=lambda: root / "dist",
                     get_artifact_name=lambda kind: product.artifact_filename(kind, "0.31.0", "x64"),
                 ))
-                windows.WindowsPackageModule().execute(ctx)
+                with mock.patch.object(windows, "verify_bundled_extension") as verify:
+                    windows.WindowsPackageModule().execute(ctx)
+                verify.assert_called_once_with(version_tree, product_id)
 
                 self.assertEqual(product_path.read_bytes(), bytes(executable))
                 zip_artifact = registry.get("browser_directory_zip")
@@ -276,8 +283,9 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 get_dist_dir=lambda: root / "dist",
                 get_artifact_name=lambda kind: product.artifact_filename(kind, "0.31.0", "x64"),
             ))
-            with self.assertRaisesRegex(RuntimeError, r"\.windrise-signature"):
+            with self.assertRaisesRegex(RuntimeError, r"signed Windrise extension"):
                 windows.WindowsPackageModule().execute(ctx)
+            self.assertFalse((root / "dist").exists())
 
 
 
@@ -322,10 +330,10 @@ class WindowsPackageModuleValidateTest(unittest.TestCase):
     def test_validate_raises_when_windrise_signature_missing(self):
         self._touch_output("mini_installer.exe")
         with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
-            with self.assertRaisesRegex(ValidationError, r"\.windrise-signature"):
+            with self.assertRaisesRegex(ValidationError, r"signed Windrise extension"):
                 windows.WindowsPackageModule().validate(self.ctx)
 
-    def test_validate_passes_when_mini_installer_and_windrise_signature_present(self):
+    def test_validate_rejects_nonempty_fake_signature(self):
         self._touch_output("mini_installer.exe")
         sig = (
             self.build_output_dir
@@ -334,9 +342,14 @@ class WindowsPackageModuleValidateTest(unittest.TestCase):
             / ".windrise-signature"
         )
         sig.parent.mkdir(parents=True)
-        sig.write_bytes(b"signed-sig")
+        (sig.parent / "manifest.json").write_text(
+            json.dumps({"key": EXPECTED_PUBLIC_KEY}), encoding="utf-8"
+        )
+        (sig.parent / ".windrise-integrity").write_bytes(b"test inventory\n")
+        sig.write_bytes(base64.b64encode(bytes(256)))
         with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
-            windows.WindowsPackageModule().validate(self.ctx)
+            with self.assertRaisesRegex(ValidationError, r"RSA-SHA256 verification failed"):
+                windows.WindowsPackageModule().validate(self.ctx)
 
 
 if __name__ == "__main__":

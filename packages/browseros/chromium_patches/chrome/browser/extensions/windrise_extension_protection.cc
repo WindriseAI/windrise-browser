@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,511 @@
+@@ -0,0 +1,529 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -35,6 +35,7 @@ index 0000000000..622c8730b3
 +#include "base/threading/thread_restrictions.h"
 +#include "base/time/time.h"
 +#include "base/timer/timer.h"
++#include "build/build_config.h"
 +#include "crypto/hash.h"
 +#include "crypto/keypair.h"
 +#include "crypto/sign.h"
@@ -58,9 +59,13 @@ index 0000000000..622c8730b3
 +  if (base::IsLink(directory)) {
 +    return false;
 +  }
++  int file_types =
++      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES;
++#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
++  file_types |= base::FileEnumerator::SHOW_SYM_LINKS;
++#endif
 +  base::FileEnumerator entries(
-+      directory, false,
-+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES,
++      directory, false, file_types,
 +      base::FilePath::StringType(), base::FileEnumerator::FolderSearchPolicy::ALL,
 +      base::FileEnumerator::ErrorPolicy::STOP_ENUMERATION);
 +  for (base::FilePath entry = entries.Next(); !entry.empty();
@@ -100,8 +105,14 @@ index 0000000000..622c8730b3
 +  }
 +  bool UserMayLoad(const Extension* extension,
 +                   std::u16string* error) const override {
-+    return extension->id() != kAssistantId ||
-+           IsVerifiedWindriseExtension(extension);
++    if (extension->id() != kAssistantId ||
++        IsVerifiedWindriseExtension(extension)) {
++      return true;
++    }
++    if (error) {
++      *error = u"Windrise assistant signature verification failed.";
++    }
++    return false;
 +  }
 +  bool UserMayModifySettings(const Extension* extension,
 +                             std::u16string* error) const override {
@@ -123,14 +134,19 @@ index 0000000000..622c8730b3
 +};
 +
 +bool VerifySignedDirectory(const base::FilePath& root, std::string* digest) {
++  const auto inventory_path = root.AppendASCII(kInventory);
++  const auto signature_path = root.AppendASCII(kSignature);
++  if (base::IsLink(root) || base::IsLink(inventory_path) ||
++      base::IsLink(signature_path)) {
++    return false;
++  }
 +  std::string inventory;
 +  std::string signature_text;
 +  std::string signature;
 +  std::string public_der;
-+  if (!base::ReadFileToStringWithMaxSize(root.AppendASCII(kInventory), &inventory,
-+                                        1024 * 1024) ||
-+      !base::ReadFileToStringWithMaxSize(root.AppendASCII(kSignature),
-+                                        &signature_text, 1024) ||
++  if (!base::ReadFileToStringWithMaxSize(inventory_path, &inventory,
++                                         1024 * 1024) ||
++      !base::ReadFileToStringWithMaxSize(signature_path, &signature_text, 1024) ||
 +      !base::Base64Decode(base::TrimWhitespaceASCII(signature_text, base::TRIM_ALL),
 +                          &signature) ||
 +      !base::Base64Decode(kPublicKey, &public_der)) {
@@ -219,20 +235,17 @@ index 0000000000..622c8730b3
 +  std::unique_ptr<base::FilePathWatcher> watcher;
 +};
 +
-+using Verifications =
-+    std::map<base::FilePath, std::unique_ptr<Verification>>;
++// Profiles may load the same path. Each Extension object owns its own trust.
++using Verifications = std::map<const Extension*, std::unique_ptr<Verification>>;
 +Verifications& VerifiedExtensions() {
 +  static base::NoDestructor<Verifications> records;
 +  return *records;
 +}
 +
-+void EraseVerification(const base::FilePath& path, const Extension* extension) {
++void EraseVerification(const Extension* extension) {
 +  auto& records = VerifiedExtensions();
-+  const auto found = records.find(path);
++  const auto found = records.find(extension);
 +  if (found == records.end()) {
-+    return;
-+  }
-+  if (extension && found->second->extension.get() != extension) {
 +    return;
 +  }
 +  const bool was_authorized = found->second->authorized;
@@ -247,7 +260,7 @@ index 0000000000..622c8730b3
 +void ClearAllVerifications() {
 +  auto& records = VerifiedExtensions();
 +  bool any_authorized = false;
-+  for (auto& [path, record] : records) {
++  for (auto& [extension, record] : records) {
 +    if (record) {
 +      any_authorized = any_authorized || record->authorized;
 +      record->authority_timer.Stop();
@@ -270,7 +283,7 @@ index 0000000000..622c8730b3
 +  void OnExtensionLoaded(content::BrowserContext* browser_context,
 +                         const Extension* extension) override {
 +    if (extension && extension->id() == kAssistantId) {
-+      observed_paths_.insert(extension->path());
++      observed_extensions_.insert(extension);
 +    }
 +  }
 +
@@ -278,8 +291,8 @@ index 0000000000..622c8730b3
 +                           const Extension* extension,
 +                           UnloadedExtensionReason reason) override {
 +    if (extension && extension->id() == kAssistantId) {
-+      observed_paths_.erase(extension->path());
-+      EraseVerification(extension->path(), extension);
++      observed_extensions_.erase(extension);
++      EraseVerification(extension);
 +    }
 +  }
 +
@@ -287,15 +300,15 @@ index 0000000000..622c8730b3
 +                              const Extension* extension,
 +                              UninstallReason reason) override {
 +    if (extension && extension->id() == kAssistantId) {
-+      observed_paths_.erase(extension->path());
-+      EraseVerification(extension->path(), extension);
++      observed_extensions_.erase(extension);
++      EraseVerification(extension);
 +    }
 +  }
 +
 +  void OnShutdown(ExtensionRegistry* registry) override;
 +
 + private:
-+  std::set<base::FilePath> observed_paths_;
++  std::set<const Extension*> observed_extensions_;
 +  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
 +      observation_{this};
 +};
@@ -310,14 +323,14 @@ index 0000000000..622c8730b3
 +
 +void WindriseExtensionRegistryObserver::OnShutdown(
 +    ExtensionRegistry* registry) {
-+  for (const base::FilePath& path : observed_paths_) {
-+    EraseVerification(path, nullptr);
++  for (const Extension* extension : observed_extensions_) {
++    EraseVerification(extension);
 +  }
-+  observed_paths_.clear();
++  observed_extensions_.clear();
 +  if (registry) {
 +    const ExtensionSet installed = registry->GenerateInstalledExtensionsSet();
 +    if (const Extension* ext = installed.GetByID(kAssistantId)) {
-+      EraseVerification(ext->path(), ext);
++      EraseVerification(ext);
 +    }
 +  }
 +  observation_.Reset();
@@ -420,13 +433,17 @@ index 0000000000..622c8730b3
 +}
 +}  // namespace
 +
++bool VerifyWindriseAssistantDirectory(const base::FilePath& path) {
++  std::string digest;
++  return VerifySignedDirectory(path, &digest);
++}
++
 +void RefreshWindriseAssistantAuthority(const Extension* extension) {
 +  if (!extension) {
 +    return;
 +  }
-+  const auto found = VerifiedExtensions().find(extension->path());
-+  if (found != VerifiedExtensions().end() &&
-+      found->second->extension.get() == extension) {
++  const auto found = VerifiedExtensions().find(extension);
++  if (found != VerifiedExtensions().end()) {
 +    base::ScopedAllowBlocking allow_blocking;
 +    PollAuthority(found->second.get());
 +  }
@@ -438,9 +455,9 @@ index 0000000000..622c8730b3
 +      extension->location() != mojom::ManifestLocation::kCommandLine) {
 +    return false;
 +  }
-+  auto& record = VerifiedExtensions()[extension->path()];
-+  if (record && record->extension.get() == extension) {
-+    return record->valid;
++  auto& records = VerifiedExtensions();
++  if (const auto found = records.find(extension); found != records.end()) {
++    return found->second->valid;
 +  }
 +  base::ScopedAllowBlocking allow_blocking;
 +  auto next = std::make_unique<Verification>();
@@ -467,9 +484,9 @@ index 0000000000..622c8730b3
 +  }
 +  const bool valid = next->valid;
 +  if (!valid) {
-+    next->watcher.reset();
++    return false;
 +  }
-+  record = std::move(next);
++  const auto& record = records.emplace(extension, std::move(next)).first->second;
 +  // Only run periodic lease polling when a desktop lease public key was
 +  // supplied on the command line; standalone launches need no background poll.
 +  if (valid && LeaseKey().has_value()) {
@@ -485,12 +502,13 @@ index 0000000000..622c8730b3
 +  if (!IsVerifiedWindriseExtension(extension)) {
 +    return false;
 +  }
-+  const auto& record = VerifiedExtensions().at(extension->path());
-+  if (!record->authorized) {
++  auto& records = VerifiedExtensions();
++  if (!records.at(extension)->authorized) {
 +    RefreshWindriseAssistantAuthority(extension);
 +  }
-+  return record->authorized &&
-+         base::TimeTicks::Now() < record->lease_deadline;
++  const auto found = records.find(extension);
++  return found != records.end() && found->second->authorized &&
++         base::TimeTicks::Now() < found->second->lease_deadline;
 +}
 +
 +base::CallbackListSubscription AddWindriseAssistantAuthorityObserver(

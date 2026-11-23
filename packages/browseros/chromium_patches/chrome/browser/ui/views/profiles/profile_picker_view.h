@@ -13,7 +13,7 @@ index fab592e..10075d2 100644
 @@ -225,6 +226,10 @@ class ProfilePickerView
    // Builds the views hierarchy.
    void BuildLayout();
- 
+
 +  // Returns Windrise onboarding first-frame background (#D5DADF / #3B424A).
 +  SkColor GetWindriseOnboardingBackgroundColor() const;
 +  void ApplyWindriseOnboardingBackground(content::WebContents* contents);

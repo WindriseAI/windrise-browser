@@ -34,7 +34,7 @@ class ApplyStringReplacementsTest(unittest.TestCase):
         self.assertNotIn("Google Chrome", content)
         self.assertNotIn("Chromium", content)
         self.assertIn("Windrise", content)
-        self.assertIn("The Windrise Authors. All rights reserved.", content)
+        self.assertIn("The Windrise Browser Authors. All rights reserved.", content)
 
     def test_google_play_is_preserved(self):
         self.chromium.with_branding_files()

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..e0b94bf9ef
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,35 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -13,6 +13,10 @@ index 0000000000..e0b94bf9ef
 +#include "base/callback_list.h"
 +#include "base/functional/callback.h"
 +
++namespace base {
++class FilePath;
++}  // namespace base
++
 +namespace content {
 +class BrowserContext;
 +}  // namespace content
@@ -20,6 +24,9 @@ index 0000000000..e0b94bf9ef
 +namespace extensions {
 +class Extension;
 +class ManagementPolicy;
++// Verifies the signed directory before it is considered for startup loading.
++// The caller must be allowed to block.
++bool VerifyWindriseAssistantDirectory(const base::FilePath& path);
 +// Verifies the fixed identity and every signed resource. No name/ping fallback.
 +bool IsVerifiedWindriseExtension(const Extension* extension);
 +// Private APIs and native layers also require a live backend-signed lease.

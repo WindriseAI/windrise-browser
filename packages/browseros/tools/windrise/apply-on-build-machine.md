@@ -40,7 +40,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\windrise\apply.ps1 `
 | `-OutDir` | `out/Default_<product>_<arch>` |
 | `-WindriseExtensionDir` | 环境变量 `WINDRISE_EXTENSION_DIR`（若未传则按常见同机路径探测，找不到即阻断） |
 
-正式打包 `browseros` 前，`apply.ps1` 会先校验已签名的 `windrise-extension` 目录（SHA-256 清单与 RSA 公钥验签），并在 `resources,bundled_extensions` 清空输出目录后重新写入 `out/<dir>/windrise_extensions/windrise-extension`；`package_windows` 与 `mini_installer` 也会断言 `.windrise-signature` 存在。
+应用补丁前，`apply.ps1` 会先对 `browseros` 的扩展目录执行 RSA-SHA256 验签和全文件 SHA-256 核对。资源准备完成后，脚本将通过校验的扩展写入 `out/<dir>/windrise_extensions/windrise-extension`。Windows 构建和打包也会验证扩展目录，打包步骤还会在输出制品前验证安装器暂存目录。
 
 ```powershell
 .\tools\windrise\apply.ps1 `
@@ -70,9 +70,9 @@ git -C $BrowserosRoot diff --name-status --relative $From $To -- chromium_patche
 补丁里的目标路径就是 `diff --git a/... b/...` 中的 `b/...`，与
 `chromium_patches` 下的相对路径一致。
 
-- 普通修改：`git -C $ChromiumSrc checkout -- <path>`
+- 普通修改：`git -C $ChromiumSrc restore --source=HEAD --worktree -- <path>`
 - `new file mode` / `--- /dev/null`：删除 `$ChromiumSrc/<path>`
-- 补丁本身被删除：目标文件能回到 upstream 就 `checkout`，只在 BrowserOS
+- 补丁本身被删除：目标文件能回到 upstream 就从 `HEAD` 恢复，只在 BrowserOS
   中存在的新文件则删除。
 
 ### 3. 重新应用

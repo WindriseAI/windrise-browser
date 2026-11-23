@@ -26,31 +26,24 @@ from ...lib.browser_directory_zip import (
     sha256_file,
 )
 from ...lib.release_preflight import bundled_resource_versions
+from ...lib.windrise_extension import verify_bundled_extension
 
 
-def _require_windrise_extension_signature(
+def _require_signed_windrise_extension(
     root_dir: Path,
     ctx: Context,
     *,
     error_cls: type[Exception] = ValidationError,
 ) -> None:
-    """Block Windrise Windows packaging if the signed bundled extension is missing."""
+    """Check the complete assistant bundle before producing release artifacts."""
     product = getattr(ctx, "product", None)
     product_id = getattr(product, "id", "browseros")
-    if product_id != "browseros":
-        return
-    signature_path = (
-        root_dir / "windrise_extensions" / "windrise-extension" / ".windrise-signature"
-    )
-    if (
-        signature_path.is_symlink()
-        or not signature_path.is_file()
-        or signature_path.stat().st_size <= 0
-    ):
+    try:
+        verify_bundled_extension(root_dir, product_id)
+    except (ValueError, OSError) as exc:
         raise error_cls(
-            f"Bundled Windrise extension signature not found: {signature_path}; "
-            "stage signed windrise-extension before building mini_installer or packaging"
-        )
+            f"Invalid signed Windrise extension under {root_dir}: {exc}"
+        ) from exc
 
 
 @step("mini_installer", phase="sign", platforms=("windows",), optional=True)
@@ -76,15 +69,11 @@ class MiniInstallerModule(Step):
             raise ValidationError(
                 f"Build not configured - args.gn not found: {args_file}"
             )
-        _require_windrise_extension_signature(
-            join_paths(context.chromium_src, context.out_dir),
-            context,
-            error_cls=ValidationError,
-        )
-
     def execute(self, context: Context) -> None:
         if not build_mini_installer(context):
             raise RuntimeError("Failed to build mini_installer")
+        if context.product.id == "browseros":
+            collect_validated_installer_tree(context)
 
 
 @step("package_windows", phase="package", platforms=("windows",))
@@ -109,7 +98,7 @@ class WindowsPackageModule(Step):
 
         if not mini_installer_path.exists():
             raise ValidationError(f"mini_installer.exe not found: {mini_installer_path}")
-        _require_windrise_extension_signature(
+        _require_signed_windrise_extension(
             build_output_dir,
             context,
             error_cls=ValidationError,
@@ -118,6 +107,8 @@ class WindowsPackageModule(Step):
     def execute(self, context: Context) -> None:
         log_info("\n📦 Creating Windows packages...")
 
+        # Validate the exact tree used by mini_installer before exporting it.
+        files, version, arch = collect_validated_installer_tree(context)
         installer_path = self._create_installer(context)
         zip_path = self._create_portable_zip(context)
         (
@@ -125,7 +116,7 @@ class WindowsPackageModule(Step):
             directory_metadata,
             directory_tar_xz,
             directory_tar_xz_metadata,
-        ) = self._create_directory_archives(context)
+        ) = self._create_directory_archives(context, files, version, arch)
         product_executable_path = self._copy_product_executable(context)
 
         context.artifact_registry.add("installer", installer_path)
@@ -197,73 +188,10 @@ class WindowsPackageModule(Step):
         except Exception as e:
             raise RuntimeError(f"Failed to create installer ZIP: {e}")
 
-    def _collect_validated_directory_tree(
-        self, ctx: Context
-    ) -> tuple[list[tuple[Path, str]], str, str]:
-        """Validate the mini_installer's release-manifest staging tree after signing.
-
-        Upstream BUILD.gn passes $target_gen_dir/mini_installer as staging_dir;
-        create_installer_archive.py adds temp_installer_archive/Chrome-bin.
-        Strip only Chrome-bin, retaining every runtime file and version path.
-        Do not use the raw build directory, which can contain user profiles.
-        """
-        build_output_dir = join_paths(ctx.chromium_src, ctx.out_dir)
-        browser_tree = (
-            build_output_dir / "gen" / "chrome" / "installer" / "mini_installer"
-            / "mini_installer" / "temp_installer_archive" / "Chrome-bin"
-        )
-        if not browser_tree.is_dir():
-            raise RuntimeError(f"Installer runtime tree is missing: {browser_tree}; build mini_installer first")
-
-        # This is the same VERSION file BuildVersion() uses upstream, including
-        # the product build offset; CHROMIUM_VERSION is only the upstream pin.
-        version_parts = {}
-        for line in (ctx.chromium_src / "chrome" / "VERSION").read_text(encoding="utf-8").splitlines():
-            key, separator, value = line.partition("=")
-            if separator:
-                version_parts[key.strip()] = value.strip()
-        version = ".".join(version_parts.get(key, "") for key in ("MAJOR", "MINOR", "BUILD", "PATCH"))
-        if not VERSION_PATTERN.fullmatch(version):
-            raise RuntimeError("chrome/VERSION does not contain a four-part Chromium version")
-
-        entries = []
-        files = []
-        for path in sorted(browser_tree.rglob("*")):
-            if path.is_symlink() or path.is_junction():
-                raise RuntimeError(f"Links are forbidden in the installer runtime tree: {path}")
-            relative = path.relative_to(browser_tree).as_posix()
-            if path.is_dir():
-                entries.append((relative + "/", True, 0))
-            elif path.is_file():
-                entries.append((relative, False, path.stat().st_size))
-                files.append((path, relative))
-            else:
-                raise RuntimeError(f"Unsupported installer runtime entry: {path}")
-        check_layout(entries, version)
-        _require_windrise_extension_signature(
-            browser_tree / version,
-            ctx,
-            error_cls=RuntimeError,
-        )
-        for path, relative in files:
-            if path.name.casefold() == "bundled_extensions.json":
-                check_bundled_extensions_manifest(path.read_bytes(), relative)
-
-        staged_chrome = browser_tree / "chrome.exe"
-        if sha256_file(staged_chrome) != sha256_file(build_output_dir / "chrome.exe"):
-            raise RuntimeError("Installer tree chrome.exe differs from final build output; rebuild mini_installer after signing")
-        with staged_chrome.open("rb") as source:
-            arch = executable_arch(source)
-        if arch != ctx.architecture:
-            raise RuntimeError(f"Installer chrome.exe architecture {arch} differs from target {ctx.architecture}")
-
-        return files, version, arch
-
     def _create_directory_archives(
-        self, ctx: Context
+        self, ctx: Context, files: list[tuple[Path, str]], version: str, arch: str
     ) -> tuple[Path, Path, Path, Path]:
         """Produce both browser directory .zip and .tar.xz archives plus metadata."""
-        files, version, arch = self._collect_validated_directory_tree(ctx)
         resource_versions = bundled_resource_versions(ctx)
         output_dir = ctx.get_dist_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -285,7 +213,7 @@ class WindowsPackageModule(Step):
         return zip_path, zip_metadata_path, tar_xz_path, tar_xz_metadata_path
 
     def _create_directory_zip(self, ctx: Context) -> tuple[Path, Path]:
-        files, version, arch = self._collect_validated_directory_tree(ctx)
+        files, version, arch = collect_validated_installer_tree(ctx)
         output_dir = ctx.get_dist_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
         return self._write_directory_zip(
@@ -368,6 +296,67 @@ class WindowsPackageModule(Step):
         log_success(f"Browser directory TAR.XZ created: {tar_xz_path.name}")
         return tar_xz_path, metadata_path
 
+def collect_validated_installer_tree(
+    ctx: Context,
+) -> tuple[list[tuple[Path, str]], str, str]:
+    """Validate the runtime tree assembled from the mini_installer manifest.
+
+    Upstream BUILD.gn passes $target_gen_dir/mini_installer as staging_dir;
+    create_installer_archive.py adds temp_installer_archive/Chrome-bin.
+    Strip only Chrome-bin, retaining every runtime file and version path.
+    Do not use the raw build directory, which can contain user profiles.
+    """
+    build_output_dir = join_paths(ctx.chromium_src, ctx.out_dir)
+    browser_tree = (
+        build_output_dir / "gen" / "chrome" / "installer" / "mini_installer"
+        / "mini_installer" / "temp_installer_archive" / "Chrome-bin"
+    )
+    if not browser_tree.is_dir():
+        raise RuntimeError(f"Installer runtime tree is missing: {browser_tree}; build mini_installer first")
+
+    # This is the same VERSION file BuildVersion() uses upstream, including
+    # the product build offset; CHROMIUM_VERSION is only the upstream pin.
+    version_parts = {}
+    for line in (ctx.chromium_src / "chrome" / "VERSION").read_text(encoding="utf-8").splitlines():
+        key, separator, value = line.partition("=")
+        if separator:
+            version_parts[key.strip()] = value.strip()
+    version = ".".join(version_parts.get(key, "") for key in ("MAJOR", "MINOR", "BUILD", "PATCH"))
+    if not VERSION_PATTERN.fullmatch(version):
+        raise RuntimeError("chrome/VERSION does not contain a four-part Chromium version")
+
+    entries = []
+    files = []
+    for path in sorted(browser_tree.rglob("*")):
+        if path.is_symlink() or path.is_junction():
+            raise RuntimeError(f"Links are forbidden in the installer runtime tree: {path}")
+        relative = path.relative_to(browser_tree).as_posix()
+        if path.is_dir():
+            entries.append((relative + "/", True, 0))
+        elif path.is_file():
+            entries.append((relative, False, path.stat().st_size))
+            files.append((path, relative))
+        else:
+            raise RuntimeError(f"Unsupported installer runtime entry: {path}")
+    check_layout(entries, version)
+    _require_signed_windrise_extension(
+        browser_tree / version,
+        ctx,
+        error_cls=RuntimeError,
+    )
+    for path, relative in files:
+        if path.name.casefold() == "bundled_extensions.json":
+            check_bundled_extensions_manifest(path.read_bytes(), relative)
+
+    staged_chrome = browser_tree / "chrome.exe"
+    if sha256_file(staged_chrome) != sha256_file(build_output_dir / "chrome.exe"):
+        raise RuntimeError("Installer tree chrome.exe differs from final build output; rebuild mini_installer after signing")
+    with staged_chrome.open("rb") as source:
+        arch = executable_arch(source)
+    if arch != ctx.architecture:
+        raise RuntimeError(f"Installer chrome.exe architecture {arch} differs from target {ctx.architecture}")
+
+    return files, version, arch
 
 
 def build_mini_installer(ctx: Context) -> bool:
@@ -375,6 +364,7 @@ def build_mini_installer(ctx: Context) -> bool:
     log_info("\n🔨 Checking mini_installer build...")
 
     build_output_dir = join_paths(ctx.chromium_src, ctx.out_dir)
+    _require_signed_windrise_extension(build_output_dir, ctx, error_cls=RuntimeError)
     mini_installer_path = build_output_dir / "mini_installer.exe"
     setup_exe_path = build_output_dir / "setup.exe"
 

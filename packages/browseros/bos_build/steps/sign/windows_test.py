@@ -23,6 +23,22 @@ from .windows import (
 
 
 class WindowsSignPathsTest(unittest.TestCase):
+    def test_bad_installer_stage_is_rejected_before_signing_installer(self):
+        with TemporaryDirectory() as tmp:
+            ctx = self._ctx("browseros")
+            ctx.chromium_src = Path(tmp)
+            ctx.out_dir = "out/Default"
+            module = WindowsSignModule()
+            with (
+                mock.patch.object(windows_module, "verify_bundled_extension"),
+                mock.patch.object(module, "_sign_executables"),
+                mock.patch.object(module, "_build_mini_installer"),
+                mock.patch.object(module, "_sign_installer") as sign_installer,
+            ):
+                with self.assertRaisesRegex(RuntimeError, "Installer runtime tree is missing"):
+                    module.execute(ctx)
+            sign_installer.assert_not_called()
+
     def test_browseros_and_claw_server_binaries_are_expected_for_signing(self):
         build_output_dir = Path("/tmp/out/Default")
 
@@ -99,15 +115,17 @@ class WindowsSignPathsTest(unittest.TestCase):
                 ],
             )
 
-    def test_sign_executables_fails_when_required_server_binary_missing(self):
+    def test_windrise_signs_chrome_without_a_retired_upstream_server(self):
         with TemporaryDirectory() as tmp:
             build_output_dir = Path(tmp)
-            self._write_binary(build_output_dir / "chrome.exe")
+            chrome = build_output_dir / "chrome.exe"
+            self._write_binary(chrome)
+            ctx = self._ctx("browseros")
 
-            with self.assertRaisesRegex(RuntimeError, "browseros_server.exe"):
-                WindowsSignModule()._sign_executables(
-                    build_output_dir, self._ctx("browseros")
-                )
+            with mock.patch.object(windows_module, "sign_with_codesigntool") as sign:
+                WindowsSignModule()._sign_executables(build_output_dir, ctx)
+
+            sign.assert_called_once_with([chrome], ctx.env)
 
     def test_missing_chrome_is_fatal_for_each_product(self):
         for product_id in ("browseros", "browserclaw"):

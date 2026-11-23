@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..62b6aaaad0
 --- /dev/null
 +++ b/chrome/browser/ui/color/windrise_color_mixer.cc
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,173 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -176,20 +176,4 @@ index 0000000000..62b6aaaad0
 +  mixer[ui::kColorSysNeutralContainer] = {token(ThemeToken::kTile)};
 +  mixer[ui::kColorSysBaseContainer] = {token(ThemeToken::kPopup)};
 +  mixer[ui::kColorSysSurface] = {token(ThemeToken::kPopup)};
-+
-+  if (incognito) {
-+    // 无痕新标签页主体与网页容器使用高对比深石墨暗底（#1E2228），与深色无痕外框一致，
-+    // 确保白色「您已进入无痕模式」标题与列表正文达到 WCAG AAA 高对比可读性。
-+    mixer[kColorNewTabPageBackground] = {token(ThemeToken::kBar)};
-+    mixer[kColorWebContentsBackground] = {token(ThemeToken::kBar)};
-+  } else {
-+    // 常规浅色/深色网页与内部页首帧底色对齐（#D5DADF 浅 / #3B424A 深），
-+    // 避免新开窗与切换 WebUI 时出现 #FFFFFF 白闪或 #202124 死黑闪。
-+    mixer[kColorWebContentsBackground] = {
-+        dark ? SkColorSetRGB(0x3B, 0x42, 0x4A)
-+             : SkColorSetRGB(0xD5, 0xDA, 0xDF)};
-+    mixer[kColorNewTabPageBackground] = {
-+        dark ? SkColorSetRGB(0x2E, 0x34, 0x3B)
-+             : SkColorSetRGB(0xB9, 0xC0, 0xC7)};
-+  }
 +}

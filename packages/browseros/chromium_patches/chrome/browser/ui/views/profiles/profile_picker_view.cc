@@ -30,27 +30,27 @@ index 9380cb0..d0eae60 100644
 +constexpr int kWindriseWorkAreaMargin = 64;
 +constexpr SkColor kWindriseOnboardingBgLight = SkColorSetRGB(0xD5, 0xDA, 0xDF);
 +constexpr SkColor kWindriseOnboardingBgDark = SkColorSetRGB(0x3B, 0x42, 0x4A);
- 
+
  constexpr float kMaxRatioOfWorkArea = 0.9;
- 
+
 @@ -360,6 +370,7 @@ void ProfilePickerView::ShowScreen(
    if (GetWidget()) {
      contents->SetColorProviderSource(GetWidget());
    }
 +  ApplyWindriseOnboardingBackground(contents);
- 
+
    contents->GetController().LoadURL(url, content::Referrer(),
                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
 @@ -501,9 +512,41 @@ bool ProfilePickerView::AreNativeToolbarSigninButtonsVisibleForTesting() const {
  }
- 
+
  SkColor ProfilePickerView::GetPreferredBackgroundColor() const {
 +  if (params_.entry_point() == ProfilePicker::EntryPoint::kFirstRun) {
 +    return GetWindriseOnboardingBackgroundColor();
 +  }
    return GetColorProvider()->GetColor(kColorToolbar);
  }
- 
+
 +SkColor ProfilePickerView::GetWindriseOnboardingBackgroundColor() const {
 +  const bool dark =
 +      GetWidget()
@@ -93,12 +93,12 @@ index 9380cb0..d0eae60 100644
        views::WebContentsAcceleratorHandling::kProcessBeforeRenderer);
 @@ -670,9 +714,29 @@ void ProfilePickerView::Init(Profile* picker_profile) {
    flow_controller_ = CreateFlowController(picker_profile, GetClearClosure());
- 
+
    toolbar_ = AddChildView(flow_controller_->CreateToolbarBuilder().Build());
 +  if (params_.entry_point() == ProfilePicker::EntryPoint::kFirstRun) {
 +    toolbar_->SetVisible(false);
 +  }
- 
+
    // The widget is owned by the native widget.
    new ProfilePickerWidget(this);
 +  if (params_.entry_point() == ProfilePicker::EntryPoint::kFirstRun &&
@@ -118,11 +118,11 @@ index 9380cb0..d0eae60 100644
 +    GetWidget()->SetBounds(bounds);
 +    ApplyWindriseOnboardingBackground(contents_.get());
 +  }
- 
+
  #if BUILDFLAG(IS_WIN)
    // Set the app id for the user manager to the app id of its parent.
 @@ -809,16 +873,36 @@ std::u16string ProfilePickerView::GetAccessibleWindowTitle() const {
- 
+
  gfx::Size ProfilePickerView::CalculatePreferredSize(
      const views::SizeBounds& available_size) const {
 -  gfx::Size preferred_size = gfx::Size(
@@ -182,21 +182,20 @@ index 9380cb0..d0eae60 100644
 +      web_view_ && web_view_->GetWebContents() ? web_view_->GetWebContents()
 +                                               : contents_.get());
  }
- 
+
  void ProfilePickerView::BuildLayout() {
 @@ -897,6 +992,7 @@ void ProfilePickerView::BuildLayout() {
- 
+
    auto web_view = std::make_unique<views::WebView>();
    web_view_ = AddChildView(std::move(web_view));
 +  ApplyWindriseOnboardingBackground(nullptr);
- 
+
    web_contents_attached_subscription_ =
        web_view_->AddWebContentsAttachedCallback(base::BindRepeating(
-@@ -912,6 +1008,7 @@ void ProfilePickerView::ShowScreenFinished(
+@@ -912,5 +1008,6 @@ void ProfilePickerView::ShowScreenFinished(
      show_screen_finished_observer_.reset();
    }
- 
+
 +  ApplyWindriseOnboardingBackground(contents);
    web_view_->SetWebContents(contents);
    contents->Focus();
- 
