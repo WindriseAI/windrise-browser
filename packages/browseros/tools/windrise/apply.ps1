@@ -32,7 +32,8 @@ param(
     [ValidateSet("x64", "arm64")]
     [string]$Arch = "x64",
     [string]$OutDir = "",
-    [string]$WindriseExtensionDir = $env:WINDRISE_EXTENSION_DIR
+    [string]$WindriseExtensionDir = $env:WINDRISE_EXTENSION_DIR,
+    [switch]$SkipWindriseExtension
 )
 
 $ErrorActionPreference = "Stop"
@@ -104,6 +105,70 @@ function Invoke-BuildModule {
     }
     finally {
         Pop-Location
+    }
+}
+
+function Resolve-WindriseExtensionSource {
+    param([string]$ExplicitDir)
+    if (-not [string]::IsNullOrWhiteSpace($ExplicitDir)) {
+        if (-not (Test-Path -LiteralPath $ExplicitDir -PathType Container)) {
+            throw "Windrise extension directory not found: $ExplicitDir"
+        }
+        return (Resolve-Path -LiteralPath $ExplicitDir).Path
+    }
+
+    $repoRoot = (Resolve-Path (Join-Path $BrowserosRoot "..\..")).Path
+    $repoParent = Split-Path -Parent $repoRoot
+    $candidates = @(
+        (Join-Path $repoParent "bridge-replica\electron\windrise-extension"),
+        (Join-Path $repoParent "windrise-bridge\electron\windrise-extension"),
+        "C:\src\bridge-replica\electron\windrise-extension",
+        "C:\src\windrise-bridge\electron\windrise-extension",
+        "C:\src\windrise-extension"
+    )
+    foreach ($candidate in $candidates) {
+        if (
+            (Test-Path -LiteralPath (Join-Path $candidate "manifest.json") -PathType Leaf) -and
+            (Test-Path -LiteralPath (Join-Path $candidate ".windrise-integrity") -PathType Leaf) -and
+            (Test-Path -LiteralPath (Join-Path $candidate ".windrise-signature") -PathType Leaf)
+        ) {
+            Write-Host "Auto-discovered signed windrise-extension: $candidate" -ForegroundColor Cyan
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    throw (
+        "Missing signed windrise-extension directory for product '$Product'. " +
+        "Pass -WindriseExtensionDir <path-to-electron\windrise-extension> or set WINDRISE_EXTENSION_DIR " +
+        "(or pass -SkipWindriseExtension for local non-packaging dev)."
+    )
+}
+
+function Invoke-StageWindriseExtension {
+    param(
+        [string]$SourceDir,
+        [string]$DestDir,
+        [switch]$CheckOnly
+    )
+    $stageScript = Join-Path $PSScriptRoot "stage_windrise_extension.py"
+    if (-not (Test-Path -LiteralPath $stageScript -PathType Leaf)) {
+        throw "stage_windrise_extension.py not found: $stageScript"
+    }
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if (-not $pythonCmd) {
+        throw "python is required to verify and stage windrise-extension"
+    }
+    $stageArgs = @($stageScript, "--source", $SourceDir)
+    if ($CheckOnly) {
+        $stageArgs += "--check"
+    }
+    else {
+        $stageArgs += @("--dest", $DestDir)
+    }
+    & $pythonCmd.Source @stageArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "stage_windrise_extension.py failed with exit code $LASTEXITCODE"
     }
 }
 
@@ -199,25 +264,24 @@ Invoke-ChromiumCheckout "chrome/app/chromium_strings.grd"
 Invoke-ChromiumCheckout "chrome/app/settings_chromium_strings.grdp"
 Invoke-BuildModule "string_replaces"
 
+$resolvedExtensionDir = $null
+if ($Product -eq "browseros" -and -not $SkipWindriseExtension) {
+    $resolvedExtensionDir = Resolve-WindriseExtensionSource -ExplicitDir $WindriseExtensionDir
+    Write-Host "`n==> Verifying signed windrise-extension before clearing output" -ForegroundColor Cyan
+    Invoke-StageWindriseExtension -SourceDir $resolvedExtensionDir -CheckOnly
+}
+
 Invoke-BuildModule "resources,bundled_extensions"
 
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
     $OutDir = "out/Default_${Product}_${Arch}"
 }
 
-if (-not [string]::IsNullOrWhiteSpace($WindriseExtensionDir) -and (Test-Path -LiteralPath $WindriseExtensionDir)) {
-    $stageScript = Join-Path $PSScriptRoot "stage_windrise_extension.py"
-    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
-    if ($pythonCmd -and (Test-Path -LiteralPath $stageScript)) {
-        Write-Host "`n==> Staging signed windrise-extension into $OutDir/windrise_extensions/windrise-extension" -ForegroundColor Cyan
-        & $pythonCmd.Source $stageScript `
-            --source $WindriseExtensionDir `
-            --dest (Join-Path $ChromiumSrc "$OutDir\windrise_extensions\windrise-extension")
-        if ($LASTEXITCODE -ne 0) {
-            throw "stage_windrise_extension.py failed with exit code $LASTEXITCODE"
-        }
-    }
+if ($resolvedExtensionDir) {
+    Write-Host "`n==> Staging signed windrise-extension into $OutDir/windrise_extensions/windrise-extension" -ForegroundColor Cyan
+    Invoke-StageWindriseExtension `
+        -SourceDir $resolvedExtensionDir `
+        -DestDir (Join-Path $ChromiumSrc "$OutDir\windrise_extensions\windrise-extension")
 }
 $ninja = if ($env:OS -eq "Windows_NT") { "autoninja.bat" } else { "autoninja" }
 Write-Host "`nPatches and prep modules are up to date." -ForegroundColor Green

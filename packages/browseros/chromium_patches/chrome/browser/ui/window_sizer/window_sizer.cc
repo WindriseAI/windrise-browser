@@ -7,10 +7,10 @@ index 4f51764..d07354c 100644
      bounds->set_y(work_area.y());
    }
 +#elif BUILDFLAG(IS_WIN)
-+  // On Windows, keep newly created or restored browser windows strictly inside
-+  // the display's work area so the bottom edge (such as the bottom-left AI
-+  // status card) cannot slide behind the taskbar.
-+  if (!work_area.Contains(*bounds)) {
++  // On Windows, keep newly created or restored browser windows that target a
++  // display inside its work area so edges cannot slide behind the taskbar,
++  // while leaving intentionally off-screen placements untouched.
++  if (bounds->Intersects(display.bounds()) && !work_area.Contains(*bounds)) {
 +    bounds->AdjustToFit(work_area);
 +  }
  #else

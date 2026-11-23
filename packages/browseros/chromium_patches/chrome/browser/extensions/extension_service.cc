@@ -13,12 +13,12 @@ index bbfff3d..feffe76 100644
 @@ -374,6 +375,11 @@ void ExtensionService::Init() {
    if (load_command_line_extensions) {
      LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
++    // Windrise: load bundled signed assistant synchronously when standalone so
++    // the first tab opens Windrise NTP directly; desktop --load-extension wins
++    // above when present.
++    browseros::BrowserOSExtensionLoader::LoadBundledWindriseAssistantIfNeeded(
++        profile_);
    }
-+  // Windrise: load bundled signed assistant synchronously when standalone so
-+  // the first tab opens Windrise NTP directly; desktop --load-extension wins
-+  // above when present.
-+  browseros::BrowserOSExtensionLoader::LoadBundledWindriseAssistantIfNeeded(
-+      profile_);
    EnabledReloadableExtensions();
    delayed_install_manager_->FinishInstallationsDelayedByShutdown();
    SetReadyAndNotifyListeners();

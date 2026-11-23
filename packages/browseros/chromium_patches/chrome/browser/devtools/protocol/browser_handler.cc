@@ -576,21 +576,20 @@ index 6af060d..9182869 100644
  Response BrowserHandler::GetWindowBounds(
      int window_id,
      std::unique_ptr<protocol::Browser::Bounds>* out_bounds) {
-@@ -197,6 +722,21 @@ Response BrowserHandler::SetWindowBounds(
+@@ -197,6 +722,20 @@ Response BrowserHandler::SetWindowBounds(
      } else if (window->IsMinimized() || window->IsMaximized()) {
        window->Restore();
      } else if (set_bounds) {
 +#if BUILDFLAG(IS_WIN)
 +      // Clamp on-screen CDP placements inside the display work area so callers
-+      // passing full physical monitor height cannot push the bottom edge behind
-+      // the Windows taskbar, while leaving intentionally off-screen placements
-+      // (such as hidden warmup windows) untouched.
++      // cannot push window edges behind the Windows taskbar (bottom, top, left,
++      // or right), while leaving intentionally off-screen placements (such as
++      // hidden warmup windows) untouched.
 +      if (display::Screen* screen = display::Screen::Get()) {
 +        const gfx::Rect work_area =
 +            screen->GetDisplayMatching(bounds).work_area();
 +        if (!work_area.IsEmpty() && bounds.Intersects(work_area) &&
-+            (bounds.bottom() > work_area.bottom() ||
-+             bounds.height() > work_area.height())) {
++            !work_area.Contains(bounds)) {
 +          bounds.AdjustToFit(work_area);
 +        }
 +      }
@@ -598,7 +597,7 @@ index 6af060d..9182869 100644
        window->SetBounds(bounds);
      }
    } else {
-@@ -305,3 +845,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
+@@ -305,3 +844,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
        net::SchemefulSite(url_to_add));
    return Response::Success();
  }

@@ -38,6 +38,15 @@ powershell -ExecutionPolicy Bypass -File .\tools\windrise\apply.ps1 `
 | `-BuildType` | `release` |
 | `-Arch` | `x64` |
 | `-OutDir` | `out/Default_<product>_<arch>` |
+| `-WindriseExtensionDir` | 环境变量 `WINDRISE_EXTENSION_DIR`（若未传则按常见同机路径探测，找不到即阻断） |
+
+正式打包 `browseros` 前，`apply.ps1` 会先校验已签名的 `windrise-extension` 目录（SHA-256 清单与 RSA 公钥验签），并在 `resources,bundled_extensions` 清空输出目录后重新写入 `out/<dir>/windrise_extensions/windrise-extension`；`package_windows` 与 `mini_installer` 也会断言 `.windrise-signature` 存在。
+
+```powershell
+.\tools\windrise\apply.ps1 `
+  -From b8de97a6e -To HEAD `
+  -WindriseExtensionDir C:\src\bridge-replica\electron\windrise-extension
+```
 
 如果只回放当前分支最后几个提交：
 

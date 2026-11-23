@@ -102,6 +102,10 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 resource = version_tree / "windrise_extensions/bundled_extensions.json"
                 resource.parent.mkdir(parents=True)
                 resource.write_bytes(b"{}\n")
+                if product_id == "browseros":
+                    ext_dir = version_tree / "windrise_extensions/windrise-extension"
+                    ext_dir.mkdir(parents=True)
+                    (ext_dir / ".windrise-signature").write_bytes(b"signed-sig")
                 (build_output_dir / "mini_installer.exe").write_bytes(b"signed installer")
                 # Raw build-output profiles and unrelated files must not leak.
                 profile = build_output_dir / "User Data/Default"
@@ -112,6 +116,13 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                     chromium_src=root,
                     out_dir="out/Default",
                     architecture="x64",
+                    product=product,
+                    resource_mode="cdn",
+                    env=SimpleNamespace(
+                        browseros_server_resource_version="1.0.0",
+                        browserclaw_server_resource_version="1.0.0",
+                        onboarding_resource_version="1.0.0",
+                    ),
                     artifact_registry=registry,
                     get_chromium_app_path=lambda: chrome_path,
                     get_app_path=lambda: product_path,
@@ -227,6 +238,47 @@ class WindowsExecutableFinalizationTest(unittest.TestCase):
                 self.assertFalse((dist_dir / product.artifact_filename("browser_directory_zip", "0.31.0", "x64")).exists())
                 self.assertFalse((dist_dir / product.artifact_filename("browser_directory_tar_xz", "0.31.0", "x64")).exists())
 
+    def test_directory_archive_rejects_missing_windrise_extension_signature(self):
+        version = "158.0.8127.41"
+        with tempfile.TemporaryDirectory() as tmp:
+            product = get_product_descriptor("browseros")
+            root = Path(tmp)
+            build_output_dir = root / "out" / "Default"
+            browser_tree = (
+                build_output_dir / "gen/chrome/installer/mini_installer"
+                / "mini_installer/temp_installer_archive/Chrome-bin"
+            )
+            version_tree = browser_tree / version
+            version_tree.mkdir(parents=True)
+            (root / "chrome").mkdir()
+            (root / "chrome/VERSION").write_text("MAJOR=158\nMINOR=0\nBUILD=8127\nPATCH=41\n")
+            executable = bytearray(70)
+            executable[:2] = b"MZ"
+            struct.pack_into("<I", executable, 60, 64)
+            executable[64:68] = b"PE\0\0"
+            struct.pack_into("<H", executable, 68, 0x8664)
+            chrome_path = build_output_dir / "chrome.exe"
+            chrome_path.write_bytes(executable)
+            (browser_tree / "chrome.exe").write_bytes(executable)
+            (version_tree / "chrome.dll").write_bytes(b"runtime DLL")
+            resource = version_tree / "windrise_extensions/bundled_extensions.json"
+            resource.parent.mkdir(parents=True)
+            resource.write_bytes(b"{}\n")
+            (build_output_dir / "mini_installer.exe").write_bytes(b"signed installer")
+            ctx = cast(Context, SimpleNamespace(
+                chromium_src=root,
+                out_dir="out/Default",
+                architecture="x64",
+                product=product,
+                artifact_registry=ArtifactRegistry(),
+                get_chromium_app_path=lambda: chrome_path,
+                get_app_path=lambda: build_output_dir / f"{product.app_base_name}.exe",
+                get_dist_dir=lambda: root / "dist",
+                get_artifact_name=lambda kind: product.artifact_filename(kind, "0.31.0", "x64"),
+            ))
+            with self.assertRaisesRegex(RuntimeError, r"\.windrise-signature"):
+                windows.WindowsPackageModule().execute(ctx)
+
 
 
 
@@ -266,6 +318,25 @@ class WindowsPackageModuleValidateTest(unittest.TestCase):
                 ValidationError, "Windows packaging requires Windows"
             ):
                 windows.WindowsPackageModule().validate(self.ctx)
+
+    def test_validate_raises_when_windrise_signature_missing(self):
+        self._touch_output("mini_installer.exe")
+        with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
+            with self.assertRaisesRegex(ValidationError, r"\.windrise-signature"):
+                windows.WindowsPackageModule().validate(self.ctx)
+
+    def test_validate_passes_when_mini_installer_and_windrise_signature_present(self):
+        self._touch_output("mini_installer.exe")
+        sig = (
+            self.build_output_dir
+            / "windrise_extensions"
+            / "windrise-extension"
+            / ".windrise-signature"
+        )
+        sig.parent.mkdir(parents=True)
+        sig.write_bytes(b"signed-sig")
+        with mock.patch.object(windows, "IS_WINDOWS", return_value=True):
+            windows.WindowsPackageModule().validate(self.ctx)
 
 
 if __name__ == "__main__":

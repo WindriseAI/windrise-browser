@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff8606c8d3a4f
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.cc
-@@ -0,0 +1,642 @@
+@@ -0,0 +1,663 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -43,6 +43,8 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +namespace {
 +
 +constexpr char kLoaderReferenceKey[] = "browseros.extension_loader";
++constexpr char kBundledWindriseAssistantRequestedKey[] =
++    "browseros.windrise_assistant_load_requested";
 +constexpr base::TimeDelta kReadinessTimeout = base::Seconds(45);
 +constexpr base::TimeDelta kMaintenanceInterval = base::Minutes(15);
 +constexpr base::TimeDelta kInstallGracePeriod = base::Minutes(30);
@@ -56,6 +58,12 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  explicit LoaderReference(base::WeakPtr<BrowserOSExtensionLoader> loader)
 +      : loader(std::move(loader)) {}
 +  base::WeakPtr<BrowserOSExtensionLoader> loader;
++};
++
++// Single-flight guard per Profile so ExtensionService::Init and
++// BrowserOSExtensionLoader::OnLocalDiscoveryComplete never start two concurrent
++// UnpackedInstaller runs for the same bundled signed Windrise assistant.
++struct BundledWindriseAssistantLoadState : public base::SupportsUserData::Data {
 +};
 +
 +void PostResult(BrowserOSExtensionLoader::ReadyCallback callback, bool ready) {
@@ -127,19 +135,29 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  const base::CommandLine* command_line =
 +      base::CommandLine::ForCurrentProcess();
 +  if (command_line->HasSwitch(kDisableExtensions) ||
-+      command_line->HasSwitch(kLegacyDisableExtensions)) {
++      command_line->HasSwitch(kLegacyDisableExtensions) ||
++      command_line->HasSwitch(extensions::switches::kDisableExtensions)) {
 +    return false;
++  }
++  if (profile->GetUserData(kBundledWindriseAssistantRequestedKey)) {
++    return true;
 +  }
 +  auto* registry = extensions::ExtensionRegistry::Get(profile);
 +  if (registry &&
 +      registry->GetExtensionById(kWindriseAssistantExtensionId,
 +                                 extensions::ExtensionRegistry::EVERYTHING)) {
++    profile->SetUserData(
++        kBundledWindriseAssistantRequestedKey,
++        std::make_unique<BundledWindriseAssistantLoadState>());
 +    return true;
 +  }
 +  base::FilePath bundled_dir;
 +  {
 +    base::ScopedAllowBlocking allow_blocking;
 +    if (HasCommandLineWindriseAssistant(*command_line)) {
++      profile->SetUserData(
++          kBundledWindriseAssistantRequestedKey,
++          std::make_unique<BundledWindriseAssistantLoadState>());
 +      return true;
 +    }
 +    bundled_dir =
@@ -157,6 +175,9 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +                 << bundled_dir.value();
 +    return false;
 +  }
++  profile->SetUserData(
++      kBundledWindriseAssistantRequestedKey,
++      std::make_unique<BundledWindriseAssistantLoadState>());
 +  LOG(INFO) << "windrise: Loaded bundled signed assistant from "
 +            << bundled_dir.value();
 +  return true;

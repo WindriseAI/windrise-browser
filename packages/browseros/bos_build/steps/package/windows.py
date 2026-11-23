@@ -28,6 +28,31 @@ from ...lib.browser_directory_zip import (
 from ...lib.release_preflight import bundled_resource_versions
 
 
+def _require_windrise_extension_signature(
+    root_dir: Path,
+    ctx: Context,
+    *,
+    error_cls: type[Exception] = ValidationError,
+) -> None:
+    """Block Windrise Windows packaging if the signed bundled extension is missing."""
+    product = getattr(ctx, "product", None)
+    product_id = getattr(product, "id", "browseros")
+    if product_id != "browseros":
+        return
+    signature_path = (
+        root_dir / "windrise_extensions" / "windrise-extension" / ".windrise-signature"
+    )
+    if (
+        signature_path.is_symlink()
+        or not signature_path.is_file()
+        or signature_path.stat().st_size <= 0
+    ):
+        raise error_cls(
+            f"Bundled Windrise extension signature not found: {signature_path}; "
+            "stage signed windrise-extension before building mini_installer or packaging"
+        )
+
+
 @step("mini_installer", phase="sign", platforms=("windows",), optional=True)
 class MiniInstallerModule(Step):
     """Build mini_installer.exe without signing.
@@ -51,6 +76,11 @@ class MiniInstallerModule(Step):
             raise ValidationError(
                 f"Build not configured - args.gn not found: {args_file}"
             )
+        _require_windrise_extension_signature(
+            join_paths(context.chromium_src, context.out_dir),
+            context,
+            error_cls=ValidationError,
+        )
 
     def execute(self, context: Context) -> None:
         if not build_mini_installer(context):
@@ -79,6 +109,11 @@ class WindowsPackageModule(Step):
 
         if not mini_installer_path.exists():
             raise ValidationError(f"mini_installer.exe not found: {mini_installer_path}")
+        _require_windrise_extension_signature(
+            build_output_dir,
+            context,
+            error_cls=ValidationError,
+        )
 
     def execute(self, context: Context) -> None:
         log_info("\n📦 Creating Windows packages...")
@@ -205,6 +240,11 @@ class WindowsPackageModule(Step):
             else:
                 raise RuntimeError(f"Unsupported installer runtime entry: {path}")
         check_layout(entries, version)
+        _require_windrise_extension_signature(
+            browser_tree / version,
+            ctx,
+            error_cls=RuntimeError,
+        )
         for path, relative in files:
             if path.name.casefold() == "bundled_extensions.json":
                 check_bundled_extensions_manifest(path.read_bytes(), relative)
