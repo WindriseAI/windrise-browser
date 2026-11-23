@@ -68,6 +68,27 @@ class OverrideGate(unittest.TestCase):
         # 身份只在 windrise_extension_protection.cc 一处，注册处不许抄 ID。
         self.assertNotIn("amlnokjigkbgngdgkofikfphjbknfodp", text)
 
+    def test_cold_start_fallback_ntp_upgraded_after_assistant_registers(self):
+        # 冷启动 UnpackedInstaller 异步 PreloadCheck 晚于首标签打开时，已落入默认
+        # chrome://new-tab-page/ 的同 Profile 非无痕标签必须在助手注册覆盖后立即替换。
+        text = read(self.REGISTRAR)
+        self.assertIn("+void UpgradeFallbackNewTabPages(Profile* profile) {", text)
+        self.assertIn("+  if (!profile || profile->IsOffTheRecord()) {", text)
+        self.assertIn("chrome::kChromeUINewTabPageHost", text)
+        self.assertIn("chrome::kChromeUINewTabPageThirdPartyHost", text)
+        self.assertIn("+    params.should_replace_current_entry = true;", text)
+        self.assertIn(
+            "+  if (!newtab_only.empty()) {\n"
+            "+    UpgradeFallbackNewTabPages(Profile::FromBrowserContext(browser_context));",
+            text,
+        )
+
+    def test_remote_debugging_pipe_skips_auto_de_elevate(self):
+        # 提权主程序以 --remote-debugging-pipe 拉起浏览器时，MaybeAutoDeElevate 不得
+        # 走 RunDeElevated 重启并切断继承的匿名管道 FD 3/4。
+        delegate = read("chrome/app/chrome_main_delegate.cc")
+        self.assertIn("+      switches::kRemoteDebuggingPipe,", delegate)
+
 
 class StartupFirstTab(unittest.TestCase):
     """补项二：启动首标签只落 chrome://newtab/，由接管重写到我们的新标签页。"""

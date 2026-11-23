@@ -101,6 +101,7 @@ features:
       - build/toolchain/win/tool_wrapper.py
       - chrome/app/chrome_dll.rc
       - chrome/app/chrome_exe.rc
+      - chrome/app/chrome_main_delegate.cc
       - chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_exe.rc
       - chrome/installer/setup/setup.rc
       - components/download/internal/common/download_item_impl.cc
