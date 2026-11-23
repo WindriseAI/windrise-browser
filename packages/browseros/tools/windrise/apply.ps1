@@ -31,7 +31,8 @@ param(
     [string]$BuildType = "release",
     [ValidateSet("x64", "arm64")]
     [string]$Arch = "x64",
-    [string]$OutDir = ""
+    [string]$OutDir = "",
+    [string]$WindriseExtensionDir = $env:WINDRISE_EXTENSION_DIR
 )
 
 $ErrorActionPreference = "Stop"
@@ -202,6 +203,21 @@ Invoke-BuildModule "resources,bundled_extensions"
 
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
     $OutDir = "out/Default_${Product}_${Arch}"
+}
+
+if (-not [string]::IsNullOrWhiteSpace($WindriseExtensionDir) -and (Test-Path -LiteralPath $WindriseExtensionDir)) {
+    $stageScript = Join-Path $PSScriptRoot "stage_windrise_extension.py"
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if ($pythonCmd -and (Test-Path -LiteralPath $stageScript)) {
+        Write-Host "`n==> Staging signed windrise-extension into $OutDir/windrise_extensions/windrise-extension" -ForegroundColor Cyan
+        & $pythonCmd.Source $stageScript `
+            --source $WindriseExtensionDir `
+            --dest (Join-Path $ChromiumSrc "$OutDir\windrise_extensions\windrise-extension")
+        if ($LASTEXITCODE -ne 0) {
+            throw "stage_windrise_extension.py failed with exit code $LASTEXITCODE"
+        }
+    }
 }
 $ninja = if ($env:OS -eq "Windows_NT") { "autoninja.bat" } else { "autoninja" }
 Write-Host "`nPatches and prep modules are up to date." -ForegroundColor Green

@@ -11,10 +11,11 @@ index fcc7a53051..53ddc5e34c 100644
    ]
  
    if (is_mac) {
-@@ -229,6 +231,10 @@ source_set("impl") {
+@@ -229,6 +231,11 @@ source_set("impl") {
      ":toolbar",
      "//base:i18n",
      "//build:branding_buildflags",
++    "//chrome/browser/browseros/core",
 +    "//chrome/browser/browseros/core:action_utils",
 +    "//chrome/browser/browseros/core:prefs",
 +    "//chrome/browser/browseros/core:theme",
@@ -22,7 +23,7 @@ index fcc7a53051..53ddc5e34c 100644
      "//cc/paint",
      "//chrome/app:branded_strings",
      "//chrome/app:branded_strings_grit",
-@@ -362,6 +368,7 @@ source_set("impl") {
+@@ -362,6 +369,7 @@ source_set("impl") {
      "//components/vector_icons",
      "//components/zoom",
      "//content/public/browser",

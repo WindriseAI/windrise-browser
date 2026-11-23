@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..8e742db3257743875031450614cb0ea831779ad5
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_installer.h
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,67 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -31,6 +31,7 @@ index 0000000000000000000000000000000000000000..8e742db3257743875031450614cb0ea8
 +
 +  base::DictValue prefs;
 +  base::FilePath bundled_path;
++  base::FilePath bundled_assistant_dir;
 +  bool complete = false;
 +};
 +
@@ -48,6 +49,11 @@ index 0000000000000000000000000000000000000000..8e742db3257743875031450614cb0ea8
 +  BrowserOSExtensionInstaller(const BrowserOSExtensionInstaller&) = delete;
 +  BrowserOSExtensionInstaller& operator=(const BrowserOSExtensionInstaller&) =
 +      delete;
++
++  // Resolves the optional bundled signed Windrise assistant directory under
++  // DIR_BROWSEROS_BUNDLED_EXTENSIONS/windrise-extension if present and
++  // containing manifest.json, .windrise-integrity and .windrise-signature.
++  static base::FilePath ResolveBundledWindriseAssistantDir();
 +
 +  // Replies on the calling UI sequence, including for an absent/invalid bundle.
 +  // Destruction cancels the reply; it does not interrupt the bounded file read.

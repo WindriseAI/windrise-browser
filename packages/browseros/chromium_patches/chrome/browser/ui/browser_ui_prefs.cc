@@ -11,22 +11,14 @@ index 6997bb36d901fdeb10c035ed015e3a8945c183cf..c90245da95b3e9d3d308c0a4e59d28a9
  
    registry->RegisterBooleanPref(
        prefs::kHoverCardMemoryUsageDisableMigrationComplete, false);
-@@ -124,7 +124,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
- 
-   registry->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true,
-                                 pref_registration_flags);
--  registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
-+  registry->RegisterBooleanPref(prefs::kShowHomeButton, true,
-                                 pref_registration_flags);
-   registry->RegisterBooleanPref(prefs::kSplitViewDragAndDropEnabled, true,
-                                 pref_registration_flags);
-@@ -138,7 +138,8 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+@@ -135,7 +135,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
    registry->RegisterIntegerPref(prefs::kBookmarkBarRenderedOnNtpCount, 0);
-   registry->RegisterBooleanPref(prefs::kPinContextualTaskButton, true,
+-  registry->RegisterBooleanPref(prefs::kPinContextualTaskButton, true,
++  // Windrise: keep toolbar minimal; hide upstream Home, Split Tab and
++  // Contextual Tasks / Side Panel buttons by default.
++  registry->RegisterBooleanPref(prefs::kPinContextualTaskButton, false,
                                  pref_registration_flags);
--  registry->RegisterBooleanPref(prefs::kPinSplitTabButton, false,
-+  // BrowserOS: default split tab button to pinned
-+  registry->RegisterBooleanPref(prefs::kPinSplitTabButton, true,
+   registry->RegisterBooleanPref(prefs::kPinSplitTabButton, false,
                                  pref_registration_flags);
  
    registry->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);

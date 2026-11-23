@@ -68,6 +68,12 @@ RESOURCE_CONFIGS = {
         'xtb_dir': 'components/strings',
         'xtb_prefix': 'components_chromium_strings_',
     },
+    'components_strings': {
+        'grd': 'components/components_strings.grd',
+        'subparts': ['components/new_or_sad_tab_strings.grdp'],
+        'xtb_dir': 'components/strings',
+        'xtb_prefix': 'components_strings_',
+    },
 }
 
 ALL_81_LANGUAGES = [
@@ -141,9 +147,9 @@ def get_clean_upstream_ids(
     grd_rel = cfg['grd']
     subparts = cfg.get('subparts', [])
 
-    # For generated_resources and components_chromium_strings, no branding replaces were done in .grd,
+    # For generated_resources, no branding replaces were done in .grd,
     # so reading directly from chromium_src (where all included .grdp subparts exist) gives exact IDs.
-    if res_key != 'chromium_strings':
+    if res_key not in ('chromium_strings', 'components_chromium_strings', 'components_strings'):
         grd_path = chromium_src / grd_rel
         nodes = parse_grd_messages(grd_reader, M, grd_path, grd_path.parent, STANDARD_DEFINES)
         id_map: Dict[str, str] = {}

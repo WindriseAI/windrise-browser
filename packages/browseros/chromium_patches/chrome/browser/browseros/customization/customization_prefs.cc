@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..4908509187b468adbcdfb7e565b600404b8993ff
 --- /dev/null
 +++ b/chrome/browser/browseros/customization/customization_prefs.cc
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,55 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -42,10 +42,12 @@ index 0000000000000000000000000000000000000000..4908509187b468adbcdfb7e565b60040
 +
 +void RegisterCustomizationProfilePrefs(
 +    user_prefs::PrefRegistrySyncable* registry) {
-+  registry->RegisterBooleanPref(prefs::kShowAvatarButton, true);
++  // Windrise: identity isolation is handled by Grids; hide the upstream
++  // profile avatar toolbar button by default.
++  registry->RegisterBooleanPref(prefs::kShowAvatarButton, false);
 +  registry->RegisterBooleanPref(prefs::kShowExtensionsToolbar, true);
 +  // Legacy keys registered for one-time migration.
-+  registry->RegisterBooleanPref(kLegacyShowAvatarButton, true);
++  registry->RegisterBooleanPref(kLegacyShowAvatarButton, false);
 +  registry->RegisterBooleanPref(kLegacyShowExtensionsToolbar, true);
 +}
 +

@@ -2,17 +2,18 @@ diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restri
 index 95bafac63e..2ba81a4c8c 100644
 --- a/base/threading/thread_restrictions.h
 +++ b/base/threading/thread_restrictions.h
-@@ -206,6 +206,9 @@ namespace scheduler {
+@@ -206,6 +206,10 @@ namespace scheduler {
  class NonMainThreadImpl;
  }
  }  // namespace blink
 +namespace browseros {
++class BrowserOSExtensionLoader;
 +class BrowserOSServerManager;
 +}  // namespace browseros
  namespace cc {
  class CategorizedWorkerPoolJob;
  class CategorizedWorkerPool;
-@@ -292,6 +295,9 @@ namespace enterprise_connectors {
+@@ -292,6 +296,9 @@ namespace enterprise_connectors {
  class LinuxKeyRotationCommand;
  }  // namespace enterprise_connectors
  namespace extensions {
@@ -22,15 +23,16 @@ index 95bafac63e..2ba81a4c8c 100644
  class InstalledLoader;
  class UnpackedInstaller;
  }  // namespace extensions
-@@ -622,6 +628,7 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -622,6 +629,8 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class base::subtle::PlatformSharedMemoryRegion;
    friend class base::win::ScopedAllowBlockingForUserAccountControl;
    friend class blink::DiskDataAllocator;
++  friend class browseros::BrowserOSExtensionLoader;
 +  friend class browseros::BrowserOSServerManager;
    friend class chromecast::CrashUtil;
    friend class content::BrowserProcessIOThread;
    friend class content::DWriteFontProxyImpl;
-@@ -700,6 +707,11 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -700,6 +709,11 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend base::File content::CreateFileForDrop(
        base::FilePath* file_path);  // http://crbug.com/110709
    friend bool disk_cache::CleanupDirectorySync(const base::FilePath&);
@@ -42,7 +44,7 @@ index 95bafac63e..2ba81a4c8c 100644
    friend bool gl::init::InitializeStaticGLBindings(gl::GLImplementationParts);
    friend void printing::DumpMetafileIfDebugEnabled(
        const std::u16string&,
-@@ -770,6 +782,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+@@ -770,6 +784,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
    friend class base::SimpleThread;
    friend class base::internal::GetAppOutputScopedAllowBaseSyncPrimitives;
    friend class blink::SourceStream;

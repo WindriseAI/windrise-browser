@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff8606c8d3a4f
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.cc
-@@ -0,0 +1,553 @@
+@@ -0,0 +1,642 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -13,14 +13,19 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +#include <optional>
 +#include <utility>
 +
++#include "base/command_line.h"
++#include "base/files/file_util.h"
 +#include "base/functional/bind.h"
 +#include "base/json/values_util.h"
 +#include "base/logging.h"
++#include "base/strings/string_tokenizer.h"
 +#include "base/supports_user_data.h"
 +#include "base/task/single_thread_task_runner.h"
++#include "base/threading/thread_restrictions.h"
 +#include "base/version.h"
 +#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/browseros_prefs.h"
++#include "chrome/browser/browseros/core/browseros_switches.h"
 +#include "chrome/browser/extensions/external_provider_impl.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "components/prefs/scoped_user_pref_update.h"
@@ -30,7 +35,9 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +#include "extensions/browser/extension_prefs.h"
 +#include "extensions/browser/extension_registrar.h"
 +#include "extensions/browser/extensions_browser_client.h"
++#include "extensions/browser/unpacked_installer.h"
 +#include "extensions/common/extension.h"
++#include "extensions/common/switches.h"
 +
 +namespace browseros {
 +namespace {
@@ -56,12 +63,35 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +      FROM_HERE, base::BindOnce(std::move(callback), ready));
 +}
 +
++// Returns true when --load-extension already supplies a signed Windrise
++// assistant directory (e.g. launched by the desktop app with an updated copy),
++// so the bundled fallback does not race or downgrade it.
++bool HasCommandLineWindriseAssistant(const base::CommandLine& command_line) {
++  if (!command_line.HasSwitch(extensions::switches::kLoadExtension)) {
++    return false;
++  }
++  const base::CommandLine::StringType path_list =
++      command_line.GetSwitchValueNative(extensions::switches::kLoadExtension);
++  base::StringTokenizerT<base::CommandLine::StringType,
++                         base::CommandLine::StringType::const_iterator>
++      tokenizer(path_list, FILE_PATH_LITERAL(","));
++  while (tokenizer.GetNext()) {
++    const base::FilePath dir(tokenizer.token_piece());
++    if (base::PathExists(dir.AppendASCII(".windrise-integrity")) &&
++        base::PathExists(dir.AppendASCII(".windrise-signature"))) {
++      return true;
++    }
++  }
++  return false;
++}
++
 +}  // namespace
 +
 +BrowserOSExtensionLoader::BrowserOSExtensionLoader(Profile* profile)
 +    : profile_(profile),
-+      // Windrise's assistant is loaded separately from its signed local
-+      // directory; there is no bundled catalog primary extension.
++      // Populated when a bundled signed Windrise assistant is present (or
++      // already loaded via --load-extension); stays empty when absent so
++      // onboarding never blocks on builds without the bundled assistant.
 +      primary_id_(""),
 +      installer_(std::make_unique<BrowserOSExtensionInstaller>()),
 +      maintainer_(std::make_unique<BrowserOSExtensionMaintainer>(profile)) {
@@ -73,12 +103,63 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  // Observe before InstalledLoader runs: READY may precede our asynchronous
 +  // bundle discovery, and secondary bundles can become ready after the primary.
 +  registry_observation_.Observe(extensions::ExtensionRegistry::Get(profile_));
++  if (extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
++          kWindriseAssistantExtensionId,
++          extensions::ExtensionRegistry::EVERYTHING)) {
++    primary_id_ = kWindriseAssistantExtensionId;
++  }
 +  InitializeInstallGrace();
 +  ScheduleInstallGraceExpiry();
 +}
 +
 +BrowserOSExtensionLoader::~BrowserOSExtensionLoader() {
 +  Shutdown();
++}
++
++// static
++bool BrowserOSExtensionLoader::LoadBundledWindriseAssistantIfNeeded(
++    Profile* profile) {
++  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
++  if (!profile || profile->IsOffTheRecord() || profile->IsGuestSession() ||
++      profile->IsSystemProfile()) {
++    return false;
++  }
++  const base::CommandLine* command_line =
++      base::CommandLine::ForCurrentProcess();
++  if (command_line->HasSwitch(kDisableExtensions) ||
++      command_line->HasSwitch(kLegacyDisableExtensions)) {
++    return false;
++  }
++  auto* registry = extensions::ExtensionRegistry::Get(profile);
++  if (registry &&
++      registry->GetExtensionById(kWindriseAssistantExtensionId,
++                                 extensions::ExtensionRegistry::EVERYTHING)) {
++    return true;
++  }
++  base::FilePath bundled_dir;
++  {
++    base::ScopedAllowBlocking allow_blocking;
++    if (HasCommandLineWindriseAssistant(*command_line)) {
++      return true;
++    }
++    bundled_dir =
++        BrowserOSExtensionInstaller::ResolveBundledWindriseAssistantDir();
++  }
++  if (bundled_dir.empty()) {
++    return false;
++  }
++  std::string loaded_id;
++  const bool started =
++      extensions::UnpackedInstaller::Create(profile)->LoadFromCommandLine(
++          bundled_dir, &loaded_id, /*only_allow_apps=*/false);
++  if (!started || loaded_id != kWindriseAssistantExtensionId) {
++    LOG(WARNING) << "windrise: Bundled signed assistant failed to load from "
++                 << bundled_dir.value();
++    return false;
++  }
++  LOG(INFO) << "windrise: Loaded bundled signed assistant from "
++            << bundled_dir.value();
++  return true;
 +}
 +
 +// static
@@ -306,8 +387,14 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +void BrowserOSExtensionLoader::OnLocalDiscoveryComplete(
 +    BundleDiscoveryResult result) {
 +  bundled_crx_base_path_ = std::move(result.bundled_path);
++  bundled_assistant_dir_ = std::move(result.bundled_assistant_dir);
 +  bundled_prefs_ = std::move(result.prefs);
 +  local_discovery_complete_ = true;
++  if (!bundled_assistant_dir_.empty()) {
++    if (LoadBundledWindriseAssistantIfNeeded(profile_)) {
++      primary_id_ = kWindriseAssistantExtensionId;
++    }
++  }
 +  RecordBundledVersions();
 +  LOG(INFO) << "windrise: Local extension discovery complete: "
 +            << bundled_prefs_.size()
@@ -344,6 +431,8 @@ index 0000000000000000000000000000000000000000..9b14254353cf16a96d5866048dfff860
 +  auto* registry = extensions::ExtensionRegistry::Get(profile_);
 +  return (bundled_prefs_.contains(primary_id_) &&
 +          !failed_bundles_.contains(primary_id_)) ||
++         (primary_id_ == kWindriseAssistantExtensionId &&
++          !bundled_assistant_dir_.empty()) ||
 +         registry->enabled_extensions().Contains(primary_id_) ||
 +         registry->terminated_extensions().Contains(primary_id_);
 +}

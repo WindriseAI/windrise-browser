@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/frame/contents_web_view.cc b/chrome/browser/ui/views/frame/contents_web_view.cc
-index 184614e93d..4d4fafc7c2 100644
+index 184614e..581f990 100644
 --- a/chrome/browser/ui/views/frame/contents_web_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_web_view.cc
-@@ -11,10 +11,16 @@
+@@ -11,18 +11,26 @@
  #include "chrome/browser/ui/views/frame/safe_invoke/safe_invoke.h"
  #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
  #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -19,7 +19,8 @@ index 184614e93d..4d4fafc7c2 100644
  #include "third_party/blink/public/common/input/web_input_event.h"
  #include "third_party/skia/include/core/SkColor.h"
  #include "ui/base/metadata/metadata_impl_macros.h"
-@@ -23,6 +29,8 @@
+ #include "ui/color/color_provider.h"
+ #include "ui/compositor/layer_solid_color.h"
  #include "ui/compositor/layer_tree_owner.h"
 +#include "ui/gfx/color_utils.h"
  #include "ui/views/view_class_properties.h"
@@ -28,7 +29,7 @@ index 184614e93d..4d4fafc7c2 100644
  
  #if defined(USE_AURA)
  #include "ui/aura/window.h"
-@@ -36,6 +44,51 @@
+@@ -36,6 +44,71 @@
  DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentsWebView,
                                        kContentsWebViewElementId);
  
@@ -48,9 +49,14 @@ index 184614e93d..4d4fafc7c2 100644
 +    SkColorSetRGB(0x2E, 0x34, 0x3B);
 +
 +bool IsWindriseNewTabUrl(const GURL& url) {
++  if (url.is_empty() || url.IsAboutBlank()) {
++    return true;
++  }
 +  if (url.SchemeIs(content::kChromeUIScheme)) {
-+    // chrome://newtab before it is rewritten to the extension page.
-+    return url.host() == chrome::kChromeUINewTabHost;
++    // chrome://newtab and chrome://new-tab-page before rewrite or fallback.
++    return url.host() == chrome::kChromeUINewTabHost ||
++           url.host() == chrome::kChromeUINewTabPageHost ||
++           url.host() == chrome::kChromeUINewTabPageThirdPartyHost;
 +  }
 +  return url.SchemeIs("chrome-extension") &&
 +         url.host() == kWindriseNewTabExtensionHost &&
@@ -67,7 +73,22 @@ index 184614e93d..4d4fafc7c2 100644
 +  const content::NavigationEntry* entry = controller.GetPendingEntry()
 +                                              ? controller.GetPendingEntry()
 +                                              : controller.GetLastCommittedEntry();
-+  return entry && IsWindriseNewTabUrl(entry->GetURL());
++  if (!entry) {
++    // Brand-new tab/window before any navigation entry commits.
++    return true;
++  }
++  return IsWindriseNewTabUrl(entry->GetURL());
++}
++
++bool IsChromeInternalPage(content::WebContents* web_contents) {
++  if (!web_contents) {
++    return false;
++  }
++  content::NavigationController& controller = web_contents->GetController();
++  const content::NavigationEntry* entry = controller.GetPendingEntry()
++                                              ? controller.GetPendingEntry()
++                                              : controller.GetLastCommittedEntry();
++  return entry && entry->GetURL().SchemeIs(content::kChromeUIScheme);
 +}
 +
 +SkColor GetWindriseNewTabPrePaintColor(SkColor default_color) {
@@ -80,7 +101,7 @@ index 184614e93d..4d4fafc7c2 100644
  ContentsWebView::ContentsWebView(content::BrowserContext* browser_context)
      : views::WebView(browser_context),
        use_default_deadline_when_animating_(
-@@ -167,6 +220,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
+@@ -167,6 +240,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
      return;
    }
  
@@ -94,24 +115,58 @@ index 184614e93d..4d4fafc7c2 100644
    UpdateIsBlockedByModal();
  
    if (!status_bubble_) {
-@@ -208,9 +268,13 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
+@@ -181,6 +261,13 @@ void ContentsWebView::SetWebContents(content::WebContents* web_contents) {
+       .Then(&web_modal::WebContentsModalDialogManager::UpdateDialogHost);
+ }
+ 
++void ContentsWebView::AddedToWidget() {
++  views::WebView::AddedToWidget();
++  if (GetWidget()) {
++    UpdateBackgroundColor();
++  }
++}
++
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
+   // If the user interacts with the web contents, ensure it is activated.
+@@ -208,9 +295,14 @@ void ContentsWebView::DidGetUserInteraction(const blink::WebInputEvent& event) {
  #endif
  
  void ContentsWebView::UpdateBackgroundColor() {
 -  const SkColor color = GetColorProvider()->GetColor(
--      is_letterboxing() ? kColorWebContentsBackgroundLetterboxing
--                        : kColorWebContentsBackground);
 +  const SkColor default_color = GetColorProvider()->GetColor(
-+      is_letterboxing() ? kColorWebContentsBackgroundLetterboxing
-+                        : kColorWebContentsBackground);
-+  const SkColor color =
-+      !is_letterboxing() && IsWindriseNewTabPage(web_contents())
-+          ? GetWindriseNewTabPrePaintColor(default_color)
-+          : default_color;
+       is_letterboxing() ? kColorWebContentsBackgroundLetterboxing
+                         : kColorWebContentsBackground);
++  const bool is_windrise_ntp =
++      !is_letterboxing() && IsWindriseNewTabPage(web_contents());
++  const SkColor color = is_windrise_ntp
++                            ? GetWindriseNewTabPrePaintColor(default_color)
++                            : default_color;
    // `color` must be opaque, see RenderWidgetHostView::SetBackgroundColor() for
    // details.
    // TODO(crbug.com/456309057): Update this to be a CHECK.
-@@ -286,6 +350,16 @@ void ContentsWebView::DestroyClonedLayer() {
+@@ -229,6 +321,20 @@ void ContentsWebView::UpdateBackgroundColor() {
+       .Then(&content::WebContents::GetRenderWidgetHostView)
+       .Then(&content::RenderWidgetHostView::SetBackgroundColor,
+             background_visible_ ? color : SK_ColorTRANSPARENT);
++
++  // Set Blink page base background for Windrise NTP / about:blank / chrome://
++  // internal pages so first-paint frames never flash white or #202124 black,
++  // while leaving regular websites untouched (std::nullopt).
++  if (content::WebContents* contents = web_contents()) {
++    if (background_visible_ && is_windrise_ntp) {
++      contents->SetPageBaseBackgroundColor(color);
++    } else if (background_visible_ && !is_letterboxing() &&
++               IsChromeInternalPage(contents)) {
++      contents->SetPageBaseBackgroundColor(default_color);
++    } else {
++      contents->SetPageBaseBackgroundColor(std::nullopt);
++    }
++  }
+ }
+ 
+ std::unique_ptr<ui::Layer> ContentsWebView::RecreateLayer() {
+@@ -286,6 +392,16 @@ void ContentsWebView::DestroyClonedLayer() {
    cloned_layer_tree_.reset();
  }
  

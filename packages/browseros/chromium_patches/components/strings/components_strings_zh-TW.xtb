@@ -1,0 +1,25 @@
+diff --git a/components/strings/components_strings_zh-TW.xtb b/components/strings/components_strings_zh-TW.xtb
+index 2d30abd..523f570 100644
+--- a/components/strings/components_strings_zh-TW.xtb
++++ b/components/strings/components_strings_zh-TW.xtb
+@@ -2308,6 +2308,12 @@
+ <translation id="484462545196658690">自動</translation>
+ <translation id="4844937814014739139">捲動及縮放已分享的分頁</translation>
+ <translation id="484988093836683706">使用裝置解鎖功能</translation>
++<translation id="4847187782323508775">风桥浏览器<ph name="BEGIN_EMPHASIS" />不會儲存<ph name="END_EMPHASIS" />：
++          <ph name="BEGIN_LIST" />
++            <ph name="LIST_ITEM" />瀏覽記錄
++            <ph name="LIST_ITEM" />Cookie 和網站資料
++            <ph name="LIST_ITEM" />在表單中輸入的資訊
++          <ph name="END_LIST" /></translation>
+ <translation id="4850669014075537160">捲動</translation>
+ <translation id="4850886885716139402">檢視</translation>
+ <translation id="4854853140771946034">在 Google Keep 中快速建立新記事</translation>
+@@ -3050,6 +3056,7 @@
+ <translation id="605237284704429106">正在填入 IBAN</translation>
+ <translation id="6052557981901634648">擬定計畫</translation>
+ <translation id="6053584886670442526">你可以在各項 Google 產品中使用已儲存的地址。系統會將這個地址儲存到 Google 帳戶 (<ph name="ACCOUNT" />) 中。</translation>
++<translation id="6054097365317886451">重新啟動风桥浏览器</translation>
+ <translation id="6055392876709372977">PKCS #1 SHA-256 (使用 RSA 加密)</translation>
+ <translation id="6055982527635883756">信封 (典藏用)</translation>
+ <translation id="6059925163896151826">USB 裝置</translation>

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6adf81ed8b
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_installer.cc
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,173 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -30,6 +30,34 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +namespace {
 +
 +constexpr size_t kMaxBundledManifestBytes = 1024 * 1024;
++constexpr base::FilePath::CharType kBundledWindriseAssistantDirName[] =
++    FILE_PATH_LITERAL("windrise-extension");
++
++bool IsRegularNonLinkFile(const base::FilePath& path) {
++  base::File::Info info;
++  return !base::IsLink(path) && base::GetFileInfo(path, &info) &&
++         !info.is_directory && info.size > 0;
++}
++
++base::FilePath ResolveBundledWindriseAssistantDirUnder(
++    const base::FilePath& bundled_root) {
++  if (bundled_root.empty()) {
++    return base::FilePath();
++  }
++  const base::FilePath candidate =
++      bundled_root.Append(kBundledWindriseAssistantDirName);
++  base::File::Info dir_info;
++  if (base::IsLink(candidate) || !base::GetFileInfo(candidate, &dir_info) ||
++      !dir_info.is_directory) {
++    return base::FilePath();
++  }
++  if (!IsRegularNonLinkFile(candidate.AppendASCII("manifest.json")) ||
++      !IsRegularNonLinkFile(candidate.AppendASCII(".windrise-integrity")) ||
++      !IsRegularNonLinkFile(candidate.AppendASCII(".windrise-signature"))) {
++    return base::FilePath();
++  }
++  return candidate;
++}
 +
 +}  // namespace
 +
@@ -56,6 +84,17 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +}
 +
 +// static
++base::FilePath
++BrowserOSExtensionInstaller::ResolveBundledWindriseAssistantDir() {
++  base::FilePath bundled_root;
++  if (!base::PathService::Get(chrome::DIR_BROWSEROS_BUNDLED_EXTENSIONS,
++                              &bundled_root)) {
++    return base::FilePath();
++  }
++  return ResolveBundledWindriseAssistantDirUnder(bundled_root);
++}
++
++// static
 +BundleDiscoveryResult BrowserOSExtensionInstaller::ReadBundledManifest(
 +    std::vector<std::string> active_ids) {
 +  BundleDiscoveryResult result;
@@ -64,6 +103,9 @@ index 0000000000000000000000000000000000000000..2b60bbcfad7a34e6366be030d15bdb6a
 +    LOG(WARNING) << "windrise: Bundled extension path unavailable";
 +    return result;
 +  }
++
++  result.bundled_assistant_dir =
++      ResolveBundledWindriseAssistantDirUnder(result.bundled_path);
 +
 +  const base::FilePath manifest_path =
 +      result.bundled_path.Append(FILE_PATH_LITERAL("bundled_extensions.json"));

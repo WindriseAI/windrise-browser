@@ -2,7 +2,16 @@ diff --git a/chrome/app/theme/theme_resources.grd b/chrome/app/theme/theme_resou
 index 538b8a6f07..a4832dbfd6 100644
 --- a/chrome/app/theme/theme_resources.grd
 +++ b/chrome/app/theme/theme_resources.grd
-@@ -150,6 +150,11 @@
+@@ -119,6 +119,7 @@
+         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
+       </if>
+       <if expr="enable_webui_ntp">
+-        <structure type="chrome_scaled_image" name="IDR_NTP_FAVICON" file="common/favicon_ntp.png" />
++        <!-- Windrise: use B6 product logo instead of upstream Chrome globe for NTP favicon. -->
++        <structure type="chrome_scaled_image" name="IDR_NTP_FAVICON" file="${branding_path_component}/product_logo_16.png" />
+       </if>
+       <if expr="not is_android">
+@@ -150,6 +151,11 @@
        <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_plugins.png" />
        <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
        <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_32" file="${branding_path_component}/product_logo_32.png" />

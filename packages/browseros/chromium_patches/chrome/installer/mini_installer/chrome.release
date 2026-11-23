@@ -11,7 +11,7 @@ index 33e8546206..4e42fc38cc 100644
  #
  # Chrome version dir assembly manifest.
  # The name of this file must match the name of the version dir, so we cannot
-@@ -38,11 +40,12 @@ vk_swiftshader.dll: %(VersionDir)s\
+@@ -38,11 +40,21 @@ vk_swiftshader.dll: %(VersionDir)s\
  vk_swiftshader_icd.json: %(VersionDir)s\
  vulkan-1.dll: %(VersionDir)s\
  v8_context_snapshot.bin: %(VersionDir)s\
@@ -19,6 +19,15 @@ index 33e8546206..4e42fc38cc 100644
  # Sub directories living in the version dir
  #
 +windrise_extensions\bundled_extensions.json: %(VersionDir)s\windrise_extensions\
++windrise_extensions\windrise-extension\.windrise-integrity: %(VersionDir)s\windrise_extensions\windrise-extension\
++windrise_extensions\windrise-extension\.windrise-signature: %(VersionDir)s\windrise_extensions\windrise-extension\
++windrise_extensions\windrise-extension\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\
++windrise_extensions\windrise-extension\_locales\en\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\_locales\en\
++windrise_extensions\windrise-extension\_locales\zh_CN\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\_locales\zh_CN\
++windrise_extensions\windrise-extension\edge-light\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\edge-light\
++windrise_extensions\windrise-extension\fonts\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\fonts\
++windrise_extensions\windrise-extension\icons\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\icons\
++windrise_extensions\windrise-extension\icons\sites\*.*: %(VersionDir)s\windrise_extensions\windrise-extension\icons\sites\
  Extensions\*.*: %(VersionDir)s\Extensions\
  locales\*.pak: %(VersionDir)s\Locales
  

@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/devtools/protocol/browser_handler.cc b/chrome/browser/devtools/protocol/browser_handler.cc
-index 6af060d287..f37c790345 100644
+index 6af060d..9182869 100644
 --- a/chrome/browser/devtools/protocol/browser_handler.cc
 +++ b/chrome/browser/devtools/protocol/browser_handler.cc
-@@ -4,24 +4,41 @@
+@@ -4,27 +4,45 @@
  
  #include "chrome/browser/devtools/protocol/browser_handler.h"
  
@@ -44,7 +44,11 @@ index 6af060d287..f37c790345 100644
  #include "content/public/browser/browser_task_traits.h"
  #include "content/public/browser/browser_thread.h"
  #include "content/public/browser/devtools_agent_host.h"
-@@ -35,6 +52,49 @@ using protocol::Response;
++#include "ui/display/screen.h"
+ #include "ui/display/types/display_constants.h"
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/gfx/geometry/size.h"
+@@ -35,6 +53,49 @@ using protocol::Response;
  
  namespace {
  
@@ -94,7 +98,7 @@ index 6af060d287..f37c790345 100644
  BrowserWindow* GetBrowserWindow(int window_id) {
    BrowserWindow* result = nullptr;
    ForEachCurrentBrowserWindowInterfaceOrderedByActivation(
-@@ -76,6 +136,409 @@ std::unique_ptr<protocol::Browser::Bounds> GetBrowserWindowBounds(
+@@ -76,6 +137,409 @@ std::unique_ptr<protocol::Browser::Bounds> GetBrowserWindowBounds(
        .Build();
  }
  
@@ -504,7 +508,7 @@ index 6af060d287..f37c790345 100644
  }  // namespace
  
  BrowserHandler::BrowserHandler(protocol::UberDispatcher* dispatcher,
-@@ -126,6 +589,67 @@ Response BrowserHandler::GetWindowForTarget(
+@@ -126,6 +590,67 @@ Response BrowserHandler::GetWindowForTarget(
    return Response::Success();
  }
  
@@ -572,7 +576,29 @@ index 6af060d287..f37c790345 100644
  Response BrowserHandler::GetWindowBounds(
      int window_id,
      std::unique_ptr<protocol::Browser::Bounds>* out_bounds) {
-@@ -305,3 +829,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
+@@ -197,6 +722,21 @@ Response BrowserHandler::SetWindowBounds(
+     } else if (window->IsMinimized() || window->IsMaximized()) {
+       window->Restore();
+     } else if (set_bounds) {
++#if BUILDFLAG(IS_WIN)
++      // Clamp on-screen CDP placements inside the display work area so callers
++      // passing full physical monitor height cannot push the bottom edge behind
++      // the Windows taskbar, while leaving intentionally off-screen placements
++      // (such as hidden warmup windows) untouched.
++      if (display::Screen* screen = display::Screen::Get()) {
++        const gfx::Rect work_area =
++            screen->GetDisplayMatching(bounds).work_area();
++        if (!work_area.IsEmpty() && bounds.Intersects(work_area) &&
++            (bounds.bottom() > work_area.bottom() ||
++             bounds.height() > work_area.height())) {
++          bounds.AdjustToFit(work_area);
++        }
++      }
++#endif
+       window->SetBounds(bounds);
+     }
+   } else {
+@@ -305,3 +845,767 @@ protocol::Response BrowserHandler::AddPrivacySandboxEnrollmentOverride(
        net::SchemefulSite(url_to_add));
    return Response::Success();
  }

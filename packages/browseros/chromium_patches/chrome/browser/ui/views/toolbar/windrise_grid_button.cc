@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..f4f9157fe9
 --- /dev/null
 +++ b/chrome/browser/ui/views/toolbar/windrise_grid_button.cc
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,178 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -16,19 +16,25 @@ index 0000000000..f4f9157fe9
 +#include "base/functional/bind.h"
 +#include "base/memory/ref_counted.h"
 +#include "chrome/app/vector_icons/vector_icons.h"
++#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
++#include "chrome/browser/extensions/windrise_extension_protection.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/browser/ui/singleton_tabs.h"
++#include "chrome/common/webui_url_constants.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "extensions/browser/event_router.h"
 +#include "extensions/browser/extension_event_histogram_value.h"
++#include "extensions/browser/extension_registry.h"
 +#include "ui/base/l10n/l10n_util.h"
 +#include "ui/base/metadata/metadata_impl_macros.h"
 +#include "ui/gfx/font_list.h"
 +#include "ui/gfx/geometry/insets.h"
 +#include "ui/views/accessibility/view_accessibility.h"
 +#include "ui/views/controls/label.h"
++#include "url/gurl.h"
 +
 +namespace {
 +
@@ -37,6 +43,7 @@ index 0000000000..f4f9157fe9
 +// 工具栏「格子」按钮点下去后扩展收到的事件名。扩展侧用
 +// chrome.windrise.onGridButtonClicked 监听（见 windrise.idl）。
 +constexpr char kGridClickedEventName[] = "windrise.onGridButtonClicked";
++constexpr char kWindriseGridsFallbackUrl[] = "chrome://windrise/settings#grids";
 +
 +}  // namespace
 +
@@ -152,13 +159,25 @@ index 0000000000..f4f9157fe9
 +  if (!profile) {
 +    return;
 +  }
-+  auto* event_router = extensions::EventRouter::Get(profile);
-+  if (!event_router) {
-+    return;
++  auto* registry = extensions::ExtensionRegistry::Get(profile);
++  const extensions::Extension* assistant =
++      registry ? registry->enabled_extensions().GetByID(
++                     browseros::kWindriseAssistantExtensionId)
++               : nullptr;
++  // 桌面端在线（持有有效租约）时照常广播事件给扩展，由扩展转发 grid_open 弹全屏 grids.html；
++  // 独立启动浏览器或桌面端未在线时，不再静默无反应，改为打开扩展内的格子管理页。
++  if (assistant && extensions::IsAuthorizedWindriseExtension(assistant)) {
++    auto* event_router = extensions::EventRouter::Get(profile);
++    if (event_router) {
++      event_router->BroadcastEvent(std::make_unique<extensions::Event>(
++          extensions::events::UNKNOWN, kGridClickedEventName,
++          base::MakeRefCounted<extensions::EventArgs>(), profile));
++      return;
++    }
 +  }
-+  event_router->BroadcastEvent(std::make_unique<extensions::Event>(
-+      extensions::events::UNKNOWN, kGridClickedEventName,
-+      base::MakeRefCounted<extensions::EventArgs>(), profile));
++  ShowSingletonTab(browser_,
++                   GURL(assistant ? kWindriseGridsFallbackUrl
++                                  : chrome::kChromeUISettingsURL));
 +}
 +
 +BEGIN_METADATA(WindriseGridButton)

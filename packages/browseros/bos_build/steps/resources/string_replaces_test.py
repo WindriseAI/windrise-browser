@@ -74,6 +74,34 @@ class ApplyStringReplacementsTest(unittest.TestCase):
     def test_all_targets_missing_still_succeeds(self):
         self.assertTrue(apply_string_replacements_impl(self.ctx))
 
+    def test_product_name_becomes_translateable_while_cft_stays_fixed(self):
+        self.chromium.add_file(
+            "chrome/app/chromium_strings.grd",
+            (
+                '<message name="IDS_PRODUCT_NAME" desc="The Chromium for Testing application name" translateable="false">Chromium for Testing</message>\n'
+                '<message name="IDS_PRODUCT_NAME" desc="The Chromium application name" translateable="false">Chromium</message>\n'
+                '<message name="IDS_SHORT_PRODUCT_NAME" desc="The Chromium application short name." translateable="false">Chromium</message>\n'
+            ),
+        )
+
+        self.assertTrue(apply_string_replacements_impl(self.ctx))
+
+        content = (
+            self.chromium.src / "chrome" / "app" / "chromium_strings.grd"
+        ).read_text()
+        self.assertIn(
+            '<message name="IDS_PRODUCT_NAME" desc="The Windrise Browser for Testing application name" translateable="false">Windrise Browser for Testing</message>',
+            content,
+        )
+        self.assertIn(
+            '<message name="IDS_PRODUCT_NAME" desc="The Windrise Browser application name" translateable="true">Windrise Browser</message>',
+            content,
+        )
+        self.assertIn(
+            '<message name="IDS_SHORT_PRODUCT_NAME" desc="The Windrise Browser application short name." translateable="true">Windrise Browser</message>',
+            content,
+        )
+
     def test_non_target_files_untouched(self):
         self.chromium.with_branding_files()
         other = self.chromium.add_file(

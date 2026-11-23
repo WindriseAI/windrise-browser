@@ -2,8 +2,10 @@ diff --git a/chrome/browser/ui/views/frame/contents_web_view.h b/chrome/browser/
 index af18353b9d..e5c763faea 100644
 --- a/chrome/browser/ui/views/frame/contents_web_view.h
 +++ b/chrome/browser/ui/views/frame/contents_web_view.h
-@@ -59,6 +59,11 @@ class ContentsWebView : public views::WebView,
+@@ -58,7 +58,13 @@ class ContentsWebView : public views::WebView,
+   void OnLetterboxingChanged() override;
    void SetWebContents(content::WebContents* web_contents) override;
++  void AddedToWidget() override;
  
    // content::WebContentsObserver overrides:
 +  // Windrise: a main frame swapped in by a navigation (e.g. the new tab page

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..abd16837289f69b61069a6cf6df554142f4cbfbf
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/BUILD.gn
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,69 @@
 +# Copyright 2026 The Chromium Authors
 +# Use of this source code is governed by a BSD-style license that can be
 +# found in the LICENSE file.
@@ -29,7 +29,11 @@ index 0000000000000000000000000000000000000000..abd16837289f69b61069a6cf6df55414
 +  out_grd = "$target_gen_dir/resources.grd"
 +  input_files = _browseros_onboarding_resource_files
 +  input_files_base_dir = rebase_path("resources", "//")
-+  ignore_missing_input_files = true
++  ignore_missing_input_files = false
++  public_inputs = []
++  foreach(_file, _browseros_onboarding_resource_files) {
++    public_inputs += [ "resources/" + _file ]
++  }
 +}
 +
 +grit("resources") {

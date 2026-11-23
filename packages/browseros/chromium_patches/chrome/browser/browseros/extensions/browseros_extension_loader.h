@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..3ae50227291e4765a2250b0cd9d8c693b04ede92
 --- /dev/null
 +++ b/chrome/browser/browseros/extensions/browseros_extension_loader.h
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,136 @@
 +// Copyright 2024 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -47,6 +47,12 @@ index 0000000000000000000000000000000000000000..3ae50227291e4765a2250b0cd9d8c693
 +  explicit BrowserOSExtensionLoader(Profile* profile);
 +  BrowserOSExtensionLoader(const BrowserOSExtensionLoader&) = delete;
 +  BrowserOSExtensionLoader& operator=(const BrowserOSExtensionLoader&) = delete;
++
++  // Loads the optional bundled signed Windrise assistant directory when the
++  // browser is launched standalone (i.e. desktop did not pass a higher-priority
++  // copy via --load-extension). Returns true if the assistant is already loaded
++  // or was started from the bundled directory.
++  static bool LoadBundledWindriseAssistantIfNeeded(Profile* profile);
 +
 +  // UI-sequence callers join the existing operation. A false result is
 +  // recoverable: another call retries local publication.
@@ -103,7 +109,8 @@ index 0000000000000000000000000000000000000000..3ae50227291e4765a2250b0cd9d8c693
 +  void OnProfileWillBeDestroyed(Profile* profile) override;
 +
 +  raw_ptr<Profile> profile_;
-+  const std::string primary_id_;
++  std::string primary_id_;
++  base::FilePath bundled_assistant_dir_;
 +  base::FilePath bundled_crx_base_path_;
 +  base::DictValue bundled_prefs_;
 +  // Failed packages remain in bundled_prefs_ for an explicit local Retry.

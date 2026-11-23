@@ -10,15 +10,6 @@ index cc3523cb5c..bc51ee85ba 100644
  #include "chrome/browser/infobars/browser_infobar_manager.h"
  #include "chrome/browser/infobars/infobar_features.h"
  #include "chrome/browser/infobars/infobar_spec.h"
-@@ -321,7 +322,7 @@ void ThemeService::RegisterProfilePrefs(
-   registry->RegisterIntegerPref(themes::kPolicyThemeColor, SK_ColorTRANSPARENT);
-   registry->RegisterIntegerPref(
-       prefs::kBrowserColorScheme,
--      std::to_underlying(ThemeService::BrowserColorScheme::kSystem));
-+      std::to_underlying(ThemeService::BrowserColorScheme::kLight));
-   registry->RegisterIntegerPref(prefs::kUserColor, SK_ColorTRANSPARENT);
-   registry->RegisterIntegerPref(
-       prefs::kBrowserColorVariant,
 @@ -346,6 +347,22 @@ ThemeService::~ThemeService() = default;
  void ThemeService::Init() {
    theme_helper_->DCheckCalledOnValidSequence();

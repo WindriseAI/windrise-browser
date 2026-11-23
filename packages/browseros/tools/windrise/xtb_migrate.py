@@ -96,7 +96,11 @@ def _load_upstream_texts(
     subparts = cfg.get("subparts", [])
     grd_reader, M, _ = load_grit(chromium_src)
 
-    if res_key != "chromium_strings":
+    if res_key not in (
+        "chromium_strings",
+        "components_chromium_strings",
+        "components_strings",
+    ):
         grd_path = chromium_src / grd_rel
         nodes = parse_grd_messages(
             grd_reader, M, grd_path, grd_path.parent, STANDARD_DEFINES
@@ -195,7 +199,7 @@ def migrate_language(
             (
                 key
                 for key, cfg in RESOURCE_CONFIGS.items()
-                if rel_path.startswith(cfg["xtb_dir"] + "/")
+                if rel_path.startswith(cfg["xtb_dir"] + "/" + cfg["xtb_prefix"])
             ),
             None,
         )

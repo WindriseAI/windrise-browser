@@ -60,6 +60,23 @@ def apply_string_replacements_impl(ctx: Context) -> bool:
                     replacement_count += matches
                     log_info(f"    ✓ Replaced {matches} occurrences of '{pattern}'")
 
+            # Allow localized .xtb bundles (e.g. zh-CN/HK/TW -> 风桥浏览器) to
+            # translate IDS_PRODUCT_NAME and IDS_SHORT_PRODUCT_NAME while
+            # keeping English fallback_to_english="true" as Windrise Browser.
+            if file_path == "chrome/app/chromium_strings.grd":
+                localized_name_pattern = (
+                    r'(<message name="IDS_(?:SHORT_)?PRODUCT_NAME" '
+                    r'desc="The (?!.*for Testing)[^"]*") translateable="false"(>)'
+                )
+                content, unlocked = re.subn(
+                    localized_name_pattern, r'\1 translateable="true"\2', content
+                )
+                if unlocked > 0:
+                    replacement_count += unlocked
+                    log_info(
+                        f"    ✓ Enabled .xtb localization for {unlocked} product name message(s)"
+                    )
+
             # Write back if changes were made
             if content != original_content:
                 with open(full_path, "w", encoding="utf-8") as f:
