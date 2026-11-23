@@ -23,7 +23,7 @@
 param(
     [string]$From = "HEAD~1",
     [string]$To = "HEAD",
-    [string]$BrowserosRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
+    [string]$BrowserosRoot = "",
     [string]$ChromiumSrc = "C:\src\chromium\src",
     [ValidateSet("browseros", "browserclaw")]
     [string]$Product = "browseros",
@@ -37,6 +37,11 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($BrowserosRoot)) {
+    $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    $BrowserosRoot = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
+}
 
 function Get-GitOutput {
     param([string]$Repo, [string[]]$GitArgs)

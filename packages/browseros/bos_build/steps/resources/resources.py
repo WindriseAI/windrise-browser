@@ -26,7 +26,15 @@ class ResourcesModule(Step):
 
     def execute(self, ctx: Context) -> None:
         log_info("\n📦 Copying resources...")
-        if ctx.resource_mode == "source":
+        staged_onboarding_index = (
+            ctx.root_dir
+            / "resources/binaries/browseros_onboarding/resources/index.html"
+        )
+        if ctx.resource_mode == "source" and (
+            ctx.source_sha
+            or ctx.prepared_resources is not None
+            or not staged_onboarding_index.is_file()
+        ):
             stage_prepared_onboarding(ctx)
         if not copy_resources_impl(ctx, commit_each=False):
             raise RuntimeError("Failed to copy resources")
