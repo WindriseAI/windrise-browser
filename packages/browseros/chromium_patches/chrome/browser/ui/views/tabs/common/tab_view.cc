@@ -67,7 +67,7 @@ index 7ad4897a75..36ffccc804 100644
    alert_indicator_->TransitionToAlertState(tab_data_.alert_state);
    SetHoverCardDataFrom(tab_data_);
  }
-@@ -1229,6 +1260,35 @@ void TabView::UpdateTitle(std::u16string title,
+@@ -1229,6 +1260,43 @@ void TabView::UpdateTitle(std::u16string title,
    title_->SetText(title);
  }
  
@@ -75,7 +75,15 @@ index 7ad4897a75..36ffccc804 100644
 +  if (!rail_glyph_) {
 +    return;
 +  }
-+  const std::u16string glyph = RailGlyphFor(tab_data_);
++  std::u16string glyph = RailGlyphFor(tab_data_);
++  if (glyph.empty() &&
++      (!tab_data_.should_render_loading_title ||
++       !icon_->GetShowingLoadingAnimation())) {
++    // about:blank / data: / 无标题本地页既无标题也无域名：沿用 UpdateTitle 的
++    // 默认标题（如「无标题」/ "Untitled"）取首字，避免折起态漏渲染。
++    glyph = browseros::windrise::RailGlyphForTitle(
++        CoreTabHelper::GetDefaultTitle());
++  }
 +  if (rail_glyph_->GetText() != glyph) {
 +    rail_glyph_->SetText(glyph);
 +    InvalidateLayout();
@@ -103,7 +111,7 @@ index 7ad4897a75..36ffccc804 100644
  void TabView::UpdateBorder() {
    if (orientation_ == TabStripOrientation::kHorizontal) {
      SetBorder(views::CreateEmptyBorder(tab_styling()->GetContentsInsets()));
-@@ -1260,6 +1320,11 @@ void TabView::UpdateColors() {
+@@ -1260,6 +1328,11 @@ void TabView::UpdateColors() {
    }
    TabStyle::TabColors colors = tab_styling()->CalculateTargetColors();
    title_->SetEnabledColor(colors.foreground_color);

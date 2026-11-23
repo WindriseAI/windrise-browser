@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..80f4944f06
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_panel_view.cc
-@@ -0,0 +1,577 @@
+@@ -0,0 +1,624 @@
 +// Copyright 2026 Windrise. Use of this source code is governed by the
 +// AGPL-3.0 license that can be found in the LICENSE file.
 +
@@ -12,6 +12,7 @@ index 0000000000..80f4944f06
 +#include <algorithm>
 +#include <array>
 +#include <memory>
++#include <string_view>
 +#include <utility>
 +
 +#include "base/containers/span.h"
@@ -19,16 +20,24 @@ index 0000000000..80f4944f06
 +#include "base/i18n/number_formatting.h"
 +#include "base/i18n/rtl.h"
 +#include "base/i18n/time_formatting.h"
++#include "base/memory/ref_counted.h"
 +#include "base/strings/string_util.h"
 +#include "base/time/time.h"
 +#include "cc/paint/paint_flags.h"
++#include "chrome/browser/browseros/core/browseros_constants.h"
 +#include "chrome/browser/browseros/core/windrise_theme.h"
++#include "chrome/browser/extensions/windrise_extension_protection.h"
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 +#include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/browser/ui/singleton_tabs.h"
++#include "chrome/browser/ui/toasts/api/toast_id.h"
++#include "chrome/browser/ui/toasts/toast_controller.h"
++#include "chrome/common/webui_url_constants.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "extensions/browser/event_router.h"
 +#include "extensions/browser/extension_event_histogram_value.h"
++#include "extensions/browser/extension_registry.h"
 +#include "third_party/skia/include/core/SkBitmap.h"
 +#include "third_party/skia/include/core/SkRRect.h"
 +#include "ui/base/l10n/l10n_util.h"
@@ -66,12 +75,15 @@ index 0000000000..80f4944f06
 +#include "ui/views/style/typography_provider.h"
 +#include "ui/views/view_class_properties.h"
 +#include "ui/views/widget/widget.h"
++#include "url/gurl.h"
 +
 +namespace {
 +
 +using browseros::windrise::LayoutMetric;
 +
 +constexpr char kPanelActionEventName[] = "windrise.onAiPanelAction";
++constexpr char kWindriseSettingsFallbackUrl[] =
++    "chrome://windrise/settings#connection";
 +
 +// 面板按钮发给扩展的 action 名（扩展 sw.js forwardGridAction 分发）。
 +constexpr char kActionConnectAi[] = "connect_ai";
@@ -212,16 +224,18 @@ index 0000000000..80f4944f06
 +
 +  PanelButton(PressedCallback callback,
 +              const std::u16string& text,
-+              Style style)
++              Style style,
++              bool muted = false)
 +      : views::LabelButton(std::move(callback), text), style_(style) {
 +    const bool filled = style_ == Style::kFilled;
 +    label()->SetFontList(
 +        SizedFont(label()->font_list(), kTextSize, /*medium=*/filled));
-+    SetEnabledTextColors(
-+        ui::ColorVariant(kColorTabForegroundActiveFrameActive));
++    const ui::ColorId text_color = muted
++                                       ? kColorTabForegroundInactiveFrameActive
++                                       : kColorTabForegroundActiveFrameActive;
++    SetEnabledTextColors(ui::ColorVariant(text_color));
 +    // 不可用时字色不换，整颗按钮降到 45%（见 StateChanged）。
-+    SetTextColor(views::Button::STATE_DISABLED,
-+                 ui::ColorVariant(kColorTabForegroundActiveFrameActive));
++    SetTextColor(views::Button::STATE_DISABLED, ui::ColorVariant(text_color));
 +    radius_ = filled ? kConnectButtonRadius : kTextButtonRadius;
 +    if (filled) {
 +      SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -377,20 +391,20 @@ index 0000000000..80f4944f06
 +      gfx::Insets::TLBR(kSectionGap - kTextButtonInsetV, -kTextButtonInsetH, 0,
 +                        -kTextButtonInsetH));
 +
-+  const auto make_text_button = [this](int string_id, const char* action) {
++  const auto make_text_button = [this](int string_id, const char* action,
++                                       bool muted = false) {
 +    return std::make_unique<PanelButton>(
 +        base::BindRepeating(&WindriseAiPanelView::NotifyAction,
 +                            base::Unretained(this), action),
-+        l10n_util::GetStringUTF16(string_id), PanelButton::Style::kText);
++        l10n_util::GetStringUTF16(string_id), PanelButton::Style::kText, muted);
 +  };
 +  footer->AddChildView(
 +      make_text_button(IDS_WINDRISE_AI_PANEL_OPEN_APP, kActionOpenApp));
 +
-+  // 闪办广场：文案口径是「完整版即将上线」。
-+  // 保留位置，但完整广场还没随包（主程序返回 GALLERY_UNAVAILABLE），所以做成
-+  // 「还不能点」：按钮不可用（没有悬停 / 按下反馈、不进 Tab 顺序、整颗 45%），
-+  // 下面一行小字「完整版即将上线」，读屏读出名字加「完整版即将上线」。
-+  // 广场页随包以后去掉 SetEnabled(false) 和小字即可，action 已经接好。
++  // 闪办广场（U039 口径：首发不上完整版，对外只说「完整版即将上线」）。
++  // 保持可点击且外观柔和，下面配一行小字「完整版即将上线」；点击时既通知
++  // 扩展（sw.js 按未上线安全拦下不跳转），又在浏览器内弹出温和清晰的 toast
++  // 提示「闪办广场 · 完整版即将上线」，避免禁用死按钮让用户点完毫无反应。
 +  auto* gallery_column =
 +      footer->AddChildView(std::make_unique<views::BoxLayoutView>());
 +  gallery_column->SetOrientation(views::BoxLayout::Orientation::kVertical);
@@ -399,8 +413,7 @@ index 0000000000..80f4944f06
 +  const std::u16string coming_soon =
 +      l10n_util::GetStringUTF16(IDS_WINDRISE_AI_GALLERY_SOON);
 +  auto* gallery = gallery_column->AddChildView(
-+      make_text_button(IDS_WINDRISE_AI_GALLERY, kActionGallery));
-+  gallery->SetEnabled(false);
++      make_text_button(IDS_WINDRISE_AI_GALLERY, kActionGallery, /*muted=*/true));
 +  gallery->GetViewAccessibility().SetDescription(coming_soon);
 +  auto* caption = gallery_column->AddChildView(MakeLabel(
 +      coming_soon, kColorTabForegroundInactiveFrameActive, /*medium=*/false));
@@ -564,19 +577,53 @@ index 0000000000..80f4944f06
 +}
 +
 +void WindriseAiPanelView::NotifyAction(const char* action) {
-+  Profile* profile = browser_ ? browser_->GetProfile() : nullptr;
++  BrowserWindowInterface* browser = browser_.get();
++  Profile* profile = browser ? browser->GetProfile() : nullptr;
 +  if (!profile) {
 +    return;
 +  }
-+  auto* event_router = extensions::EventRouter::Get(profile);
-+  if (!event_router) {
-+    return;
++  auto* registry = extensions::ExtensionRegistry::Get(profile);
++  const extensions::Extension* assistant =
++      registry ? registry->enabled_extensions().GetByID(
++                     browseros::kWindriseAssistantExtensionId)
++               : nullptr;
++  const bool desktop_connected =
++      assistant && extensions::IsAuthorizedWindriseExtension(assistant);
++
++  if (auto* event_router = extensions::EventRouter::Get(profile)) {
++    auto args = base::MakeRefCounted<extensions::EventArgs>();
++    args->data.Append(action);
++    event_router->BroadcastEvent(std::make_unique<extensions::Event>(
++        extensions::events::UNKNOWN, kPanelActionEventName, std::move(args),
++        profile));
 +  }
-+  auto args = base::MakeRefCounted<extensions::EventArgs>();
-+  args->data.Append(action);
-+  event_router->BroadcastEvent(std::make_unique<extensions::Event>(
-+      extensions::events::UNKNOWN, kPanelActionEventName, std::move(args),
-+      profile));
++
++  const std::string_view action_view(action);
++  if (action_view == kActionGallery) {
++    if (ToastController* toast_controller = ToastController::From(browser)) {
++      ToastParams toast_params(ToastId::kBrowserOSToast);
++      toast_params.body_string_override =
++          l10n_util::GetStringUTF16(IDS_WINDRISE_AI_GALLERY) + u" · " +
++          l10n_util::GetStringUTF16(IDS_WINDRISE_AI_GALLERY_SOON);
++      toast_controller->MaybeShowToast(std::move(toast_params));
++    }
++  } else if (action_view == kActionSettings) {
++    // 兜底直接打开（或聚焦）风桥整页设置；扩展收到 onAiPanelAction 后也会
++    // 复用同一标签页，确保直启或受管模式下点击「设置」必定立即响应。
++    ShowSingletonTab(browser, GURL(assistant ? kWindriseSettingsFallbackUrl
++                                             : chrome::kChromeUISettingsURL));
++  } else if ((action_view == kActionOpenApp ||
++              action_view == kActionConnectAi) &&
++             !desktop_connected) {
++    // 独立启动或桌面端未在线时，扩展 forwardGridAction 没有宿主 binding；
++    // 改为打开连接设置页提示接入桌面端，避免点完毫无反应。
++    ShowSingletonTab(browser, GURL(assistant ? kWindriseSettingsFallbackUrl
++                                             : chrome::kChromeUISettingsURL));
++  }
++
++  if (views::Widget* widget = GetWidget()) {
++    widget->Close();
++  }
 +}
 +
 +BEGIN_METADATA(WindriseAiPanelView)

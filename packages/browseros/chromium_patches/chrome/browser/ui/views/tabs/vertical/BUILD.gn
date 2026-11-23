@@ -13,7 +13,7 @@ index e88955ec6c..ed1cbb6982 100644
      "//chrome/browser/glic",
      "//chrome/browser/glic/browser_ui:glow",
      "//chrome/browser/glic/browser_ui:glow_controller",
-@@ -108,6 +111,43 @@ source_set("impl") {
+@@ -108,6 +111,49 @@ source_set("impl") {
    ]
  }
  
@@ -34,12 +34,17 @@ index e88955ec6c..ed1cbb6982 100644
 +    "//cc/paint",
 +    "//chrome/app:generated_resources",
 +    "//chrome/app/vector_icons",
++    "//chrome/browser/browseros/core",
 +    "//chrome/browser/browseros/core:ai_state",
 +    "//chrome/browser/browseros/core:theme",
 +    "//chrome/browser/extensions",
 +    "//chrome/browser/profiles:profile",
++    "//chrome/browser/ui:singleton_tabs",
 +    "//chrome/browser/ui/browser_window",
 +    "//chrome/browser/ui/color:color_headers",
++    "//chrome/browser/ui/toasts",
++    "//chrome/browser/ui/toasts/api:toasts",
++    "//chrome/common",
 +    "//extensions/browser",
 +    "//extensions/common",
 +    "//skia",
@@ -51,6 +56,7 @@ index e88955ec6c..ed1cbb6982 100644
 +    "//ui/gfx/codec",
 +    "//ui/gfx/geometry",
 +    "//ui/views",
++    "//url",
 +  ]
 +}
 +

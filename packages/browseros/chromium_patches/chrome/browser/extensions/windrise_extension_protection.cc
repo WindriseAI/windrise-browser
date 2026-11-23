@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,529 @@
+@@ -0,0 +1,538 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -378,12 +378,18 @@ index 0000000000..622c8730b3
 +    remaining.remove_prefix(end + 1);
 +  }
 +  lines[5] = remaining;
++  constexpr int64_t kMaxLeaseTtlMs = 8000;
++  // Windows base::Time::Now() interpolates from QPC between wall-clock
++  // resyncs (up to 60s), while the desktop lease writer reads system time
++  // directly. Allow a small bounded skew tolerance on validation while
++  // strictly capping the effective monotonic lease deadline to 8s.
++  constexpr int64_t kClockSkewToleranceMs = 250;
 +  int64_t expires = 0;
 +  const int64_t now = base::Time::Now().InMillisecondsSinceUnixEpoch();
 +  if (lines[0] != "windrise-assistant-lease-v1" ||
 +      lines[1] != kAssistantId || lines[2] != record->digest ||
 +      !lines[5].empty() || !base::StringToInt64(lines[3], &expires) ||
-+      expires <= now || expires - now > 8000) {
++      expires <= now || expires - now > kMaxLeaseTtlMs + kClockSkewToleranceMs) {
 +    return false;
 +  }
 +  std::string& signature = record->signature_buffer;
@@ -399,7 +405,8 @@ index 0000000000..622c8730b3
 +  record->last_lease.swap(lease);
 +  record->last_lease_size = info.size;
 +  record->last_lease_mtime = info.last_modified;
-+  record->lease_deadline = ticks + base::Milliseconds(expires - now);
++  const int64_t remaining_ms = std::min(expires - now, kMaxLeaseTtlMs);
++  record->lease_deadline = ticks + base::Milliseconds(remaining_ms);
 +  return true;
 +}
 +
@@ -503,7 +510,9 @@ index 0000000000..622c8730b3
 +    return false;
 +  }
 +  auto& records = VerifiedExtensions();
-+  if (!records.at(extension)->authorized) {
++  const Verification* record = records.at(extension).get();
++  if (!record->authorized ||
++      base::TimeTicks::Now() >= record->lease_deadline) {
 +    RefreshWindriseAssistantAuthority(extension);
 +  }
 +  const auto found = records.find(extension);
