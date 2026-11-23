@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..ff65fb5f3bc9e
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_bookmarks_importer.cc
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,260 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome bookmarks importer implementation
 +
@@ -115,7 +115,8 @@ index 0000000000000..ff65fb5f3bc9e
 +  }
 +}
 +
-+void LoadFaviconURLMappings(sql::Database* db, FaviconMap* favicon_map) {
++ImportItemStatus LoadFaviconURLMappings(sql::Database* db,
++                                        FaviconMap* favicon_map) {
 +  const char kQuery[] = "SELECT icon_id, page_url FROM icon_mapping";
 +  sql::Statement statement(db->GetUniqueStatement(kQuery));
 +
@@ -126,6 +127,11 @@ index 0000000000000..ff65fb5f3bc9e
 +      (*favicon_map)[icon_id].insert(url);
 +    }
 +  }
++  if (!statement.Succeeded()) {
++    favicon_map->clear();
++    return ClassifySqliteError(db->GetErrorCode());
++  }
++  return ImportItemStatus::kSuccess;
 +}
 +
 +void LoadFaviconData(sql::Database* db,
@@ -232,24 +238,25 @@ index 0000000000000..ff65fb5f3bc9e
 +
 +  // Import favicons from Favicons database (best-effort enhancement).
 +  base::FilePath favicons_path = profile_path.AppendASCII(kFaviconsFilename);
-+  if (!base::PathExists(favicons_path)) {
++  ImportItemStatus fav_status = ImportItemStatus::kEmpty;
++  base::FilePath temp_favicons = CopyDatabaseToTemp(favicons_path, &fav_status);
++  if (temp_favicons.empty() && fav_status == ImportItemStatus::kEmpty) {
 +    favicons_path = profile_path.DirName().AppendASCII(kFaviconsFilename);
++    temp_favicons = CopyDatabaseToTemp(favicons_path, &fav_status);
 +  }
 +
-+  if (base::PathExists(favicons_path)) {
-+    base::FilePath temp_favicons = CopyDatabaseToTemp(favicons_path);
-+    if (!temp_favicons.empty()) {
-+      sql::Database db(kDatabaseTag);
-+      if (db.Open(temp_favicons)) {
-+        FaviconMap favicon_map;
-+        LoadFaviconURLMappings(&db, &favicon_map);
-+        if (!favicon_map.empty()) {
-+          LoadFaviconData(&db, favicon_map, &result.favicons);
-+        }
-+        db.Close();
++  if (!temp_favicons.empty()) {
++    sql::Database db(kDatabaseTag);
++    if (db.Open(temp_favicons)) {
++      FaviconMap favicon_map;
++      if (LoadFaviconURLMappings(&db, &favicon_map) ==
++              ImportItemStatus::kSuccess &&
++          !favicon_map.empty()) {
++        LoadFaviconData(&db, favicon_map, &result.favicons);
 +      }
-+      DeleteDatabaseTemp(temp_favicons);
++      db.Close();
 +    }
++    DeleteDatabaseTemp(temp_favicons);
 +  }
 +
 +  return finish(result.bookmarks.empty() ? ImportItemStatus::kEmpty

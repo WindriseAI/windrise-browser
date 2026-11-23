@@ -28,11 +28,13 @@ class WindriseImporterLock1123Test(unittest.TestCase):
             "kEmpty,",
             "kLocked,",
             "kError,",
+            "ProbeFileStatus(",
             "ReadFileToStringClassified(",
             "ClassifySqliteError(",
         ):
             self.assertIn(token, utils_h)
 
+        self.assertIn("GetFileAttributesW", utils_cc)
         self.assertIn("ERROR_SHARING_VIOLATION", utils_cc)
         self.assertIn("ERROR_LOCK_VIOLATION", utils_cc)
         self.assertIn("FILE_ERROR_IN_USE", utils_cc)
@@ -57,7 +59,8 @@ class WindriseImporterLock1123Test(unittest.TestCase):
         ):
             src = read_patch(rel)
             self.assertIn("ImportItemStatus", src, rel)
-            if "sql/statement.h" in src and "chrome_bookmarks_importer" not in rel:
+            self.assertNotIn("base::PathExists", src, rel)
+            if "sql/statement.h" in src:
                 self.assertIn("if (!statement.Succeeded())", src, rel)
 
     def test_chrome_importer_never_emits_item_ended_on_lock_and_sends_structured_result(self):
@@ -120,7 +123,10 @@ class WindriseImporterLock1123Test(unittest.TestCase):
         self.assertIn('result.Append("Application Support/Microsoft Edge")', importer_list)
         self.assertIn('result.Append("microsoft-edge")', importer_list)
         self.assertIn("DetectChromiumEdgeProfiles(&profiles)", importer_list)
-        self.assertIn("DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge)", importer_list)
+        self.assertIn("FilePresentOrLocked(", importer_list)
+        self.assertIn("has_modern_edge_dir", importer_list)
+        self.assertIn("DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge && !has_modern_edge_dir)", importer_list)
+        self.assertIn('u" (Legacy EdgeHTML)"', importer_list)
         self.assertIn('profile_path.Append(FILE_PATH_LITERAL("Network"))', importer_list)
 
         decryptor_mac = read_patch(

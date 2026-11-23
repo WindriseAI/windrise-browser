@@ -2,10 +2,11 @@ diff --git a/chrome/browser/importer/importer_list.cc b/chrome/browser/importer/
 index 62546b572bab8..df99dae8f9719 100644
 --- a/chrome/browser/importer/importer_list.cc
 +++ b/chrome/browser/importer/importer_list.cc
-@@ -6,10 +6,15 @@
+@@ -6,10 +6,16 @@
 
  #include <stdint.h>
 
++#include "base/files/file.h"
 +#include "base/files/file_util.h"
  #include "base/functional/bind.h"
 +#include "base/json/json_reader.h"
@@ -18,7 +19,7 @@ index 62546b572bab8..df99dae8f9719 100644
  #include "build/build_config.h"
  #include "chrome/browser/shell_integration.h"
  #include "chrome/common/importer/firefox_importer_utils.h"
-@@ -17,6 +22,7 @@
+@@ -17,6 +23,7 @@
  #include "chrome/grit/generated_resources.h"
  #include "components/user_data_importer/common/importer_data_types.h"
  #include "ui/base/l10n/l10n_util.h"
@@ -26,13 +27,39 @@ index 62546b572bab8..df99dae8f9719 100644
 
  #if BUILDFLAG(IS_MAC)
  #include "base/apple/foundation_util.h"
-@@ -29,6 +35,267 @@
+@@ -29,6 +36,293 @@
 
  namespace {
 
++#if BUILDFLAG(IS_WIN)
++#include <windows.h>
++#endif
++
 +// Forward declarations for platform-specific Chromium-family user data folders
 +base::FilePath GetChromeUserDataFolder();
 +base::FilePath GetChromiumEdgeUserDataFolder();
++
++bool FilePresentOrLocked(const base::FilePath& path) {
++  if (path.empty()) {
++    return false;
++  }
++  if (base::PathExists(path)) {
++    return true;
++  }
++#if BUILDFLAG(IS_WIN)
++  const DWORD attrs = ::GetFileAttributesW(path.value().c_str());
++  if (attrs != INVALID_FILE_ATTRIBUTES) {
++    return true;
++  }
++  const DWORD err = ::GetLastError();
++  if (err == ERROR_SHARING_VIOLATION || err == ERROR_LOCK_VIOLATION) {
++    return true;
++  }
++#endif
++  base::File probe(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
++  return probe.IsValid() ||
++         probe.error_details() == base::File::FILE_ERROR_IN_USE;
++}
 +
 +constexpr char kChromeNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 +
@@ -119,7 +146,7 @@ index 62546b572bab8..df99dae8f9719 100644
 +  DCHECK(services);
 +  *services = user_data_importer::NONE;
 +
-+  if (!base::PathExists(profile_path))
++  if (!FilePresentOrLocked(profile_path))
 +    return false;
 +
 +  base::FilePath bookmarks_path = profile_path.Append(FILE_PATH_LITERAL("Bookmarks"));
@@ -132,25 +159,25 @@ index 62546b572bab8..df99dae8f9719 100644
 +  base::FilePath preferences_path = profile_path.Append(FILE_PATH_LITERAL("Preferences"));
 +  base::FilePath secure_preferences_path = profile_path.Append(FILE_PATH_LITERAL("Secure Preferences"));
 +
-+  if (base::PathExists(bookmarks_path))
++  if (FilePresentOrLocked(bookmarks_path))
 +    *services |= user_data_importer::FAVORITES;
 +
-+  if (base::PathExists(history_path))
++  if (FilePresentOrLocked(history_path))
 +    *services |= user_data_importer::HISTORY;
 +
-+  if (base::PathExists(passwords_path))
++  if (FilePresentOrLocked(passwords_path))
 +    *services |= user_data_importer::PASSWORDS;
 +
-+  if (base::PathExists(network_cookies_path) || base::PathExists(cookies_path))
++  if (FilePresentOrLocked(network_cookies_path) || FilePresentOrLocked(cookies_path))
 +    *services |= user_data_importer::COOKIES;
 +
-+  if (base::PathExists(preferences_path)) {
++  if (FilePresentOrLocked(preferences_path)) {
 +    *services |= user_data_importer::AUTOFILL_FORM_DATA;
 +    *services |= user_data_importer::SEARCH_ENGINES;
 +
 +    // Check for extensions in preferences
 +    if (HasExtensionsToImport(preferences_path) ||
-+        (base::PathExists(secure_preferences_path) &&
++        (FilePresentOrLocked(secure_preferences_path) &&
 +         HasExtensionsToImport(secure_preferences_path))) {
 +      *services |= user_data_importer::EXTENSIONS;
 +    }
@@ -162,7 +189,7 @@ index 62546b572bab8..df99dae8f9719 100644
 +base::ListValue GetChromeSourceProfiles(const base::FilePath& local_state_path) {
 +  base::ListValue profiles;
 +
-+  if (base::PathExists(local_state_path)) {
++  if (FilePresentOrLocked(local_state_path)) {
 +    std::string local_state_content;
 +    if (base::ReadFileToString(local_state_path, &local_state_content)) {
 +      std::optional<base::DictValue> local_state_dict =
@@ -216,7 +243,7 @@ index 62546b572bab8..df99dae8f9719 100644
 +  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
 +                                               base::BlockingType::MAY_BLOCK);
 +
-+  if (user_data_path.empty() || !base::PathExists(user_data_path))
++  if (user_data_path.empty() || !FilePresentOrLocked(user_data_path))
 +    return false;
 +
 +  // Get the list of profiles from Local State
@@ -276,8 +303,8 @@ index 62546b572bab8..df99dae8f9719 100644
 +bool DetectChromiumEdgeProfiles(
 +    std::vector<user_data_importer::SourceProfile>* profiles) {
 +  const base::FilePath edge_data_dir = GetChromiumEdgeUserDataFolder();
-+  const bool edge_dir_present =
-+      !edge_data_dir.empty() && base::PathExists(edge_data_dir);
++  const bool has_modern_edge_dir =
++      !edge_data_dir.empty() && FilePresentOrLocked(edge_data_dir);
 +#if BUILDFLAG(IS_WIN)
 +  const std::u16string edge_name =
 +      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
@@ -288,13 +315,24 @@ index 62546b572bab8..df99dae8f9719 100644
 +  // When the modern Chromium Edge User Data directory is present on disk,
 +  // return true even if Local State was locked/unreadable so Windows never
 +  // falls back to legacy UWP EdgeHTML favorites under the same Edge label.
-+  return added || edge_dir_present;
++  return added || has_modern_edge_dir;
 +}
 +
  #if BUILDFLAG(IS_WIN)
  void DetectIEProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -60,18 +327,49 @@ void DetectEdgeProfiles(
+@@ -51,27 +345,59 @@ void DetectEdgeProfiles(
+   if (!importer::EdgeImporterCanImport()) {
+     return;
+   }
+   user_data_importer::SourceProfile edge;
+-  edge.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
++  edge.importer_name =
++      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE) + u" (Legacy EdgeHTML)";
+   edge.importer_type = user_data_importer::TYPE_EDGE;
+   edge.services_supported = user_data_importer::FAVORITES;
+   edge.source_path = importer::GetEdgeDataFilePath();
+   profiles->push_back(edge);
  }
 
  void DetectBuiltinWindowsProfiles(
@@ -347,7 +385,7 @@ index 62546b572bab8..df99dae8f9719 100644
  #if BUILDFLAG(IS_MAC)
  void DetectSafariProfiles(
      std::vector<user_data_importer::SourceProfile>* profiles) {
-@@ -88,8 +386,48 @@ void DetectSafariProfiles(
+@@ -88,8 +414,48 @@ void DetectSafariProfiles(
    safari.services_supported = items;
    profiles->push_back(safari);
  }
@@ -396,21 +434,25 @@ index 62546b572bab8..df99dae8f9719 100644
  // |locale|: The application locale used for lookups in Firefox's
  // locale-specific search engines feature (see firefox_importer.cc for
  // details).
-@@ -170,20 +508,33 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
+@@ -170,20 +536,37 @@ std::vector<user_data_importer::SourceProfile> DetectSourceProfilesWorker(
  #if BUILDFLAG(IS_WIN)
    if (shell_integration::IsFirefoxDefaultBrowser()) {
      DetectFirefoxProfiles(locale, &profiles);
 -    DetectBuiltinWindowsProfiles(&profiles);
 +    DetectChromeProfiles(&profiles);
 +    const bool has_chromium_edge = DetectChromiumEdgeProfiles(&profiles);
++    const bool has_modern_edge_dir =
++        FilePresentOrLocked(GetChromiumEdgeUserDataFolder());
 +    // Never misrepresent legacy EdgeHTML favorites as modern Chromium Edge
-+    // when a modern Chromium Edge profile is present.
-+    DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge);
++    // when a modern Chromium Edge profile or user data dir is present.
++    DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge && !has_modern_edge_dir);
    } else {
 -    DetectBuiltinWindowsProfiles(&profiles);
 +    DetectChromeProfiles(&profiles);
 +    const bool has_chromium_edge = DetectChromiumEdgeProfiles(&profiles);
-+    DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge);
++    const bool has_modern_edge_dir =
++        FilePresentOrLocked(GetChromiumEdgeUserDataFolder());
++    DetectBuiltinWindowsProfiles(&profiles, !has_chromium_edge && !has_modern_edge_dir);
      DetectFirefoxProfiles(locale, &profiles);
    }
  #elif BUILDFLAG(IS_MAC)

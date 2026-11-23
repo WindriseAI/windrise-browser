@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..d7334846286cd
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_importer_utils.h
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,60 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome importer shared utilities
 +
@@ -28,6 +28,12 @@ index 0000000000000..d7334846286cd
 +// Converts Chrome's internal time format (microseconds since Windows epoch)
 +// to base::Time. Returns null time for zero input.
 +base::Time ChromeTimeToBaseTime(int64_t chrome_time);
++
++// Probes whether |source_path| exists and is readable without swallowing
++// Windows sharing violations or permission errors into a false "missing" state.
++// Returns kSuccess when readable, kEmpty when absent, kLocked when locked, or
++// kError on other I/O or permission failures.
++ImportItemStatus ProbeFileStatus(const base::FilePath& source_path);
 +
 +// Copies a file to a temporary location to avoid locking issues when the
 +// source browser is running. Returns empty path on failure and populates
