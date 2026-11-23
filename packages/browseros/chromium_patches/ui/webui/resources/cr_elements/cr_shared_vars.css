@@ -2,7 +2,7 @@ diff --git a/ui/webui/resources/cr_elements/cr_shared_vars.css b/ui/webui/resour
 index f478ceca5c..e1f30408e7 100644
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
-@@ -377,3 +377,358 @@ html[webui-refresh-2026] {
+@@ -377,3 +377,360 @@ html[webui-refresh-2026] {
      --cr-animations-disabled: 1;
    }
  }
@@ -314,6 +314,7 @@ index f478ceca5c..e1f30408e7 100644
 + * 规则接住（颜色读这里定义的变量，变量会穿过影子边界继承）。
 + * 不用标准属性 scrollbar-width / scrollbar-color：在 Chromium 里它们一旦生效就会
 + * 让 ::-webkit-scrollbar 失效，而且 scrollbar-width 不继承、进不了影子 DOM。 */
++/* stylelint-disable no-duplicate-selectors */
 +html:not(#wr-tokens) {
 +  --wr-scrollbar-thumb-rest: rgb(20 23 28 / .16);
 +  --wr-scrollbar-thumb: rgb(20 23 28 / .28);
@@ -333,6 +334,7 @@ index f478ceca5c..e1f30408e7 100644
 +  --wr-scrollbar-thumb: rgb(238 241 244 / .30);
 +  --wr-scrollbar-thumb-active: rgb(238 241 244 / .48);
 +}
++/* stylelint-enable no-duplicate-selectors */
 +
 +::-webkit-scrollbar {
 +  height: 6px;
