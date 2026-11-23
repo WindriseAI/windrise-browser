@@ -12,7 +12,10 @@ interface StepKeyHandlers {
  * so no focus ring appears on load; a focused button still answers Enter
  * itself. Handled keys are consumed (preventDefault) so the same press cannot
  * also activate a control that appears underneath it, such as the Keychain
- * dialog's Continue. Pass `enabled = false` while a dialog owns the keys. */
+ * dialog's Continue. Pass `enabled = false` while a dialog owns the keys.
+ * It listens in the capture phase: Base UI's checkbox cancels Enter natively
+ * (to stop a toggle) before the event would bubble to the window, and that
+ * must not swallow "tick, then press Enter". */
 export function useStepKeys(
   { onPrimary, onBack }: StepKeyHandlers,
   enabled = true,
@@ -27,7 +30,7 @@ export function useStepKeys(
       event.preventDefault()
       run()
     }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [enabled, onPrimary, onBack])
 }

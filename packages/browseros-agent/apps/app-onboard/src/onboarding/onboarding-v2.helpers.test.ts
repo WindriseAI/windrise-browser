@@ -386,14 +386,12 @@ describe('step keys (DS9-P1-18)', () => {
     expect(stepKeyActionFor(keyEvent({ key: 'Escape' }))).toBe('back')
   })
 
-  it('leaves Enter to a focused button, checkbox, radio or link', () => {
+  it('leaves Enter to a focused button, link, disclosure or text field', () => {
     for (const part of [
       'button',
-      'input',
       'summary',
       'a[href]',
-      '[role="checkbox"]',
-      '[role="radio"]',
+      'input:not([type="radio"]):not([type="checkbox"])',
     ]) {
       expect(stepKeyActionFor(keyEvent({ target: targetMatching(part) }))).toBe(
         null,
@@ -405,6 +403,20 @@ describe('step keys (DS9-P1-18)', () => {
         keyEvent({ key: 'Escape', target: targetMatching('button') }),
       ),
     ).toBe('back')
+  })
+
+  // DS9-P1-18's case: pick a profile, untick an item, press Enter. Focus then
+  // sits on the profile's native radio or a Base UI checkbox, neither of which
+  // does anything with Enter outside a <form>.
+  it('runs the main action from a focused profile radio or item checkbox', () => {
+    const profileRadio = targetMatching(
+      'input',
+      'input[type="radio"]',
+      '[role="radio"]',
+    )
+    const itemCheckbox = targetMatching('[role="checkbox"]')
+    expect(stepKeyActionFor(keyEvent({ target: profileRadio }))).toBe('primary')
+    expect(stepKeyActionFor(keyEvent({ target: itemCheckbox }))).toBe('primary')
   })
 
   it('never acts inside an open dialog', () => {

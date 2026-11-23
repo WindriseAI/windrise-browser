@@ -276,10 +276,14 @@ export function importSourceName(
 }
 
 /** What a step-level key press should do. Enter runs the step's main action
- * and Escape steps back, but only when the key is not already owned by the
- * focused control (a button, checkbox, radio or link activates itself on
- * Enter) or by an open dialog. Held keys never repeat an action, so holding
- * Enter cannot run from the welcome screen straight into an import. */
+ * and Escape steps back, unless Enter already does something on the focused
+ * control (a button, link or disclosure activates itself; text fields edit)
+ * or an open dialog owns the keys. A focused profile radio or item checkbox
+ * does NOT own Enter: there is no <form> here, a native radio ignores Enter,
+ * and Base UI's checkbox treats Enter as implicit form submission, never as a
+ * toggle — so "pick, tick, press Enter" runs the step, like submitting a form.
+ * Held keys never repeat an action, so holding Enter cannot run from the
+ * welcome screen straight into an import. */
 export type StepKeyAction = 'primary' | 'back' | null
 
 export interface StepKeyEvent {
@@ -297,14 +301,12 @@ export interface StepKeyEvent {
 const KEY_OWNING_CONTROL = [
   'a[href]',
   'button',
-  'input',
+  'input:not([type="radio"]):not([type="checkbox"])',
   'select',
   'textarea',
   'summary',
   '[contenteditable]:not([contenteditable="false"])',
   '[role="button"]',
-  '[role="checkbox"]',
-  '[role="radio"]',
   '[role="switch"]',
   '[role="link"]',
   '[role="menuitem"]',
