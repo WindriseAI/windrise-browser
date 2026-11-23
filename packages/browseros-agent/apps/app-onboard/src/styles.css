@@ -530,15 +530,15 @@ body::before {
 
 /* 引导大卡（视口正中，一张液态玻璃窗口板）。材质按 apple-design 第 12 节：
    大面更厚——背后模糊 + 两层投影；上缘一道亮边代表光落在玻璃上；不再叠第二层同样
-   半透明的玻璃（卡里的白卡是 72% 平涂，同电脑端中窗）。圆角 20：大于卡里白卡的 16、
-   小于电脑端小窗板的 28，嵌套圆角由外向内递减。 */
+   半透明的玻璃（卡里的白卡是 72% 平涂，同电脑端中窗）。它是窗口板，不是卡片：圆角取
+   设计语言「窗口 --r-window 28」，卡里白卡 16、凹槽 12，由外向内递减。 */
 .wr-stage-card {
   background: linear-gradient(
     180deg,
     var(--wr-stage-top),
     var(--wr-stage-bottom)
   );
-  border-radius: 20px;
+  border-radius: 28px;
   box-shadow:
     inset 0 0 0 0.75px var(--wr-stage-rim),
     inset 0 1px 0 var(--wr-stage-highlight),

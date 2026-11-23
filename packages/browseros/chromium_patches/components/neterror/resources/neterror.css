@@ -1,8 +1,8 @@
 diff --git a/components/neterror/resources/neterror.css b/components/neterror/resources/neterror.css
-index dbdbeac156..a357dd6a5a 100644
+index dbdbeac156..535f3c8ad9 100644
 --- a/components/neterror/resources/neterror.css
 +++ b/components/neterror/resources/neterror.css
-@@ -701,3 +701,200 @@ html[dir='rtl'].offline .icon-offline {
+@@ -701,3 +701,214 @@ html[dir='rtl'].offline .icon-offline {
      display: none;
    }
  }
@@ -96,6 +96,7 @@ index dbdbeac156..a357dd6a5a 100644
 +  box-shadow: inset 0 1px 0 var(--lg-quiet-highlight);
 +  color: var(--wr-btn-ink);
 +  font-weight: 500;
++  transition: transform 160ms cubic-bezier(.23, 1, .32, 1);
 +}
 +@media (hover: hover) and (pointer: fine) {
 +  body.neterror button:hover,
@@ -108,7 +109,10 @@ index dbdbeac156..a357dd6a5a 100644
 +    background: linear-gradient(180deg, var(--lg-quiet-fill-hover), var(--lg-quiet-fill)) !important;
 +  }
 +}
-+body.neterror button:active {
++/* 按下 / 焦点的选择器要带上两颗按钮的 id：上面的底样式用 #reload-button / #details-button
++   带了 id 特异度，只写 button:active / :focus-visible 压不过它们。 */
++body.neterror button:active,
++body.neterror #reload-button:active {
 +  box-shadow: inset 0 0 0 .75px var(--lg-rim), inset 0 1px 2px var(--lg-press-shade),
 +      var(--lg-shadow-near);
 +  transform: scale(.97);
@@ -117,12 +121,18 @@ index dbdbeac156..a357dd6a5a 100644
 +body.neterror .secondary-button:active,
 +body.neterror #details-button:active {
 +  box-shadow: none;
++  transform: scale(.97);
++  transition-duration: 120ms;
 +}
 +/* 键盘焦点：单层墨色细圈 + 外面一圈淡光（同内部页 --wr-focus-ring），鼠标点不出框。 */
-+body.neterror button:focus {
++body.neterror button:focus,
++body.neterror #reload-button:focus,
++body.neterror #details-button:focus {
 +  outline: none;
 +}
-+body.neterror button:focus-visible {
++body.neterror button:focus-visible,
++body.neterror #reload-button:focus-visible,
++body.neterror #details-button:focus-visible {
 +  box-shadow: 0 0 0 1px var(--wr-focus), 0 0 0 3px var(--wr-focus-halo);
 +  outline: none;
 +}
@@ -151,10 +161,14 @@ index dbdbeac156..a357dd6a5a 100644
 +  background: var(--wr-scrollbar-thumb-active, rgb(20 23 28 / .45));
 +}
 +@media (prefers-reduced-motion: reduce) {
-+  body.neterror button {
++  body.neterror button,
++  body.neterror #reload-button,
++  body.neterror #details-button {
 +    transition: none;
 +  }
-+  body.neterror button:active {
++  body.neterror button:active,
++  body.neterror #reload-button:active,
++  body.neterror #details-button:active {
 +    transform: none;
 +  }
 +}

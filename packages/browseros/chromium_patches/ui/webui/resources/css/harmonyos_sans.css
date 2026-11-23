@@ -1,9 +1,9 @@
 diff --git a/ui/webui/resources/css/harmonyos_sans.css b/ui/webui/resources/css/harmonyos_sans.css
 new file mode 100644
-index 0000000000000000000000000000000000000000..63f69f0711e4ae6061d80af248bb47eb3a5a4698
+index 0000000000..94d376b5eb
 --- /dev/null
 +++ b/ui/webui/resources/css/harmonyos_sans.css
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,47 @@
 +/* Copyright 2026 Windrise. Use of this source code is governed by the
 + * AGPL-3.0 license that can be found in the LICENSE file. */
 +
@@ -13,10 +13,17 @@ index 0000000000000000000000000000000000000000..63f69f0711e4ae6061d80af248bb47eb
 + * not renamed, not converted); their license ships next to them and is shown on
 + * the About page. local() first, so a system-installed copy is used when present;
 + * otherwise the bundled copy loads from chrome://resources. No synthetic weights:
-+ * 400 / 500 / 700 each map to a real face. */
++ * 400 / 500 / 700 each map to a real face.
++ *
++ * font-display: fallback (Opus-2 11-23, root cause of B13 / b_072): with
++ * `block` every WebUI page kept its text invisible for up to 3s while the
++ * multi-megabyte bundled TTF loaded on machines without HarmonyOS installed;
++ * the incognito page showed only bullets and link underlines. `fallback`
++ * blocks for ~100ms only, then paints the system fallback (Microsoft YaHei)
++ * and still swaps to HarmonyOS Sans if it arrives within ~3s. */
 +
 +@font-face {
-+  font-display: block;
++  font-display: fallback;
 +  font-family: 'HarmonyOS Sans SC';
 +  font-style: normal;
 +  font-weight: 400;
@@ -26,7 +33,7 @@ index 0000000000000000000000000000000000000000..63f69f0711e4ae6061d80af248bb47eb
 +}
 +
 +@font-face {
-+  font-display: block;
++  font-display: fallback;
 +  font-family: 'HarmonyOS Sans SC';
 +  font-style: normal;
 +  font-weight: 500;
@@ -36,7 +43,7 @@ index 0000000000000000000000000000000000000000..63f69f0711e4ae6061d80af248bb47eb
 +}
 +
 +@font-face {
-+  font-display: block;
++  font-display: fallback;
 +  font-family: 'HarmonyOS Sans SC';
 +  font-style: normal;
 +  font-weight: 700;

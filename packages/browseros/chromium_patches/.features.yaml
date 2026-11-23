@@ -812,7 +812,7 @@ features:
       - "ui/webui/resources/css/md_colors.css"
 
   windrise-browser-visual-1123:
-    description: "fix: Opus-2 one-pass browser visual finish: keyboard-only rounded focus ring and three-state rim on the AI card, typographic AI panel with real AI logos, hover card suppressed for fully visible vertical tab titles, high-contrast graphite incognito page and glass splash, 6px WebUI scrollbars in document and shadow roots, liquid-glass neterror buttons"
+    description: "fix: Opus-2 one-pass browser visual finish: keyboard-only rounded focus ring and three-state rim on the AI card, typographic AI panel with real AI logos, hover card suppressed for fully visible vertical tab titles, high-contrast graphite incognito page and glass splash, 6px WebUI scrollbars in document and shadow roots, liquid-glass neterror buttons, HarmonyOS Sans font-display fallback so WebUI text never stays invisible while the bundled font loads"
     files:
       - "chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css"
       - "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_controller.cc"
@@ -823,4 +823,5 @@ features:
       - "ui/webui/resources/cr_elements/cr_scrollable_lit.css"
       - "ui/webui/resources/cr_elements/cr_shared_style_lit.css"
       - "ui/webui/resources/cr_elements/cr_shared_vars.css"
+      - "ui/webui/resources/css/harmonyos_sans.css"
       - "ui/webui/resources/images/incognito_splash.svg"

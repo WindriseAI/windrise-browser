@@ -148,7 +148,8 @@ export function Onboarding() {
             page, not the window jumping). No exit animation, so the flow can
             never stall waiting on one. Full transform string (not the x
             shorthand) keeps it on the compositor; critically damped spring,
-            no overshoot (apple-design §4: damping 1.0, response ~0.3);
+            no overshoot (apple-design §4: damping 1.0), 240ms = --dur-enter of
+            the design language (进场 240);
             opacity 220ms on the strong ease-out (animate §5). Reduced motion:
             no movement, no fade — the step simply appears. */}
             <motion.div
@@ -166,7 +167,7 @@ export function Onboarding() {
               transition={{
                 type: 'spring',
                 bounce: 0,
-                duration: 0.32,
+                duration: 0.24,
                 opacity: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
               }}
             >

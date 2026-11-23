@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css b/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
-index 9c5ca7a283..b4557d4129 100644
+index 9c5ca7a283..27d29ce917 100644
 --- a/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
 +++ b/chrome/browser/resources/new_tab_page_incognito_guest/incognito_tab.css
-@@ -322,3 +322,105 @@ h1 {
+@@ -322,3 +322,108 @@ h1 {
      padding-inline-start: 24px;
    }
  }
@@ -12,10 +12,13 @@ index 9c5ca7a283..b4557d4129 100644
 +
 +/* 风桥浏览器无痕页（Opus-2 11-23，浏览器清单甲53 4B 深色、根因分析 B6/B13）。
 + *
-+ * 这一页异步加载 cr_toggle.js，顺带把 cr_shared_vars.css 当 adopted
-+ * stylesheet 全局挂上：那张表比这里晚进层叠，html 规则带 id 级特异度，浅色
-+ * 系统（prefers-color-scheme: light）下还会给 body 墨色字、用 body::before 盖一层
-+ * 银灰渐变——无痕页于是文字发黑、底色和 #16191D 外框割裂（b_072）。
++ * b_072 实片里正文「看不见」的主因是字体：harmonyos_sans.css 原来用
++ * font-display: block，本机没装 HarmonyOS 时要等几 MB 的随包字体加载完，期间字形
++ * 不画（只剩圆点和链接下划线）——已在同一批的 harmonyos_sans.css 改成 fallback。
++ * 这里另外处理已在实片里看到的底色问题：这一页异步加载 cr_toggle.js，顺带把
++ * cr_shared_vars.css 当 adopted stylesheet 全局挂上，那张表比这里晚进层叠、html
++ * 规则带 id 级特异度，会用 body::before 盖一层银灰渐变（b_072 里网页区是灰梯，和
++ * 深色外框割裂）；浅色系统下它还给 body 墨色字。
 + * 所以这里全部写死字面颜色（那张表晚到，变量靠不住），并用更高特异度 + !important
 + * 锁住，浅色 / 深色系统下都是同一张深石墨页：
 + *   底 #1E2228（= windrise_color_mixer.cc 无痕 kColorWebContentsBackground / NTP 底）

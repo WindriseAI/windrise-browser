@@ -1,6 +1,6 @@
 diff --git a/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 new file mode 100644
-index 0000000000..c015253555
+index 0000000000..e4a6a01189
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/windrise_ai_card_view.cc
 @@ -0,0 +1,717 @@
@@ -73,7 +73,7 @@ index 0000000000..c015253555
 +
 +// 焦点环（Opus-2 11-23，根因分析 B7②：深 / 浅色下点完卡片外圈挂一圈亮白粗矩形）。
 +// 形状 = 卡片自己的圆角（HighlightPathGenerator），1.5px 单层，颜色跟卡片文字
-+// （浅色墨色、深色石墨白，甲48「清晰单层墨色圈」），只在键盘 Tab 走到卡片、或
++// （浅色墨色、深色石墨白；电脑端清单 #17「焦点框不能难看」，单层不双圈），只在键盘 Tab 走到卡片、或
 +// 键盘打开面板后焦点还回卡片时显示；鼠标点开再关面板不显示。
 +constexpr float kFocusRingThickness = 1.5f;
 +
