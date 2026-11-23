@@ -30,9 +30,9 @@
  
  #define IDC_OPEN_IN_PWA_WINDOW          34055
  #define IDC_MOVE_TAB_TO_NEW_WINDOW      34056
-@@ -111,7 +111,7 @@
- #define IDC_WEB_APP_MENU_APP_INFO       34074
+@@ -102,7 +102,7 @@
  #define IDC_WEB_APP_UPGRADE_DIALOG      34075
+ #define IDC_UNINSTALL_WEB_APP           34076
  
 -#if BUILDFLAG(IS_CHROMEOS)
 +#if (0)

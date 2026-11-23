@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000..622c8730b3
 --- /dev/null
 +++ b/chrome/browser/extensions/windrise_extension_protection.cc
-@@ -0,0 +1,545 @@
+@@ -0,0 +1,576 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -225,11 +225,13 @@ index 0000000000..622c8730b3
 +  bool needs_reverify = false;
 +  std::string digest;
 +  std::string last_lease;
++  std::string expired_lease;
 +  int64_t last_lease_size = -1;
 +  base::Time last_lease_mtime;
 +  base::FilePath lease_path;
 +  std::string lease_buffer;
 +  std::string signature_buffer;
++  int64_t lease_expires_ms = 0;
 +  base::TimeTicks lease_deadline;
 +  base::RepeatingTimer authority_timer;
 +  std::unique_ptr<base::FilePathWatcher> watcher;
@@ -346,11 +348,24 @@ index 0000000000..622c8730b3
 +  if (!record->valid || !LeaseKey()) {
 +    return false;
 +  }
++  constexpr int64_t kMaxLeaseTtlMs = 8000;
 +  auto clear_cached_lease = [record]() {
 +    record->last_lease.clear();
 +    record->last_lease_size = -1;
 +    record->last_lease_mtime = base::Time();
++    record->lease_expires_ms = 0;
 +    record->lease_deadline = base::TimeTicks();
++  };
++  auto is_cached_lease_live = [record, &clear_cached_lease](
++                                  base::TimeTicks ticks, int64_t now_ms) {
++    if (ticks < record->lease_deadline &&
++        now_ms < record->lease_expires_ms &&
++        record->lease_expires_ms - now_ms <= kMaxLeaseTtlMs) {
++      return true;
++    }
++    record->expired_lease = record->last_lease;
++    clear_cached_lease();
++    return false;
 +  };
 +  base::File::Info info;
 +  if (!base::GetFileInfo(record->lease_path, &info)) {
@@ -358,9 +373,14 @@ index 0000000000..622c8730b3
 +    return false;
 +  }
 +  const auto ticks = base::TimeTicks::Now();
++  // Read system wall clock directly (matching desktop Date.now()) so Windows
++  // QPC-interpolated Time::Now() drift cannot reject fresh leases or accept
++  // leases whose signed expiry has already passed.
++  const int64_t now =
++      base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();
 +  if (!record->last_lease.empty() && info.size == record->last_lease_size &&
 +      info.last_modified == record->last_lease_mtime) {
-+    return ticks < record->lease_deadline;
++    return is_cached_lease_live(ticks, now);
 +  }
 +  std::string& lease = record->lease_buffer;
 +  if (!base::ReadFileToStringWithMaxSize(record->lease_path, &lease, 2048)) {
@@ -370,7 +390,11 @@ index 0000000000..622c8730b3
 +  if (lease == record->last_lease) {
 +    record->last_lease_size = info.size;
 +    record->last_lease_mtime = info.last_modified;
-+    return ticks < record->lease_deadline;
++    return is_cached_lease_live(ticks, now);
++  }
++  if (!record->expired_lease.empty() && lease == record->expired_lease) {
++    clear_cached_lease();
++    return false;
 +  }
 +  std::array<std::string_view, 6> lines;
 +  std::string_view remaining(lease);
@@ -384,13 +408,7 @@ index 0000000000..622c8730b3
 +    remaining.remove_prefix(end + 1);
 +  }
 +  lines[5] = remaining;
-+  constexpr int64_t kMaxLeaseTtlMs = 8000;
 +  int64_t expires = 0;
-+  // Read system wall clock directly (matching desktop Date.now()) so Windows
-+  // QPC-interpolated Time::Now() drift cannot reject fresh leases or accept
-+  // leases whose signed expiry has already passed.
-+  const int64_t now =
-+      base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();
 +  if (lines[0] != "windrise-assistant-lease-v1" ||
 +      lines[1] != kAssistantId || lines[2] != record->digest ||
 +      !lines[5].empty() || !base::StringToInt64(lines[3], &expires) ||
@@ -413,6 +431,7 @@ index 0000000000..622c8730b3
 +  record->last_lease.swap(lease);
 +  record->last_lease_size = info.size;
 +  record->last_lease_mtime = info.last_modified;
++  record->lease_expires_ms = expires;
 +  record->lease_deadline = ticks + base::Milliseconds(expires - now);
 +  return true;
 +}
@@ -518,13 +537,25 @@ index 0000000000..622c8730b3
 +  }
 +  auto& records = VerifiedExtensions();
 +  const Verification* record = records.at(extension).get();
++  const auto ticks = base::TimeTicks::Now();
++  const int64_t now_ms =
++      base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();
 +  if (!record->authorized ||
-+      base::TimeTicks::Now() >= record->lease_deadline) {
++      ticks >= record->lease_deadline ||
++      now_ms >= record->lease_expires_ms ||
++      record->lease_expires_ms - now_ms > 8000) {
 +    RefreshWindriseAssistantAuthority(extension);
 +  }
 +  const auto found = records.find(extension);
-+  return found != records.end() && found->second->authorized &&
-+         base::TimeTicks::Now() < found->second->lease_deadline;
++  if (found == records.end() || !found->second->authorized) {
++    return false;
++  }
++  const auto after_ticks = base::TimeTicks::Now();
++  const int64_t after_ms =
++      base::Time::NowFromSystemTime().InMillisecondsSinceUnixEpoch();
++  return after_ticks < found->second->lease_deadline &&
++         found->second->lease_expires_ms > after_ms &&
++         found->second->lease_expires_ms - after_ms <= 8000;
 +}
 +
 +base::CallbackListSubscription AddWindriseAssistantAuthorityObserver(

@@ -46,6 +46,8 @@ class WindriseP2Brw1123Test(unittest.TestCase):
             "record->lease_deadline = ticks + base::Milliseconds(expires - now);",
             protection,
         )
+        self.assertIn("record->expired_lease = record->last_lease;", protection)
+        self.assertIn("!record->expired_lease.empty() && lease == record->expired_lease", protection)
         # Existing security checks must remain intact.
         self.assertIn('constexpr char kAssistantId[] = "' + ASSISTANT_ID + '";', protection)
         self.assertIn("lines[1] != kAssistantId || lines[2] != record->digest", protection)
@@ -58,12 +60,13 @@ class WindriseP2Brw1123Test(unittest.TestCase):
         self.assertIn("base::FilePathWatcher::RecursiveWatchAvailable()", protection)
 
         # IsAuthorizedWindriseExtension must refresh when lease_deadline elapsed
-        # even if record->authorized was still true from an earlier poll.
+        # or when system wall clock reaches lease_expires_ms.
         auth_body = protection.split("IsAuthorizedWindriseExtension(")[1].split(
             "AddWindriseAssistantAuthorityObserver("
         )[0]
         self.assertIn("if (!record->authorized ||", auth_body)
-        self.assertIn("base::TimeTicks::Now() >= record->lease_deadline)", auth_body)
+        self.assertIn("ticks >= record->lease_deadline ||", auth_body)
+        self.assertIn("now_ms >= record->lease_expires_ms ||", auth_body)
         self.assertIn("RefreshWindriseAssistantAuthority(extension);", auth_body)
 
         api_cc = read_patch(
@@ -90,8 +93,10 @@ class WindriseP2Brw1123Test(unittest.TestCase):
                 self.needs_reverify = False
                 self.digest = digest
                 self.last_lease = ""
+                self.expired_lease = ""
                 self.last_size = -1
                 self.last_mtime = None
+                self.lease_expires_ms = 0
                 self.lease_deadline = 0
                 self.reverify_count = 0
                 self.reverify_ok = True
@@ -100,7 +105,19 @@ class WindriseP2Brw1123Test(unittest.TestCase):
                 self.last_lease = ""
                 self.last_size = -1
                 self.last_mtime = None
+                self.lease_expires_ms = 0
                 self.lease_deadline = 0
+
+            def _is_cached_live(self, now_system_ms, ticks_ms):
+                if (
+                    ticks_ms < self.lease_deadline
+                    and now_system_ms < self.lease_expires_ms
+                    and self.lease_expires_ms - now_system_ms <= MAX_TTL_MS
+                ):
+                    return True
+                self.expired_lease = self.last_lease
+                self._clear()
+                return False
 
             def has_live_lease(self, lease_file, now_system_ms, ticks_ms):
                 if not self.valid or lease_file is None:
@@ -109,11 +126,14 @@ class WindriseP2Brw1123Test(unittest.TestCase):
                 content, mtime = lease_file
                 size = len(content)
                 if self.last_lease and size == self.last_size and mtime == self.last_mtime:
-                    return ticks_ms < self.lease_deadline
+                    return self._is_cached_live(now_system_ms, ticks_ms)
                 if content == self.last_lease:
                     self.last_size = size
                     self.last_mtime = mtime
-                    return ticks_ms < self.lease_deadline
+                    return self._is_cached_live(now_system_ms, ticks_ms)
+                if self.expired_lease and content == self.expired_lease:
+                    self._clear()
+                    return False
                 lines = content.split("\n")
                 if len(lines) != 6 or lines[5] != "":
                     self._clear()
@@ -135,6 +155,7 @@ class WindriseP2Brw1123Test(unittest.TestCase):
                 self.last_lease = content
                 self.last_size = size
                 self.last_mtime = mtime
+                self.lease_expires_ms = expires
                 self.lease_deadline = ticks_ms + (expires - now_system_ms)
                 return True
 
@@ -154,9 +175,19 @@ class WindriseP2Brw1123Test(unittest.TestCase):
             def is_authorized(self, lease_file, now_system_ms, ticks_ms):
                 if not self.valid:
                     return False
-                if not self.authorized or ticks_ms >= self.lease_deadline:
+                if (
+                    not self.authorized
+                    or ticks_ms >= self.lease_deadline
+                    or self.lease_expires_ms <= now_system_ms
+                    or self.lease_expires_ms - now_system_ms > MAX_TTL_MS
+                ):
                     self.poll(lease_file, now_system_ms, ticks_ms)
-                return self.authorized and ticks_ms < self.lease_deadline
+                return (
+                    self.authorized
+                    and ticks_ms < self.lease_deadline
+                    and self.lease_expires_ms > now_system_ms
+                    and self.lease_expires_ms - now_system_ms <= MAX_TTL_MS
+                )
 
         def make_lease(expires_ms, sig="VALID_SIG", digest="abc123", ext_id=ASSISTANT_ID):
             return f"windrise-assistant-lease-v1\n{ext_id}\n{digest}\n{expires_ms}\n{sig}\n"
@@ -188,9 +219,26 @@ class WindriseP2Brw1123Test(unittest.TestCase):
         )
 
         # 4. Monotonic deadline expiry triggers active refresh:
-        #    - stale file on disk stays rejected and marks needs_reverify
+        #    - stale file on disk stays rejected, marks needs_reverify, and clears cached fields
         self.assertFalse(v.is_authorized(fresh, now_system_ms=108_000, ticks_ms=9_000))
         self.assertTrue(v.needs_reverify)
+        self.assertEqual(v.last_lease, "")
+        self.assertEqual(v.lease_deadline, 0)
+        self.assertEqual(v.lease_expires_ms, 0)
+
+        # 4b. Cached hit when system wall clock jumps forward past signed expiry
+        #     before monotonic deadline is reached -> MUST reject and clear cache!
+        v_jump = LeaseVerifier()
+        self.assertTrue(v_jump.is_authorized(fresh, now_system_ms=100_000, ticks_ms=1_000))
+        self.assertFalse(v_jump.is_authorized(fresh, now_system_ms=108_001, ticks_ms=2_000))
+        self.assertEqual(v_jump.last_lease, "")
+        self.assertEqual(v_jump.lease_deadline, 0)
+
+        # 4c. Clock rollback after lease expired MUST NOT resurrect the same expired lease!
+        self.assertFalse(v_jump.is_authorized(fresh, now_system_ms=102_000, ticks_ms=2_500))
+        self.assertFalse(v.is_authorized(fresh, now_system_ms=102_000, ticks_ms=9_500))
+        self.assertEqual(v.expired_lease, fresh[0])
+
         #    - renewed file on disk restores authority and forces directory reverify
         renewed = (make_lease(116_000), 2)
         self.assertTrue(v.is_authorized(renewed, now_system_ms=108_000, ticks_ms=9_000))
