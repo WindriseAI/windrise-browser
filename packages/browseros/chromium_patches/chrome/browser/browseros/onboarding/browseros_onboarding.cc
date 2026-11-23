@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f91c11ab8
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding.cc
-@@ -0,0 +1,967 @@
+@@ -0,0 +1,1011 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -214,8 +214,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    if (file.IsValid()) {
 +      return false;
 +    }
-+    return file.error_details() == base::File::FILE_ERROR_IN_USE ||
-+           file.error_details() == base::File::FILE_ERROR_ACCESS_DENIED;
++    return file.error_details() == base::File::FILE_ERROR_IN_USE;
 +  };
 +  if (importer_type == user_data_importer::TYPE_FIREFOX) {
 +    return is_file_locked(source_path.Append(FILE_PATH_LITERAL("parent.lock")),
@@ -427,6 +426,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    current_item_ = user_data_importer::NONE;
 +    completed_items_ = user_data_importer::NONE;
 +    import_did_succeed_ = false;
++    reported_import_error_.clear();
 +
 +    if (importer_host_) {
 +      importer_host_->set_observer(nullptr);
@@ -779,6 +779,10 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    SendState("importing");
 +  }
 +
++  void ImportError(const std::string& error_msg) override {
++    reported_import_error_ = error_msg;
++  }
++
 +  void ImportEnded() override {
 +    if (importer_host_) {
 +      importer_host_->set_observer(nullptr);
@@ -789,7 +793,35 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    }
 +
 +    current_item_ = user_data_importer::NONE;
-+    if (import_did_succeed_) {
++    const bool is_explicit_lock =
++        reported_import_error_ == "source_browser_locked" ||
++        reported_import_error_ == "partial_source_browser_locked";
++    const bool is_explicit_failure =
++        is_explicit_lock ||
++        reported_import_error_ == "import_failed" ||
++        reported_import_error_ == "partial_import_failed";
++
++    if (is_explicit_lock) {
++      import_result_->status = ImportSourceResultStatus::kFailed;
++      const std::string label = active_source_browser_name_.empty()
++                                    ? "The source browser"
++                                    : active_source_browser_name_;
++      const std::string message =
++          reported_import_error_ == "partial_source_browser_locked"
++              ? base::StringPrintf(
++                    "%s is running and locking part of your browsing data. "
++                    "Please close %s completely, then click Try again to "
++                    "finish importing the remaining items.",
++                    label.c_str(), label.c_str())
++              : base::StringPrintf(
++                    "%s is running and locking your bookmarks and sign-in "
++                    "data. Please close %s completely, then click Try again.",
++                    label.c_str(), label.c_str());
++      SendFailure("failed", reported_import_error_, message);
++      return;
++    }
++
++    if (!is_explicit_failure && import_did_succeed_) {
 +      import_result_->status = ImportSourceResultStatus::kSucceeded;
 +      SendState(GetTerminalImportStatus());
 +      return;
@@ -801,16 +833,18 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    const user_data_importer::ImporterType importer_type =
 +        active_importer_type_;
 +    const std::string browser_name = active_source_browser_name_;
++    const std::string reported_error = reported_import_error_;
 +    base::ThreadPool::PostTaskAndReplyWithResult(
 +        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
 +        base::BindOnce(&IsSourceProfileLocked, source_path, importer_type),
 +        base::BindOnce(&BrowserOSOnboardingHandler::OnImportFailedLockChecked,
 +                       weak_ptr_factory_.GetWeakPtr(), attempt_id,
-+                       browser_name));
++                       browser_name, reported_error));
 +  }
 +
 +  void OnImportFailedLockChecked(uint64_t attempt_id,
 +                                 std::string browser_name,
++                                 std::string reported_error,
 +                                 bool is_locked) {
 +    if (attempt_id != import_attempt_id_ || !import_result_) {
 +      return;
@@ -818,12 +852,20 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    if (is_locked) {
 +      const std::string label =
 +          browser_name.empty() ? "The source browser" : browser_name;
++      const bool partial = (completed_items_ != user_data_importer::NONE);
 +      SendFailure(
-+          "failed", "source_browser_locked",
++          "failed",
++          partial ? "partial_source_browser_locked" : "source_browser_locked",
 +          base::StringPrintf(
 +              "%s is running and locking your bookmarks and sign-in data. "
 +              "Please close %s completely, then click Try again.",
 +              label.c_str(), label.c_str()));
++      return;
++    }
++    if (!reported_error.empty() && reported_error != "empty_source") {
++      SendFailure("failed", reported_error,
++                  "Windrise couldn't finish importing all selected data. "
++                  "Close the source browser completely and try again.");
 +      return;
 +    }
 +    SendState(GetTerminalImportStatus());
@@ -865,6 +907,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    completed_items_ = user_data_importer::NONE;
 +    imported_items_ = user_data_importer::NONE;
 +    import_did_succeed_ = false;
++    reported_import_error_.clear();
 +    import_result_.reset();
 +  }
 +
@@ -886,6 +929,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +  uint16_t imported_items_ = user_data_importer::NONE;
 +  bool importer_list_loaded_ = false;
 +  bool import_did_succeed_ = false;
++  std::string reported_import_error_;
 +  base::WeakPtrFactory<BrowserOSOnboardingHandler> weak_ptr_factory_{this};
 +};
 +

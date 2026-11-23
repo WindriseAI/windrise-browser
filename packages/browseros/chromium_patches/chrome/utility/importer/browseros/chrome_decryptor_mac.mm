@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..762582371aee4
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_decryptor_mac.mm
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,203 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome decryption - macOS implementation
 +// Uses Keychain for key retrieval, PBKDF2 for key derivation, AES-128-CBC for decryption
@@ -42,22 +42,31 @@ index 0000000000000..762582371aee4
 +    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
 +};
 +
-+// Chrome's Keychain service and account names
++// Browser Keychain service and account names
 +constexpr char kChromeKeychainService[] = "Chrome Safe Storage";
 +constexpr char kChromeKeychainAccount[] = "Chrome";
++constexpr char kEdgeKeychainService[] = "Microsoft Edge Safe Storage";
++constexpr char kEdgeKeychainAccount[] = "Microsoft Edge";
 +
-+// Retrieve Chrome's password from macOS Keychain using the modern API
-+bool GetChromePasswordFromKeychain(std::string* password) {
++bool IsEdgeProfilePath(const base::FilePath& profile_path) {
++  return profile_path.value().find("Microsoft Edge") != std::string::npos;
++}
++
++// Retrieve Chrome/Chromium-Edge password from macOS Keychain using the modern API
++bool GetBrowserPasswordFromKeychain(const base::FilePath& profile_path,
++                                    std::string* password) {
++  const bool is_edge = IsEdgeProfilePath(profile_path);
++  const char* service = is_edge ? kEdgeKeychainService : kChromeKeychainService;
++  const char* account = is_edge ? kEdgeKeychainAccount : kChromeKeychainAccount;
 +  crypto::apple::KeychainV2& keychain =
 +      crypto::apple::KeychainV2::GetInstance();
 +
-+  auto result = keychain.FindGenericPassword(kChromeKeychainService,
-+                                             kChromeKeychainAccount);
++  auto result = keychain.FindGenericPassword(service, account);
 +
 +  if (!result.has_value()) {
 +    OSStatus error = result.error();
 +    if (error == errSecItemNotFound) {
-+      LOG(WARNING) << "windrise: Chrome Safe Storage not found in Keychain";
++      LOG(WARNING) << "windrise: " << service << " not found in Keychain";
 +    } else if (error == errSecAuthFailed) {
 +      LOG(WARNING) << "windrise: Keychain access denied";
 +    } else {
@@ -135,9 +144,9 @@ index 0000000000000..762582371aee4
 +
 +std::string ExtractChromeKey(const base::FilePath& profile_path,
 +                             KeyExtractionResult* result) {
-+  // Get Chrome's password from Keychain
++  // Get browser password from Keychain (Chrome or Microsoft Edge)
 +  std::string keychain_password;
-+  if (!GetChromePasswordFromKeychain(&keychain_password)) {
++  if (!GetBrowserPasswordFromKeychain(profile_path, &keychain_password)) {
 +    if (result) {
 +      *result = KeyExtractionResult::kKeychainEntryNotFound;
 +    }

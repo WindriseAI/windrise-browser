@@ -327,6 +327,7 @@ function closestFrom(target: EventTarget | null, selector: string): boolean {
 /** Error codes reported when the source browser profile/database is locked. */
 const IMPORT_LOCKED_ERROR_CODES = new Set([
   'source_browser_locked',
+  'partial_source_browser_locked',
   'source_locked',
   'profile_locked',
   'database_locked',
@@ -360,6 +361,9 @@ export function importFailureMessageFor(
     const browser =
       (source ? shortBrowserName(source.browserName).trim() : '') ||
       copy.lockedBrowserFallback
+    if (error?.code.trim().toLowerCase() === 'partial_source_browser_locked') {
+      return copy.importFailedPartialLocked(browser)
+    }
     return copy.importFailedLocked(browser)
   }
   return error?.message || copy.importFailedFallback

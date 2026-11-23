@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..3de1c03c501a9
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_history_importer.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,24 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome history importer
 +
@@ -13,15 +13,17 @@ index 0000000000000..3de1c03c501a9
 +#include <vector>
 +
 +#include "base/files/file_path.h"
++#include "chrome/utility/importer/browseros/chrome_importer_utils.h"
 +#include "components/user_data_importer/common/importer_url_row.h"
 +
 +namespace browseros_importer {
 +
 +// Imports browsing history from Chrome's History database.
-+// |profile_path| should be the Chrome profile directory (e.g., .../Default)
-+// Returns a vector of ImporterURLRow. Returns empty vector on failure.
++// |profile_path| should be the Chrome/Chromium-Edge profile directory.
++// Populates |status| when provided to distinguish empty vs locked vs error.
 +std::vector<user_data_importer::ImporterURLRow> ImportChromeHistory(
-+    const base::FilePath& profile_path);
++    const base::FilePath& profile_path,
++    ImportItemStatus* status = nullptr);
 +
 +}  // namespace browseros_importer
 +

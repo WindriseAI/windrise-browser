@@ -3,9 +3,9 @@ index da614f0e7db5628e258f07fe0d7f2967dc1207f1..0c546a716728802b1cd038539e0f05b4
 --- a/chrome/browser/importer/in_process_importer_bridge.cc
 +++ b/chrome/browser/importer/in_process_importer_bridge.cc
 @@ -8,6 +8,7 @@
- 
+
  #include <iterator>
- 
+
 +#include "base/logging.h"
  #include "base/strings/string_util.h"
  #include "base/strings/utf_string_conversions.h"
@@ -17,9 +17,9 @@ index da614f0e7db5628e258f07fe0d7f2967dc1207f1..0c546a716728802b1cd038539e0f05b4
 +#include "chrome/utility/importer/browseros/chrome_cookie_importer.h"
  #include "components/user_data_importer/common/imported_bookmark_entry.h"
  #include "ui/base/l10n/l10n_util.h"
- 
+
  namespace {
- 
+
 +// Temporary definition for Chrome imported visits, mapped to value 4
 +const history::VisitSource SOURCE_CHROME_IMPORTED =
 +    static_cast<history::VisitSource>(4);
@@ -39,7 +39,7 @@ index da614f0e7db5628e258f07fe0d7f2967dc1207f1..0c546a716728802b1cd038539e0f05b4
 @@ -155,6 +163,11 @@ void InProcessImporterBridge::SetPasswordForm(
    writer_->AddPasswordForm(ConvertImportedPasswordForm(form));
  }
- 
+
 +void InProcessImporterBridge::SetCookie(
 +    const browseros_importer::ImportedCookieEntry& cookie) {
 +  writer_->AddCookie(cookie);
@@ -51,7 +51,7 @@ index da614f0e7db5628e258f07fe0d7f2967dc1207f1..0c546a716728802b1cd038539e0f05b4
 @@ -172,6 +185,15 @@ void InProcessImporterBridge::SetAutofillFormData(
    writer_->AddAutocompleteFormDataEntries(autocomplete_entries);
  }
- 
+
 +void InProcessImporterBridge::SetExtensions(
 +    const std::vector<std::string>& extension_ids) {
 +  LOG(INFO) << "InProcessImporterBridge: Received " << extension_ids.size()
@@ -64,3 +64,15 @@ index da614f0e7db5628e258f07fe0d7f2967dc1207f1..0c546a716728802b1cd038539e0f05b4
  void InProcessImporterBridge::NotifyStarted() {
    host_->NotifyImportStarted();
  }
+@@ -188,5 +210,11 @@ void InProcessImporterBridge::NotifyEnded() {
+   host_->NotifyImportEnded();
+ }
+
++void InProcessImporterBridge::NotifyEndedWithResult(
++    bool succeeded,
++    const std::string& error_msg) {
++  host_->NotifyImportEndedWithResult(succeeded, error_msg);
++}
++
+ std::u16string InProcessImporterBridge::GetLocalizedString(int message_id) {
+   return l10n_util::GetStringUTF16(message_id);

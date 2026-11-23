@@ -507,6 +507,53 @@ describe('ImportStep', () => {
     )
   })
 
+  it('surfaces partial lock failures for Chrome and Chromium Edge instead of reporting success', () => {
+    const edge = MOCK_BROWSEROS_IMPORT_SOURCES[2]
+    const chromeHtml = render(
+      'failed',
+      readyState({
+        status: 'failed',
+        error: {
+          code: 'partial_source_browser_locked',
+          message: 'partial lock',
+        },
+        progress: {
+          completedItems: ['bookmarks'],
+          totalItems: 2,
+        },
+      }),
+    )
+    expect(chromeHtml).toContain(
+      'Chrome is running and locking part of your browsing data. Please close Chrome completely, then click Try again to finish importing the remaining items.',
+    )
+
+    const edgeHtml = render(
+      'failed',
+      readyState({
+        status: 'failed',
+        error: {
+          code: 'partial_source_browser_locked',
+          message: 'partial lock',
+        },
+        progress: {
+          completedItems: ['bookmarks'],
+          totalItems: 2,
+        },
+        results: [
+          {
+            sourceId: edge.id,
+            displayName: edge.displayName,
+            status: 'failed',
+          },
+        ],
+      }),
+      { selectedSourceId: edge.id },
+    )
+    expect(edgeHtml).toContain(
+      'Edge is running and locking part of your browsing data. Please close Edge completely, then click Try again to finish importing the remaining items.',
+    )
+  })
+
   // DS9-P1-18: step two has a way back to the welcome step.
   it('offers a quiet back button in the picker only', () => {
     const picker = render('picker')

@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..21b17a08e1a8e
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_cookie_importer.cc
-@@ -0,0 +1,295 @@
+@@ -0,0 +1,326 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome cookie importer implementation
 +
@@ -153,24 +153,44 @@ index 0000000000000..21b17a08e1a8e
 +
 +std::vector<ImportedCookieEntry> ImportChromeCookies(
 +    const base::FilePath& profile_path,
-+    const std::string& encryption_key) {
++    const std::string& encryption_key,
++    ImportItemStatus* status) {
 +  std::vector<ImportedCookieEntry> cookies;
++
++  // Modern Chrome and Chromium Edge store cookies at Network/Cookies; fall
++  // back to legacy <profile>/Cookies when Network/Cookies is absent.
++  base::FilePath cookies_path =
++      profile_path.Append(FILE_PATH_LITERAL("Network"))
++          .Append(FILE_PATH_LITERAL("Cookies"));
++  if (!base::PathExists(cookies_path)) {
++    cookies_path = profile_path.AppendASCII(kCookiesFilename);
++  }
++  if (!base::PathExists(cookies_path)) {
++    LOG(WARNING) << "windrise: Cookies not found at: " << cookies_path.value();
++    if (status) {
++      *status = ImportItemStatus::kEmpty;
++    }
++    return cookies;
++  }
++
++  // Copy to temp location first so an exclusive lock held by a running source
++  // browser is accurately classified as kLocked before key/query checks.
++  ImportItemStatus copy_status = ImportItemStatus::kError;
++  base::FilePath temp_db_path = CopyDatabaseToTemp(cookies_path, &copy_status);
++  if (temp_db_path.empty()) {
++    if (status) {
++      *status = copy_status;
++    }
++    return cookies;
++  }
++
 +  if (encryption_key.empty()) {
 +    LOG(WARNING) << "windrise: Chrome encryption key unavailable; "
 +                 << "skipping cookie import";
-+    return cookies;
-+  }
-+
-+  // Path to Cookies database
-+  base::FilePath cookies_path = profile_path.AppendASCII(kCookiesFilename);
-+  if (!base::PathExists(cookies_path)) {
-+    LOG(WARNING) << "windrise: Cookies not found at: " << cookies_path.value();
-+    return cookies;
-+  }
-+
-+  // Copy to temp location to avoid locking issues
-+  base::FilePath temp_db_path = CopyDatabaseToTemp(cookies_path);
-+  if (temp_db_path.empty()) {
++    DeleteDatabaseTemp(temp_db_path);
++    if (status) {
++      *status = ImportItemStatus::kError;
++    }
 +    return cookies;
 +  }
 +
@@ -178,11 +198,14 @@ index 0000000000000..21b17a08e1a8e
 +  sql::Database db(kDatabaseTag);
 +  if (!db.Open(temp_db_path)) {
 +    LOG(WARNING) << "windrise: Failed to open Cookies database";
++    if (status) {
++      *status = ClassifySqliteError(db.GetErrorCode());
++    }
 +    DeleteDatabaseTemp(temp_db_path);
 +    return cookies;
 +  }
 +
-+  // Check database version - Chrome 130+ (version ≥ 24) prepends SHA256 hash
++  // Check database version - Chrome 130+ (version >= 24) prepends SHA256 hash
 +  // to cookie values before encryption. We need to strip this 32-byte prefix.
 +  int db_version = 0;
 +  {
@@ -214,7 +237,11 @@ index 0000000000000..21b17a08e1a8e
 +
 +    sql::Statement statement(db.GetUniqueStatement(kQuery));
 +    if (!statement.is_valid()) {
-+      LOG(WARNING) << "windrise: Failed to prepare query";
++      LOG(WARNING) << "windrise: Failed to prepare Cookies query";
++      if (status) {
++        *status = ClassifySqliteError(db.GetErrorCode());
++      }
++      db.Close();
 +      DeleteDatabaseTemp(temp_db_path);
 +      return cookies;
 +    }
@@ -295,6 +322,10 @@ index 0000000000000..21b17a08e1a8e
 +                    "SYSTEM elevation service and cannot be imported.";
 +  }
 +
++  if (status) {
++    *status = cookies.empty() ? ImportItemStatus::kEmpty
++                              : ImportItemStatus::kSuccess;
++  }
 +  return cookies;
 +}
 +

@@ -14,15 +14,15 @@ index 0000000000000..675ce725425a7
 +#include <vector>
 +
 +#include "base/files/file_path.h"
++#include "chrome/utility/importer/browseros/chrome_importer_utils.h"
 +
 +namespace browseros_importer {
 +
-+// Imports extension IDs from Chrome's preferences files.
-+// Only imports user-installed extensions from the Chrome Web Store.
-+// |profile_path| should be the Chrome profile directory (e.g., .../Default)
-+// Returns a vector of extension IDs. Returns empty vector on failure.
++// Imports extension IDs from Chrome/Chromium-Edge preferences files.
++// Populates |status| when provided to distinguish empty vs locked vs error.
 +std::vector<std::string> ImportChromeExtensions(
-+    const base::FilePath& profile_path);
++    const base::FilePath& profile_path,
++    ImportItemStatus* status = nullptr);
 +
 +}  // namespace browseros_importer
 +

@@ -13,12 +13,25 @@ index cf319714e5c89d052477e42686a5ccdcdfdf9f5f..2442f86a859ff97d149f8ef362ca0070
  #include "content/public/browser/service_process_host.h"
 +#include "net/cookies/cookie_constants.h"
  #include "ui/base/l10n/l10n_util.h"
- 
+
  ExternalProcessImporterClient::ExternalProcessImporterClient(
-@@ -227,6 +229,72 @@ void ExternalProcessImporterClient::OnPasswordFormImportReady(
+@@ -119,10 +121,12 @@ void ExternalProcessImporterClient::OnImportStart() {
+ void ExternalProcessImporterClient::OnImportFinished(
+     bool succeeded, const std::string& error_msg) {
+   if (cancelled_)
+     return;
+
+   if (!succeeded)
+     LOG(WARNING) << "Import failed.  Error: " << error_msg;
++  import_succeeded_ = succeeded;
++  import_error_msg_ = error_msg;
+   Cleanup();
+ }
+
+@@ -227,6 +231,72 @@ void ExternalProcessImporterClient::OnPasswordFormImportReady(
    bridge_->SetPasswordForm(form);
  }
- 
+
 +void ExternalProcessImporterClient::OnCookieImportReady(
 +    chrome::mojom::ImportedCookieEntryPtr mojo_cookie) {
 +  if (cancelled_)
@@ -88,10 +101,10 @@ index cf319714e5c89d052477e42686a5ccdcdfdf9f5f..2442f86a859ff97d149f8ef362ca0070
  void ExternalProcessImporterClient::OnKeywordsImportReady(
      const std::vector<user_data_importer::SearchEngineInfo>& search_engines,
      bool unique_on_host_and_path) {
-@@ -257,6 +325,14 @@ void ExternalProcessImporterClient::OnAutofillFormDataImportGroup(
+@@ -257,14 +327,23 @@ void ExternalProcessImporterClient::OnAutofillFormDataImportGroup(
      bridge_->SetAutofillFormData(autofill_form_data_);
  }
- 
+
 +void ExternalProcessImporterClient::OnExtensionsImportReady(
 +    const std::vector<std::string>& extension_ids) {
 +  if (cancelled_)
@@ -101,5 +114,15 @@ index cf319714e5c89d052477e42686a5ccdcdfdf9f5f..2442f86a859ff97d149f8ef362ca0070
 +}
 +
  ExternalProcessImporterClient::~ExternalProcessImporterClient() = default;
- 
+
  void ExternalProcessImporterClient::Cleanup() {
+   if (cancelled_)
+     return;
+
+   if (process_importer_host_.get())
+-    process_importer_host_->NotifyImportEnded();
++    process_importer_host_->NotifyImportEndedWithResult(import_succeeded_,
++                                                        import_error_msg_);
+   CloseMojoHandles();
+   Release();
+ }

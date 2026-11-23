@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..ff65fb5f3bc9e
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_bookmarks_importer.cc
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,258 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome bookmarks importer implementation
 +
@@ -175,33 +175,44 @@ index 0000000000000..ff65fb5f3bc9e
 +
 +}  // namespace
 +
-+ChromeBookmarksResult ImportChromeBookmarks(const base::FilePath& profile_path) {
++ChromeBookmarksResult ImportChromeBookmarks(
++    const base::FilePath& profile_path,
++    ImportItemStatus* status) {
 +  ChromeBookmarksResult result;
++  auto finish = [&](ImportItemStatus final_status) -> ChromeBookmarksResult {
++    result.status = final_status;
++    if (status) {
++      *status = final_status;
++    }
++    return result;
++  };
 +
 +  // Read bookmarks JSON file
 +  base::FilePath bookmarks_path = profile_path.AppendASCII(kBookmarksFilename);
 +  if (!base::PathExists(bookmarks_path)) {
 +    LOG(WARNING) << "windrise: Bookmarks file not found";
-+    return result;
++    return finish(ImportItemStatus::kEmpty);
 +  }
 +
 +  std::string bookmarks_content;
-+  if (!base::ReadFileToString(bookmarks_path, &bookmarks_content)) {
++  ImportItemStatus read_status = ImportItemStatus::kError;
++  if (!ReadFileToStringClassified(bookmarks_path, &bookmarks_content,
++                                  &read_status)) {
 +    LOG(WARNING) << "windrise: Failed to read Bookmarks file";
-+    return result;
++    return finish(read_status);
 +  }
 +
 +  std::optional<base::Value> bookmarks_value =
 +      base::JSONReader::Read(bookmarks_content, base::JSON_PARSE_RFC);
 +  if (!bookmarks_value || !bookmarks_value->is_dict()) {
 +    LOG(WARNING) << "windrise: Failed to parse Bookmarks JSON";
-+    return result;
++    return finish(ImportItemStatus::kError);
 +  }
 +
 +  const base::DictValue* roots = bookmarks_value->GetDict().FindDict("roots");
 +  if (!roots) {
 +    LOG(WARNING) << "windrise: No roots in Bookmarks";
-+    return result;
++    return finish(ImportItemStatus::kError);
 +  }
 +
 +  // Import bookmark bar
@@ -224,16 +235,14 @@ index 0000000000000..ff65fb5f3bc9e
 +                                 &result.bookmarks);
 +  }
 +
-+  // Import favicons from Favicons database
-+  // Original code uses DirName() - try that first, then profile directory
-+  base::FilePath favicons_path =
-+      profile_path.DirName().AppendASCII(kFaviconsFilename);
++  // Import favicons from Favicons database (best-effort enhancement).
++  base::FilePath favicons_path = profile_path.AppendASCII(kFaviconsFilename);
 +  if (!base::PathExists(favicons_path)) {
-+    favicons_path = profile_path.AppendASCII(kFaviconsFilename);
++    favicons_path = profile_path.DirName().AppendASCII(kFaviconsFilename);
 +  }
 +
 +  if (base::PathExists(favicons_path)) {
-+    base::FilePath temp_favicons = CopyToTempFile(favicons_path);
++    base::FilePath temp_favicons = CopyDatabaseToTemp(favicons_path);
 +    if (!temp_favicons.empty()) {
 +      sql::Database db(kDatabaseTag);
 +      if (db.Open(temp_favicons)) {
@@ -244,11 +253,12 @@ index 0000000000000..ff65fb5f3bc9e
 +        }
 +        db.Close();
 +      }
-+      base::DeleteFile(temp_favicons);
++      DeleteDatabaseTemp(temp_favicons);
 +    }
 +  }
 +
-+  return result;
++  return finish(result.bookmarks.empty() ? ImportItemStatus::kEmpty
++                                         : ImportItemStatus::kSuccess);
 +}
 +
 +}  // namespace browseros_importer

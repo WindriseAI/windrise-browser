@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000..915030187f327
 --- /dev/null
 +++ b/chrome/utility/importer/browseros/chrome_autofill_importer.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +// Copyright 2024 AKW Technology Inc
 +// Chrome autofill importer
 +
@@ -14,14 +14,15 @@ index 0000000000000..915030187f327
 +
 +#include "base/files/file_path.h"
 +#include "chrome/common/importer/importer_autofill_form_data_entry.h"
++#include "chrome/utility/importer/browseros/chrome_importer_utils.h"
 +
 +namespace browseros_importer {
 +
-+// Imports autofill form data from Chrome's Web Data database.
-+// |profile_path| should be the Chrome profile directory (e.g., .../Default)
-+// Returns a vector of ImporterAutofillFormDataEntry. Returns empty on failure.
++// Imports autofill form data from Chrome/Chromium-Edge Web Data database.
++// Populates |status| when provided to distinguish empty vs locked vs error.
 +std::vector<ImporterAutofillFormDataEntry> ImportChromeAutofill(
-+    const base::FilePath& profile_path);
++    const base::FilePath& profile_path,
++    ImportItemStatus* status = nullptr);
 +
 +}  // namespace browseros_importer
 +

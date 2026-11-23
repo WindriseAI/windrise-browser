@@ -442,9 +442,15 @@ describe('step keys (DS9-P1-18)', () => {
 })
 
 describe('import lock error helpers (F-16)', () => {
-  it('recognizes explicit lock error codes and raw SQLite / OS lock messages', () => {
+  it('recognizes explicit lock error codes including partial lock and raw SQLite / OS lock messages', () => {
     expect(
       isImportLockedError({ code: 'source_browser_locked', message: '' }),
+    ).toBe(true)
+    expect(
+      isImportLockedError({
+        code: 'partial_source_browser_locked',
+        message: '',
+      }),
     ).toBe(true)
     expect(
       isImportLockedError({ code: 'SQLITE_BUSY', message: 'busy' }),
@@ -470,7 +476,7 @@ describe('import lock error helpers (F-16)', () => {
     expect(isImportLockedError(undefined)).toBe(false)
   })
 
-  it('formats a browser-specific close-and-retry message for locked sources', () => {
+  it('formats a browser-specific close-and-retry message for locked and partially locked sources', () => {
     expect(
       importFailureMessageFor(
         { code: 'source_browser_locked', message: 'locked' },
@@ -481,11 +487,27 @@ describe('import lock error helpers (F-16)', () => {
     )
     expect(
       importFailureMessageFor(
+        { code: 'partial_source_browser_locked', message: 'partial' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[0],
+      ),
+    ).toBe(
+      'Chrome is running and locking part of your browsing data. Please close Chrome completely, then click Try again to finish importing the remaining items.',
+    )
+    expect(
+      importFailureMessageFor(
         { code: 'source_browser_locked', message: 'locked' },
         MOCK_BROWSEROS_IMPORT_SOURCES[2],
       ),
     ).toBe(
       'Edge is running and locking your bookmarks and sign-in data. Please close Edge completely, then click Try again.',
+    )
+    expect(
+      importFailureMessageFor(
+        { code: 'partial_source_browser_locked', message: 'partial' },
+        MOCK_BROWSEROS_IMPORT_SOURCES[2],
+      ),
+    ).toBe(
+      'Edge is running and locking part of your browsing data. Please close Edge completely, then click Try again to finish importing the remaining items.',
     )
     expect(
       importFailureMessageFor(

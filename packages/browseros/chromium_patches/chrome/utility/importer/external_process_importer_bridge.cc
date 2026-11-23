@@ -11,13 +11,13 @@ index 67092331c3801..df9cfc2576fd8 100644
  #include "components/user_data_importer/common/imported_bookmark_entry.h"
  #include "components/user_data_importer/common/importer_data_types.h"
 +#include "net/cookies/cookie_constants.h"
- 
+
  namespace {
- 
+
 @@ -113,6 +116,79 @@ void ExternalProcessImporterBridge::SetPasswordForm(
    observer_->OnPasswordFormImportReady(form);
  }
- 
+
 +void ExternalProcessImporterBridge::SetCookie(
 +    const browseros_importer::ImportedCookieEntry& cookie) {
 +  auto mojo_cookie = chrome::mojom::ImportedCookieEntry::New();
@@ -97,7 +97,7 @@ index 67092331c3801..df9cfc2576fd8 100644
 @@ -135,6 +211,13 @@ void ExternalProcessImporterBridge::SetAutofillFormData(
    DCHECK_EQ(0, autofill_form_data_entries_left);
  }
- 
+
 +void ExternalProcessImporterBridge::SetExtensions(
 +    const std::vector<std::string>& extension_ids) {
 +  // Since extension installations need to be handled by the browser process,
@@ -108,3 +108,15 @@ index 67092331c3801..df9cfc2576fd8 100644
  void ExternalProcessImporterBridge::NotifyStarted() {
    observer_->OnImportStart();
  }
+@@ -151,5 +234,11 @@ void ExternalProcessImporterBridge::NotifyEnded() {
+   observer_->OnImportFinished(true, std::string());
+ }
+
++void ExternalProcessImporterBridge::NotifyEndedWithResult(
++    bool succeeded,
++    const std::string& error_msg) {
++  observer_->OnImportFinished(succeeded, error_msg);
++}
++
+ std::u16string ExternalProcessImporterBridge::GetLocalizedString(
+     int message_id) {
