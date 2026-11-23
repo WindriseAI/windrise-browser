@@ -73,3 +73,24 @@ index 30855eca88e6139226d36767e57cda53c44f72aa..6bbe1e8d5ae8eb6a72e3932117c0d38c
    protected onRelaunchClick_() {
      this.performRestart(RestartType.RELAUNCH);
    }
+@@ -233,9 +283,10 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+     if (this.obsoleteSystemInfo_.endOfLine) {
+       this.showUpdateStatus_ = false;
+       return;
+     }
+     this.showUpdateStatus_ =
+-        this.currentUpdateStatusEvent_!.status !== UpdateStatus.DISABLED;
++        this.currentUpdateStatusEvent_!.status !== UpdateStatus.DISABLED ||
++        Boolean(this.currentUpdateStatusEvent_!.message);
+   }
+
+   protected shouldShowLearnMoreLink_(): boolean {
+@@ -349,6 +400,7 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase
+   protected shouldShowIcons_(): boolean {
+     if (this.obsoleteSystemInfo_.endOfLine) {
+       return true;
+     }
+-    return this.showUpdateStatus_;
++    return this.showUpdateStatus_ &&
++        (this.shouldShowThrobber_() || Boolean(this.getUpdateStatusIcon_()));
+   }

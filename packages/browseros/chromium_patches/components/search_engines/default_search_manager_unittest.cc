@@ -1,7 +1,15 @@
 diff --git a/components/search_engines/default_search_manager_unittest.cc b/components/search_engines/default_search_manager_unittest.cc
 --- a/components/search_engines/default_search_manager_unittest.cc
 +++ b/components/search_engines/default_search_manager_unittest.cc
-@@ -249,40 +249,27 @@
+@@ -11,6 +11,7 @@
+
+ #include "base/strings/string_split.h"
+ #include "base/strings/utf_string_conversions.h"
++#include "base/test/icu_test_util.h"
+ #include "base/test/metrics/histogram_tester.h"
+ #include "base/test/scoped_feature_list.h"
+ #include "base/test/task_environment.h"
+@@ -249,40 +250,59 @@
    EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
  }
  
@@ -39,8 +47,9 @@ diff --git a/components/search_engines/default_search_manager_unittest.cc b/comp
 -  EXPECT_NE(manager->GetDefaultSearchEngine(nullptr)->keyword(),
 -            first_default.keyword());
 -}
-+// Windrise never substitutes a regional fallback for Google or a user choice.
++// Windrise defaults to Google outside CN / zh-CN, and user choice always wins.
 +TEST_F(DefaultSearchManagerTest, WindriseFallbackAndUserChoice) {
++  base::test::ScopedRestoreICUDefaultLocale restore_locale("en-US");
 +  base::test::ScopedFeatureList feature_list;
 +  feature_list.InitAndDisableFeature(switches::kIgnoreSearchProviderOverrides);
 +  SetOverrides(pref_service(), false);
@@ -59,6 +68,37 @@ diff --git a/components/search_engines/default_search_manager_unittest.cc b/comp
 +  manager = create_manager();
 +  ExpectSimilar(selected.get(), manager->GetDefaultSearchEngine(&source));
 +  EXPECT_EQ(DefaultSearchManager::FROM_USER, source);
++}
++
++// Simplified Chinese (zh-CN) defaults to Baidu; Traditional Chinese (zh-TW)
++// outside CN keeps Google; user selection still overrides the fallback.
++TEST_F(DefaultSearchManagerTest, WindriseChineseFallbackAndUserChoice) {
++  {
++    base::test::ScopedRestoreICUDefaultLocale restore_locale("zh-TW");
++    auto manager = create_manager();
++    DefaultSearchManager::Source source = DefaultSearchManager::FROM_POLICY;
++    ASSERT_TRUE(manager->GetDefaultSearchEngine(&source));
++    EXPECT_EQ(TemplateURLPrepopulateData::google.id,
++              manager->GetDefaultSearchEngine(&source)->prepopulate_id);
++    EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
++  }
++  {
++    base::test::ScopedRestoreICUDefaultLocale restore_locale("zh-CN");
++    auto manager = create_manager();
++    DefaultSearchManager::Source source = DefaultSearchManager::FROM_POLICY;
++    ASSERT_TRUE(manager->GetDefaultSearchEngine(&source));
++    EXPECT_EQ(TemplateURLPrepopulateData::baidu.id,
++              manager->GetDefaultSearchEngine(&source)->prepopulate_id);
++    EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
++    auto google_data =
++        TemplateURLDataFromPrepopulatedEngine(TemplateURLPrepopulateData::google);
++    manager->SetUserSelectedDefaultSearchEngine(*google_data);
++    manager.reset();
++    manager = create_manager();
++    EXPECT_EQ(TemplateURLPrepopulateData::google.id,
++              manager->GetDefaultSearchEngine(&source)->prepopulate_id);
++    EXPECT_EQ(DefaultSearchManager::FROM_USER, source);
++  }
 +}
  
  // Test DefaultSearchManager handles policy-enforced DSEs correctly.

@@ -29,6 +29,7 @@ import { copy } from '../copy'
 import {
   completedImportItemCount,
   defaultImportItemsForSource,
+  importFailureMessageFor,
   importItemLabel,
   importItemListLabel,
   importProgressTotal,
@@ -182,6 +183,11 @@ export function ImportStep({
     state,
     selectedSource,
   )
+  const failedSource =
+    (state.results?.[0]
+      ? selectedSourceById(state.sources, state.results[0].sourceId)
+      : undefined) ?? selectedSource
+  const importErrorMessage = importFailureMessageFor(state.error, failedSource)
   const isDetecting = state.status === 'detecting'
   const hasNoProfiles = !isDetecting && state.sources.length === 0
   const hasSupportedItems = (selectedSource?.supportedItems.length ?? 0) > 0
@@ -345,7 +351,7 @@ export function ImportStep({
           )}
           {state.error && (
             <div className="wr-sunken-alert mb-4 p-4 text-[13px] text-ink">
-              {state.error.message}
+              {importErrorMessage}
             </div>
           )}
           <div className="wr-action-bar sticky -bottom-6 z-10 pt-6 pb-4">
@@ -408,9 +414,7 @@ export function ImportStep({
               <AlertTriangle className="size-4 text-amber" strokeWidth={1.75} />
               {copy.somethingWentWrong}
             </div>
-            <div className="text-[13px] text-ink-2">
-              {state.error?.message ?? copy.importFailedFallback}
-            </div>
+            <div className="text-[13px] text-ink-2">{importErrorMessage}</div>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <Button

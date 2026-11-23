@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f91c11ab8
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding.cc
-@@ -0,0 +1,833 @@
+@@ -0,0 +1,967 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -18,6 +18,9 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +#include <string_view>
 +#include <utility>
 +
++#include "base/files/file.h"
++#include "base/files/file_path.h"
++#include "base/files/file_util.h"
 +#include "base/functional/bind.h"
 +#include "base/functional/callback.h"
 +#include "base/location.h"
@@ -28,7 +31,9 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +#include "base/strings/utf_string_conversions.h"
 +#include "base/supports_user_data.h"
 +#include "base/task/sequenced_task_runner.h"
++#include "base/task/thread_pool.h"
 +#include "base/values.h"
++#include "build/build_config.h"
 +#include "chrome/browser/browser_process.h"
 +#include "chrome/browser/browseros/core/browseros_product.h"
 +#include "chrome/browser/importer/external_process_importer_host.h"
@@ -40,6 +45,7 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +#include "chrome/grit/browseros_onboarding_resources.h"
 +#include "chrome/grit/browseros_onboarding_resources_map.h"
 +#include "components/user_data_importer/common/importer_data_types.h"
++#include "components/user_data_importer/common/importer_type.h"
 +#include "content/public/browser/navigation_controller.h"
 +#include "content/public/browser/navigation_entry.h"
 +#include "content/public/browser/navigation_handle.h"
@@ -52,6 +58,13 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +#include "content/public/browser/web_ui_message_handler.h"
 +#include "content/public/common/url_constants.h"
 +#include "ui/webui/webui_util.h"
++
++#if BUILDFLAG(IS_POSIX)
++#include <errno.h>
++#include <signal.h>
++
++#include "base/strings/string_number_conversions.h"
++#endif
 +
 +namespace {
 +
@@ -182,6 +195,79 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +  AppendImportItem(items, services, user_data_importer::AUTOFILL_FORM_DATA);
 +  AppendImportItem(items, services, user_data_importer::EXTENSIONS);
 +  return items;
++}
++
++// Best-effort check on a blocking thread pool task after an import fails:
++// returns true when the source browser (Chrome / Edge / Firefox) appears to
++// still be running and holding exclusive file locks on its profile databases.
++bool IsSourceProfileLocked(const base::FilePath& source_path,
++                           user_data_importer::ImporterType importer_type) {
++  if (source_path.empty()) {
++    return false;
++  }
++#if BUILDFLAG(IS_WIN)
++  auto is_file_locked = [](const base::FilePath& path, uint32_t flags) {
++    if (!base::PathExists(path)) {
++      return false;
++    }
++    base::File file(path, flags);
++    if (file.IsValid()) {
++      return false;
++    }
++    return file.error_details() == base::File::FILE_ERROR_IN_USE ||
++           file.error_details() == base::File::FILE_ERROR_ACCESS_DENIED;
++  };
++  if (importer_type == user_data_importer::TYPE_FIREFOX) {
++    return is_file_locked(source_path.Append(FILE_PATH_LITERAL("parent.lock")),
++                          base::File::FLAG_OPEN | base::File::FLAG_READ |
++                              base::File::FLAG_WRITE);
++  }
++  // Chromium-based browsers (Chrome, Edge, etc.) hold an active lock on
++  // `<User Data>/lockfile` while running and may hold exclusive locks on
++  // profile SQLite databases (especially `Network/Cookies` and `Cookies`).
++  if (is_file_locked(
++          source_path.DirName().Append(FILE_PATH_LITERAL("lockfile")),
++          base::File::FLAG_OPEN | base::File::FLAG_WRITE)) {
++    return true;
++  }
++  const base::FilePath db_candidates[] = {
++      source_path.Append(FILE_PATH_LITERAL("Network"))
++          .Append(FILE_PATH_LITERAL("Cookies")),
++      source_path.Append(FILE_PATH_LITERAL("Cookies")),
++      source_path.Append(FILE_PATH_LITERAL("Login Data")),
++      source_path.Append(FILE_PATH_LITERAL("History")),
++      source_path.Append(FILE_PATH_LITERAL("Web Data")),
++  };
++  for (const base::FilePath& db_path : db_candidates) {
++    if (is_file_locked(db_path,
++                       base::File::FLAG_OPEN | base::File::FLAG_READ)) {
++      return true;
++    }
++  }
++  return false;
++#elif BUILDFLAG(IS_POSIX)
++  if (importer_type == user_data_importer::TYPE_FIREFOX) {
++    return base::PathExists(source_path.Append(".parentlock")) ||
++           base::PathExists(source_path.Append("lock"));
++  }
++  base::FilePath lock_target;
++  if (!base::ReadSymbolicLink(source_path.DirName().Append("SingletonLock"),
++                              &lock_target)) {
++    return false;
++  }
++  const std::string& target = lock_target.value();
++  const size_t dash = target.rfind('-');
++  if (dash == std::string::npos) {
++    return true;
++  }
++  int pid = 0;
++  if (!base::StringToInt(target.substr(dash + 1), &pid) || pid <= 0) {
++    return true;
++  }
++  return kill(static_cast<pid_t>(pid), 0) == 0 || errno == EPERM;
++#else
++  return false;
++#endif
 +}
 +
 +}  // namespace
@@ -331,6 +417,11 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    }
 +
 +    std::string display_name = GetDisplayName(source_profile);
++    ++import_attempt_id_;
++    active_source_path_ = source_profile.source_path;
++    active_importer_type_ = source_profile.importer_type;
++    active_source_browser_name_ =
++        base::UTF16ToUTF8(source_profile.importer_name);
 +    import_result_ = ImportSourceResult{selection.source_id, display_name,
 +                                        ImportSourceResultStatus::kImporting};
 +    current_item_ = user_data_importer::NONE;
@@ -698,9 +789,43 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +    }
 +
 +    current_item_ = user_data_importer::NONE;
-+    import_result_->status = import_did_succeed_
-+                                 ? ImportSourceResultStatus::kSucceeded
-+                                 : ImportSourceResultStatus::kFailed;
++    if (import_did_succeed_) {
++      import_result_->status = ImportSourceResultStatus::kSucceeded;
++      SendState(GetTerminalImportStatus());
++      return;
++    }
++
++    import_result_->status = ImportSourceResultStatus::kFailed;
++    const uint64_t attempt_id = import_attempt_id_;
++    const base::FilePath source_path = active_source_path_;
++    const user_data_importer::ImporterType importer_type =
++        active_importer_type_;
++    const std::string browser_name = active_source_browser_name_;
++    base::ThreadPool::PostTaskAndReplyWithResult(
++        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
++        base::BindOnce(&IsSourceProfileLocked, source_path, importer_type),
++        base::BindOnce(&BrowserOSOnboardingHandler::OnImportFailedLockChecked,
++                       weak_ptr_factory_.GetWeakPtr(), attempt_id,
++                       browser_name));
++  }
++
++  void OnImportFailedLockChecked(uint64_t attempt_id,
++                                 std::string browser_name,
++                                 bool is_locked) {
++    if (attempt_id != import_attempt_id_ || !import_result_) {
++      return;
++    }
++    if (is_locked) {
++      const std::string label =
++          browser_name.empty() ? "The source browser" : browser_name;
++      SendFailure(
++          "failed", "source_browser_locked",
++          base::StringPrintf(
++              "%s is running and locking your bookmarks and sign-in data. "
++              "Please close %s completely, then click Try again.",
++              label.c_str(), label.c_str()));
++      return;
++    }
 +    SendState(GetTerminalImportStatus());
 +  }
 +
@@ -732,6 +857,10 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +  }
 +
 +  void ResetImportState() {
++    ++import_attempt_id_;
++    active_source_path_.clear();
++    active_importer_type_ = user_data_importer::TYPE_UNKNOWN;
++    active_source_browser_name_.clear();
 +    current_item_ = user_data_importer::NONE;
 +    completed_items_ = user_data_importer::NONE;
 +    imported_items_ = user_data_importer::NONE;
@@ -747,6 +876,11 @@ index 0000000000000000000000000000000000000000..cbf0b4a168064cfb2a751b99793a289f
 +  raw_ptr<ExternalProcessImporterHost> importer_host_ = nullptr;
 +  base::RepeatingClosure completion_callback_;
 +  std::optional<ImportSourceResult> import_result_;
++  uint64_t import_attempt_id_ = 0;
++  base::FilePath active_source_path_;
++  user_data_importer::ImporterType active_importer_type_ =
++      user_data_importer::TYPE_UNKNOWN;
++  std::string active_source_browser_name_;
 +  user_data_importer::ImportItem current_item_ = user_data_importer::NONE;
 +  uint16_t completed_items_ = user_data_importer::NONE;
 +  uint16_t imported_items_ = user_data_importer::NONE;

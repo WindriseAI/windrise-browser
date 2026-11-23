@@ -76,7 +76,10 @@ const en = {
   chooseAgain: 'Choose again',
   somethingWentWrong: 'Something went wrong.',
   importFailedFallback:
-    "Windrise couldn't finish this import. Try again, or choose another profile or fewer items.",
+    "Windrise couldn't finish this import. If the other browser is still running, close it completely and try again, or choose another profile or fewer items.",
+  importFailedLocked: (browser: string) =>
+    `${browser} is running and locking your bookmarks and sign-in data. Please close ${browser} completely, then click Try again.`,
+  lockedBrowserFallback: 'Chrome or Edge',
   tryAgain: 'Try again',
   continue: 'Continue',
   whatToCopy: 'What to copy',
@@ -179,7 +182,10 @@ const zh: OnboardingCopy = {
   chooseAgain: '重新选择',
   somethingWentWrong: '没有复制成功。',
   importFailedFallback:
-    '这次没复制完。点「再试一次」，或者「重新选择」换个账号、少勾几项。',
+    '这次没复制完。如果旧浏览器还在运行，请先完全关闭它，再点一次「再试一次」；也可以点「重新选择」换个账号或少勾几项。',
+  importFailedLocked: (browser: string) =>
+    `${browser} 正在运行，占用了书签和登录数据。请先完全关闭它，再点一次「再试一次」。`,
+  lockedBrowserFallback: 'Chrome 或 Edge',
   tryAgain: '再试一次',
   continue: '继续',
   whatToCopy: '复制哪些',

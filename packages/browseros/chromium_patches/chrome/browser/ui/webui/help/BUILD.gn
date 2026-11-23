@@ -1,7 +1,7 @@
 diff --git a/chrome/browser/ui/webui/help/BUILD.gn b/chrome/browser/ui/webui/help/BUILD.gn
 --- a/chrome/browser/ui/webui/help/BUILD.gn
 +++ b/chrome/browser/ui/webui/help/BUILD.gn
-@@ -38,35 +38,6 @@ source_set("help") {
+@@ -38,35 +38,7 @@ source_set("help") {
 -  if (is_mac) {
 -    sources = [ "version_updater_mac.mm" ]
 -    deps += [
@@ -38,5 +38,6 @@ diff --git a/chrome/browser/ui/webui/help/BUILD.gn b/chrome/browser/ui/webui/hel
 +    # Windrise Bridge owns desktop browser updates. Never link a platform updater
 +    # from About, including builds whose branding flags differ from release.
      sources = [ "version_updater_basic.cc" ]
++    deps += [ "//base:i18n" ]
    }
  }

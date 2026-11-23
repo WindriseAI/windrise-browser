@@ -73,7 +73,7 @@ index 661831f8e98d65b9e2b4767f3424b49701be4665..d5964284f8c649152a271de1915bc1a9
  #if BUILDFLAG(IS_CHROMEOS)
  // Returns the app id of the kiosk app associated with the current user session.
  // Returns nullopt for non-kiosk user sessions and for ARCVM kiosk sessions,
-@@ -732,6 +789,26 @@ void StartupBrowserCreator::LaunchBrowser(
+@@ -732,6 +789,30 @@ void StartupBrowserCreator::LaunchBrowser(
        command_line, {profile, StartupProfileMode::kBrowserWindow});
  
    if (!IsSilentLaunchEnabled(command_line, profile)) {
@@ -81,6 +81,10 @@ index 661831f8e98d65b9e2b4767f3424b49701be4665..d5964284f8c649152a271de1915bc1a9
 +    if (browseros::IsBrowserOSProduct()) {
 +      browseros::onboarding::NeutralizeUpstreamFirstRun();
 +    }
++
++    // Skip duplicate browser onboarding when Windrise Desktop has already
++    // completed first-run setup and written User Data/.windrise-onboard-done.
++    browseros::onboarding::ConsumeDesktopOnboardingMarker(profile);
 +
 +    if (!command_line.HasSwitch(switches::kNoFirstRun) &&
 +        browseros::onboarding::ShouldShow(profile)) {

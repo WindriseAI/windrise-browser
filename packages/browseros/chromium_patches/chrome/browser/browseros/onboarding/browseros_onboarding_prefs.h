@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..0a78fc904746e06fdc2ad0ebf514702fa1aeed3f
 --- /dev/null
 +++ b/chrome/browser/browseros/onboarding/browseros_onboarding_prefs.h
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,39 @@
 +// Copyright 2026 The Chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -11,9 +11,25 @@ index 0000000000000000000000000000000000000000..0a78fc904746e06fdc2ad0ebf514702f
 +#ifndef CHROME_BROWSER_BROWSEROS_ONBOARDING_BROWSEROS_ONBOARDING_PREFS_H_
 +#define CHROME_BROWSER_BROWSEROS_ONBOARDING_BROWSEROS_ONBOARDING_PREFS_H_
 +
++namespace base {
++class FilePath;
++}  // namespace base
++
 +class Profile;
 +
 +namespace browseros::onboarding {
++
++// Marker file written under <User Data> when Windrise Desktop's first-run guide
++// has already handled browser setup / bookmark import. Its presence suppresses
++// the duplicate in-browser onboarding wizard on first launch.
++inline constexpr char kDesktopOnboardingDoneMarker[] = ".windrise-onboard-done";
++
++// Returns whether `user_data_dir` contains the desktop onboarding marker file.
++bool HasDesktopOnboardingMarker(const base::FilePath& user_data_dir);
++
++// Persists `kOnboardingCompleted` when the desktop marker is present for an
++// uncompleted regular profile so subsequent startups avoid disk checks.
++bool ConsumeDesktopOnboardingMarker(Profile* profile);
 +
 +// Returns whether onboarding should interrupt startup for `profile`.
 +bool ShouldShow(Profile* profile);
