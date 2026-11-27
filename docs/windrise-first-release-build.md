@@ -6,12 +6,12 @@
 
 ## 1. 原则与边界
 
-1. **一次定好再编**：依据用户 6.12 决定，设计定稿、插槽清单凑齐、用户点头并在主电脑暂停派活（`go.mjs pause`）后，在主电脑 `D:/src/chromium/src` 已有 `out/Default_browseros_x64` 增量编译一次。**本阶段只备可回放补丁与核对脚本，不开编、不发布**。
+1. **一次定好再编**：设计定稿、插槽清单凑齐并确认编译前提条件后，在目标 Chromium 源码树（`<CHROMIUM_SRC>`）已有输出目录（`<OUT_DIR>`）增量编译一次。**本阶段只备可回放补丁与核对脚本，不开编、不发布**。
 2. **原生只编通用容器与受限插槽**：C++ 只实现通用容器、布局约束、受限 API 身份隔离与必须改源码的固定项。具体业务（闪办广场、操作录制、AI 额度、省时间胶囊、审核卡等）均由随包内置扩展实现，改动内容或样式无需重编 C++。
 3. **改名必须带译文 ID 迁移**：使用 GRIT 从 clean upstream 历史英文与消息名生成候选旧 ID，通过 `xtb_rebrand.py` 回填至新 ID，保留占位符结构。翻译缺失显式报错，严禁静默回退英文或删除中文。
 4. **已有能力不重复移植**：`--disable-browseros-features` 开关与 Windows `drawAttention`（`windows_api.cc` -> `FlashFrame`）在 158 真实源码中已存在，直接复用。
 5. **输入穿透遵循原生规则**：穿透光效层在 Views 树上显式禁用输入与焦点；交互卡片浮层仅卡片有效区域接鼠标，透明区域穿透到下方网页，不使用 `IgnoreInputEvents` 冻结网页。
-6. **视觉必须比图签字**：界面件标注 `ui: true`，最终视觉效果以帮手二真机截图比图为准；源码补丁回放通过不等于视觉通过。
+6. **视觉必须比图签字**：界面件标注 `ui: true`，最终视觉效果以独立验证机真机截图比图为准；源码补丁回放通过不等于视觉通过。
 
 ---
 
@@ -125,7 +125,7 @@ OK
 ### 4.3 81 语言与三资源覆盖分析（安装包随包携带全部语言）
 运行分析工具：
 ```bash
-python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/chromium/src
+python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src <CHROMIUM_SRC>
 ```
 - **资源覆盖**：
   - `chromium_strings` (`chrome/app/chromium_strings.grd`): 630 条含品牌活动消息。
@@ -167,10 +167,10 @@ python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/c
 ### 5.1 隔离源文件集稀疏回放验证
 运行工具：
 ```bash
-python packages/browseros/tools/windrise/patch_replay.py --chromium-src D:/src/chromium/src --mode full
+python packages/browseros/tools/windrise/patch_replay.py --chromium-src <CHROMIUM_SRC> --mode full
 ```
 **安全与隔离保障**：
-- 工作目录为独立隔离临时目录，未在 `D:/src/chromium/src` 执行任何 reset / checkout 操作。
+- 工作目录为独立隔离临时目录，未在 `<CHROMIUM_SRC>` 执行任何 reset / checkout 操作。
 - 通过 `git cat-file -p 6449d9f9:<path>` 从干净基线稀疏提取 277 个受影响源文件，避免复制整树。
 - 记录每个输入文件的初始 SHA256。
 - 按正式 patchkit 字母序严格依次应用 420 个补丁。
@@ -192,7 +192,7 @@ Saved replay report to: packages/browseros/tools/windrise/fixtures/patch_replay_
 ### 5.2 增量采样回放验证
 运行工具：
 ```bash
-python packages/browseros/tools/windrise/patch_replay.py --chromium-src D:/src/chromium/src --mode incremental
+python packages/browseros/tools/windrise/patch_replay.py --chromium-src <CHROMIUM_SRC> --mode incremental
 ```
 **运行结果**：
 ```text
@@ -220,9 +220,9 @@ python packages/browseros/tools/windrise/build_preflight.py
 - **CPU 余量**：空闲余量 >= 75%，高于门限 20%（✓ PASS）。
 - **磁盘空间**：D 盘可用 36.46 GiB，高于门限 15.0 GiB（✓ PASS）。
 - **Flowmap 与协作板保护**：本地端口 8765 处于活动监听状态，未被中断或停止（✓ PASS）。
-- **源码与构建树**：`D:/src/chromium/src` 与 `out/Default_browseros_x64` 存在且配置完整（✓ PASS）。
+- **源码与构建树**：`<CHROMIUM_SRC>` 与 `out/Default_browseros_x64` 存在且配置完整（✓ PASS）。
 - **ThinLTO / PGO 优化保留**：`args.gn` 确认 `is_official_build = true`、`symbol_level = 0`，保留 ThinLTO / PGO（✓ PASS）。
-- **工具链就绪**：检测到 `D:/src/depot_tools/autoninja.bat`（✓ PASS）。
+- **工具链就绪**：检测到 `<DEPOT_TOOLS>/autoninja.bat`（✓ PASS）。
 
 ### 6.2 编译总闸门控验证（Gate Rejection）
 若未满足全部四个前提条件传入 `--compile`：
@@ -253,7 +253,7 @@ All four operational gates satisfied:
   ✓ paused_dispatch: Satisfied
 
 [DRY RUN] Prepared incremental compilation command:
-  autoninja.bat -C D:\src\chromium\src\out\Default_browseros_x64 chrome chromedriver
+  autoninja.bat -C <OUT_DIR> chrome chromedriver
 
 Dry-run verified: compile command prepared but NOT executed.
 (Current task is patch preparation only, not compiling).
@@ -280,11 +280,11 @@ Dry-run verified: compile command prepared but NOT executed.
 ## 8. 回滚方案
 
 若需回滚本批工作：
-1. 撤销独立工作树 `wt-b158batch` 分支 `n-b158batch` 上的提交：
+1. 撤销目标发布准备分支上的提交：
    ```bash
    git revert HEAD
    ```
-2. 主电脑 `D:/src/chromium/src`、编译产物 `out/` 及用户 profile 保持纯只读，未做任何就地修改，无需还原。
+2. 构建机 `<CHROMIUM_SRC>`、编译产物 `out/` 及用户 profile 保持纯只读，未做任何就地修改，无需还原。
 
 ## 9. 风桥助手扩展保护（ext-lock-1113）
 

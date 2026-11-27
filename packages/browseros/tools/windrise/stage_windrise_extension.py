@@ -11,8 +11,8 @@ while keeping bundled_extensions.json as `{}`.
 
 Usage:
     python packages/browseros/tools/windrise/stage_windrise_extension.py \
-        --source F:/worktrees/bridge-replica-e45/desktop-integ-1123/electron/windrise-extension \
-        --dest D:/src/chromium/src/out/Default_browseros_x64/windrise_extensions/windrise-extension
+        --source /path/to/windrise-extension \
+        --dest /path/to/chromium/src/out/Default_browseros_x64/windrise_extensions/windrise-extension
 """
 
 from __future__ import annotations

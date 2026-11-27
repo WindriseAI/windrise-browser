@@ -24,11 +24,11 @@
     },
     "chromium_source": {
       "passed": true,
-      "path": "D:\\src\\chromium\\src"
+      "path": "C:\\src\\chromium\\src"
     },
     "out_directory": {
       "passed": true,
-      "path": "D:\\src\\chromium\\src\\out\\Default_browseros_x64"
+      "path": "C:\\src\\chromium\\src\\out\\Default_browseros_x64"
     },
     "thin_lto_pgo": {
       "passed": true,
@@ -39,7 +39,7 @@
     },
     "toolchain": {
       "passed": true,
-      "detail": "D:/src/depot_tools/autoninja.bat"
+      "detail": "C:/src/depot_tools/autoninja.bat"
     }
   },
   "hooks_catalog": [

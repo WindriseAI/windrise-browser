@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Hook 17 XTB Translation Coverage and Rebranding Analysis Tool.
 
-Replaces the legacy b158/xtb-coverage.py script by taking dynamic CLI arguments,
+Replaces the legacy xtb-coverage.py script by taking dynamic CLI arguments,
 parsing active messages with real GRIT across all 3 Chromium string resource types,
 generating candidate legacy IDs, evaluating 81 languages, and producing a
 deterministic coverage and missing-translation report.
 
 Usage:
-    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/chromium/src
-    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/chromium/src --lang zh-CN
-    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src D:/src/chromium/src --output-json packages/browseros/tools/windrise/fixtures/xtb_coverage_report.json
+    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src /path/to/chromium/src
+    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src /path/to/chromium/src --lang zh-CN
+    python packages/browseros/tools/windrise/xtb_coverage.py --chromium-src /path/to/chromium/src --output-json packages/browseros/tools/windrise/fixtures/xtb_coverage_report.json
 """
 
 from __future__ import annotations
@@ -513,7 +513,7 @@ def generate_fixtures_and_e2e(
 
 def main():
     parser = argparse.ArgumentParser(description="Hook 17 XTB Translation Coverage and Rebranding Analysis")
-    parser.add_argument('--chromium-src', default='D:/src/chromium/src', help="Path to Chromium source root")
+    parser.add_argument('--chromium-src', default=os.environ.get('CHROMIUM_SRC', 'C:/src/chromium/src'), help="Path to Chromium source root")
     parser.add_argument('--upstream-commit', default='6449d9f9a6a906edff724b7b220199b3fde4615c', help="Clean upstream commit hash")
     parser.add_argument('--output-json', default='packages/browseros/tools/windrise/fixtures/xtb_coverage_summary.json', help="Output summary JSON path")
     parser.add_argument('--resources', default='chromium_strings,generated_resources,components_chromium_strings', help="Comma-separated resources")

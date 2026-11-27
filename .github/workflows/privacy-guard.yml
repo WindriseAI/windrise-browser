@@ -1,0 +1,29 @@
+name: Privacy Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  privacy-guard:
+    name: Privacy & Local Policy Guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run privacy guard scan
+        run: node scripts/privacy-guard.mjs --all
+
+      - name: Run guard unit tests
+        run: |
+          node --test tools/lib/execution-policy.test.mjs scripts/privacy-guard.test.mjs
+          python3 -m unittest discover -s tools/lib -p "*_test.py" -v

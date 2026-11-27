@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import tempfile
 import unittest
@@ -12,56 +13,59 @@ from unittest import mock
 import stage_windrise_extension as stager
 from bos_build.lib.windrise_extension import _verify_rsa_sha256_signature
 
-SIGNED_EXTENSION_DIR = Path(
-    "F:/worktrees/bridge-replica-e45/desktop-integ-1123/electron/windrise-extension"
-)
+_EXT_DIR_ENV = os.environ.get("WINDRISE_EXTENSION_DIR", "").strip()
+SIGNED_EXTENSION_DIR: Path | None = Path(_EXT_DIR_ENV) if _EXT_DIR_ENV else None
+
+
+def _require_signed_extension_dir(test_case: unittest.TestCase) -> Path:
+    if SIGNED_EXTENSION_DIR is None or not SIGNED_EXTENSION_DIR.is_dir():
+        test_case.skipTest(
+            "Signed desktop extension directory not configured (set WINDRISE_EXTENSION_DIR)"
+        )
+    assert SIGNED_EXTENSION_DIR is not None
+    return SIGNED_EXTENSION_DIR
 
 
 class StageWindriseExtensionTest(unittest.TestCase):
-    def _copy_signed_tree(self, tmp: str) -> Path:
+    def _copy_signed_tree(self, source_dir: Path, tmp: str) -> Path:
         dest = Path(tmp) / "windrise-extension"
-        shutil.copytree(SIGNED_EXTENSION_DIR, dest)
+        shutil.copytree(source_dir, dest)
         return dest
 
     def test_signed_desktop_extension_passes_when_present(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
-        files = stager.verify_source_tree(SIGNED_EXTENSION_DIR)
+        source_dir = _require_signed_extension_dir(self)
+        files = stager.verify_source_tree(source_dir)
         self.assertGreater(len(files), 10)
 
     def test_tampered_file_rejected_before_staging(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
+        source_dir = _require_signed_extension_dir(self)
         with tempfile.TemporaryDirectory() as tmp:
-            tree = self._copy_signed_tree(tmp)
+            tree = self._copy_signed_tree(source_dir, tmp)
             target = tree / "flash-card.js"
             target.write_text(target.read_text(encoding="utf-8") + "\n// tampered\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                 stager.verify_source_tree(tree)
 
     def test_extra_file_rejected(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
+        source_dir = _require_signed_extension_dir(self)
         with tempfile.TemporaryDirectory() as tmp:
-            tree = self._copy_signed_tree(tmp)
+            tree = self._copy_signed_tree(source_dir, tmp)
             (tree / "extra.js").write_text("console.log(1);\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "Unsigned extra files"):
                 stager.verify_source_tree(tree)
 
     def test_missing_file_rejected(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
+        source_dir = _require_signed_extension_dir(self)
         with tempfile.TemporaryDirectory() as tmp:
-            tree = self._copy_signed_tree(tmp)
+            tree = self._copy_signed_tree(source_dir, tmp)
             (tree / "flash-card.js").unlink()
             with self.assertRaisesRegex(ValueError, "Missing files listed"):
                 stager.verify_source_tree(tree)
 
     def test_tampered_signature_rejected(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
+        source_dir = _require_signed_extension_dir(self)
         with tempfile.TemporaryDirectory() as tmp:
-            tree = self._copy_signed_tree(tmp)
+            tree = self._copy_signed_tree(source_dir, tmp)
             sig_path = tree / ".windrise-signature"
             raw = sig_path.read_text(encoding="utf-8").strip()
             flipped = ("A" if raw[0] != "A" else "B") + raw[1:]
@@ -70,9 +74,8 @@ class StageWindriseExtensionTest(unittest.TestCase):
                 stager.verify_source_tree(tree)
 
     def test_node_fallback_rejects_and_accepts(self):
-        if not SIGNED_EXTENSION_DIR.is_dir():
-            self.skipTest("Signed desktop extension directory not present on host")
-        payload = (SIGNED_EXTENSION_DIR / ".windrise-integrity").read_bytes()
+        source_dir = _require_signed_extension_dir(self)
+        payload = (source_dir / ".windrise-integrity").read_bytes()
         import base64
 
         sig_bytes = base64.b64decode(

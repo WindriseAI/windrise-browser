@@ -3,7 +3,7 @@
 
 Checks environment prerequisites (memory, CPU margin, disk space, source tree,
 flowmap health, ThinLTO/PGO optimization flags, toolchain) and enforces strict
-operational gates before any future incremental compilation on the main machine.
+operational gates before any future incremental compilation on the build machine.
 
 Default behavior:
     Read-only preflight analysis. NEVER compiles by default.
@@ -12,7 +12,7 @@ Controlled compile prerequisites:
     1. --design-finalized: Design signoff confirmed by design team.
     2. --slots-ready: General slots inventory complete.
     3. --user-approved: Explicit user approval.
-    4. --paused-dispatch: Main machine task dispatching paused (go.mjs pause).
+    4. --paused-dispatch: Background task dispatching paused on the build machine.
 
 Safety guarantees:
     - Never stops flowmap (port 8765) or collaboration board.
@@ -46,7 +46,7 @@ MIN_CPU_MARGIN_PCT = 20.0
 MIN_FREE_DISK_GB = 15.0
 FLOWMAP_DEFAULT_PORT = 8765
 
-# Hook-by-hook classification matching b158/first-release-checklist-gpt3.md
+# Hook-by-hook classification for the first release checklist
 # Note: all recompile scopes are [INFERENCE], not yet runtime verified by ninja.
 HOOKS_REGISTRY = [
     {
@@ -342,7 +342,7 @@ def check_cpu_margin() -> Tuple[bool, float]:
 def check_disk_space(target_path: Path) -> Tuple[bool, float, float]:
     """Check disk capacity and available space on target path."""
     try:
-        drive = target_path.anchor or "D:\\"
+        drive = target_path.anchor or Path.cwd().anchor or "/"
         usage = shutil.disk_usage(drive)
         free_gb = usage.free / (1024 ** 3)
         total_gb = usage.total / (1024 ** 3)
@@ -393,12 +393,12 @@ def run_preflight_checks(
     args_gn_file = out_dir / "args.gn"
     lto_ok, lto_notes = check_thin_lto_pgo(args_gn_file)
 
-    # Check autoninja / ninja
+    depot_tools = os.environ.get("DEPOT_TOOLS_DIR")
     ninja_found = (
         shutil.which("autoninja")
         or shutil.which("ninja")
         or shutil.which("autoninja.bat")
-        or (Path("D:/src/depot_tools/autoninja.bat").exists() and "D:/src/depot_tools/autoninja.bat")
+        or (depot_tools and (Path(depot_tools) / "autoninja.bat").exists() and str(Path(depot_tools) / "autoninja.bat"))
         or (Path("C:/src/depot_tools/autoninja.bat").exists() and "C:/src/depot_tools/autoninja.bat")
     )
     toolchain_ok = ninja_found is not None
@@ -459,8 +459,13 @@ def run_preflight_checks(
 
 def main():
     parser = argparse.ArgumentParser(description="Windrise Chromium 158 Build Preflight and Gated Entry")
-    parser.add_argument("--chromium-src", default="D:/src/chromium/src", help="Chromium source root")
-    parser.add_argument("--out-dir", default="D:/src/chromium/src/out/Default_browseros_x64", help="Build output directory")
+    default_chromium_src = os.environ.get("CHROMIUM_SRC", "C:/src/chromium/src")
+    default_out_dir = os.environ.get(
+        "WINDRISE_OUT_DIR",
+        f"{default_chromium_src}/out/Default_browseros_x64",
+    )
+    parser.add_argument("--chromium-src", default=default_chromium_src, help="Chromium source root")
+    parser.add_argument("--out-dir", default=default_out_dir, help="Build output directory")
     parser.add_argument("--output-json", default="packages/browseros/tools/windrise/fixtures/build_preflight_report.json", help="Preflight report JSON")
 
     # Controlled compile gate flags
@@ -468,7 +473,7 @@ def main():
     parser.add_argument("--design-finalized", action="store_true", help="Gate 1: Design finalized signoff")
     parser.add_argument("--slots-ready", action="store_true", help="Gate 2: Slots inventory complete")
     parser.add_argument("--user-approved", action="store_true", help="Gate 3: Explicit user approval")
-    parser.add_argument("--paused-dispatch", action="store_true", help="Gate 4: Dispatch paused on main machine")
+    parser.add_argument("--paused-dispatch", action="store_true", help="Gate 4: Background task dispatching paused")
     parser.add_argument("--dry-run", action="store_true", help="Print compile command without executing")
     args = parser.parse_args()
 
@@ -489,7 +494,7 @@ def main():
         state = "✓ PASS" if check_data["passed"] else "✗ FAIL"
         print(f"  [{state}] {check_name}: {check_data}")
 
-    print("\n--- Hook Classification & Recompile Inventory (b158/first-release-checklist-gpt3.md) ---")
+    print("\n--- Hook Classification & Recompile Inventory ---")
     print(f"{'Hook':<5} | {'Category':<22} | {'Name':<24} | {'Recompile Scope'}")
     print("-" * 75)
     for h in report["hooks_catalog"]:

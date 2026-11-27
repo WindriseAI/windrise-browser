@@ -17,6 +17,9 @@ pre-commit:
       exclude: "*.{test,spec,d}.ts|*.{test,spec}.tsx|**/__tests__/**|**/tests/**|**/*.generated.*"
       run: bash ../../scripts/lefthook/file-length.sh {staged_files}
 
+    privacy-guard:
+      run: bash scripts/lefthook/privacy-guard.sh {staged_files}
+
 pre-push:
   commands:
     branch-name:

@@ -12,7 +12,7 @@ ID 在语言包里）迁移到当前 ID，并写回 `chrome/app/resources/*.xtb`
 
 用法:
     python packages/browseros/tools/windrise/xtb_migrate.py \
-        --chromium-src D:/src/chromium/src --lang zh-CN --dry-run
+        --chromium-src /path/to/chromium/src --lang zh-CN --dry-run
     ... --lang zh-CN            # 实际写回
 """
 
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import itertools
+import os
 import re
 import shutil
 import subprocess
@@ -272,7 +273,7 @@ def migrate_language(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="写回风桥品牌译文（xtb 源）")
-    parser.add_argument("--chromium-src", default="D:/src/chromium/src")
+    parser.add_argument("--chromium-src", default=os.environ.get("CHROMIUM_SRC", "C:/src/chromium/src"))
     parser.add_argument(
         "--upstream-commit",
         default="6449d9f9a6a906edff724b7b220199b3fde4615c",

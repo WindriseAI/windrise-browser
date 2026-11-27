@@ -9,13 +9,13 @@ Runs sequential patch replay on an isolated temporary sparse source file set:
    already-applied tree (6449d9f9 working copy).
 
 Strict safety constraints:
-- Strictly read-only against D:/src/chromium/src; never runs reset/checkout or modifies its index.
+- Strictly read-only against the target Chromium source root; never runs reset/checkout or modifies its index.
 - Never copies the entire Chromium source tree; uses isolated sparse file extraction.
 - Records upstream commit, patch list and order, input file SHA256 hashes, patch apply results,
   and output file SHA256 hashes.
 
 Usage:
-    python packages/browseros/tools/windrise/patch_replay.py --chromium-src D:/src/chromium/src
+    python packages/browseros/tools/windrise/patch_replay.py --chromium-src /path/to/chromium/src
     python packages/browseros/tools/windrise/patch_replay.py --mode full --output-json packages/browseros/tools/windrise/fixtures/patch_replay_report.json
 """
 
@@ -230,7 +230,7 @@ def run_incremental_replay(
 
 def main():
     parser = argparse.ArgumentParser(description="Hook Patch Replay Verification")
-    parser.add_argument("--chromium-src", default="D:/src/chromium/src", help="Path to Chromium source root")
+    parser.add_argument("--chromium-src", default=os.environ.get("CHROMIUM_SRC", "C:/src/chromium/src"), help="Path to Chromium source root")
     parser.add_argument("--patches-dir", default="packages/browseros/chromium_patches", help="Path to chromium_patches")
     parser.add_argument("--upstream-commit", default="6449d9f9a6a906edff724b7b220199b3fde4615c", help="Upstream baseline commit")
     parser.add_argument("--mode", choices=["full", "incremental"], default="full", help="Replay mode")
